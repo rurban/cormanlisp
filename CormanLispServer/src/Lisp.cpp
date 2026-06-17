@@ -1204,7 +1204,7 @@ __attribute__((naked)) LispObj LispCall1(LispFunc func, LispObj a1)
 		SETUP_LISP_CALL(1)
 		"mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"call *(8(%%ebp))\n\t"
+		"call *8(%%ebp)\n\t"
 		"add $4, %%esp\n\t"
 		END_LISP_CALL()
 		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
@@ -1219,7 +1219,7 @@ __attribute__((naked)) LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 		"push %%eax\n\t"
 		"mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"call *(8(%%ebp))\n\t"
+		"call *8(%%ebp)\n\t"
 		"add $8, %%esp\n\t"
 		END_LISP_CALL()
 		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
@@ -1236,7 +1236,7 @@ __attribute__((naked)) LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, 
 		"push %%eax\n\t"
 		"mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"call *(8(%%ebp))\n\t"
+		"call *8(%%ebp)\n\t"
 		"add $12, %%esp\n\t"
 		END_LISP_CALL()
 		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
@@ -1255,7 +1255,7 @@ __attribute__((naked)) LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, 
 		"push %%eax\n\t"
 		"mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"call *(8(%%ebp))\n\t"
+		"call *8(%%ebp)\n\t"
 		"add $16, %%esp\n\t"
 		END_LISP_CALL()
 		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
@@ -1276,7 +1276,7 @@ __attribute__((naked)) LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, 
 		"push %%eax\n\t"
 		"mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"call *(8(%%ebp))\n\t"
+		"call *8(%%ebp)\n\t"
 		"add $20, %%esp\n\t"
 		END_LISP_CALL()
 		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
@@ -1299,7 +1299,7 @@ __attribute__((naked)) LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, 
 		"push %%eax\n\t"
 		"mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"call *(8(%%ebp))\n\t"
+		"call *8(%%ebp)\n\t"
 		"add $24, %%esp\n\t"
 		END_LISP_CALL()
 		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
@@ -1324,7 +1324,7 @@ __attribute__((naked)) LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, 
 		"push %%eax\n\t"
 		"mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"call *(8(%%ebp))\n\t"
+		"call *8(%%ebp)\n\t"
 		"add $28, %%esp\n\t"
 		END_LISP_CALL()
 		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
@@ -1351,7 +1351,7 @@ __attribute__((naked)) LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, 
 		"push %%eax\n\t"
 		"mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"call *(8(%%ebp))\n\t"
+		"call *8(%%ebp)\n\t"
 		"add $32, %%esp\n\t"
 		END_LISP_CALL()
 		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"

@@ -188,178 +188,187 @@ LispFunction(lispList)
 extern unsigned long NumReturnValues;
 
 // redefined in lisp
-__declspec(naked)
+__attribute__((naked))
 LispFunction(Funcall)
 {
-	__asm 
-	{
-		push	ebp
-		mov		ebp, esp
-		push	ebx
-		push	edi
-		push	0			;; one cell local storage at [ebp - 12]
-
-		cmp		ecx, 1
-		jge		short t1
-		call 	WrongNumberOfArgs
-	t1:
-		mov		eax, [ebp + ecx*4 + 4]		;; eax = function
-		mov		edx, eax
-		and		edx, 7
-		cmp		edx, UvectorTag				;; see if func arg is a uvector
-		je		short t2
-		push	eax
-		call	checkFunction
-	t2:
-		mov		edx, [eax - UvectorTag]		;; edx = uvector header
-		shr 	dl, 3
-		cmp		dl, SymbolType				;; see if it is a symbol
-		jne		short t3
-		;; get the function that is bound to the symbol
-		mov		eax, [eax + ((SYMBOL_FUNCTION * 4) - UvectorTag)]
-		mov		eax, [eax - 4]
-		mov		edx, eax
-		and		edx, 7
-		cmp		edx, UvectorTag
-		je 		short t9
-		push	dword ptr [ebp + ecx*4 + 4]
-		call	checkFunction
-	t9:
-		mov		edx, [eax - UvectorTag]		;; edx = uvector header
-		shr 	dl, 3
-	t3: ;; we now know we have a function in eax, and dl is the type
-
-		;; push all the arguments
-		mov		[ebp - 12], esp
-		mov		ebx, ecx
-		dec		ecx
-	t4:
-		dec		ebx
-		jle		short t5
-		push 	dword ptr [ebp + ebx*4 + 4]
-		jmp		short t4
-	t5:
-		cmp 	dl, FunctionType
-		jne		short t6
-		mov		edi, [eax + ((FUNCTION_ENVIRONMENT * 4) - UvectorTag)] 
-		mov		eax, [eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
-		lea		eax, [eax + ((COMPILED_CODE_OFFSET * 4) - UvectorTag)]
-		call	eax	
-		jmp		short t8
-	t6:
-		cmp 	dl, KFunctionType
-		jne		short t7
-		mov		edi, [esi]		;; environment for kfunctions is always NIL
-		call	[eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
-		jmp		short t8
-	t7:
-		push	eax
-		call	checkFunction
-	t8:
-		mov		esp, [ebp - 12]
-		pop		edi
-		pop		edi
-		pop		ebx
-		mov		esp, ebp
-		pop		ebp
-		ret
-	}
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%ebx\n\t"
+		"push %%edi\n\t"
+		"push $0\n\t"                           // local at [ebp-12]
+		"cmp $1, %%ecx\n\t"
+		"jge 1f\n\t"
+		"call WrongNumberOfArgs\n\t"
+		"1:\n\t"
+		"mov 4(%%ebp, %%ecx, 4), %%eax\n\t"     // eax = function
+		"mov %%eax, %%edx\n\t"
+		"and $7, %%edx\n\t"
+		"cmp %c[utag], %%edx\n\t"              // UvectorTag
+		"je 2f\n\t"
+		"push %%eax\n\t"
+		"call checkFunction\n\t"
+		"2:\n\t"
+		"mov -%c[utag](%%eax), %%edx\n\t"       // edx = header
+		"shr $3, %%dl\n\t"
+		"cmp %c[symtype], %%dl\n\t"            // SymbolType
+		"jne 3f\n\t"
+		"mov %c[symfunc](%%eax), %%eax\n\t"     // SYMBOL_FUNCTION*4-UvectorTag
+		"mov -4(%%eax), %%eax\n\t"
+		"mov %%eax, %%edx\n\t"
+		"and $7, %%edx\n\t"
+		"cmp %c[utag], %%edx\n\t"
+		"je 9f\n\t"
+		"push 4(%%ebp, %%ecx, 4)\n\t"
+		"call checkFunction\n\t"
+		"9:\n\t"
+		"mov -%c[utag](%%eax), %%edx\n\t"
+		"shr $3, %%dl\n\t"
+		"3:\n\t"                                // dl = type, eax = function
+		"mov %%esp, -12(%%ebp)\n\t"
+		"mov %%ecx, %%ebx\n\t"
+		"dec %%ecx\n\t"
+		"4:\n\t"
+		"dec %%ebx\n\t"
+		"jle 5f\n\t"
+		"push 4(%%ebp, %%ebx, 4)\n\t"
+		"jmp 4b\n\t"
+		"5:\n\t"
+		"cmp %c[functype], %%dl\n\t"            // FunctionType
+		"jne 6f\n\t"
+		"mov %c[funcenv](%%eax), %%edi\n\t"     // FUNCTION_ENVIRONMENT*4-UvectorTag
+		"mov %c[funcaddr](%%eax), %%eax\n\t"    // FUNCTION_ADDRESS*4-UvectorTag
+		"lea %c[codeoff](%%eax), %%eax\n\t"
+		"call *%%eax\n\t"
+		"jmp 8f\n\t"
+		"6:\n\t"
+		"cmp %c[kfunctype], %%dl\n\t"           // KFunctionType
+		"jne 7f\n\t"
+		"mov (%%esi), %%edi\n\t"
+		"call *%c[funcaddr](%%eax)\n\t"
+		"jmp 8f\n\t"
+		"7:\n\t"
+		"push %%eax\n\t"
+		"call checkFunction\n\t"
+		"8:\n\t"
+		"mov -12(%%ebp), %%esp\n\t"
+		"pop %%edi\n\t"
+		"pop %%edi\n\t"
+		"pop %%ebx\n\t"
+		"mov %%ebp, %%esp\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		: [utag] "i"(UvectorTag),
+		  [symtype] "i"(SymbolType),
+		  [symfunc] "i"(SYMBOL_FUNCTION * 4 - UvectorTag),
+		  [functype] "i"(FunctionType),
+		  [funcenv] "i"(FUNCTION_ENVIRONMENT * 4 - UvectorTag),
+		  [funcaddr] "i"(FUNCTION_ADDRESS * 4 - UvectorTag),
+		  [codeoff] "i"(COMPILED_CODE_OFFSET * 4 - UvectorTag),
+		  [kfunctype] "i"(KFunctionType)
+		: "eax", "ebx", "ecx", "edx", "edi", "memory"
+	);
 }
 
 #define ARGS_OFFSET	8
 
 // redefined in lisp
-__declspec(naked)
+__attribute__((naked))
 LispFunction(Apply)
 {
-	__asm 
-	{
-		push	ebp
-		mov		ebp, esp
-		push	ebx
-		push	edi
-		push	0			;; one cell local storage at [ebp - 12]
-
-		cmp		ecx, 2
-		jge		short t1
-		call 	WrongNumberOfArgs
-	t1:
-		mov		eax, [ebp + ecx*4 + 4]		;; eax = function
-		mov		edx, eax
-		and		edx, 7
-		cmp		edx, UvectorTag				;; see if func arg is a uvector
-		je		short t2
-		push	eax
-		call	checkFunction
-	t2:
-		mov		edx, [eax - UvectorTag]		;; edx = uvector header
-		shr 	dl, 3
-		cmp		dl, SymbolType				;; see if it is a symbol
-		jne		short t4
-		;; get the function that is bound to the symbol
-		mov		eax, [eax + ((SYMBOL_FUNCTION * 4) - UvectorTag)]
-		mov		eax, [eax - 4]
-		mov		edx, eax
-		and		edx, 7
-		cmp		edx, UvectorTag
-		je 		short t3
-		push	dword ptr [ebp + ecx*4 + 4]
-		call	checkFunction
-	t3:
-		mov		edx, [eax - UvectorTag]		;; edx = uvector header
-		shr 	dl, 3
-	t4: ;; we now know we have a function in eax, and dl is the type
-
-		;; push all the arguments except the last
-		mov		[ebp - 12], esp
-		dec		ecx
-		mov		ebx, ecx
-		dec		ecx
-	t5:
-		dec		ebx
-		jle		short t6
-		push 	dword ptr [ebp + ebx*4 + 8]
-		jmp		short t5
-	t6:
-		;; the last argument is a list of remaining arguments
-		mov		edi, [ebp + ARGS_OFFSET]
-	t7:
-		mov		ebx, edi
-		and		ebx, 7
-		cmp		ebx, ConsTag				;; is a cons cell?
-		jne		short t8					;; if not, exit
-		push	[edi - 4]
-		inc		ecx
-		mov		edi, [edi]
-		jmp		short t7
-	t8:
-		cmp 	dl, FunctionType
-		jne		short t9
-		mov		edi, [eax + ((FUNCTION_ENVIRONMENT * 4) - UvectorTag)] 
-		mov		eax, [eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
-		lea		eax, [eax + ((COMPILED_CODE_OFFSET * 4) - UvectorTag)]
-		call	eax	
-		jmp		short t11
-	t9:
-		cmp 	dl, KFunctionType
-		jne		short t10
-		mov		edi, [esi]		;; environment for kfunctions is always NIL
-		call	[eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
-		jmp		short t11
-	t10:
-		push	eax
-		call	checkFunction
-	t11:
-		mov		esp, [ebp - 12]
-		pop		edi				;; remove local storage
-		pop		edi
-		pop		ebx
-		mov		esp, ebp
-		pop		ebp
-		ret
-	}
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%ebx\n\t"
+		"push %%edi\n\t"
+		"push $0\n\t"
+		"cmp $2, %%ecx\n\t"
+		"jge 1f\n\t"
+		"call WrongNumberOfArgs\n\t"
+		"1:\n\t"
+		"mov 4(%%ebp, %%ecx, 4), %%eax\n\t"
+		"mov %%eax, %%edx\n\t"
+		"and $7, %%edx\n\t"
+		"cmp %c[utag], %%edx\n\t"
+		"je 2f\n\t"
+		"push %%eax\n\t"
+		"call checkFunction\n\t"
+		"2:\n\t"
+		"mov -%c[utag](%%eax), %%edx\n\t"
+		"shr $3, %%dl\n\t"
+		"cmp %c[symtype], %%dl\n\t"
+		"jne 4f\n\t"
+		"mov %c[symfunc](%%eax), %%eax\n\t"
+		"mov -4(%%eax), %%eax\n\t"
+		"mov %%eax, %%edx\n\t"
+		"and $7, %%edx\n\t"
+		"cmp %c[utag], %%edx\n\t"
+		"je 3f\n\t"
+		"push 4(%%ebp, %%ecx, 4)\n\t"
+		"call checkFunction\n\t"
+		"3:\n\t"
+		"mov -%c[utag](%%eax), %%edx\n\t"
+		"shr $3, %%dl\n\t"
+		"4:\n\t"
+		"mov %%esp, -12(%%ebp)\n\t"
+		"dec %%ecx\n\t"
+		"mov %%ecx, %%ebx\n\t"
+		"dec %%ecx\n\t"
+		"5:\n\t"
+		"dec %%ebx\n\t"
+		"jle 6f\n\t"
+		"push 8(%%ebp, %%ebx, 4)\n\t"
+		"jmp 5b\n\t"
+		"6:\n\t"
+		"mov 8(%%ebp), %%edi\n\t"              // last arg = list
+		"7:\n\t"
+		"mov %%edi, %%ebx\n\t"
+		"and $7, %%ebx\n\t"
+		"cmp %c[constag], %%ebx\n\t"
+		"jne 8f\n\t"
+		"push -4(%%edi)\n\t"
+		"inc %%ecx\n\t"
+		"mov (%%edi), %%edi\n\t"
+		"jmp 7b\n\t"
+		"8:\n\t"
+		"cmp %c[functype], %%dl\n\t"
+		"jne 9f\n\t"
+		"mov %c[funcenv](%%eax), %%edi\n\t"
+		"mov %c[funcaddr](%%eax), %%eax\n\t"
+		"lea %c[codeoff](%%eax), %%eax\n\t"
+		"call *%%eax\n\t"
+		"jmp 11f\n\t"
+		"9:\n\t"
+		"cmp %c[kfunctype], %%dl\n\t"
+		"jne 10f\n\t"
+		"mov (%%esi), %%edi\n\t"
+		"call *%c[funcaddr](%%eax)\n\t"
+		"jmp 11f\n\t"
+		"10:\n\t"
+		"push %%eax\n\t"
+		"call checkFunction\n\t"
+		"11:\n\t"
+		"mov -12(%%ebp), %%esp\n\t"
+		"pop %%edi\n\t"
+		"pop %%edi\n\t"
+		"pop %%ebx\n\t"
+		"mov %%ebp, %%esp\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		: [utag] "i"(UvectorTag),
+		  [symtype] "i"(SymbolType),
+		  [symfunc] "i"(SYMBOL_FUNCTION * 4 - UvectorTag),
+		  [constag] "i"(ConsTag),
+		  [functype] "i"(FunctionType),
+		  [funcenv] "i"(FUNCTION_ENVIRONMENT * 4 - UvectorTag),
+		  [funcaddr] "i"(FUNCTION_ADDRESS * 4 - UvectorTag),
+		  [codeoff] "i"(COMPILED_CODE_OFFSET * 4 - UvectorTag),
+		  [kfunctype] "i"(KFunctionType)
+		: "eax", "ebx", "ecx", "edx", "edi", "memory"
+	);
 }
-
 //
 //	Lisp function create-closure
 //	Takes a function and an environment, and returns a new function.
@@ -890,7 +899,7 @@ LispFunction(Get_Millisecond_Count)
 	LISP_FUNC_RETURN(ret);
 }
 
-#define rdtsc _emit 0x0f __asm _emit 0x31
+// rdtsc is now handled inline with asm volatile
 
 LispFunction(Get_Instruction_Count)
 {
@@ -903,9 +912,7 @@ LispFunction(Get_Instruction_Count)
 	
 //	__asm db 0fH, 31H
 
-	__asm rdtsc
-	__asm mov dword ptr lowtime, eax
-	__asm mov dword ptr hightime, edx
+	asm volatile("rdtsc" : "=a"(lowtime), "=d"(hightime));
 
 	UVECTOR(bn)[BIGNUM_FIRST_CELL] = lowtime;
 	UVECTOR(bn)[BIGNUM_FIRST_CELL + 1] = hightime;
@@ -3455,53 +3462,66 @@ LispFunction(Lookup_Ftype)
 	LISP_FUNC_RETURN(NIL);
 }
 
-void __declspec(naked) Plus_EAX_EDX()
+
+__attribute__((naked)) void Load_QV_Reg()
 {
-	__asm	push	ebp
-	__asm	mov		ebp, esp
-    __asm   push    edi
-	__asm	push	edx
-	__asm	push	eax
-	__asm	mov		edi, dword ptr [esi]
-	__asm	mov		ecx, 2
-	__asm	call	Plus
-	__asm	add		esp, 8
-    __asm   pop     edi
-	__asm	pop		ebp
-	__asm	ret
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"call ThreadQV\n\t"
+		"mov %%eax, %%esi\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		: : : "memory"
+	);
 }
 
-void __declspec(naked) Minus_EAX_EDX()
+__attribute__((naked)) void genericThunkFunc()
 {
-	__asm	push	ebp
-	__asm	mov		ebp, esp
-    __asm   push    edi
-	__asm	push	eax
-	__asm	push	edx
-	__asm	mov		edi, dword ptr [esi]
-	__asm	mov		ecx, 2
-	__asm	call	Minus
-	__asm	add		esp, 8
-    __asm   pop     edi
-	__asm	pop		ebp
-	__asm	ret
+	asm volatile(
+		"movl $0x1000000, %%eax\n\t"
+		"jmp *0x12345678(%%eax)\n\t"
+	);
 }
 
-void __declspec(naked) Load_QV_Reg()
+__attribute__((naked)) void Minus_EAX_EDX()
 {
-	__asm	push	ebp
-	__asm	mov		ebp, esp
-	TlsGetValue(QV_Index);
-	__asm	mov		esi, eax
-	__asm	pop		ebp
-	__asm	ret
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%edi\n\t"
+		"push %%eax\n\t"
+		"push %%edx\n\t"
+		"mov (%%esi), %%edi\n\t"
+		"mov $2, %%ecx\n\t"
+		"call Minus\n\t"
+		"add $8, %%esp\n\t"
+		"pop %%edi\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		: : : "memory"
+	);
 }
 
-void __declspec(naked) genericThunkFunc	()
+__attribute__((naked)) void Plus_EAX_EDX()
 {
-	__asm	mov		eax, dword ptr [0x1000000]		;; use global QV
-	__asm	jmp		dword ptr [eax+0x12345678] ;; replace this with actual offset
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%edi\n\t"
+		"push %%edx\n\t"
+		"push %%eax\n\t"
+		"mov (%%esi), %%edi\n\t"
+		"mov $2, %%ecx\n\t"
+		"call Plus\n\t"
+		"add $8, %%esp\n\t"
+		"pop %%edi\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		: : : "memory"
+	);
 }
+
 const int sizeGenericThunk = 11;	// have to measure this and keep in sync
 
 LispFunction(Create_Callback_Thunk)
@@ -4668,7 +4688,7 @@ LispFunction(Stack_Trace)
 	long count = 30;  // maximum of 30 frames
 	LispObj* stackStart = ((ThreadRecord*)TlsGetValue(Thread_Index))->stackStart;
 
-	__asm mov basePointer, ebp
+	asm volatile("mov %%ebp, %0" : "=m"(basePointer) : : "memory");
 
 	while (basePointer < stackStart)
 	{

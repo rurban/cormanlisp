@@ -26,10 +26,12 @@
 #include <string.h>
 #include <climits>
 #include <stdlib.h>
-#include <stdio.h>
+#include <climits>
+#include <cctype>
 #include <setjmp.h>
 
 // ---- Win32 type aliases ----
+#include <sys/time.h>
 typedef int                 BOOL;
 typedef unsigned long       DWORD;
 typedef unsigned long       ULONG;
@@ -87,14 +89,14 @@ inline int strncpy_s(char* dst, size_t sz, const char* src, size_t cnt) {
 #define fopen_s(ppf, path, mode) ((*(ppf) = fopen(path, mode)) ? 0 : errno)
 
 // ---- Misc stubs ----
-inline void CloseHandle(HANDLE) {}
+// CloseHandle at line 98
 inline DWORD GetModuleFileName(void*, char* buf, DWORD sz) { buf[0]=0; return 0; }
 #define MessageBeep(x)          ((void)0)
 #define OutputDebugString(s)    fprintf(stderr, "%s", s)
 #define Sleep(ms)               usleep((ms) * 1000)
 #define GetLastError()          (errno)
 #define SetLastError(x)         (errno = (x))
-
+inline int CloseHandle(HANDLE) { return 0; }  // return int not void for Lispfunc.cpp
 #define _MAX_PATH MAX_PATH
 inline size_t wcslen(const wchar_t* s) { size_t n = 0; while (s[n]) n++; return n; }
 
@@ -110,6 +112,43 @@ typedef union _LARGE_INTEGER { __int64 QuadPart; struct { DWORD LowPart; LONG Hi
 inline int QueryPerformanceCounter(LARGE_INTEGER* lp) { *lp = LARGE_INTEGER{0}; return 1; }
 
 // ---- min/max ----
+// Additional stubs for Lispfunc.cpp
+inline int QueryPerformanceFrequency(LARGE_INTEGER* lp) { *lp = LARGE_INTEGER{1000000}; return 1; }
+inline DWORD GetTickCount(void) { struct timeval tv; gettimeofday(&tv, NULL); return tv.tv_sec*1000 + tv.tv_usec/1000; }
+#define PAGE_GUARD 0x100
+inline int SetCurrentDirectoryA(const char* dir) { return chdir(dir) == 0; }
+// strncat_s
+inline int strncat_s(char* dst, size_t sz, const char* src, size_t cnt) {
+    size_t dlen = strlen(dst); size_t n = cnt < (sz - dlen - 1) ? cnt : (sz - dlen - 1);
+    strncat(dst, src, n); return 0;
+}
+
+// DL library stubs for Lispfunc.cpp FFI (Phase 9: replace with dlopen/dlsym)
+#define HMODULE HINSTANCE
+typedef void (__stdcall *FARPROC)();
+inline HMODULE LoadLibrary(const char* name) { return (HMODULE)dlopen(name, RTLD_LAZY); }
+inline HMODULE LoadLibraryA(const char* name) { return LoadLibrary(name); }
+inline FARPROC GetProcAddress(HMODULE mod, const char* name) { return (FARPROC)dlsym((void*)mod, name); }
+inline int FreeLibrary(HMODULE mod) { return dlclose((void*)mod) == 0; }
+
+// Time/date stubs
+struct _timeb { time_t time; unsigned short millitm; short timezone, dstflag; };
+inline void _ftime_s(struct _timeb* tb) { struct timeval tv; gettimeofday(&tv, NULL); tb->time = tv.tv_sec; tb->millitm = tv.tv_usec/1000; }
+
+struct SYSTEMTIME { unsigned short wYear, wMonth, wDayOfWeek, wDay, wHour, wMinute, wSecond, wMilliseconds; };
+struct FILETIME { unsigned long dwLowDateTime, dwHighDateTime; };
+inline void GetSystemTime(SYSTEMTIME* st) { time_t t = time(NULL); struct tm* tm = gmtime(&t); st->wYear = tm->tm_year+1900; st->wMonth = tm->tm_mon+1; st->wDay = tm->tm_mday; st->wDayOfWeek = tm->tm_wday; st->wHour = tm->tm_hour; st->wMinute = tm->tm_min; st->wSecond = tm->tm_sec; st->wMilliseconds = 0; }
+inline void GetLocalTime(SYSTEMTIME* st) { time_t t = time(NULL); struct tm* tm = localtime(&t); st->wYear = tm->tm_year+1900; st->wMonth = tm->tm_mon+1; st->wDay = tm->tm_mday; st->wDayOfWeek = tm->tm_wday; st->wHour = tm->tm_hour; st->wMinute = tm->tm_min; st->wSecond = tm->tm_sec; st->wMilliseconds = 0; }
+inline int SystemTimeToFileTime(const SYSTEMTIME*, FILETIME*) { return 0; }
+inline int FileTimeToSystemTime(const FILETIME*, SYSTEMTIME*) { return 0; }
+
+struct TIME_ZONE_INFORMATION { LONG Bias; WCHAR StandardName[32]; SYSTEMTIME StandardDate; LONG StandardBias; WCHAR DaylightName[32]; SYSTEMTIME DaylightDate; LONG DaylightBias; };
+#define TIME_ZONE_ID_DAYLIGHT 2
+inline DWORD GetTimeZoneInformation(TIME_ZONE_INFORMATION* tzi) { tzi->Bias = 0; return 0; }
+
+// alloca
+#include <alloca.h>
+#define _alloca alloca
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
