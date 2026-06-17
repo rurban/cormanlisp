@@ -113,7 +113,7 @@
     <ClInclude Include="..\include\CoCormanLispClient.h" />
     <ClInclude Include="..\include\ErrorMessage.h" />
     <ClInclude Include="..\include\ICormanLisp.h" />
-    <ClInclude Include="..\include\threadclasses.h" />
+    <ClInclude Include="..\CormanLispServer\include\ThreadClasses.h" />
     <ClInclude Include="include\browser.h" />
     <ClInclude Include="include\CommonLispFuncs.h" />
     <ClInclude Include="include\CormanLisp.h" />

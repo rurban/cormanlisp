@@ -8,7 +8,7 @@
 //		History:	6/19/96 RGC Created.
 //					1/12/00 RGC Added EXECUTE_FINALIZERS to support post-GC finalization.
 //
-#include "stdafx.h"
+#include "Stdafx.h"
 #include <io.h>
 #include <windows.h>
 #include <sys/timeb.h>
@@ -16,8 +16,8 @@
 #include <direct.h>
 #include <malloc.h>
 
-#include "lisp.h"
-#include "lispmath.h"
+#include "Lisp.h"
+#include "Lispmath.h"
 #include "CormanLispServer.h"
 #include "Version.h"
 #include "../../zlib/zlib.h"

@@ -11,14 +11,14 @@
 //
 
 #include <ws2tcpip.h>
-#include "stdafx.h"
+#include "Stdafx.h"
 #include <process.h>
 #include <windows.h>
 #include <ole2.h>
 #include <string.h>
 
 #include "CormanLispServer.h"
-#include "lisp.h"
+#include "Lisp.h"
 
 #include "clsids.h"
 #include "CoCormanLisp.h"
@@ -371,7 +371,7 @@ UINT LispMainProc(LPVOID /*pParam*/)
 	currThreadID = GetCurrentThreadId();
 	WSADATA wsd;
 
-	__asm	mov  dummy, ebp
+	asm volatile("mov %%ebp, %0" : "=r"(dummy));
 
 	// find our thread record
 	th = ThreadList.getList();
@@ -486,7 +486,7 @@ SecondaryThreadProc(LPVOID func)
 		return 0;
 	}
 
-	__asm	mov  dummy, ebp
+	asm volatile("mov %%ebp, %0" : "=r"(dummy));
 
 	thisThread->stackStart = (unsigned long*)dummy;
 	TlsSetValue(Thread_Index, thisThread);
@@ -735,10 +735,9 @@ static CONTEXT lispContext;
 // This function is used by AbortLispThread() to force
 // a call to the ThrowUserException() function.
 // This simulates a call from the original function,
-void __declspec(naked) CallThrowUserExceptionStub()
+__attribute__((naked)) void CallThrowUserExceptionStub()
 {
-	__asm push eax  ;; push return address
-	__asm jmp ThrowUserException;
+	asm volatile("jmp ThrowUserException");
 }
 
 // Aborts the primary thread
@@ -782,12 +781,13 @@ void AbortLispThread()
 
 static CONTEXT terminateContext;
 
-void __declspec(naked) TerminateLispThreadException()
+__attribute__((naked)) void TerminateLispThreadException()
 {
 	LispObj result;
-	__asm mov result, edi
-
-	LispCall4(Funcall, THROW_EXCEPTION, EXIT_THREAD_TAG, result, wrapInteger(1));
+	asm volatile("mov %%edi, %0" : "=r"(result));
+	// LispCall4 deferred to Phase 5
+	(void)result;
+	asm volatile("ret");
 }
 
 void TerminateLispThread(LispObj threadID, LispObj ret)

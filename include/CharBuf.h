@@ -11,7 +11,7 @@
 #ifndef CHARBUF_H
 #define CHARBUF_H
 
-#include "threadclasses.h"
+#include "ThreadClasses.h"
 
 // The TerminalInputBuf and TerminalOutputBuf arrays (and the indexes)
 // are accessed by both threads, so care must be taken when modifying them.

@@ -19,7 +19,7 @@
 #ifndef LISP_H
 #define LISP_H
 
-#include "generic.h"
+#include "Generic.h"
 
 typedef unsigned long LispObj;
 
@@ -1849,6 +1849,7 @@ double shortFloat(LispObj);
 #define FixnumMax				((1 << 28) - 1)
 #define FixnumMin				(-(FixnumMax) - 1)
 
+#ifndef LINUX
 #define CheckNumArgs(num)			\
 __asm								\
 {									\
@@ -1950,8 +1951,36 @@ __asm								\
         __asm		mov		[esi + (STACK_MARKER_INDEX_Index * 4)], eax			\
         __asm		cld															\
 	}
+#else
+
+// ---- LINUX stubs for assembly macros (Phase 5 proper implementation) ----
+#define CheckNumArgs(num)           extern void WrongNumberOfArgs(); do { } while(0)
+#define CheckNumArgsRange(low,high) extern void WrongNumberOfArgs(); do { } while(0)
+#define GetArgCount(var)            var = 0
+#define ReturnCount(num)            /* ECX set by compiler */
+
+#define LISP_FUNC_BEGIN(numargs)    \
+    LispObj ret = 0;                \
+    long _arg_count = 0;            \
+    LispObj* _arg_ptr = &_args;     \
+    _arg_ptr += (_arg_count - 1);   \
+    CheckNumArgs(numargs)
+
+#define LISP_FUNC_BEGIN_VARIABLE(minargs, maxargs) \
+    LispObj ret = 0;                \
+    long _arg_count = 0;            \
+    LispObj* _arg_ptr = &_args;     \
+    _arg_ptr += (_arg_count - 1);   \
+    CheckNumArgsRange(minargs, maxargs)
+
+#define LISP_FUNC_RETURN(val)       do { ret = (val); return ret; } while(0)
+#define LISP_FUNC_RETURN_NO_VALUES() do { ret = NIL; return ret; } while(0)
+#define LISP_TO_FOREIGN()           do{}while(0);
+
+#endif
 
 // push lisp stack context
+#ifndef LINUX
 #define FOREIGN_TO_LISP()														\
 	__asm																		\
 	{																			\
@@ -2033,6 +2062,11 @@ __asm								\
         __asm		cld														\
         __asm		pop		esi												\
 	}
+#else
+#define FOREIGN_TO_LISP()          do{}while(0);
+#define FOREIGN_RETURN_TO_LISP()   do{}while(0);
+#define LISP_RETURN_TO_FOREIGN()   do{}while(0);
+#endif
 
 
 #define LISP_ARG(n) (_arg_ptr[-(n)])

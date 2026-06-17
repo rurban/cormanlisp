@@ -14,7 +14,7 @@
 //                              stringNode() now handles chars > 127 correctly, which
 //                              means ct:c-string-to-lisp-string handles them correctly.
 //
-#include "stdafx.h"
+#include "Stdafx.h"
 #include <stdlib.h>
 #include <setjmp.h>
 #include <string.h>
@@ -25,8 +25,8 @@
 #include <direct.h>
 #include <stdio.h>
 
-#include "lisp.h"
-#include "threadclasses.h"
+#include "Lisp.h"
+#include "ThreadClasses.h"
 #include "ErrorMessage.h"
 #include "CormanLispServer.h"
 #include "Version.h"

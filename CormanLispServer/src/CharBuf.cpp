@@ -7,7 +7,7 @@
 //		Contents:	Character buffer class implementation for Corman Lisp.
 //		History:	8/5/97  RGC Created.
 //
-#include "stdafx.h"
+#include "Stdafx.h"
 #include <assert.h>
 
 #include "CormanLispServer.h"

@@ -16,6 +16,7 @@ This library is licensed under the BSD license. See the file COPYING.
 #define __DISTORMV__ 0x030304
 
 #include <string.h> /* memset, memcpy - can be easily self implemented for libc independency. */
+#include <stdint.h>
 
 #include "../include/distorm.h"
 

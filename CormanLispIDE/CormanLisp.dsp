@@ -223,7 +223,7 @@ SOURCE=.\include\STDAFX.H
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\threadclasses.h
+SOURCE=..\CormanLispServer\include\ThreadClasses.h
 # End Source File
 # Begin Source File
 

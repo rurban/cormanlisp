@@ -8,7 +8,7 @@
 //                  Used to diagnose memory violations and other issues.
 //		History:	4/29/06  RGC  Created.
 //
-#include "stdafx.h"
+#include "Stdafx.h"
 #include <stdio.h>
 #include <process.h>
 #include <time.h>

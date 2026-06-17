@@ -10,7 +10,6 @@ This library is licensed under the BSD license. See the file COPYING.
 */
 
 
-#include "../include/distorm.h"
 #include "config.h"
 #include "decoder.h"
 #include "x86defs.h"

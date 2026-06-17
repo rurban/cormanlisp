@@ -8,7 +8,7 @@
 //		History:	8/5/97  RGC Created.
 //
 
-#include "stdafx.h"
+#include "Stdafx.h"
 #include <assert.h>
 
 #include "ThreadClasses.h"

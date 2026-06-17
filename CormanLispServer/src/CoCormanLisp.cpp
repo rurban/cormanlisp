@@ -11,7 +11,7 @@
 //					11/22/16  Artem Boldarev
 //							  GetImageLoadsCount() method.
 //
-#include "stdafx.h"
+#include "Stdafx.h"
 
 #include <windows.h>
 #include <initguid.h>
@@ -23,8 +23,8 @@
 #include "CoCormanLisp.H"
 #include "clsids.h"
 #include "CormanLispServer.h"
-#include "CoEnumConnectionPoints.h"
-#include "CoConnectionPoint.h"
+#include "CoEnumConnectionPoints.H"
+#include "CoConnectionPoint.H"
 
 
 #include "Lisp.h"

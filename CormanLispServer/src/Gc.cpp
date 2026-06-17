@@ -28,7 +28,7 @@
 //					11/22/16  Artem Boldarev
 //							  getImageLoadsCount() function.
 //
-#include "stdafx.h"
+#include "Stdafx.h"
 #include <wtypes.h>
 #include <memory.h>
 #include <windows.h>
@@ -39,7 +39,7 @@
 #include <time.h>
 
 #include "Lisp.h"
-#include "threadclasses.h"
+#include "ThreadClasses.h"
 #include "CormanLispServer.h"
 
 #pragma warning (disable:4505)				// unreferenced local function has been removed			
@@ -67,9 +67,11 @@
 //		character or byte arrays that overlap page boundaries require that
 //		these be maintained for heap scanning purposes.
 //
-#define address_to_page(addr)	(((unsigned long)addr) >> 12)
-#define page_address(page)		((byte*)((page) << 12))
-#define page_offset(addr)		((((unsigned long)addr) << 20) >> 23)
+#ifndef address_to_page
+#define address_to_page(addr)    (((unsigned long)addr) >> 12)
+#define page_address(page)       ((byte*)((page) << 12))
+#define page_offset(addr)        ((((unsigned long)addr) << 20) >> 23)
+#endif
 
 /* definition moved to Lisp.h
 struct PageTableEntry

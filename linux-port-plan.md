@@ -24,7 +24,7 @@ The port is architecturally feasible but **extremely labor-intensive** — month
 
 ### Phase 2: Threading primitives (replace Win32 → pthreads)
 
-File: `include/threadclasses.h` + `CormanLispServer/src/ThreadClasses.cpp`
+File: `include/ThreadClasses.h` + `CormanLispServer/src/ThreadClasses.cpp`
 
 - Replace `#include <windows.h>` with `#include <pthread.h>` (or a new `platform.h` that selects the backend).
 - Map each class:
@@ -145,7 +145,7 @@ File: `CormanLispServer/src/Compx86.cpp` (6970 lines)
 |`CormanLispServer/src/Lisp.cpp`|`LispCall0`-`LispCall8`, `handleStructuredException`, `ThrowUserException`|Naked functions + exception handling|
 |`CormanLispServer/src/CormanLispServer.cpp`|`DllMain`, `ThreadQV`, COM class factory|Entry point + TLS + COM replacement|
 |`CormanLispServer/src/Compx86.cpp`|Code generation macros, `FlushInstructionCache`|Compiler emits x86 opcodes; mostly portable but needs exec-memory allocation|
-|`include/threadclasses.h`|`CriticalSection`, `PLEvent`, `PLSingleLock`|Threading primitives used in GC and runtime|
+|`include/ThreadClasses.h`|`CriticalSection`, `PLEvent`, `PLSingleLock`|Threading primitives used in GC and runtime|
 |`clconsole/clconsole.cpp`|COM client code, `ICormanLispStatusMessage`|Console REPL; model for porting clients|
 |`Sys/ffi.lisp`|`LoadLibrary`, `GetProcAddress`|Lisp-side FFI; must call `dlopen`/`dlsym` instead|
 

@@ -123,7 +123,7 @@
     <ClInclude Include="include\STDAFX.H">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\threadclasses.h">
+    <ClInclude Include="..\CormanLispServer\include\ThreadClasses.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\UtilFuncs.h">

@@ -12,7 +12,7 @@
 //								having the other thread not get time to run.
 //
 
-#include "stdafx.h"
+#include "Stdafx.h"
 #include "Lisp.h"
 
 CriticalSection TQCriticalSection;
