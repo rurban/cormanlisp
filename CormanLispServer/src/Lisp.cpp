@@ -976,9 +976,9 @@ static void
 throwOSException()
 {
 	LispObj ex = 0;
-	long exceptionCode = 0;
+	DWORD exceptionCode = 0;
 
-	__asm mov exceptionCode, eax
+	asm volatile("mov %%eax, %0" : "=m"(exceptionCode) : : "eax");
 
 	switch (exceptionCode)
 	{
@@ -1010,11 +1010,9 @@ long gStackOverflowAddress = 0;
 
 // This function stub is used by plungeBackIn() to force
 // a call to the ThrowUserException() function.
-void __declspec(naked) CallThrowOSExceptionStub()
+__attribute__((naked)) void CallThrowOSExceptionStub()
 {
-	__asm push edx
-	__asm jmp throwOSException
-	// __asm call throwOSException;
+	asm volatile("jmp throwOSException");
 }
 
 // a handler to be called by the system, used in compiled lisp code
@@ -1070,7 +1068,7 @@ long handleStructuredException(long exception, LPEXCEPTION_POINTERS info)
 	info->ContextRecord->Edx = info->ContextRecord->Eip;
 	info->ContextRecord->Eip = (long)CallThrowOSExceptionStub;
 	info->ContextRecord->Eax = exception;
-	__asm mov dword ptr gStackOverflowAddress, esp
+	asm volatile("mov %%esp, %0" : "=m"(gStackOverflowAddress) : : "memory");
 
 	return EXCEPTION_CONTINUE_EXECUTION;
 }
@@ -1163,215 +1161,201 @@ void LispLoop()
 //	This is stack-direction specific -- assumes stack grows down!!!
 //	Portability issue here!!
 //
-#ifdef X86
+#ifdef LINUX
 
-#ifdef WINNT_ONLY
-#define SETUP_LISP_CALL(numargs)		\
-	__asm push esi						\
-	__asm push ecx						\
-	__asm mov eax, fs:0018h				\
-	__asm mov edx, dword ptr QV_Index	\
-	__asm mov esi, dword ptr [eax + edx*4 + 0e10h]	\
-	__asm mov ecx, numargs
+// GCC naked asm: SETUP_LISP_CALL pushes frame, gets QV, sets numargs
+// END_LISP_CALL saves return count, restores registers, returns
+#define SETUP_LISP_CALL(n)                                              \
+    "push %%ebp\n\t"                                                   \
+    "mov %%esp, %%ebp\n\t"                                            \
+    "push %%esi\n\t"                                                   \
+    "push %%edi\n\t"                                                   \
+    "push %%ecx\n\t"                                                   \
+    "push %%ebx\n\t"                                                   \
+    "call ThreadQV\n\t"                                                \
+    "mov %%eax, %%esi\n\t"          /* esi = QV */                     \
+    "mov $" #n ", %%ecx\n\t"        /* numargs */                      \
+    "mov (%%esi), %%edi\n\t"        /* edi = QV[0] */
 
-#define END_LISP_CALL()					\
-	__asm mov dword ptr NumReturnValues, ecx   \
-	__asm pop ecx						\
-	__asm pop esi
+#define END_LISP_CALL()                                                 \
+    "mov %%ecx, %[nrv]\n\t"                                            \
+    "pop %%ebx\n\t"                                                    \
+    "pop %%ecx\n\t"                                                    \
+    "pop %%edi\n\t"                                                    \
+    "pop %%esi\n\t"                                                    \
+    "mov %%ebp, %%esp\n\t"                                             \
+    "pop %%ebp\n\t"                                                    \
+    "ret"
 
-#else
-#define SETUP_LISP_CALL(numargs)		\
-	__asm push ebp						\
-	__asm mov  ebp, esp					\
-	__asm push esi						\
-	__asm push edi						\
-	__asm push ecx						\
-	__asm push ebx						\
-	__asm call ThreadQV					\
-	__asm mov esi, eax					\
-	__asm mov ecx, numargs				\
-	__asm mov edi, [esi]
-
-#define END_LISP_CALL()					\
-	__asm mov dword ptr NumReturnValues, ecx   \
-	__asm pop ebx						\
-	__asm pop ecx						\
-	__asm pop edi						\
-	__asm pop esi						\
-	__asm mov esp, ebp					\
-	__asm pop ebp						\
-	__asm ret
-#endif
-
-__declspec(naked) LispObj 
-LispCall0(LispFunc func)
+__attribute__((naked)) LispObj LispCall0(LispFunc func)
 {
-	SETUP_LISP_CALL(0);
-
-	__asm	call	dword ptr [func]
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(0)
+		"mov 8(%%ebp), %%eax\n\t"
+		"call *%%eax\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
-__declspec(naked) LispObj 
-LispCall1(LispFunc func, LispObj a1)
+__attribute__((naked)) LispObj LispCall1(LispFunc func, LispObj a1)
 {
-	SETUP_LISP_CALL(1);
-
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 4
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(1)
+		"mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"call *(8(%%ebp))\n\t"
+		"add $4, %%esp\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
-__declspec(naked) LispObj 
-LispCall2(LispFunc func, LispObj a1, LispObj a2)
+__attribute__((naked)) LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 {
-	SETUP_LISP_CALL(2);
-
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 8
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(2)
+		"mov 16(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"call *(8(%%ebp))\n\t"
+		"add $8, %%esp\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
-__declspec(naked) LispObj 
-LispCall3(LispFunc func, LispObj a1, LispObj a2, LispObj a3)
+__attribute__((naked)) LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, LispObj a3)
 {
-	SETUP_LISP_CALL(3);
-
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 12
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(3)
+		"mov 20(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 16(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"call *(8(%%ebp))\n\t"
+		"add $12, %%esp\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
-__declspec(naked) LispObj 
-LispCall4(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4)
+__attribute__((naked)) LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4)
 {
-	SETUP_LISP_CALL(4);
-
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 16
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(4)
+		"mov 24(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 20(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 16(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"call *(8(%%ebp))\n\t"
+		"add $16, %%esp\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
-__declspec(naked) LispObj 
-LispCall5(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5)
+__attribute__((naked)) LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5)
 {
-	SETUP_LISP_CALL(5);
-
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a5]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 20
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(5)
+		"mov 28(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 24(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 20(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 16(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"call *(8(%%ebp))\n\t"
+		"add $20, %%esp\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
-__declspec(naked) LispObj 
-LispCall6(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6)
+__attribute__((naked)) LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6)
 {
-	SETUP_LISP_CALL(6);
-
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a5]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a6]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 24
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(6)
+		"mov 32(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 28(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 24(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 20(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 16(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"call *(8(%%ebp))\n\t"
+		"add $24, %%esp\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
-__declspec(naked) LispObj 
-LispCall7(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7)
+__attribute__((naked)) LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7)
 {
-	SETUP_LISP_CALL(7);
-
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a5]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a6]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a7]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 28
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(7)
+		"mov 36(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 32(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 28(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 24(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 20(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 16(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"call *(8(%%ebp))\n\t"
+		"add $28, %%esp\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
-__declspec(naked) LispObj 
-LispCall8(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, 
-		 LispObj a5, LispObj a6, LispObj a7, LispObj a8)
+__attribute__((naked)) LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7, LispObj a8)
 {
-	SETUP_LISP_CALL(8);
-
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a5]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a6]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a7]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a8]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 32
-
-	END_LISP_CALL();
+	asm volatile(
+		SETUP_LISP_CALL(8)
+		"mov 40(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 36(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 32(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 28(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 24(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 20(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 16(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+		"call *(8(%%ebp))\n\t"
+		"add $32, %%esp\n\t"
+		END_LISP_CALL()
+		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
+	);
 }
 
 #else
@@ -1575,24 +1559,26 @@ weakPointer()
 //
 // This may be called from non-lisp contexts, so we need to set up ESI
 //
-__declspec(naked) LispObj cons(LispObj a, LispObj b)
+__attribute__((naked)) LispObj cons(LispObj a, LispObj b)
 {
-	__asm
-	{
-		push	ebp
-		mov		ebp, esp
-		push	esi
-		call	ThreadQV
-		mov		esi, eax
-		call	AllocLocalCons
-		mov		ecx, dword ptr a
-		mov		dword ptr [eax - 4], ecx	;; CAR(ret) = a
-		mov		ecx, dword ptr b
-		mov		dword ptr [eax], ecx		;; CDR(ret) = b
-		pop		esi
-		pop		ebp
-		ret
-	}
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%esi\n\t"
+		"call ThreadQV\n\t"
+		"mov %%eax, %%esi\n\t"            // esi = QV
+		"call AllocLocalCons\n\t"
+		"mov 8(%%ebp), %%ecx\n\t"        // a = [ebp+8]
+		"mov %%ecx, -4(%%eax)\n\t"       // CAR(ret) = a
+		"mov 12(%%ebp), %%ecx\n\t"       // b = [ebp+12]
+		"mov %%ecx, (%%eax)\n\t"         // CDR(ret) = b
+		"pop %%esi\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		:
+		: "eax", "ecx", "edx", "memory"
+	);
 }
 
 LispObj stringNode(const char* str)
@@ -2464,22 +2450,23 @@ LispFunction(Throw_Exception)
 		qv[STACK_MARKER_INDEX_Index] = index << 2;
 	}
 
-	__asm	mov		ebx, dword ptr regs
-//	__asm	mov		eax, dword ptr [ebx + 24]	; eax = ip * 8
-//	__asm	shr		eax, 3					; eax = ip
-//	__asm	mov		dword ptr [ebx + 24], eax				
-	__asm	mov		eax, form
-	__asm	mov		ecx, numValues
-	__asm	shr		ecx, 3					; untag integer
-//	__asm	mov		ecx, dword ptr [ebx + 4]
-	__asm	mov		edx, dword ptr [ebx + 8]
-	__asm	mov		esi, dword ptr [ebx + 12]
-	__asm	mov		edi, dword ptr [ebx + 16]
-	__asm	mov		esp, dword ptr [ebx + 20]
-	__asm	mov		ebp, dword ptr [ebx + 28]
-	__asm	push	dword ptr [ebx + 24]		;; push ip
-	__asm	mov		ebx, dword ptr [ebx + 0]
-	__asm	ret
+	asm volatile(
+		"mov %[regs], %%ebx\n\t"
+		"mov %[form], %%eax\n\t"
+		"mov %[nval], %%ecx\n\t"
+		"shr $3, %%ecx\n\t"              // untag integer
+		"mov 8(%%ebx), %%edx\n\t"
+		"mov 12(%%ebx), %%esi\n\t"
+		"mov 16(%%ebx), %%edi\n\t"
+		"mov 20(%%ebx), %%esp\n\t"
+		"mov 28(%%ebx), %%ebp\n\t"
+		"push 24(%%ebx)\n\t"             // push ip
+		"mov (%%ebx), %%ebx\n\t"
+		"ret"
+		:
+		: [regs] "m"(regs), [form] "m"(form), [nval] "m"(numValues)
+		: "eax", "ebx", "ecx", "edx", "esi", "edi", "memory"
+	);
 	// never returns normally
 	LISP_FUNC_RETURN(ret);
 }
@@ -2627,56 +2614,53 @@ LispObj createShortFloat_foo(double d)
 		return *((LispObj*)&x) | 3;	// round down in this case
 }
 
-LispObj __declspec(naked) createShortFloat(double /*d*/)
+
+__attribute__((naked)) LispObj createShortFloat(double /*d*/)
 {
-	__asm
-	{
-		push        ebp
-		mov         ebp,esp
-		std									;; begin-atomic
-		sub			esp, 4
-		fld         qword ptr [ebp + 8]
-		fstp        dword ptr [ebp - 4]		;; float x = (float)d
-		mov         edx,dword ptr [ebp - 4]
-		mov			eax, edx				;; untagged 32-bit float in eax, edx
-		and         edx,7FFFFFh				;; eax = 23-bit mantissa
-		cmp         edx,7FFFFEh				;; avoid overflow when rounding
-		jae         short t1
-		mov         cl, al					;; get low three bits of mantissa
-		and         cl, 7
-		cmp         cl, 3
-		je          short t2
-		cmp         cl, 5
-		jle         short t1
-	t2:
-		add         eax, 2
-	t1:
-		or          al, 3
-		cld									;; end-atomic
-		mov         esp,ebp
-		pop         ebp
-		ret
-	}
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"sub $4, %%esp\n\t"
+		"fldl 8(%%ebp)\n\t"
+		"fstps -4(%%ebp)\n\t"            // float x = (float)d
+		"mov -4(%%ebp), %%edx\n\t"
+		"mov %%edx, %%eax\n\t"           // untagged 32-bit float in eax, edx
+		"and $0x7FFFFF, %%edx\n\t"       // eax = 23-bit mantissa
+		"cmp $0x7FFFFE, %%edx\n\t"       // avoid overflow when rounding
+		"jae 1f\n\t"
+		"mov %%al, %%cl\n\t"             // get low three bits of mantissa
+		"and $7, %%cl\n\t"
+		"cmp $3, %%cl\n\t"
+		"je 2f\n\t"
+		"cmp $5, %%cl\n\t"
+		"jle 1f\n\t"
+		"2:\n\t"
+		"add $2, %%eax\n\t"
+		"1:\n\t"
+		"or $3, %%al\n\t"
+		"mov %%ebp, %%esp\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		:
+		: "eax", "ecx", "edx", "st", "memory"
+	);
 }
 
 
-double shortFloat_foo(LispObj f)
+__attribute__((naked)) double shortFloat(LispObj /*d*/)
 {
-	f &= ~3;
-	return *((float*)&f);
-}
-
-double __declspec(naked) shortFloat(LispObj /*d*/)
-{
-	__asm
-	{
-		push        ebp
-		mov         ebp,esp
-		and         byte ptr [ebp + 8], 0FCh
-		fld         dword ptr [ebp + 8]
-		pop         ebp
-		ret
-	}
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"andb $0xFC, 8(%%ebp)\n\t"
+		"flds 8(%%ebp)\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		:
+		: "st"
+	);
 }
 
 // Use these instead of malloc()/free()

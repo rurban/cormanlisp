@@ -94,6 +94,9 @@ inline DWORD GetModuleFileName(void*, char* buf, DWORD sz) { buf[0]=0; return 0;
 #define GetLastError()          (errno)
 #define SetLastError(x)         (errno = (x))
 
+#define _MAX_PATH MAX_PATH
+inline size_t wcslen(const wchar_t* s) { size_t n = 0; while (s[n]) n++; return n; }
+
 // ---- Interlocked / atomics ----
 inline LONG InterlockedIncrement(volatile LONG* p) { return __sync_add_and_fetch(p, 1); }
 inline LONG InterlockedDecrement(volatile LONG* p) { return __sync_sub_and_fetch(p, 1); }
@@ -116,6 +119,9 @@ inline void* TlsGetValue(DWORD k) { return pthread_getspecific((pthread_key_t)k)
 inline void  TlsFree(DWORD k) { pthread_key_delete((pthread_key_t)k); }
 
 // ---- Memory management ----
+#define HEAP_ZERO_MEMORY 8
+inline void* HeapReAlloc(HANDLE, DWORD, void* ptr, size_t sz) { return realloc(ptr, sz); }
+
 #define address_to_page(addr)   (((unsigned long)(addr)) >> 12)
 #define page_to_address(page)   ((void*)(((unsigned long)(page)) << 12))
 #define page_address(page)      page_to_address(page)
@@ -271,8 +277,23 @@ typedef int EXCEPTION_DISPOSITION;
 #define CONTEXT_CONTROL             0x10001
 #define CONTEXT_INTEGER             0x10002
 #define EXCEPTION_EXECUTE_HANDLER   1
+#define CREATE_ALWAYS 2
+#define HWND_DESKTOP ((HWND)0)
+#define MB_OK 0
+#define MB_SETFOREGROUND 0x10000
+#define MB_YESNO 4
+#define IDNO 7
+inline int MessageBox(HWND, const char*, const char*, unsigned) { return IDNO; }
+inline void ExitThread(DWORD) {}
+inline void ExitProcess(unsigned) {}
+#define FORMAT_MESSAGE_FROM_SYSTEM 0x1000
+inline DWORD FormatMessage(DWORD, void*, DWORD, DWORD, char*, DWORD, void*) { return 0; }
+#define lstrcpy strcpy
+#define wsprintf sprintf
 #define EXCEPTION_CONTINUE_SEARCH   0
 #define EXCEPTION_CONTINUE_EXECUTION (-1)
+#define ExceptionContinueExecution EXCEPTION_CONTINUE_EXECUTION
+#define ExceptionContinueSearch    EXCEPTION_CONTINUE_SEARCH
 #define CONTROL_C_EXIT              0xC000013AL
 inline void GetThreadContext(HANDLE, CONTEXT*) {}
 inline void SetThreadContext(HANDLE, CONTEXT*) {}
@@ -305,6 +326,22 @@ struct WSADATA {
 };
 #define MAKEWORD(a,b) ((unsigned short)(((unsigned char)(a))|((unsigned short)((unsigned char)(b)))<<8))
 inline int WSAStartup(unsigned short, WSADATA*) { return 0; }
+#define EXCEPTION_ARRAY_BOUNDS_EXCEEDED     0xC000008CLU
+#define EXCEPTION_BREAKPOINT                0x80000003LU
+#define EXCEPTION_DATATYPE_MISALIGNMENT     0x80000002LU
+#define EXCEPTION_FLT_DENORMAL_OPERAND      0xC000008DLU
+#define EXCEPTION_FLT_DIVIDE_BY_ZERO        0xC000008ELU
+#define EXCEPTION_FLT_INEXACT_RESULT        0xC000008FLU
+#define EXCEPTION_FLT_INVALID_OPERATION     0xC0000090LU
+#define EXCEPTION_FLT_OVERFLOW              0xC0000091LU
+#define EXCEPTION_FLT_STACK_CHECK           0xC0000092LU
+#define EXCEPTION_FLT_UNDERFLOW             0xC0000093LU
+#define EXCEPTION_ILLEGAL_INSTRUCTION       0xC000001DLU
+#define EXCEPTION_IN_PAGE_ERROR             0xC0000006LU
+#define EXCEPTION_INVALID_DISPOSITION       0xC0000026LU
+#define EXCEPTION_NONCONTINUABLE_EXCEPTION  0xC0000025LU
+#define EXCEPTION_PRIV_INSTRUCTION          0xC0000096LU
+#define EXCEPTION_SINGLE_STEP               0x80000004LU
 inline int WSACleanup() { return 0; }
 
 // ---- COM init stubs ----
@@ -320,7 +357,7 @@ inline void EnterCriticalSection(void*) {}
 inline void LeaveCriticalSection(void*) {}
 
 // ---- File I/O stubs ----
-#define GENERIC_READ             0x80000000L
+#define GENERIC_READ             0x80000000LU
 #define GENERIC_WRITE            0x40000000L
 #define FILE_SHARE_READ          1
 #define OPEN_EXISTING            3
@@ -372,9 +409,9 @@ struct IMAGE_SECTION_HEADER {
 };
 
 // ---- Exception codes ----
-#define EXCEPTION_ACCESS_VIOLATION    0xC0000005L
-#define EXCEPTION_INT_DIVIDE_BY_ZERO  0xC0000094L
-#define EXCEPTION_STACK_OVERFLOW      0xC00000FDL
+#define EXCEPTION_ACCESS_VIOLATION    0xC0000005LU
+#define EXCEPTION_INT_DIVIDE_BY_ZERO  0xC0000094LU
+#define EXCEPTION_STACK_OVERFLOW      0xC00000FDLU
 
 #endif // LINUX
 #endif // PLATFORM_H

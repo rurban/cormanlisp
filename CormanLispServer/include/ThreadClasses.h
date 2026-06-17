@@ -26,6 +26,7 @@ public:
 	void Leave()       { pthread_mutex_unlock(&m_mutex); }
 public:
 	pthread_mutex_t m_mutex;
+	char m_sect[1];    // backward compat: Win32 CRITICAL_SECTION alias
 };
 
 class ScopedLock

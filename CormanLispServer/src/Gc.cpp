@@ -591,61 +591,28 @@ int LispHeap::grow(long bytesToGrow)
 //	Allocates a 2-cell block
 //
 
-__declspec(naked) void EnterGCCriticalSection()
+extern "C" void __enter_gc_critical_section()
 {
-    __asm
-    {
-        push	ebp
-        mov		ebp, esp
-        push    edi
-	}
 	LISP_TO_FOREIGN()
-	
-	__asm
-	{
-		push	4	;; push argument length (bytes)
-		lea		eax, dword ptr GCCriticalSection.m_sect
-		push	eax
-		call	dword ptr EnterCriticalSection
-		add		esp, 4	;; pop argument length
-	}
-
+	GCCriticalSection.Enter();
 	FOREIGN_RETURN_TO_LISP()
-	__asm
-	{
-        pop     edi
-        pop		ebp
-        ret
-    }
 }
 
-__declspec(naked) void LeaveGCCriticalSection()
+__attribute__((naked)) void EnterGCCriticalSection()
 {
-    __asm
-    {
-        push	ebp
-        mov		ebp, esp
-        push    edi
-	}
+	asm volatile("jmp __enter_gc_critical_section");
+}
+
+extern "C" void __leave_gc_critical_section()
+{
 	LISP_TO_FOREIGN()
-
-	__asm
-	{
-		push	4	;; push argument length (bytes)
-		lea		eax, dword ptr GCCriticalSection.m_sect
-		push	eax
-		call	dword ptr LeaveCriticalSection
-		add		esp, 4	;; pop argument length
-	}
-
+	GCCriticalSection.Leave();
 	FOREIGN_RETURN_TO_LISP()
+}
 
-	__asm
-	{
-        pop     edi
-        pop		ebp
-        ret
-    }
+__attribute__((naked)) void LeaveGCCriticalSection()
+{
+	asm volatile("jmp __leave_gc_critical_section");
 }
 
 #if 0
@@ -750,25 +717,27 @@ __declspec(naked) void LeaveGCCriticalSection()
 #endif
 
 // to be called from Lisp code only
-__declspec( naked ) LispObj AllocLocalCons()
+__attribute__((naked)) LispObj AllocLocalCons()
 {
-    __asm
-    {
-        push	ebp
-        mov		ebp, esp
-    try1:
-        mov		eax, [esi + THREAD_HEAP_Index*4]
-        add		eax, 4
-        lea		edx, [eax + 4]
-        cmp		edx, [esi + THREAD_HEAP_END_Index*4]
-        jle		done
-        call	LoadLocalHeap
-        jmp		short try1
-    done:
-        mov		[esi + THREAD_HEAP_Index*4], edx
-        pop		ebp
-        ret
-    }
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"1:\n\t"
+		"mov 20(%%esi), %%eax\n\t"
+		"add $4, %%eax\n\t"
+		"lea 4(%%eax), %%edx\n\t"
+		"cmp 24(%%esi), %%edx\n\t"
+		"jle 2f\n\t"
+		"call LoadLocalHeap\n\t"
+		"jmp 1b\n\t"
+		"2:\n\t"
+		"mov %%edx, 20(%%esi)\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		:
+		: "eax", "edx"
+	);
 }
 
 //
@@ -776,147 +745,145 @@ __declspec( naked ) LispObj AllocLocalCons()
 //	Allocates an n-cell vector, with the first cell (cell 0) always
 //	storing the length in the upper 24 bits, and 6 in the lower 3 bits.
 //
-__declspec(naked) LispObj AllocVector(long num)
+__attribute__((naked)) LispObj AllocVector(long num)
 {
-    __asm
-    {
-        push	ebp
-        mov		ebp, esp
-        push	edi
-        push	esi
-        push	ebx
-        call	ThreadQV
-        mov		esi, eax		;; set up esi
-        mov		edx, dword ptr num
-        cmp		edx, 8000h		;; num < 32k cells?
-        jb		t1
-        shl     edx, 3          ;; pass tagged size
-        push	edx				;; num >= 32k cells, alloc from primary heap
-        call	AllocLargeVector
-        add		esp, 4
-        jmp		end
-    t1:
-        add		edx, 2
-        sar		edx, 1			;; cells = (num + 2) >> 1
-
-        // multi-threaded version
-        push	edx
-        call	EnterGCCriticalSection
-        pop		edx
-        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
-        lea		ecx, [eax + edx*8]
-        cmp		ecx, dword ptr EphemeralHeap1.end
-        jl		t2
-        push	edx
-        push	0
-        call	garbageCollect
-        add		esp, 4
-        pop		edx
-        mov		eax, dword ptr EphemeralHeap1.current
-        lea		ecx, [eax + edx*8]
-    t2:
-        mov		dword ptr EphemeralHeap1.current, ecx
-        mov		ecx, edx				;; ecx = num 8-byte cells
-        shl		edx, 8
-        or		dl, UvectorLengthTag
-        mov		dword ptr [eax], edx	;; set block header cell
-        mov		edi, eax
-        mov		eax, 0 ;;initialize to 0
-        mov		[edi + 4], eax
-        dec		ecx
-        jle		skip_loop1
-    loop1:
-        mov		[edi + ecx*8], eax
-        mov		[edi + ecx*8 + 4], eax
-        dec		ecx
-        jg		loop1
-    skip_loop1:
-        mov		eax, edi
-        add		eax, UvectorTag
-        push	eax
-        call	LeaveGCCriticalSection
-        pop		eax
-    end:
-        pop		ebx
-        pop		esi
-        pop		edi
-        pop		ebp
-        ret
-    }
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%edi\n\t"
+		"push %%esi\n\t"
+		"push %%ebx\n\t"
+		"call ThreadQV\n\t"
+		"mov %%eax, %%esi\n\t"
+		"mov 8(%%ebp), %%edx\n\t"
+		"cmp $0x8000, %%edx\n\t"
+		"jb 1f\n\t"
+		"shl $3, %%edx\n\t"
+		"push %%edx\n\t"
+		"call AllocLargeVector\n\t"
+		"add $4, %%esp\n\t"
+		"jmp done_%=\n\t"
+		"1:\n\t"
+		"add $2, %%edx\n\t"
+		"sar $1, %%edx\n\t"
+		"push %%edx\n\t"
+		"call EnterGCCriticalSection\n\t"
+		"pop %%edx\n\t"
+		"mov %[cur], %%eax\n\t"
+		"lea (%%eax, %%edx, 8), %%ecx\n\t"
+		"cmp %[end], %%ecx\n\t"
+		"jl 2f\n\t"
+		"push %%edx\n\t"
+		"push $0\n\t"
+		"call garbageCollect\n\t"
+		"add $4, %%esp\n\t"
+		"pop %%edx\n\t"
+		"mov %[cur], %%eax\n\t"
+		"lea (%%eax, %%edx, 8), %%ecx\n\t"
+		"2:\n\t"
+		"mov %%ecx, %[cur]\n\t"
+		"mov %%edx, %%ecx\n\t"
+		"shl $8, %%edx\n\t"
+		"or $0x06, %%dl\n\t"
+		"mov %%edx, (%%eax)\n\t"
+		"mov %%eax, %%edi\n\t"
+		"xor %%eax, %%eax\n\t"
+		"mov %%eax, 4(%%edi)\n\t"
+		"dec %%ecx\n\t"
+		"jle 3f\n\t"
+		"loop_vec:\n\t"
+		"mov %%eax, (%%edi, %%ecx, 8)\n\t"
+		"mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
+		"dec %%ecx\n\t"
+		"jg loop_vec\n\t"
+		"3:\n\t"
+		"mov %%edi, %%eax\n\t"
+		"add $0x06, %%eax\n\t"
+		"push %%eax\n\t"
+		"call LeaveGCCriticalSection\n\t"
+		"pop %%eax\n\t"
+		"done_%=:\n\t"
+		"pop %%ebx\n\t"
+		"pop %%esi\n\t"
+		"pop %%edi\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		: [cur] "m"(EphemeralHeap1.current),
+		  [end] "m"(EphemeralHeap1.end)
+		: "eax", "ecx", "edx", "edi", "memory"
+	);
 }
-
-//
-//	LispAllocVector()
-//	Allocates an n-cell vector, with the first cell (cell 0) always
 //	storing the length in the upper 24 bits, and 6 in the lower 3 bits.
 //	Same as AllocVector(), but expects to be called from Lisp code.
 //  This function expects the passed length to be untagged.
 //
-__declspec(naked) LispObj LispAllocVector(long num)
+__attribute__((naked)) LispObj LispAllocVector(long num)
 {
-    __asm
-    {
-        push	ebp
-        mov		ebp, esp
-        push	edi
-        push	esi
-        push	ebx
-        mov		edx, dword ptr num
-        cmp		edx, 8000h		;; num < 32k cells?
-        jb		t1
-        push	edx				;; num >= 32k cells, alloc from primary heap
-        shl     edx, 3          ;; pass tagged size
-        call	AllocLargeVector
-        add		esp, 4
-        jmp		end
-    t1:
-        add		edx, 2
-        sar		edx, 1			;; cells = (num + 2) >> 1
-
-        // multi-threaded version
-        push	edx
-        call	EnterGCCriticalSection
-        pop		edx
-        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
-        lea		ecx, [eax + edx*8]
-        cmp		ecx, dword ptr EphemeralHeap1.end
-        jl		t2
-        push	edx
-        push	0
-        call	garbageCollect
-        add		esp, 4
-        pop		edx
-        mov		eax, dword ptr EphemeralHeap1.current
-        lea		ecx, [eax + edx*8]
-    t2:
-        mov		dword ptr EphemeralHeap1.current, ecx
-        mov		ecx, edx				;; ecx = num 8-byte cells
-        shl		edx, 8
-        or		dl, UvectorLengthTag
-        mov		dword ptr [eax], edx	;; set block header cell
-        mov		edi, eax
-        mov		eax, 0 ;;initialize to 0
-        mov		[edi + 4], eax
-        dec		ecx
-        jle		skip_loop1
-    loop1:
-        mov		[edi + ecx*8], eax
-        mov		[edi + ecx*8 + 4], eax
-        dec		ecx
-        jg		loop1
-    skip_loop1:
-        mov		eax, edi
-        add		eax, UvectorTag
-        push	eax
-        call	LeaveGCCriticalSection
-        pop		eax
-end:
-        pop		ebx
-        pop		esi
-        pop		edi
-        pop		ebp
-        ret
-    }
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%edi\n\t"
+		"push %%esi\n\t"
+		"push %%ebx\n\t"
+		"mov 8(%%ebp), %%edx\n\t"         // num = [ebp+8]
+		"cmp $0x8000, %%edx\n\t"
+		"jb 1f\n\t"
+		"push %%edx\n\t"
+		"call AllocLargeVector\n\t"
+		"add $4, %%esp\n\t"
+		"jmp done_%=\n\t"
+		"1:\n\t"
+		"add $2, %%edx\n\t"
+		"sar $1, %%edx\n\t"
+		"push %%edx\n\t"
+		"call EnterGCCriticalSection\n\t"
+		"pop %%edx\n\t"
+		"mov %[cur], %%eax\n\t"
+		"lea (%%eax, %%edx, 8), %%ecx\n\t"
+		"cmp %[end], %%ecx\n\t"
+		"jl 2f\n\t"
+		"push %%edx\n\t"
+		"push $0\n\t"
+		"call garbageCollect\n\t"
+		"add $4, %%esp\n\t"
+		"pop %%edx\n\t"
+		"mov %[cur], %%eax\n\t"
+		"lea (%%eax, %%edx, 8), %%ecx\n\t"
+		"2:\n\t"
+		"mov %%ecx, %[cur]\n\t"
+		"mov %%edx, %%ecx\n\t"
+		"shl $8, %%edx\n\t"
+		"or $%[utag], %%dl\n\t"
+		"mov %%edx, (%%eax)\n\t"
+		"mov %%eax, %%edi\n\t"
+		"xor %%eax, %%eax\n\t"
+		"mov %%eax, 4(%%edi)\n\t"
+		"dec %%ecx\n\t"
+		"jle 3f\n\t"
+		"loop_vec1:\n\t"
+		"mov %%eax, (%%edi, %%ecx, 8)\n\t"
+		"mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
+		"dec %%ecx\n\t"
+		"jg loop_vec1\n\t"
+		"3:\n\t"
+		"mov %%edi, %%eax\n\t"
+		"add $%[utag2], %%eax\n\t"
+		"push %%eax\n\t"
+		"call LeaveGCCriticalSection\n\t"
+		"pop %%eax\n\t"
+		"done_%=:\n\t"
+		"pop %%ebx\n\t"
+		"pop %%esi\n\t"
+		"pop %%edi\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		: [cur] "m"(EphemeralHeap1.current),
+		  [end] "m"(EphemeralHeap1.end),
+		  [utag] "i"((unsigned)UvectorLengthTag),
+		  [utag2] "i"((unsigned)UvectorTag)
+	);
 }
 
 //
@@ -926,126 +893,125 @@ end:
 //	Same as AllocVector(), but expects to be called from Lisp code.
 //  This function expects the passed length to be tagged.
 //
-__declspec(naked) LispObj LispAllocVectorTagged(LispObj num)
+__attribute__((naked)) LispObj LispAllocVectorTagged(LispObj num)
 {
-    __asm
-    {
-        push	ebp
-        mov		ebp, esp
-        push	edi
-        push	esi
-        push	ebx
-        mov		edx, dword ptr num
-        cmp		edx, 40000h		;; num < 32k (tagged) cells?
-        jb		t1
-        push	edx				;; num >= 32k cells, alloc from primary heap
-        call	AllocLargeVector
-        add		esp, 4
-        jmp		end
-    t1:
-        add		edx, 16
-        and     edx, 0xfffffff0
-        sar		edx, 1			;; cells = (num + 2) >> 1
-
-        // multi-threaded version
-        push	edx
-        call	EnterGCCriticalSection
-        pop		edx
-        shr     edx, 3                                  ;; safe in critical section, untagged edx
-        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
-        lea		ecx, [eax + edx*8]
-        cmp		ecx, dword ptr EphemeralHeap1.end
-        jl		t2
-        push	edx
-        push	0
-        call	garbageCollect
-        add		esp, 4
-        pop		edx
-        mov		eax, dword ptr EphemeralHeap1.current
-        lea		ecx, [eax + edx*8]
-    t2:
-        mov		dword ptr EphemeralHeap1.current, ecx
-        mov		ecx, edx				;; ecx = num 8-byte cells
-        shl		edx, 8
-        or		dl, UvectorLengthTag
-        mov		dword ptr [eax], edx	;; set block header cell
-        mov		edi, eax
-        mov		eax, 0 ;; initialize to 0
-        mov		[edi + 4], eax
-        dec		ecx
-        jle		skip_loop1
-    loop1:
-        mov		[edi + ecx*8], eax
-        mov		[edi + ecx*8 + 4], eax
-        dec		ecx
-        jg		loop1
-    skip_loop1:
-        mov		eax, edi
-        add		eax, UvectorTag
-        push	eax
-        mov     ecx, 1
-        mov     edx, 1
-        call	LeaveGCCriticalSection
-        pop		eax
-        mov     ecx, 1
-end:
-        pop		ebx
-        pop		esi
-        pop		edi
-        pop		ebp
-        ret
-    }
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%edi\n\t"
+		"push %%esi\n\t"
+		"push %%ebx\n\t"
+		"mov 8(%%ebp), %%edx\n\t"         // num = [ebp+8]
+		"cmp $0x40000, %%edx\n\t"         // num < 32k (tagged) cells?
+		"jb 1f\n\t"
+		"push %%edx\n\t"
+		"call AllocLargeVector\n\t"
+		"add $4, %%esp\n\t"
+		"jmp done_%=\n\t"
+		"1:\n\t"
+		"add $16, %%edx\n\t"
+		"and $0xFFFFFFF0, %%edx\n\t"
+		"sar $1, %%edx\n\t"               // cells = (num+2)>>1
+		"push %%edx\n\t"
+		"call EnterGCCriticalSection\n\t"
+		"pop %%edx\n\t"
+		"shr $3, %%edx\n\t"               // already 8-byte cells
+		"mov %[cur], %%eax\n\t"
+		"lea (%%eax, %%edx, 8), %%ecx\n\t"
+		"cmp %[end], %%ecx\n\t"
+		"jl 2f\n\t"
+		"push %%edx\n\t"
+		"push $0\n\t"
+		"call garbageCollect\n\t"
+		"add $4, %%esp\n\t"
+		"pop %%edx\n\t"
+		"mov %[cur], %%eax\n\t"
+		"lea (%%eax, %%edx, 8), %%ecx\n\t"
+		"2:\n\t"
+		"mov %%ecx, %[cur]\n\t"
+		"mov %%edx, %%ecx\n\t"
+		"shl $8, %%edx\n\t"
+		"or $%[utag], %%dl\n\t"
+		"mov %%edx, (%%eax)\n\t"
+		"mov %%eax, %%edi\n\t"
+		"xor %%eax, %%eax\n\t"
+		"mov %%eax, 4(%%edi)\n\t"
+		"dec %%ecx\n\t"
+		"jle 3f\n\t"
+		"loop_vec2:\n\t"
+		"mov %%eax, (%%edi, %%ecx, 8)\n\t"
+		"mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
+		"dec %%ecx\n\t"
+		"jg loop_vec2\n\t"
+		"3:\n\t"
+		"mov %%edi, %%eax\n\t"
+		"add $%[utag2], %%eax\n\t"
+		"push %%eax\n\t"
+		"mov $1, %%ecx\n\t"
+		"mov $1, %%edx\n\t"
+		"call LeaveGCCriticalSection\n\t"
+		"pop %%eax\n\t"
+		"mov $1, %%ecx\n\t"
+		"done_%=:\n\t"
+		"pop %%ebx\n\t"
+		"pop %%esi\n\t"
+		"pop %%edi\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		: [cur] "m"(EphemeralHeap1.current),
+		  [end] "m"(EphemeralHeap1.end),
+		  [utag] "i"((unsigned)UvectorLengthTag),
+		  [utag2] "i"((unsigned)UvectorTag)
+	);
 }
 
 //
 //	LoadLocalHeap()
 //	Reserves 2048 conses on the ephemeral heap (16k worth)
-//
-#define LocalHeapSize 0x4000
-
-__declspec(naked) LispObj LoadLocalHeap()
+__attribute__((naked)) LispObj LoadLocalHeap()
 {
-    __asm
-    {
-        push	ebp
-        mov		ebp, esp
-        push	edi
-        push	esi
-        push	ebx
-
-        // multi-threaded version
-        call	EnterGCCriticalSection
-        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
-        lea		ecx, [eax + LocalHeapSize]
-        cmp		ecx, dword ptr EphemeralHeap1.end
-        jl		t2
-        push	0
-        call	garbageCollect
-        add		esp, 4
-        mov		eax, dword ptr EphemeralHeap1.current
-        lea		ecx, [eax + LocalHeapSize]
-    t2:
-        mov		dword ptr EphemeralHeap1.current, ecx
-        mov		ecx, (LocalHeapSize/8)				;; ecx = num 8-byte cells
-        mov		edi, eax
-        mov		eax, 0 ;;initialize to 0
-        dec		ecx
-    loop1:
-        mov		[edi + ecx*8], eax
-        mov		[edi + ecx*8 + 4], eax
-        dec		ecx
-        jge		loop1
-
-        mov		[esi + THREAD_HEAP_Index*4], edi
-        add		edi, (LocalHeapSize - 16)	;; leave two conses as pad
-        mov		[esi + THREAD_HEAP_END_Index*4], edi
-        call	LeaveGCCriticalSection
-        pop		ebx
-        pop		esi
-        pop		edi
-        pop		ebp
-        ret
-    }
+	asm volatile(
+		"push %%ebp\n\t"
+		"mov %%esp, %%ebp\n\t"
+		"push %%edi\n\t"
+		"push %%esi\n\t"
+		"push %%ebx\n\t"
+		"call EnterGCCriticalSection\n\t"
+		"mov %[cur], %%eax\n\t"          // eax = EphemeralHeap1.current
+		"lea 0x4000(%%eax), %%ecx\n\t"    // LocalHeapSize = 0x4000
+		"cmp %[end], %%ecx\n\t"
+		"jl 1f\n\t"
+		"push $0\n\t"
+		"call garbageCollect\n\t"
+		"add $4, %%esp\n\t"
+		"mov %[cur], %%eax\n\t"
+		"lea 0x4000(%%eax), %%ecx\n\t"
+		"1:\n\t"
+		"mov %%ecx, %[cur]\n\t"          // EphemeralHeap1.current = ecx
+		"mov $0x800, %%ecx\n\t"           // LocalHeapSize/8 = 0x800
+		"mov %%eax, %%edi\n\t"
+		"xor %%eax, %%eax\n\t"            // init to 0
+		"dec %%ecx\n\t"
+		"2:\n\t"
+		"mov %%eax, (%%edi, %%ecx, 8)\n\t"
+		"mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
+		"dec %%ecx\n\t"
+		"jge 2b\n\t"
+		"mov %%edi, 20(%%esi)\n\t"
+		"lea 0x3FF0(%%edi), %%edi\n\t"    // LocalHeapSize - 16 = 0x3FF0
+		"mov %%edi, 24(%%esi)\n\t"
+		"call LeaveGCCriticalSection\n\t"
+		"pop %%ebx\n\t"
+		"pop %%esi\n\t"
+		"pop %%edi\n\t"
+		"pop %%ebp\n\t"
+		"ret"
+		:
+		: [cur] "m"(EphemeralHeap1.current),
+		  [end] "m"(EphemeralHeap1.end)
+		: "eax", "ecx", "edx", "edi", "memory"
+	);
 }
 
 //
@@ -1099,22 +1065,23 @@ static LispObj AllocLargeVector(long num)
             }
         }
     }
-    *(LispObj*)block = (cells << 8) | UvectorLengthTag;
-
-//	__asm		push edi  // unnecessary if done in prolog
-    __asm		mov	ecx, dword ptr cells
-    __asm		mov eax, 0 ;;initialize to 0
-    __asm		mov edi, dword ptr block
-    __asm		mov [edi + 4], eax
-    __asm		dec	ecx
-    __asm		jle skip_loop
-    __asm	loop1:
-    __asm		mov [edi + ecx*8], eax
-    __asm		mov [edi + ecx*8 + 4], eax
-    __asm		dec ecx
-    __asm		jg loop1
-    __asm	skip_loop:
-//	__asm		pop edi
+	asm volatile(
+		"mov %[cells], %%ecx\n\t"
+		"xor %%eax, %%eax\n\t"
+		"mov %[block], %%edi\n\t"
+		"mov %%eax, 4(%%edi)\n\t"
+		"dec %%ecx\n\t"
+		"jle 1f\n\t"
+		"0:\n\t"
+		"mov %%eax, (%%edi, %%ecx, 8)\n\t"
+		"mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
+		"dec %%ecx\n\t"
+		"jg 0b\n\t"
+		"1:\n\t"
+		:
+		: [cells] "m"(cells), [block] "m"(block)
+		: "eax", "ecx", "edi", "memory"
+	);
 
     ret = ((LispObj)block) + UvectorTag;
     cells = 0;
@@ -1369,7 +1336,7 @@ void garbageCollect(long level)
             GarbageEntry++;
 
 			// save current ebp, esp values
-			__asm mov	gBasePointer, ebp
+			asm volatile("mov %%ebp, %0" : "=r"(gBasePointer) : : "memory");
 			//__asm mov	gStackEnd, esp
 
             // link back to the values before entry into this function
@@ -2218,25 +2185,37 @@ checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
     {
 
         // check registers -- processor specific
-        __asm mov regs[0], eax
-        __asm mov regs[4], ebx
-        __asm mov regs[8], ecx
-        __asm mov regs[12], edx
-        __asm mov regs[16], esi
-        __asm mov regs[20], edi
+		asm volatile(
+			"mov %%eax, %0\n\t"
+			"mov %%ebx, %1\n\t"
+			"mov %%ecx, %2\n\t"
+			"mov %%edx, %3\n\t"
+			"mov %%esi, %4\n\t"
+			"mov %%edi, %5\n\t"
+			: "=m"(regs[0]), "=m"(regs[1]), "=m"(regs[2]),
+			  "=m"(regs[3]), "=m"(regs[4]), "=m"(regs[5])
+			:
+			: "memory"
+		);
 
-        for (i = 0; i < 6; i++)
-        {
-            if (isHeapPointer(regs[i]))
-                promoteBlock(&regs[i], toSpace);
-        }
+		for (i = 0; i < 6; i++)
+		{
+			if (isHeapPointer(regs[i]))
+				promoteBlock(&regs[i], toSpace);
+		}
 
-        __asm mov eax, regs[0]
-        __asm mov ebx, regs[4]
-        __asm mov ecx, regs[8]
-        __asm mov edx, regs[12]
-        __asm mov esi, regs[16]
-        __asm mov edi, regs[20]
+		asm volatile(
+			"mov %0, %%eax\n\t"
+			"mov %1, %%ebx\n\t"
+			"mov %2, %%ecx\n\t"
+			"mov %3, %%edx\n\t"
+			"mov %4, %%esi\n\t"
+			"mov %5, %%edi\n\t"
+			:
+			: "m"(regs[0]), "m"(regs[1]), "m"(regs[2]),
+			  "m"(regs[3]), "m"(regs[4]), "m"(regs[5])
+			: "eax", "ebx", "ecx", "edx", "esi", "edi"
+		);
     }
 
     // check stacks of all suspended threads
@@ -2779,30 +2758,30 @@ promoteBlock(LispObj* ptr, LispHeap* toSpace)
         //assert((gettag(*pp) == UvectorLengthTag)
         //		&& numNodes > 0 && numNodes <= MAX_CELLS_PER_ARRAY / 2);
 
-        __asm
-        {
-                push eax
-                push ecx
-                push edi
-                push esi
-                mov esi, dword ptr pp
-                mov edi, dword ptr destAddr
-                mov	ecx, dword ptr numNodes
-                dec ecx
-
-            loop1:
-                mov	eax, dword ptr [esi + ecx*8]
-                mov	dword ptr [edi + ecx *8], eax
-                mov	eax, dword ptr [esi + ecx*8 + 4]
-                mov	dword ptr [edi + ecx*8 + 4], eax
-                dec ecx
-                jge loop1
-
-                pop esi
-                pop edi
-                pop ecx
-                pop eax
-        }
+		asm volatile(
+			"push %%eax\n\t"
+			"push %%ecx\n\t"
+			"push %%edi\n\t"
+			"push %%esi\n\t"
+			"mov %[pp], %%esi\n\t"
+			"mov %[dst], %%edi\n\t"
+			"mov %[n], %%ecx\n\t"
+			"dec %%ecx\n\t"
+			"1:\n\t"
+			"mov (%%esi, %%ecx, 8), %%eax\n\t"
+			"mov %%eax, (%%edi, %%ecx, 8)\n\t"
+			"mov 4(%%esi, %%ecx, 8), %%eax\n\t"
+			"mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
+			"dec %%ecx\n\t"
+			"jge 1b\n\t"
+			"pop %%esi\n\t"
+			"pop %%edi\n\t"
+			"pop %%ecx\n\t"
+			"pop %%eax\n\t"
+			:
+			: [pp] "m"(pp), [dst] "m"(destAddr), [n] "m"(numNodes)
+			: "eax", "ecx", "esi", "edi", "memory"
+		);
 
         toSpace->current += numNodes;
 
@@ -3557,7 +3536,7 @@ void readHeap(FILE* is)
 
             // now replace all heap references on the stack with
             // NIL.
-            __asm	mov	dword ptr [end], esp		// go to stack pointer
+			asm volatile("mov %%esp, %0" : "=m"(end) : : "memory");
 
             for (x = stackStart; x >= end; x--)
             {
