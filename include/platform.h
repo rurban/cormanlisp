@@ -34,6 +34,7 @@ typedef int                 BOOL;
 typedef unsigned long       DWORD;
 typedef unsigned long       ULONG;
 typedef long                LONG;
+#include <dlfcn.h>
 typedef long*               LPLONG;
 typedef const char*         LPCTSTR;
 typedef void*               HANDLE;

@@ -23,6 +23,9 @@
 #include "clsids.h"
 #include "CoCormanLisp.h"
 
+// Linux port: replace COM client interfaces with callback struct
+#include "cormanlisp_api.h"
+static const CormanLispCallbacks* g_callbacks = NULL;
 IUnknown*				 ClientUnknown		= 0;
 ICormanLispTextOutput*	 ClientTextOutput	= 0;
 ICormanLispStatusMessage* ClientMessage		= 0;
@@ -55,9 +58,9 @@ const int g_cRegKeyValues = sizeof(g_szRegKeyValues)
                             /sizeof(*g_szRegKeyValues);
 int DLL_Loaded = false;		// we may get run when statically linked
 
-void processAttach(HINSTANCE hInstance)
+// Linux port: constructor replaces DllMain DLL_PROCESS_ATTACH
+__attribute__((constructor)) static void _init_cormanlisp()
 {
-	BOOL ret = 0;
 	char* result = 0;
 	QV_Index = TlsAlloc();
 	Thread_Index = TlsAlloc();
@@ -65,49 +68,139 @@ void processAttach(HINSTANCE hInstance)
 	TlsSetValue(Thread_Index, 0);
 	TlsGetValue(QV_Index);
 	TlsGetValue(Thread_Index);
-	GetModuleFileName(hInstance, g_szFileName, MAX_PATH);
 
-	// create a named mutex that is used to determine if the
-	// Corman Lisp kernel is loaded
+	// Get the shared library's own path
+	Dl_info info;
+	if (dladdr((void*)_init_cormanlisp, &info) && info.dli_fname)
+		strncpy(g_szFileName, info.dli_fname, MAX_PATH);
+	else
+		g_szFileName[0] = 0;
+
 	CreateMutex(NULL, FALSE, "CormanLispServer");
 
 	// setup the DLL directory
 	strcpy_s(CormanLispServerDirectory, sizeof(CormanLispServerDirectory), g_szFileName);
-	result = strrchr(CormanLispServerDirectory, '\\');
+	result = strrchr(CormanLispServerDirectory, '/');
 	if (result)
 		*result = 0;
 	else
 		CormanLispServerDirectory[0] = 0;
 }
 
-extern "C" int __declspec( dllexport ) __stdcall
-DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
+__attribute__((destructor)) static void _fini_cormanlisp()
 {
-	char* result = 0;
-	BOOL ret = 0;
-	switch (dwReason)
-	{
-		case DLL_PROCESS_ATTACH:
-			DLL_Loaded = true;		
-			processAttach(hInstance);
-			break;
-		case DLL_PROCESS_DETACH:
-			TlsFree(QV_Index);
-			TlsFree(Thread_Index);
-			break;
-		case DLL_THREAD_ATTACH:
-			TlsSetValue(QV_Index, 0);
-			TlsSetValue(Thread_Index, 0);
-			TlsGetValue(QV_Index);
-			TlsGetValue(Thread_Index);
-			break;
-		case DLL_THREAD_DETACH:
-			// need to free QV, ThreadRecord
-			TlsSetValue(QV_Index, 0);
-			TlsSetValue(Thread_Index, 0);
-			break;
-	}
-	return 1;   // ok
+	TlsFree(QV_Index);
+	TlsFree(Thread_Index);
+}
+
+// ---- Public C API (replaces COM ICormanLisp) ----
+
+extern void initLisp();  // in Lisp.cpp
+
+CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
+{
+	g_callbacks = cb;
+	// Store image name
+	if (imageName && *imageName)
+		strncpy(LispImageName, imageName, MAX_PATH);
+
+	// Init COM globals for backward compat in existing code
+	ClientUnknown = (IUnknown*)(cb ? (void*)1 : 0);
+	ClientTextOutput = (ICormanLispTextOutput*)(cb ? (void*)1 : 0);
+	ClientMessage = (ICormanLispStatusMessage*)(cb ? (void*)1 : 0);
+	ClientShutdown = (ICormanLispShutdown*)(cb ? (void*)1 : 0);
+
+	initLisp();
+	return 0;
+}
+
+CL_API int cl_initialize_ex(const CormanLispCallbacks* cb, const char* imageName,
+	int clientType, int heapReserve, int heapInitialSize,
+	int ephemeralHeap1Size, int ephemeralHeap2Size)
+{
+	// Extended init with custom heap sizes — heap sizing is Phase 4 cleanup
+	(void)heapReserve; (void)heapInitialSize;
+	(void)ephemeralHeap1Size; (void)ephemeralHeap2Size;
+	return cl_initialize(cb, imageName, clientType);
+}
+
+CL_API void cl_run(void)
+{
+	lispmain();
+}
+
+CL_API void cl_process_source(const char* text, long numChars)
+{
+	ProcessLispSource((char*)text, numChars);
+}
+
+CL_API long cl_get_num_threads(void)
+{
+	return NumLispThreads;
+}
+
+CL_API void cl_user_exception(void)
+{
+	ThrowUserException();
+}
+
+CL_API void cl_abort_thread(void)
+{
+	AbortLispThread();
+}
+
+CL_API void cl_bless_thread(void)
+{
+	// BlessThread is a Lisp-level function; deferred until image is loaded
+}
+
+CL_API void cl_unbless_thread(void)
+{
+	// UnblessThread is a Lisp-level function; deferred until image is loaded
+}
+CL_API int cl_get_function_address(const wchar_t* functionName, const wchar_t* packageName, void** funcptr)
+{
+	void* result = GetCallbackFunctionPointer(functionName, packageName);
+	if (funcptr) *funcptr = result;
+	return result ? 0 : -1;
+}
+
+CL_API int cl_handle_structured_exception(long exception, void* info, long* result)
+{
+	long r = handleStructuredException(exception, (LPEXCEPTION_POINTERS)info);
+	if (result) *result = r;
+	return 0;
+}
+
+CL_API int cl_get_current_user_name(char* buf, size_t* len)
+{
+	// Linux: use $USER or getpwuid
+	const char* user = getenv("USER");
+	if (!user) user = "unknown";
+	size_t n = strlen(user);
+	if (buf) { strncpy(buf, user, *len); buf[min(n, *len - 1)] = 0; }
+	*len = n + 1;
+	return 0;
+}
+
+CL_API int cl_get_current_user_profile_directory(char* buf, size_t* len)
+{
+	const char* home = getenv("HOME");
+	if (!home) home = "/tmp";
+	size_t n = strlen(home);
+	if (buf) { strncpy(buf, home, *len); buf[min(n, *len - 1)] = 0; }
+	*len = n + 1;
+	return 0;
+}
+
+CL_API int cl_get_current_user_personal_directory(char* buf, size_t* len)
+{
+	return cl_get_current_user_profile_directory(buf, len);
+}
+
+CL_API long cl_get_image_loads_count(void)
+{
+	return getImageLoadsCount();
 }
 
 LONG g_cLocks = 0;
@@ -243,8 +336,8 @@ extern "C" long Initialize(const wchar_t* imageName, int clientType, HINSTANCE a
 	    int i = 0;
 	    InitializationEvent.ResetEvent();
 
-	    if (!DLL_Loaded)	
-		    processAttach(appInstance);
+	    // constructor _init_cormanlisp() already handled processAttach
+	    DLL_Loaded = true;
 	    TextOutputFuncPtr = TextOutputFunc;
 	    gAppInstance = appInstance;
 	    gAppMainWindow = mainWindow;
@@ -285,8 +378,8 @@ void InitializeCormanLisp(IUnknown* client, const UserInfo *user_info)
 	}
 	if (!DLL_Loaded)
 	{
-		ClientTextOutput->GetAppInstance(&hInstance);
-		processAttach(hInstance);
+		// constructor already handled processAttach
+		DLL_Loaded = true;
 	}
 
 	// initialize lisp system
