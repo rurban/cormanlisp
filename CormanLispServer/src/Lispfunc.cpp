@@ -20,7 +20,11 @@
 #include "Lispmath.h"
 #include "CormanLispServer.h"
 #include "Version.h"
+#ifdef _WIN32
 #include "../../zlib/zlib.h"
+#else
+#include <zlib.h>
+#endif
 
 #pragma warning (disable:4127)				// conditional expression is constant
 
