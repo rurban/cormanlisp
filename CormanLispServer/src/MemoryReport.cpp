@@ -1186,7 +1186,7 @@ void writeMemoryReport(void* address, CONTEXT* context)
                             MB_OK);
 
         }
-        __finally
+        __except(EXCEPTION_EXECUTE_HANDLER) {}
         {
             // resume all suspended threads
             ThreadList.resumeAllOtherThreads();

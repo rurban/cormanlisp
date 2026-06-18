@@ -753,17 +753,13 @@ extern "C" __declspec(dllexport) void UnblessThread()
 				popDynamicBinding(CURRENT_THREAD_HANDLE);
 			}
 		    CloseHandle(th->thread);
-
-		    // remove the thread record--this also deletes the ThreadRecord
 		    ThreadList.remove(th);
 		    th = 0;
  		    NumLispThreads--;
 	    }
     }
-    __finally
-    {
-	    GCCriticalSection.Leave();	// make sure garbage collection is not running
-    }
+    __except(EXCEPTION_EXECUTE_HANDLER) {}
+    GCCriticalSection.Leave();
 }
 
 //
@@ -866,10 +862,8 @@ void AbortLispThread()
 	    }
 	    ResumeThread(th);
     }
-    __finally
-    {
-	    GCCriticalSection.Leave();
-    }
+    __except(EXCEPTION_EXECUTE_HANDLER) {}
+    GCCriticalSection.Leave();
 }
 
 static CONTEXT terminateContext;

@@ -1491,7 +1491,7 @@ void garbageCollect(long level)
 
                 releaseWeakPointers();
             }
-            __finally
+            __except(EXCEPTION_EXECUTE_HANDLER) {}
             {
 				GarbageEntry--;
             }
@@ -1532,7 +1532,7 @@ void garbageCollect(long level)
         //	dumpHeapToFile(stringNode("heapdump.txt"));
         LispCall2(Funcall, FUNCALL, EXECUTE_FINALIZERS);		// if this triggers another GC, it's OK
     }
-    __finally
+    __except(EXCEPTION_EXECUTE_HANDLER) {}
     {
          LeaveGCCriticalSection();
          if (threadsSuspended)
@@ -3571,7 +3571,7 @@ void readHeap(FILE* is)
             OutputDebugString("A structured exception occurred during the readHeap() call");
         }
     }
-    __finally
+    __except(EXCEPTION_EXECUTE_HANDLER) {}
     {
         FINALIZATION_REGISTRY = 0;
         GCExecRegistry = 0;

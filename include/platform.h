@@ -1,3 +1,6 @@
+#define _GNU_SOURCE
+#define _DEFAULT_SOURCE
+
 //		-------------------------------
 //		Copyright (c) Corman Technologies Inc.
 //		See LICENSE.txt for license information.
@@ -67,18 +70,31 @@ typedef long long           __int64;
 #define FAR
 #define PASCAL
 #define _stdcall
-#define __try       if (1)
-#define __except(x) else
+#define __try       try
+#define __except(x) catch (...)
 #define __finally
 #define __leave     break
-#define __asm __asm_ignored
-
-// ---- String stubs ----
-#define strcpy_s(dst, sz, src)  strncpy(dst, src, sz)
 #define strcat_s(dst, sz, src)  strncat(dst, src, sz)
-#define sprintf_s               snprintf
-#define lstrlen                 strlen
+// strcpy_s: use wrapper instead of macro to avoid conflict with C11 annex K
+static inline int strcpy_s(char* dst, size_t sz, const char* src) {
+    if (!dst || !src || sz == 0) return -1;
+    size_t i;
+    for (i = 0; i < sz - 1 && src[i]; i++) dst[i] = src[i];
+    dst[i] = 0;
+    return 0;
+}
 #define __TEXT(x)               x
+#define lstrlen                 strlen
+// sprintf_s: portable wrapper (snprintf may not be declared with -std=c++14)
+static inline int sprintf_s(char* buf, size_t sz, const char* fmt, ...) {
+    __builtin_va_list args;
+    __builtin_va_start(args, fmt);
+    int r = __builtin_vsnprintf(buf, sz, fmt, args);
+    __builtin_va_end(args);
+    return r >= 0 && (size_t)r < sz ? r : -1;
+}
+#include <alloca.h>
+#define _alloca alloca
 #define _TRUNCATE               ((size_t)-1)
 
 // ---- Safe string functions ----
@@ -114,6 +130,7 @@ inline int QueryPerformanceCounter(LARGE_INTEGER* lp) { *lp = LARGE_INTEGER{0}; 
 // ---- min/max ----
 // Additional stubs for Lispfunc.cpp
 inline int QueryPerformanceFrequency(LARGE_INTEGER* lp) { *lp = LARGE_INTEGER{1000000}; return 1; }
+inline HANDLE CreateEvent(void*, int, int, const char*) { return (HANDLE)1; }
 inline DWORD GetTickCount(void) { struct timeval tv; gettimeofday(&tv, NULL); return tv.tv_sec*1000 + tv.tv_usec/1000; }
 #define PAGE_GUARD 0x100
 inline int SetCurrentDirectoryA(const char* dir) { return chdir(dir) == 0; }
@@ -146,11 +163,14 @@ struct TIME_ZONE_INFORMATION { LONG Bias; WCHAR StandardName[32]; SYSTEMTIME Sta
 #define TIME_ZONE_ID_DAYLIGHT 2
 inline DWORD GetTimeZoneInformation(TIME_ZONE_INFORMATION* tzi) { tzi->Bias = 0; return 0; }
 
-// alloca
-#include <alloca.h>
-#define _alloca alloca
-#define min(a,b) ((a) < (b) ? (a) : (b))
-#define max(a,b) ((a) > (b) ? (a) : (b))
+#include <algorithm>
+using std::min;
+using std::max;
+
+// Mixed-type min/max overloads (common in Gc.cpp: unsigned long vs ULONG32)
+template<typename T, typename U> T min(T a, U b) { return a < (T)b ? a : (T)b; }
+template<typename T, typename U> T max(T a, U b) { return a > (T)b ? a : (T)b; }
+using std::max;
 
 // ---- TLS ----
 inline DWORD TlsAlloc() { pthread_key_t k; pthread_key_create(&k, NULL); return (DWORD)k; }
@@ -230,8 +250,17 @@ inline int    DuplicateHandle(HANDLE, HANDLE, HANDLE, HANDLE*, DWORD, int, DWORD
 inline DWORD  GetCurrentProcessId()        { return (DWORD)getpid(); }
 
 // ---- Wait / sync stubs ----
-inline DWORD  WaitForSingleObject(HANDLE, DWORD) { return WAIT_OBJECT_0; }
+inline DWORD WaitForSingleObject(HANDLE, DWORD) { return WAIT_OBJECT_0; }
 inline HANDLE CreateMutex(void*, int, const char*) { return (HANDLE)1; }
+// MemoryReport.cpp stubs
+inline int IsBadReadPtr(const void*, size_t) { return 0; }
+inline int ReadFile(HANDLE, void*, DWORD, DWORD*, void*) { return 0; }
+typedef __time_t __time32_t;
+typedef int errno_t;
+#define _time32(t) time(t)
+#define _localtime32_s(tm, t) localtime_r(t, tm)
+#define asctime_s(buf, sz, tm) asctime_r(tm, buf)
+#define _beginthread(fn, stack, arg) ({ pthread_t _t; pthread_create(&_t, NULL, (void*(*)(void*))fn, arg); (HANDLE)_t; })
 
 // ---- COM stubs (Phase 7) ----
 typedef long HRESULT;
@@ -305,7 +334,7 @@ typedef struct _EXCEPTION_RECORD {
     unsigned long ExceptionInformation[15];
 } EXCEPTION_RECORD;
 typedef struct _CONTEXT {
-    unsigned long ContextFlags, Eip, Esp, Ebp, Edi, Esi, Ebx, Edx, Ecx, Eax;
+    unsigned long ContextFlags, Eip, Esp, Ebp, Edi, Esi, Ebx, Edx, Ecx, Eax, EFlags;
 } CONTEXT;
 typedef struct _EXCEPTION_POINTERS { EXCEPTION_RECORD* ExceptionRecord; CONTEXT* ContextRecord; } EXCEPTION_POINTERS;
 typedef EXCEPTION_POINTERS* LPEXCEPTION_POINTERS;

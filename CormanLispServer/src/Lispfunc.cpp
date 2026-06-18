@@ -3479,8 +3479,8 @@ __attribute__((naked)) void Load_QV_Reg()
 __attribute__((naked)) void genericThunkFunc()
 {
 	asm volatile(
-		"movl $0x1000000, %%eax\n\t"
-		"jmp *0x12345678(%%eax)\n\t"
+		"movl $0x1000000, %eax\n\t"
+		"jmp *0x12345678(%eax)\n\t"
 	);
 }
 
