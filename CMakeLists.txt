@@ -105,3 +105,12 @@ add_executable(clboot clboot/clboot.cpp)
 target_include_directories(clboot PRIVATE ${CORMAN_INCLUDE_DIRS})
 target_compile_definitions(clboot PRIVATE LINUX)
 target_link_libraries(clboot PRIVATE cormanlisp)
+
+
+# ---- Testing ----
+enable_testing()
+add_test(NAME test-all
+    COMMAND clconsole --batch -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_tests_properties(test-all PROPERTIES
+    PASS_REGULAR_EXPRESSION "ALL TESTS PASSED")

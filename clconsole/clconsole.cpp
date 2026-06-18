@@ -201,6 +201,7 @@ static struct CormanLispCallbacks g_callbacks = {
 
 char* execFile = 0;
 
+static int g_batch_mode = 0;
 static const char* g_image_name = NULL;
 static const char* g_exec_file = NULL;
 
@@ -816,9 +817,11 @@ int main(int argc, char* argv[])
 {
 	int argidx = 1;
 
-	// Parse -image and -execute (same as Windows version, case-insensitive)
+	// Parse -image, -execute, and --batch
 	while (argidx < argc) {
-		if ((!_stricmp(argv[argidx], "-image") || !strcmp(argv[argidx], "-image"))
+		if (!strcmp(argv[argidx], "--batch") || !_stricmp(argv[argidx], "--batch")) {
+			g_batch_mode = 1;
+		} else if ((!_stricmp(argv[argidx], "-image") || !strcmp(argv[argidx], "-image"))
 			&& argidx + 1 < argc) {
 			g_image_name = argv[++argidx];
 		} else if ((!_stricmp(argv[argidx], "-execute") || !strcmp(argv[argidx], "-execute"))
@@ -839,6 +842,10 @@ int main(int argc, char* argv[])
 	if (g_exec_file) {
 		LoadFile(g_exec_file);
 	}
+
+	// In batch mode, exit after executing the file (no REPL)
+	if (g_batch_mode)
+		return 0;
 
 	// REPL loop
 	printf("Corman Lisp (Linux port)\n");
