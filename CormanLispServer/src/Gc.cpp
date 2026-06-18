@@ -600,7 +600,7 @@ extern "C" void __enter_gc_critical_section()
 
 __attribute__((naked)) void EnterGCCriticalSection()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
     __asm
     {
         push	ebp
@@ -637,7 +637,7 @@ extern "C" void __leave_gc_critical_section()
 
 __attribute__((naked)) void LeaveGCCriticalSection()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
     __asm
     {
         push	ebp
@@ -769,7 +769,7 @@ __declspec(naked) void LeaveGCCriticalSection()
 // to be called from Lisp code only
 __attribute__((naked)) LispObj AllocLocalCons()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
     __asm
     {
         push	ebp
@@ -817,7 +817,7 @@ __attribute__((naked)) LispObj AllocLocalCons()
 //
 __attribute__((naked)) LispObj AllocVector(long num)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
     __asm
     {
         push	ebp
@@ -958,7 +958,7 @@ __attribute__((naked)) LispObj AllocVector(long num)
 //
 __attribute__((naked)) LispObj LispAllocVector(long num)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
     __asm
     {
         push	ebp
@@ -1099,7 +1099,7 @@ end:
 //
 __attribute__((naked)) LispObj LispAllocVectorTagged(LispObj num)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
     __asm
     {
         push	ebp
@@ -1245,7 +1245,7 @@ end:
 //	Reserves 2048 conses on the ephemeral heap (16k worth)
 __attribute__((naked)) LispObj LoadLocalHeap()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
     __asm
     {
         push	ebp
@@ -1383,7 +1383,7 @@ static LispObj AllocLargeVector(long num)
             }
         }
     }
-#ifdef _WIN32
+#ifdef _MSC_VER
     *(LispObj*)block = (cells << 8) | UvectorLengthTag;
 
 //	__asm		push edi  // unnecessary if done in prolog
@@ -1673,7 +1673,7 @@ void garbageCollect(long level)
             GarbageEntry++;
 
 			// save current ebp, esp values
-#ifdef _WIN32
+#ifdef _MSC_VER
 			__asm mov	gBasePointer, ebp
 #else
 			asm volatile("mov %%ebp, %0" : "=r"(gBasePointer) : : "memory");
@@ -2526,7 +2526,7 @@ checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
     {
 
         // check registers -- processor specific
-#ifdef _WIN32
+#ifdef _MSC_VER
         __asm mov regs[0], eax
         __asm mov regs[4], ebx
         __asm mov regs[8], ecx
@@ -2554,7 +2554,7 @@ checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 				promoteBlock(&regs[i], toSpace);
 		}
 
-#ifdef _WIN32
+#ifdef _MSC_VER
         __asm mov eax, regs[0]
         __asm mov ebx, regs[4]
         __asm mov ecx, regs[8]
@@ -3117,7 +3117,7 @@ promoteBlock(LispObj* ptr, LispHeap* toSpace)
         //assert((gettag(*pp) == UvectorLengthTag)
         //		&& numNodes > 0 && numNodes <= MAX_CELLS_PER_ARRAY / 2);
 
-#ifdef _WIN32
+#ifdef _MSC_VER
         __asm
         {
                 push eax
@@ -3922,7 +3922,7 @@ void readHeap(FILE* is)
 
             // now replace all heap references on the stack with
             // NIL.
-#ifdef _WIN32
+#ifdef _MSC_VER
 			__asm	mov	dword ptr [end], esp		// go to stack pointer
 #else
 			asm volatile("mov %%esp, %0" : "=m"(end) : : "memory");

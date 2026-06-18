@@ -612,9 +612,15 @@ LispObj _Add(LispObj n1, LispObj n2)
 	if (both_fixnums(n1, n2))
 	{
 		// attempt fixnum add
+#ifdef _MSC_VER
+		__asm mov eax, dword ptr n2
+		__asm add result, eax
+		__asm jo do_bignum
+#else
 		unsigned long _eax = (unsigned long)n2;
 		asm("add %%eax, %0" : "+m"(result));
 		asm goto ("jo %l[do_bignum]" : : : : do_bignum);
+#endif
 		return result;
 	}
 
@@ -855,9 +861,15 @@ LispObj subtractFixnums(LispObj n1, LispObj n2)
 {
 	// attempt fixnum subtract
 	LispObj result = n1;
+#ifdef _MSC_VER
+	__asm mov eax, dword ptr n2
+	__asm sub result, eax
+	__asm jo do_bignum
+#else
 	unsigned long _eax = (unsigned long)n2;
 	asm("sub %%eax, %0" : "+m"(result));
 	asm goto ("jo %l[do_bignum]" : : : : do_bignum);
+#endif
 	return result;
 do_bignum:
 	n1 = promoteNumber(n1, FixnumID, BignumID);
@@ -927,9 +939,15 @@ LispObj _Subtract(LispObj n1, LispObj n2)
 	if (both_fixnums(n1, n2))
 	{
 		// attempt fixnum subtract
+#ifdef _MSC_VER
+		__asm mov eax, dword ptr n2
+		__asm sub result, eax
+		__asm jo do_bignum
+#else
 		unsigned long _eax = (unsigned long)n2;
 		asm("sub %%eax, %0" : "+m"(result));
 		asm goto ("jo %l[do_bignum]" : : : : do_bignum);
+#endif
 		return result;
 	do_bignum:
 		return bignumSubtract(fixnumToBignum(n1), fixnumToBignum(n2));
@@ -1063,7 +1081,7 @@ LispObj _Multiply(LispObj n1, LispObj n2)
 	if (both_fixnums(n1, n2))
 	{
 		// attempt fixnum multiply — use extended asm with register variable
-#ifdef _WIN32
+#ifdef _MSC_VER
 		__asm mov eax, dword ptr n1
 		__asm shr eax, 3
 		__asm imul dword ptr n2
@@ -4021,8 +4039,13 @@ static LispObj _Logxor(LispObj n1, LispObj n2)
 	// quick check here to optimize for adding 2 fixnums
 	if (both_fixnums(n1, n2))
 	{
+#ifdef _MSC_VER
+		__asm mov eax, dword ptr n2
+		__asm xor result, eax
+#else
 		unsigned long _eax = (unsigned long)n2;
 		asm("xor %%eax, %0" : "+m"(result));
+#endif
 	}
 	else
 		result = bignumXor(isInteger(n1) ? fixnumToBignum(n1) : n1,
@@ -4037,8 +4060,13 @@ static LispObj _Logior(LispObj n1, LispObj n2)
 	// quick check here to optimize for adding 2 fixnums
 	if (both_fixnums(n1, n2))
 	{
+#ifdef _MSC_VER
+		__asm mov eax, dword ptr n2
+		__asm or result, eax
+#else
 		unsigned long _eax = (unsigned long)n2;
 		asm("or %%eax, %0" : "+m"(result));
+#endif
 	}
 	else
 		result = bignumIor(isInteger(n1) ? fixnumToBignum(n1) : n1,
@@ -4053,8 +4081,13 @@ static LispObj _Logand(LispObj n1, LispObj n2)
 	// quick check here to optimize for adding 2 fixnums
 	if (both_fixnums(n1, n2))
 	{
+#ifdef _MSC_VER
+		__asm mov eax, dword ptr n2
+		__asm and result, eax
+#else
 		unsigned long _eax = (unsigned long)n2;
 		asm("and %%eax, %0" : "+m"(result));
+#endif
 	}
 	else
 		result = bignumAnd(isInteger(n1) ? fixnumToBignum(n1) : n1,
@@ -4068,7 +4101,7 @@ static LispObj _Lognot(LispObj n)
 
 	if (isFixnum(n))
 	{
-#ifdef _WIN32
+#ifdef _MSC_VER
 		__asm mov eax, dword ptr n
 		__asm not eax
 		__asm and eax, -8

@@ -471,7 +471,7 @@ UINT LispMainProc(LPVOID /*pParam*/)
 	currThreadID = GetCurrentThreadId();
 	WSADATA wsd;
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm	mov  dummy, ebp
 #else
 	asm volatile("mov %%ebp, %0" : "=r"(dummy));
@@ -590,7 +590,7 @@ SecondaryThreadProc(LPVOID func)
 		return 0;
 	}
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm	mov  dummy, ebp
 #else
 	asm volatile("mov %%ebp, %0" : "=r"(dummy));
@@ -841,7 +841,7 @@ static CONTEXT lispContext;
 // This simulates a call from the original function,
 __attribute__((naked)) void CallThrowUserExceptionStub()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm push eax  ;; push return address
 	__asm jmp ThrowUserException;
 #else
@@ -891,14 +891,14 @@ static CONTEXT terminateContext;
 __attribute__((naked)) void TerminateLispThreadException()
 {
 	LispObj result;
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm mov result, edi
 #else
 	asm volatile("mov %%edi, %0" : "=r"(result));
 #endif
 	// LispCall4 deferred to Phase 5
 	(void)result;
-#ifdef _WIN32
+#ifdef _MSC_VER
 	LispCall4(Funcall, THROW_EXCEPTION, EXIT_THREAD_TAG, result, wrapInteger(1));
 #else
 	asm volatile("ret");

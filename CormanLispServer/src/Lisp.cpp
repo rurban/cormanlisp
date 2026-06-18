@@ -978,7 +978,7 @@ throwOSException()
 	LispObj ex = 0;
 	DWORD exceptionCode = 0;
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm mov exceptionCode, eax
 #else
 	asm volatile("mov %%eax, %0" : "=m"(exceptionCode) : : "eax");
@@ -1016,7 +1016,7 @@ long gStackOverflowAddress = 0;
 // a call to the ThrowUserException() function.
 __attribute__((naked)) void CallThrowOSExceptionStub()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm push edx
 	__asm jmp throwOSException
 #else
@@ -1077,7 +1077,7 @@ long handleStructuredException(long exception, LPEXCEPTION_POINTERS info)
 	info->ContextRecord->Edx = info->ContextRecord->Eip;
 	info->ContextRecord->Eip = (long)CallThrowOSExceptionStub;
 	info->ContextRecord->Eax = exception;
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm mov dword ptr gStackOverflowAddress, esp
 #else
 	asm volatile("mov %%esp, %0" : "=m"(gStackOverflowAddress) : : "memory");
@@ -1174,7 +1174,7 @@ void LispLoop()
 //	This is stack-direction specific -- assumes stack grows down!!!
 //	Portability issue here!!
 //
-#ifdef _WIN32
+#ifdef _MSC_VER
 
 #define SETUP_LISP_CALL(numargs)		\
 	__asm push ebp						\
@@ -1226,7 +1226,7 @@ void LispLoop()
 
 __attribute__((naked)) LispObj LispCall0(LispFunc func)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(0);
 
 	__asm	call	dword ptr [func]
@@ -1245,7 +1245,7 @@ __attribute__((naked)) LispObj LispCall0(LispFunc func)
 
 __attribute__((naked)) LispObj LispCall1(LispFunc func, LispObj a1)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(1);
 
 	__asm	mov		eax, dword ptr [a1]
@@ -1269,7 +1269,7 @@ __attribute__((naked)) LispObj LispCall1(LispFunc func, LispObj a1)
 
 __attribute__((naked)) LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(2);
 
 	__asm	mov		eax, dword ptr [a1]
@@ -1297,7 +1297,7 @@ __attribute__((naked)) LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 
 __attribute__((naked)) LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, LispObj a3)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(3);
 
 	__asm	mov		eax, dword ptr [a1]
@@ -1329,7 +1329,7 @@ __attribute__((naked)) LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, 
 
 __attribute__((naked)) LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(4);
 
 	__asm	mov		eax, dword ptr [a1]
@@ -1365,7 +1365,7 @@ __attribute__((naked)) LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, 
 
 __attribute__((naked)) LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(5);
 
 	__asm	mov		eax, dword ptr [a1]
@@ -1405,7 +1405,7 @@ __attribute__((naked)) LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, 
 
 __attribute__((naked)) LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(6);
 
 	__asm	mov		eax, dword ptr [a1]
@@ -1449,7 +1449,7 @@ __attribute__((naked)) LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, 
 
 __attribute__((naked)) LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(7);
 
 	__asm	mov		eax, dword ptr [a1]
@@ -1497,7 +1497,7 @@ __attribute__((naked)) LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, 
 
 __attribute__((naked)) LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7, LispObj a8)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	SETUP_LISP_CALL(8);
 
 	__asm	mov		eax, dword ptr [a1]
@@ -1747,7 +1747,7 @@ weakPointer()
 //
 __attribute__((naked)) LispObj cons(LispObj a, LispObj b)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm
 	{
 		push	ebp
@@ -2655,7 +2655,7 @@ LispFunction(Throw_Exception)
 		qv[STACK_MARKER_INDEX_Index] = index << 2;
 	}
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm	mov		ebx, dword ptr regs
 	__asm	mov		eax, form
 	__asm	mov		ecx, numValues
@@ -2837,7 +2837,7 @@ LispObj createShortFloat_foo(double d)
 
 __attribute__((naked)) LispObj createShortFloat(double /*d*/)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm
 	{
 		push        ebp
@@ -2901,7 +2901,7 @@ __attribute__((naked)) LispObj createShortFloat(double /*d*/)
 
 __attribute__((naked)) double shortFloat(LispObj /*d*/)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm
 	{
 		push        ebp

@@ -1849,7 +1849,7 @@ double shortFloat(LispObj);
 #define FixnumMax				((1 << 28) - 1)
 #define FixnumMin				(-(FixnumMax) - 1)
 
-#ifndef LINUX
+#ifdef _MSC_VER
 #define CheckNumArgs(num)			\
 __asm								\
 {									\
@@ -1980,7 +1980,7 @@ __asm								\
 #endif
 
 // push lisp stack context
-#ifndef LINUX
+#ifdef _MSC_VER
 #define FOREIGN_TO_LISP()														\
 	__asm																		\
 	{																			\

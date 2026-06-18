@@ -20,7 +20,7 @@
 #include "Lispmath.h"
 #include "CormanLispServer.h"
 #include "Version.h"
-#ifdef _WIN32
+#ifdef _MSC_VER
 #include "../../zlib/zlib.h"
 #else
 #include <zlib.h>
@@ -195,7 +195,7 @@ extern unsigned long NumReturnValues;
 __attribute__((naked))
 LispFunction(Funcall)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm 
 	{
 		push	ebp
@@ -359,7 +359,7 @@ LispFunction(Funcall)
 __attribute__((naked))
 LispFunction(Apply)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm 
 	{
 		push	ebp
@@ -1083,7 +1083,7 @@ LispFunction(Get_Instruction_Count)
 	
 //	__asm db 0fH, 31H
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm rdtsc
 	__asm mov dword ptr lowtime, eax
 	__asm mov dword ptr hightime, edx
@@ -3642,7 +3642,7 @@ LispFunction(Lookup_Ftype)
 
 __attribute__((naked)) void Load_QV_Reg()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm	push	ebp
 	__asm	mov		ebp, esp
 	TlsGetValue(QV_Index);
@@ -3664,7 +3664,7 @@ __attribute__((naked)) void Load_QV_Reg()
 
 __attribute__((naked)) void genericThunkFunc()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm	mov		eax, dword ptr [0x1000000]		;; use global QV
 	__asm	jmp		dword ptr [eax+0x12345678] ;; replace this with actual offset
 #else
@@ -3677,7 +3677,7 @@ __attribute__((naked)) void genericThunkFunc()
 
 __attribute__((naked)) void Minus_EAX_EDX()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm	push	ebp
 	__asm	mov		ebp, esp
     __asm   push    edi
@@ -3711,7 +3711,7 @@ __attribute__((naked)) void Minus_EAX_EDX()
 
 __attribute__((naked)) void Plus_EAX_EDX()
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm	push	ebp
 	__asm	mov		ebp, esp
     __asm   push    edi
@@ -4909,7 +4909,7 @@ LispFunction(Stack_Trace)
 	long count = 30;  // maximum of 30 frames
 	LispObj* stackStart = ((ThreadRecord*)TlsGetValue(Thread_Index))->stackStart;
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	__asm mov basePointer, ebp
 #else
 	asm volatile("mov %%ebp, %0" : "=m"(basePointer) : : "memory");
