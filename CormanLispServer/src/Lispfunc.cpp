@@ -1520,12 +1520,10 @@ LispFunction(LispError)
 	LISP_FUNC_BEGIN_VARIABLE(1, MaxLispArgs);
 	LispObj msg = LISP_ARG(0);
 
-	strcpy_s(errbuf, sizeof(errbuf), errorStart);
-	strncat_s(errbuf, sizeof(errbuf), (char*)byteArrayStart(nullTerminate(msg)), 
-			errbufSize - strlen(errorStart) - 1);
-	throw stringNode(errbuf);
-
-	LISP_FUNC_RETURN(NIL);		// never gets here
+	// Naked functions break C++ exception unwinding.
+	// For now, just exit on any Lisp error.
+	fprintf(stderr, "Lisp error (exiting)\n");
+	exit(1);
 }
 
 // redefined later

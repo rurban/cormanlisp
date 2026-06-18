@@ -1018,8 +1018,11 @@ LispObj consoleUnderflow(LispObj s)
 	// make sure output is flushed
 	flushStream(symbolValue(CONSOLE_OUTPUT_STREAM));
 
+	extern bool g_batch_input_done;
 	while (TerminalInputBuf.numchars() == 0) // loop until some input
 	{
+		if (g_batch_input_done)
+			return 0;  // EOF — no more input coming
 		PLSingleLock myLock(TerminalInputBuf.charsAvailable(), TRUE);
 	}
 	num = TerminalInputBuf.getCharsInBuffer(InputUnderflowBuffer,

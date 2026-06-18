@@ -819,7 +819,7 @@ int main(int argc, char* argv[])
 
 	// Parse -image, -execute, and --batch
 	while (argidx < argc) {
-		if (!strcmp(argv[argidx], "--batch") || !_stricmp(argv[argidx], "--batch")) {
+		if (!strcmp(argv[argidx], "--batch") || !strcmp(argv[argidx], "-batch")) {
 			g_batch_mode = 1;
 		} else if ((!_stricmp(argv[argidx], "-image") || !strcmp(argv[argidx], "-image"))
 			&& argidx + 1 < argc) {
@@ -842,11 +842,14 @@ int main(int argc, char* argv[])
 	if (g_exec_file) {
 		LoadFile(g_exec_file);
 	}
+	extern bool g_batch_input_done;
+	g_batch_input_done = true;
 
-	// In batch mode, exit after buffering the file.
-	// Full REPL requires a Lisp image (makeimg.sh).
-	if (g_batch_mode)
+	// In batch mode, run the Lisp REPL to process buffered input
+	if (g_batch_mode) {
+		cl_run();
 		return 0;
+	}
 
 	// REPL loop
 	printf("Corman Lisp (Linux port)\n");

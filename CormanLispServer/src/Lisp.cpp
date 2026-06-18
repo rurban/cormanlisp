@@ -1104,28 +1104,17 @@ void LispLoop()
 			if (firstTime)
 			{
 				firstTime = 0;
-				initializing = 1;
-
-				if (*LispImageName)		// if an image name was provided
+				if (*LispImageName && LispImageName[0] != 0)
 				{
-					// see if the image file exists
 					if (LispCall1(Probe_File, stringNode(LispImageName)) == NIL)
 					{
 						strcat_s(missingImgMessage, sizeof(missingImgMessage), LispImageName);
-						InitializationEvent.SetEvent();		// done initializing				
 						Error(missingImgMessage);
 					}
 					LispCall1(LoadLispImage, stringNode(LispImageName));
+					return;
 				}
-				else
-					throw stringNode("");	// ignorable message
-				x = 0;
-				val = 0;
-				vals = 0;
-				initializing = 0;
-				return;
-			//	if (isFunction(symbolValue(TOP_LEVEL)))
-			//		LispCall(Apply, symbolValue(TOP_LEVEL), NIL);
+				// No image — enter REPL directly
 			}
 			setSymbolValue(SOURCE_LINE, NIL);
 			x = LispCall2(Funcall, symbolFunction(READ), symbolValue(STANDARD_INPUT));
@@ -1153,18 +1142,14 @@ void LispLoop()
 		}
 		catch (LispObj x)
 		{
-			// This is just to make sure that the initialization is flagged
-			// as done in case LOAD-IMAGE threw an exception. We don't want other
-			// threads to keep waiting in this case.
 			if (initializing)
 			{
 				initializing = 0;
-				InitializationEvent.SetEvent();		// done initializing
+				InitializationEvent.SetEvent();
 			}
-				
-			LispCall2(Write, x, symbolValue(STANDARD_OUTPUT));	// just echo for now
-			LispCall1(Terpri, symbolValue(STANDARD_OUTPUT));
-		}					
+			// Simple error output — don't use LispCall which may recurse
+			fprintf(stderr, "Lisp error: %p\n", (void*)x);
+		}
 	}
 }
 
@@ -2151,8 +2136,10 @@ checkSymbol(LispObj n)
 void
 checkFunction(LispObj n)
 {
-	if (!isFunction(n))
-		Error("Not a function: ~A", n);
+	if (!isFunction(n)) {
+		fprintf(stderr, "Not a function: %p\n", (void*)n);
+		exit(1);
+	}
 }
 
 void

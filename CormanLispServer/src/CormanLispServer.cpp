@@ -97,6 +97,8 @@ __attribute__((destructor)) static void _fini_cormanlisp()
 
 
 bool g_lisp_bootstrapping = true;
+// Set by batch clients after loading all input; consoleUnderflow returns EOF when drained.
+bool g_batch_input_done = false;
 extern LispObj* g_tls_qv;
 extern void initLisp();  // in Lisp.cpp
 
