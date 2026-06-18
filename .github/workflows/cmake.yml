@@ -1,0 +1,64 @@
+name: CMake Build & Test
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - master
+      - linux
+      - smoke/*
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  # ── Linux (32-bit x86, primary target) ──────────────────────────
+  linux:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Install 32-bit toolchain
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y \
+            g++-multilib \
+            lib32z1-dev
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  # ── Windows (MSVC x86, build-only for now) ──────────────────────
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Configure CMake (x86)
+        run: cmake -B build -A Win32 -DCMAKE_BUILD_TYPE=Release
+        continue-on-error: true
+
+      - name: Build
+        run: cmake --build build --config Release
+        continue-on-error: true
+
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+        continue-on-error: true
