@@ -2472,7 +2472,7 @@ void setSymbolFunction(LispObj sym, LispObj func, LispObj type)
 	LispObj env = 0;
 
 	checkFunction(func);
-	CAR(UVECTOR(sym)[SYMBOL_FUNCTION]) = func;
+	UVECTOR(sym)[SYMBOL_FUNCTION] = func;
 	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = type;
 	env = UVECTOR(func)[FUNCTION_ENVIRONMENT];
 	updateJumpTable(sym, func, env);
@@ -2797,14 +2797,14 @@ LispFunc functionAddress(LispObj func)
 
 LispObj setSymbolMacro(LispObj sym, LispObj func)
 {
-	CAR(UVECTOR(sym)[SYMBOL_FUNCTION]) = func;
+	UVECTOR(sym)[SYMBOL_FUNCTION] = func;
 	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = MACRO;
 	return 0;
 }
 
 LispObj setSpecialOperator(LispObj sym)
 {
-	CAR(UVECTOR(sym)[SYMBOL_FUNCTION]) = NIL;
+	UVECTOR(sym)[SYMBOL_FUNCTION] = NIL;
 	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = SPECIAL_OPERATOR;
 	return 0;
 }

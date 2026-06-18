@@ -1837,7 +1837,7 @@ double shortFloat(LispObj);
 
 #define isSpecialOperator(sym)	(UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] == SPECIAL_OPERATOR)
 #define isLambdaForm(n)			(isCons(n) && CAR(n) == LAMBDA)
-#define symbolFunction(s)		(CAR(UVECTOR(s)[SYMBOL_FUNCTION]))
+#define symbolFunction(s)		(UVECTOR(s)[SYMBOL_FUNCTION])
 #define isSpecialSymbol(s)		(UVECTOR(s)[SYMBOL_FLAGS] & SYMBOL_SPECIAL_FLAG)
 #define isConstantSymbol(s)		(UVECTOR(s)[SYMBOL_FLAGS] & SYMBOL_CONSTANT_FLAG)
 #define setSpecialSymbol(s)		(UVECTOR(s)[SYMBOL_FLAGS] |= SYMBOL_SPECIAL_FLAG)
