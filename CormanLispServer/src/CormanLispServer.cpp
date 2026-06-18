@@ -95,6 +95,7 @@ __attribute__((destructor)) static void _fini_cormanlisp()
 
 // ---- Public C API (replaces COM ICormanLisp) ----
 
+extern __thread LispObj* g_tls_qv;
 extern void initLisp();  // in Lisp.cpp
 
 CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
@@ -111,10 +112,8 @@ CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, i
 	ClientShutdown = (ICormanLispShutdown*)(cb ? (void*)1 : 0);
 
 
-	// Store global QV as the QV for the current thread
-	// (required before initLisp() — naked asm functions use ESI → ThreadQV())
-	TlsSetValue(QV_Index, QV);
-	TlsSetValue(Thread_Index, 0);
+	// Store global QV as the QV for the current thread via thread_local
+	g_tls_qv = QV;
 	initLisp();
 	return 0;
 }
@@ -451,9 +450,13 @@ ThreadQV()
 }
 #endif
 
+// Thread-local QV pointer — replaces pthread TLS for QV_Index
+__thread LispObj* g_tls_qv = NULL;
+
+__attribute__((visibility("default")))
 LispObj* ThreadQV()
 {
-	return (LispObj*)pthread_getspecific((pthread_key_t)QV_Index);
+	return g_tls_qv;
 }
 
 extern int lispmain();

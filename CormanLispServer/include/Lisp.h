@@ -1297,9 +1297,9 @@ const long FirstSpecialSymbolEntry = FirstJumpTableEntry +
 const long NumSpecialSymbolEntries = 8192;
 const long QV_MAX = FirstSpecialSymbolEntry + NumSpecialSymbolEntries;
 
-extern LispObj* QV;
-extern DWORD QV_Index;
-extern DWORD Thread_Index;
+extern __attribute__((visibility("default"))) LispObj* QV;
+extern __attribute__((visibility("default"))) DWORD QV_Index;
+extern __attribute__((visibility("default"))) DWORD Thread_Index;
 
 #define NIL							QV[Nil_Index]
 #define T							QV[T_Index]

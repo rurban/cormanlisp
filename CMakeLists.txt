@@ -81,6 +81,7 @@ target_include_directories(cormanlisp PRIVATE
 if(WIN32)
     target_include_directories(cormanlisp PRIVATE ${CMAKE_BINARY_DIR}/zlib)
 endif()
+
 target_compile_definitions(cormanlisp PRIVATE LINUX _CormanLispServer)
 if(WIN32)
     target_link_libraries(cormanlisp PRIVATE zlibstatic distorm pthread dl m)
