@@ -843,11 +843,10 @@ int main(int argc, char* argv[])
 		LoadFile(g_exec_file);
 	}
 
-	// In batch mode, run the Lisp REPL loop to process buffered input
-	if (g_batch_mode) {
-		cl_run();
+	// In batch mode, exit after buffering the file.
+	// Full REPL requires a Lisp image (makeimg.sh).
+	if (g_batch_mode)
 		return 0;
-	}
 
 	// REPL loop
 	printf("Corman Lisp (Linux port)\n");

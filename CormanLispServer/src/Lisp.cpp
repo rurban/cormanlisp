@@ -1853,7 +1853,7 @@ LispObj charVector(LispObj length)
 
 void Error(const char* msg)
 {
-	if (!isFunction(LISPERROR)) {
+	if (!isFunction(symbolFunction(LISPERROR))) {
 		fprintf(stderr, "Error: %s\n", msg);
 		exit(1);
 	}
@@ -1862,8 +1862,8 @@ void Error(const char* msg)
 
 void Error(const char* msg, LispObj a1)
 {
-	if (!isFunction(LISPERROR)) {
-		fprintf(stderr, "Error: %s\n", msg);
+	if (!isFunction(symbolFunction(LISPERROR))) {
+		fprintf(stderr, "Error: %s (arg: %p)\n", msg, (void*)a1);
 		exit(1);
 	}
 	LispCall3(Funcall, LISPERROR, stringNode(msg), a1);
@@ -1871,7 +1871,7 @@ void Error(const char* msg, LispObj a1)
 
 void Error(const char* msg, LispObj a1, LispObj a2)
 {
-	if (!isFunction(LISPERROR)) {
+	if (!isFunction(symbolFunction(LISPERROR))) {
 		fprintf(stderr, "Error: %s\n", msg);
 		exit(1);
 	}
@@ -1880,7 +1880,7 @@ void Error(const char* msg, LispObj a1, LispObj a2)
 
 void Error(const char* msg, LispObj a1, LispObj a2, LispObj a3)
 {
-	if (!isFunction(LISPERROR)) {
+	if (!isFunction(symbolFunction(LISPERROR))) {
 		fprintf(stderr, "Error: %s\n", msg);
 		exit(1);
 	}
