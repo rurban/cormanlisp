@@ -12,8 +12,8 @@ project(CormanLisp LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fno-omit-frame-pointer -fno-strict-aliasing")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fno-strict-aliasing -fpermissive -ffixed-esi -ffixed-edi")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fno-omit-frame-pointer -fno-strict-aliasing -fno-PIE")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fno-strict-aliasing -fpermissive -ffixed-esi -ffixed-edi -fno-PIE")
 
 # ---- Include directories ----
 set(CORMAN_INCLUDE_DIRS
@@ -25,7 +25,7 @@ set(CORMAN_INCLUDE_DIRS
     set(SKIP_EXAMPLES ON CACHE BOOL "Skip building zlib example binaries")
     add_subdirectory(zlib)
     set_target_properties(zlibstatic PROPERTIES OUTPUT_NAME z)
-    target_compile_options(zlibstatic PRIVATE -m32 -fPIC)
+    target_compile_options(zlibstatic PRIVATE -m32)
 
 # ---- distorm (static library) ----
 set(DISTORM_DIR ${CMAKE_SOURCE_DIR}/CormanLispServer/distorm)
@@ -45,7 +45,7 @@ target_include_directories(distorm PUBLIC
     ${DISTORM_DIR}/include
     ${DISTORM_DIR}/src
 )
-target_compile_options(distorm PRIVATE -m32 -fPIC -w)
+target_compile_options(distorm PRIVATE -m32 -w)
 
 # ---- CormanLisp shared library ----
 set(CORMAN_SERVER_SRCS
@@ -67,7 +67,7 @@ set(CORMAN_SERVER_SRCS
     CormanLispServer/src/Write.cpp
 )
 
-add_library(cormanlisp SHARED ${CORMAN_SERVER_SRCS})
+add_library(cormanlisp STATIC ${CORMAN_SERVER_SRCS})
 target_include_directories(cormanlisp PRIVATE
     ${CORMAN_INCLUDE_DIRS}
     ${DISTORM_DIR}/include
@@ -80,23 +80,19 @@ endif()
 target_compile_definitions(cormanlisp PRIVATE LINUX _CormanLispServer)
 target_include_directories(cormanlisp PRIVATE ${CMAKE_BINARY_DIR}/zlib)
 target_link_libraries(cormanlisp PRIVATE zlibstatic distorm pthread dl m)
-set_target_properties(cormanlisp PROPERTIES
-    C_VISIBILITY_PRESET hidden
-    CXX_VISIBILITY_PRESET hidden
-    VISIBILITY_INLINES_HIDDEN ON
-    LINK_FLAGS "-Wl,--defsym=ThreadQV=_Z8ThreadQVv -Wl,--defsym=EnterGCCriticalSection=_Z22EnterGCCriticalSectionv -Wl,--defsym=LeaveGCCriticalSection=_Z22LeaveGCCriticalSectionv -Wl,--defsym=AllocLocalCons=_Z14AllocLocalConsv -Wl,--defsym=LoadLocalHeap=_Z13LoadLocalHeapv -Wl,--defsym=garbageCollect=_Z14garbageCollectl -Wl,--defsym=ThrowUserException=_Z18ThrowUserExceptionv -Wl,--defsym=Plus=_Z4Plusmz -Wl,--defsym=Minus=_Z5Minusmz -Wl,--defsym=checkFunction=_Z13checkFunctionm"
-)
 
 # ---- clconsole (console REPL) ----
 add_executable(clconsole clconsole/clconsole.cpp)
 target_include_directories(clconsole PRIVATE ${CORMAN_INCLUDE_DIRS})
-target_link_libraries(clconsole PRIVATE cormanlisp)
+set(CORMAN_DEFSYM_LINK_FLAGS "-Wl,--defsym=ThreadQV=_Z8ThreadQVv -Wl,--defsym=EnterGCCriticalSection=_Z22EnterGCCriticalSectionv -Wl,--defsym=LeaveGCCriticalSection=_Z22LeaveGCCriticalSectionv -Wl,--defsym=AllocLocalCons=_Z14AllocLocalConsv -Wl,--defsym=LoadLocalHeap=_Z13LoadLocalHeapv -Wl,--defsym=garbageCollect=_Z14garbageCollectl -Wl,--defsym=ThrowUserException=_Z18ThrowUserExceptionv -Wl,--defsym=Plus=_Z4Plusmz -Wl,--defsym=Minus=_Z5Minusmz -Wl,--defsym=checkFunction=_Z13checkFunctionm -no-pie")
+target_link_libraries(clconsole PRIVATE cormanlisp ${CORMAN_DEFSYM_LINK_FLAGS})
 
 # ---- clboot (minimal bootstrap) ----
 add_executable(clboot clboot/clboot.cpp)
 target_include_directories(clboot PRIVATE ${CORMAN_INCLUDE_DIRS})
 target_compile_definitions(clboot PRIVATE LINUX)
-target_link_libraries(clboot PRIVATE cormanlisp)
+target_link_libraries(clboot PRIVATE cormanlisp ${CORMAN_DEFSYM_LINK_FLAGS} -no-pie)
+
 
 
 # ---- Testing ----

@@ -96,10 +96,6 @@ __attribute__((destructor)) static void _fini_cormanlisp()
 // ---- Public C API (replaces COM ICormanLisp) ----
 
 
-// Thread-local arg count for Lisp calling convention.
-// SETUP_LISP_CALL stores ecx here; LISP_FUNC_BEGIN reads it.
-// Hidden visibility avoids GOT overhead in asm.
-__attribute__((visibility("hidden"))) volatile long g_lisp_arg_count = 0;
 bool g_lisp_bootstrapping = true;
 extern LispObj* g_tls_qv;
 extern void initLisp();  // in Lisp.cpp

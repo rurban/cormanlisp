@@ -306,7 +306,6 @@ LispFunction(Funcall)
 		"mov %%esp, -12(%%ebp)\n\t"
 		"mov %%ecx, %%ebx\n\t"
 		"dec %%ecx\n\t"                            // ecx = number of actual args (numargs - 1)
-		"movl %%ecx, g_lisp_arg_count\n\t"         // update for target function
 		"test %%ecx, %%ecx\n\t"                    // zero actual args?
 		"jz 5f\n\t"
 		"4:\n\t"
