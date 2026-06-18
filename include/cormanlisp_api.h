@@ -1,3 +1,5 @@
+#include "platform.h"
+
 //		-------------------------------
 //		Copyright (c) Corman Technologies Inc.
 //		See LICENSE.txt for license information.

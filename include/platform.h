@@ -95,6 +95,8 @@ static inline int sprintf_s(char* buf, size_t sz, const char* fmt, ...) {
 }
 #include <alloca.h>
 #define _alloca alloca
+#define _stricmp strcasecmp
+#define _strnicmp strncasecmp
 #define _TRUNCATE               ((size_t)-1)
 
 // ---- Safe string functions ----
