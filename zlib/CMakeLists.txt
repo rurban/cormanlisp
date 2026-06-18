@@ -226,6 +226,8 @@ if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL )
     install(FILES ${ZLIB_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
 endif()
 
+option(SKIP_EXAMPLES "Skip building example binaries")
+if(NOT SKIP_EXAMPLES)
 #============================================================================
 # Example binaries
 #============================================================================
@@ -246,4 +248,5 @@ if(HAVE_OFF64_T)
     add_executable(minigzip64 test/minigzip.c)
     target_link_libraries(minigzip64 zlib)
     set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
+endif()
 endif()

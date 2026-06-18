@@ -74,7 +74,18 @@ typedef long long           __int64;
 #define __except(x) catch (...)
 #define __finally
 #define __leave     break
-#define strcat_s(dst, sz, src)  strncat(dst, src, sz)
+// strcat_s: safe inline function matching Windows semantics (sz = total buffer size)
+static inline int strcat_s(char* dst, size_t sz, const char* src) {
+    if (!dst || !src || sz == 0) return -1;
+    size_t dst_len = strnlen(dst, sz);
+    if (dst_len >= sz) return -1;
+    size_t to_copy = sz - dst_len - 1;
+    size_t i;
+    for (i = 0; i < to_copy && src[i]; i++)
+        dst[dst_len + i] = src[i];
+    dst[dst_len + i] = 0;
+    return 0;
+}
 // strcpy_s: use wrapper instead of macro to avoid conflict with C11 annex K
 static inline int strcpy_s(char* dst, size_t sz, const char* src) {
     if (!dst || !src || sz == 0) return -1;

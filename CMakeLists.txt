@@ -22,6 +22,7 @@ set(CORMAN_INCLUDE_DIRS
 )
 
 # ---- zlib (static library) ----
+set(SKIP_EXAMPLES ON CACHE BOOL "Skip building zlib example binaries")
 add_subdirectory(zlib)
 set_target_properties(zlibstatic PROPERTIES OUTPUT_NAME z)
 
@@ -70,6 +71,7 @@ target_include_directories(cormanlisp PRIVATE
     ${CORMAN_INCLUDE_DIRS}
     ${DISTORM_DIR}/include
     ${DISTORM_DIR}/src
+    ${CMAKE_BINARY_DIR}/zlib
 )
 target_compile_definitions(cormanlisp PRIVATE LINUX _CormanLispServer)
 target_link_libraries(cormanlisp PRIVATE zlibstatic distorm pthread dl m)
