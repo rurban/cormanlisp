@@ -1210,6 +1210,7 @@ void LispLoop()
     "call ThreadQV\n\t"                                                \
     "mov %%eax, %%esi\n\t"          /* esi = QV */                     \
     "mov $" #n ", %%ecx\n\t"        /* numargs */                      \
+    "movl %%ecx, g_lisp_arg_count\n\t"  /* save for callee */         \
     "mov (%%esi), %%edi\n\t"        /* edi = QV[0] */
 
 #define END_LISP_CALL()                                                 \

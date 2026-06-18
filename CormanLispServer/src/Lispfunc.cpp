@@ -293,7 +293,6 @@ LispFunction(Funcall)
 		"cmp $%c[symtype], %%dl\n\t"            // SymbolType
 		"jne 3f\n\t"
 		"mov %c[symfunc](%%eax), %%eax\n\t"     // SYMBOL_FUNCTION*4-UvectorTag
-		"mov -4(%%eax), %%eax\n\t"
 		"mov %%eax, %%edx\n\t"
 		"and $7, %%edx\n\t"
 		"cmp $%c[utag], %%edx\n\t"
@@ -307,6 +306,7 @@ LispFunction(Funcall)
 		"mov %%esp, -12(%%ebp)\n\t"
 		"mov %%ecx, %%ebx\n\t"
 		"dec %%ecx\n\t"                            // ecx = number of actual args (numargs - 1)
+		"movl %%ecx, g_lisp_arg_count\n\t"         // update for target function
 		"test %%ecx, %%ecx\n\t"                    // zero actual args?
 		"jz 5f\n\t"
 		"4:\n\t"

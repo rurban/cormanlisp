@@ -1299,6 +1299,7 @@ const long QV_MAX = FirstSpecialSymbolEntry + NumSpecialSymbolEntries;
 
 extern __attribute__((visibility("default"))) LispObj* QV;
 extern __attribute__((visibility("default"))) DWORD QV_Index;
+extern __attribute__((visibility("hidden"))) volatile long g_lisp_arg_count;
 extern __attribute__((visibility("default"))) DWORD Thread_Index;
 
 #define NIL							QV[Nil_Index]
@@ -1961,14 +1962,14 @@ __asm								\
 
 #define LISP_FUNC_BEGIN(numargs)    \
     LispObj ret = 0;                \
-    long _arg_count = 0;            \
+    long _arg_count = g_lisp_arg_count; \
     LispObj* _arg_ptr = &_args;     \
     _arg_ptr += (_arg_count - 1);   \
     CheckNumArgs(numargs)
 
 #define LISP_FUNC_BEGIN_VARIABLE(minargs, maxargs) \
     LispObj ret = 0;                \
-    long _arg_count = 0;            \
+    long _arg_count = g_lisp_arg_count; \
     LispObj* _arg_ptr = &_args;     \
     _arg_ptr += (_arg_count - 1);   \
     CheckNumArgsRange(minargs, maxargs)

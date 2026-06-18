@@ -1631,6 +1631,15 @@ void garbageCollect(long level)
     BOOL criticalSectionEntered = 0;
     int threadsSuspended = 0;
 
+    // During bootstrap (before BlessThread), skip full GC.
+    // The Thread_Index TLS may not be accessible from naked asm callers.
+    extern bool g_lisp_bootstrapping;
+    if (g_lisp_bootstrapping) {
+        EphemeralHeap1.grow(PAGE_SIZE * 256);
+        EphemeralHeap1.commitAllPages();
+        GCCriticalSection.Leave();
+        return;
+    }
     GCCriticalSection.Enter();
     
    __try
@@ -1647,7 +1656,7 @@ void garbageCollect(long level)
             if (GCFailure)
                 _endthreadex(1);
 
-            if (symbolValue(HEAP_CHECKING) != NIL)
+            if (HEAP_CHECKING != 0 && symbolValue(HEAP_CHECKING) != NIL)
                 verifyHeapBlocks();
 
             if (GarbageEntry > 0)
@@ -1846,7 +1855,7 @@ void garbageCollect(long level)
             ret = 0;
             temp = 0;
 
-            if (symbolValue(HEAP_CHECKING) != NIL)
+            if (HEAP_CHECKING != 0 && symbolValue(HEAP_CHECKING) != NIL)
                 verifyHeapBlocks();
         }
         __except (gcHandleStructuredException(GetExceptionCode(), GetExceptionInformation()))
@@ -2461,9 +2470,9 @@ static void
 checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 {
     ThreadRecord* currThread = (ThreadRecord*)TlsGetValue(Thread_Index);
-    LispObj* stackStart = currThread->stackStart;
+    if (!currThread) return;
     LispObj dummy = 0;
-    LispObj* start = stackStart;
+    LispObj* start = currThread->stackStart;
     LispObj* x = 0;
     LispObj regs[6] = {0};
     ThreadRecord* tr = ThreadList.getList();

@@ -95,11 +95,21 @@ __attribute__((destructor)) static void _fini_cormanlisp()
 
 // ---- Public C API (replaces COM ICormanLisp) ----
 
-extern __thread LispObj* g_tls_qv;
+
+// Thread-local arg count for Lisp calling convention.
+// SETUP_LISP_CALL stores ecx here; LISP_FUNC_BEGIN reads it.
+// Hidden visibility avoids GOT overhead in asm.
+__attribute__((visibility("hidden"))) volatile long g_lisp_arg_count = 0;
+bool g_lisp_bootstrapping = true;
+extern LispObj* g_tls_qv;
 extern void initLisp();  // in Lisp.cpp
 
 CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
 {
+	// Ensure TLS keys are initialized (defensive — constructor should have done this)
+	if (QV_Index == 0) QV_Index = TlsAlloc();
+	if (Thread_Index == 0) Thread_Index = TlsAlloc();
+
 	g_callbacks = cb;
 	// Store image name
 	if (imageName && *imageName)
@@ -111,10 +121,9 @@ CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, i
 	ClientMessage = (ICormanLispStatusMessage*)(cb ? (void*)1 : 0);
 	ClientShutdown = (ICormanLispShutdown*)(cb ? (void*)1 : 0);
 
-
-	// Store global QV as the QV for the current thread via thread_local
 	g_tls_qv = QV;
 	initLisp();
+	g_lisp_bootstrapping = false;
 	return 0;
 }
 
@@ -450,8 +459,9 @@ ThreadQV()
 }
 #endif
 
-// Thread-local QV pointer — replaces pthread TLS for QV_Index
-__thread LispObj* g_tls_qv = NULL;
+// QV pointer — plain global for compatibility with naked asm (no TLS in PIC).
+// Multi-threading: each thread must set this before entering Lisp code.
+LispObj* g_tls_qv = NULL;
 
 __attribute__((visibility("default")))
 LispObj* ThreadQV()
