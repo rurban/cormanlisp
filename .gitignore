@@ -1,3 +1,5 @@
+build/
+build-debug/
 *.exe
 *.dll
 *.lib
@@ -41,5 +43,4 @@ installer/Version.wxi
 installer/LICENSE.rtf
 unpacked/*
 CormanLisp*.zip
-build/
 
