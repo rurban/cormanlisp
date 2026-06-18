@@ -110,6 +110,11 @@ CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, i
 	ClientMessage = (ICormanLispStatusMessage*)(cb ? (void*)1 : 0);
 	ClientShutdown = (ICormanLispShutdown*)(cb ? (void*)1 : 0);
 
+
+	// Store global QV as the QV for the current thread
+	// (required before initLisp() — naked asm functions use ESI → ThreadQV())
+	TlsSetValue(QV_Index, QV);
+	TlsSetValue(Thread_Index, 0);
 	initLisp();
 	return 0;
 }

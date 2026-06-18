@@ -205,23 +205,23 @@ LispFunction(Funcall)
 		"jge 1f\n\t"
 		"call WrongNumberOfArgs\n\t"
 		"1:\n\t"
-		"mov 4(%%ebp, %%ecx, 4), %%eax\n\t"     // eax = function
+		"mov 8(%%ebp), %%eax\n\t"     // eax = function (first argument on stack)
 		"mov %%eax, %%edx\n\t"
 		"and $7, %%edx\n\t"
-		"cmp %c[utag], %%edx\n\t"              // UvectorTag
+		"cmp $%c[utag], %%edx\n\t"              // UvectorTag
 		"je 2f\n\t"
 		"push %%eax\n\t"
 		"call checkFunction\n\t"
 		"2:\n\t"
 		"mov -%c[utag](%%eax), %%edx\n\t"       // edx = header
 		"shr $3, %%dl\n\t"
-		"cmp %c[symtype], %%dl\n\t"            // SymbolType
+		"cmp $%c[symtype], %%dl\n\t"            // SymbolType
 		"jne 3f\n\t"
 		"mov %c[symfunc](%%eax), %%eax\n\t"     // SYMBOL_FUNCTION*4-UvectorTag
 		"mov -4(%%eax), %%eax\n\t"
 		"mov %%eax, %%edx\n\t"
 		"and $7, %%edx\n\t"
-		"cmp %c[utag], %%edx\n\t"
+		"cmp $%c[utag], %%edx\n\t"
 		"je 9f\n\t"
 		"push 4(%%ebp, %%ecx, 4)\n\t"
 		"call checkFunction\n\t"
@@ -231,14 +231,16 @@ LispFunction(Funcall)
 		"3:\n\t"                                // dl = type, eax = function
 		"mov %%esp, -12(%%ebp)\n\t"
 		"mov %%ecx, %%ebx\n\t"
-		"dec %%ecx\n\t"
+		"dec %%ecx\n\t"                            // ecx = number of actual args (numargs - 1)
+		"test %%ecx, %%ecx\n\t"                    // zero actual args?
+		"jz 5f\n\t"
 		"4:\n\t"
+		"push 4(%%ebp, %%ebx, 4)\n\t"             // push arg at position ebx
 		"dec %%ebx\n\t"
-		"jle 5f\n\t"
-		"push 4(%%ebp, %%ebx, 4)\n\t"
-		"jmp 4b\n\t"
+		"cmp $1, %%ebx\n\t"
+		"jg 4b\n\t"                                // loop while ebx > 1 (skip position 1 = function)
 		"5:\n\t"
-		"cmp %c[functype], %%dl\n\t"            // FunctionType
+		"cmp $%c[functype], %%dl\n\t"            // FunctionType
 		"jne 6f\n\t"
 		"mov %c[funcenv](%%eax), %%edi\n\t"     // FUNCTION_ENVIRONMENT*4-UvectorTag
 		"mov %c[funcaddr](%%eax), %%eax\n\t"    // FUNCTION_ADDRESS*4-UvectorTag
@@ -246,7 +248,7 @@ LispFunction(Funcall)
 		"call *%%eax\n\t"
 		"jmp 8f\n\t"
 		"6:\n\t"
-		"cmp %c[kfunctype], %%dl\n\t"           // KFunctionType
+		"cmp $%c[kfunctype], %%dl\n\t"           // KFunctionType
 		"jne 7f\n\t"
 		"mov (%%esi), %%edi\n\t"
 		"call *%c[funcaddr](%%eax)\n\t"

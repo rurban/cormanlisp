@@ -16,11 +16,20 @@
 #include <assert.h>
 
 // ---- CriticalSection (pthread_mutex_t) ----
-// Non-recursive mutex; the original Win32 CRITICAL_SECTION is also non-recursive.
+// ---- CriticalSection (recursive pthread_mutex_t) ----
+// Windows CRITICAL_SECTION is recursive, so we match that behavior.
+// This is essential: functions like stringNode() enter the GC critical
+// section, then call AllocVector() which also enters it.
 class CriticalSection
 {
 public:
-	CriticalSection()  { pthread_mutex_init(&m_mutex, NULL); }
+	CriticalSection()  {
+		pthread_mutexattr_t attr;
+		pthread_mutexattr_init(&attr);
+		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+		pthread_mutex_init(&m_mutex, &attr);
+		pthread_mutexattr_destroy(&attr);
+	}
 	~CriticalSection() { pthread_mutex_destroy(&m_mutex); }
 	void Enter()       { pthread_mutex_lock(&m_mutex); }
 	void Leave()       { pthread_mutex_unlock(&m_mutex); }
