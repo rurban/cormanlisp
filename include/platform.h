@@ -248,6 +248,7 @@ inline HANDLE GetCurrentThread()           { return (HANDLE)pthread_self(); }
 inline int    DuplicateHandle(HANDLE, HANDLE, HANDLE, HANDLE*, DWORD, int, DWORD) { return 1; }
 #define DUPLICATE_SAME_ACCESS 2
 inline DWORD  GetCurrentProcessId()        { return (DWORD)getpid(); }
+#define _beginthread(fn, stack, arg) ((HANDLE)({ pthread_t _t; pthread_create(&_t, NULL, (void*(*)(void*))fn, arg); (unsigned long)_t; }))
 
 // ---- Wait / sync stubs ----
 inline DWORD WaitForSingleObject(HANDLE, DWORD) { return WAIT_OBJECT_0; }
@@ -255,12 +256,20 @@ inline HANDLE CreateMutex(void*, int, const char*) { return (HANDLE)1; }
 // MemoryReport.cpp stubs
 inline int IsBadReadPtr(const void*, size_t) { return 0; }
 inline int ReadFile(HANDLE, void*, DWORD, DWORD*, void*) { return 0; }
+inline int WriteFile(HANDLE, const void*, DWORD, DWORD*, void*) { return 0; }
 typedef __time_t __time32_t;
 typedef int errno_t;
 #define _time32(t) time(t)
 #define _localtime32_s(tm, t) localtime_r(t, tm)
 #define asctime_s(buf, sz, tm) asctime_r(tm, buf)
-#define _beginthread(fn, stack, arg) ({ pthread_t _t; pthread_create(&_t, NULL, (void*(*)(void*))fn, arg); (HANDLE)_t; })
+// UserInfo.cpp stubs
+#define TOKEN_QUERY 8
+#define CSIDL_PERSONAL 5
+#define SHGFP_TYPE_CURRENT 0
+inline int GetUserNameA(char* buf, DWORD* sz) { const char* u = getenv("USER"); if (!u) u = "unknown"; strncpy(buf, u, *sz); *sz = strlen(u); return 1; }
+inline int OpenProcessToken(HANDLE, DWORD, HANDLE*) { return 0; }
+inline int GetUserProfileDirectoryA(HANDLE, char* buf, DWORD* sz) { const char* h = getenv("HOME"); if (!h) h = "/tmp"; strncpy(buf, h, *sz); *sz = strlen(h); return 1; }
+inline int SHGetFolderPathA(HWND, int, HANDLE, DWORD, char* buf) { const char* h = getenv("HOME"); if (!h) h = "/tmp"; strcpy(buf, h); return 0; }
 
 // ---- COM stubs (Phase 7) ----
 typedef long HRESULT;

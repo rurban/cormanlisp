@@ -160,7 +160,7 @@ CL_API void cl_unbless_thread(void)
 }
 CL_API int cl_get_function_address(const wchar_t* functionName, const wchar_t* packageName, void** funcptr)
 {
-	void* result = GetCallbackFunctionPointer(functionName, packageName);
+	void* result = GetCallbackFunctionPointer((wchar_t*)functionName, (wchar_t*)packageName);
 	if (funcptr) *funcptr = result;
 	return result ? 0 : -1;
 }
@@ -444,13 +444,12 @@ ThreadQV()
 		ret
 	}
 }
-#else
-LispObj*
-ThreadQV()
+#endif
+
+LispObj* ThreadQV()
 {
 	return (LispObj*)TlsGetValue(QV_Index);
 }
-#endif
 
 extern int lispmain();
 
