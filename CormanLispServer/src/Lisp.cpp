@@ -1284,9 +1284,9 @@ __attribute__((naked)) LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 #else
 	asm volatile(
 		SETUP_LISP_CALL(2)
-		"mov 16(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 12(%%ebp), %%eax\n\t"
+        "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $8, %%esp\n\t"
@@ -1314,11 +1314,11 @@ __attribute__((naked)) LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, 
 #else
 	asm volatile(
 		SETUP_LISP_CALL(3)
-		"mov 20(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 16(%%ebp), %%eax\n\t"
+        "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 12(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $12, %%esp\n\t"
@@ -1348,13 +1348,13 @@ __attribute__((naked)) LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, 
 #else
 	asm volatile(
 		SETUP_LISP_CALL(4)
-		"mov 24(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 20(%%ebp), %%eax\n\t"
+        "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 16(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 12(%%ebp), %%eax\n\t"
+        "mov 24(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $16, %%esp\n\t"
@@ -1386,15 +1386,15 @@ __attribute__((naked)) LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, 
 #else
 	asm volatile(
 		SETUP_LISP_CALL(5)
-		"mov 28(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 24(%%ebp), %%eax\n\t"
+        "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 20(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 16(%%ebp), %%eax\n\t"
+        "mov 24(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 12(%%ebp), %%eax\n\t"
+        "mov 28(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $20, %%esp\n\t"
@@ -1428,17 +1428,17 @@ __attribute__((naked)) LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, 
 #else
 	asm volatile(
 		SETUP_LISP_CALL(6)
-		"mov 32(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 28(%%ebp), %%eax\n\t"
+        "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 24(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 20(%%ebp), %%eax\n\t"
+        "mov 24(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 16(%%ebp), %%eax\n\t"
+        "mov 28(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 12(%%ebp), %%eax\n\t"
+        "mov 32(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $24, %%esp\n\t"
@@ -1474,19 +1474,19 @@ __attribute__((naked)) LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, 
 #else
 	asm volatile(
 		SETUP_LISP_CALL(7)
-		"mov 36(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 32(%%ebp), %%eax\n\t"
+        "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 28(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 24(%%ebp), %%eax\n\t"
+        "mov 24(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 20(%%ebp), %%eax\n\t"
+        "mov 28(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 16(%%ebp), %%eax\n\t"
+        "mov 32(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 12(%%ebp), %%eax\n\t"
+        "mov 36(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $28, %%esp\n\t"
@@ -1524,21 +1524,21 @@ __attribute__((naked)) LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, 
 #else
 	asm volatile(
 		SETUP_LISP_CALL(8)
-		"mov 40(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 36(%%ebp), %%eax\n\t"
+        "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 32(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 28(%%ebp), %%eax\n\t"
+        "mov 24(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 24(%%ebp), %%eax\n\t"
+        "mov 28(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 20(%%ebp), %%eax\n\t"
+        "mov 32(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 16(%%ebp), %%eax\n\t"
+        "mov 36(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-		"mov 12(%%ebp), %%eax\n\t"
+        "mov 40(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $32, %%esp\n\t"
@@ -1853,21 +1853,37 @@ LispObj charVector(LispObj length)
 
 void Error(const char* msg)
 {
+	if (!isFunction(LISPERROR)) {
+		fprintf(stderr, "Error: %s\n", msg);
+		exit(1);
+	}
 	LispCall2(Funcall, LISPERROR, stringNode(msg));
 }
 
 void Error(const char* msg, LispObj a1)
 {
+	if (!isFunction(LISPERROR)) {
+		fprintf(stderr, "Error: %s\n", msg);
+		exit(1);
+	}
 	LispCall3(Funcall, LISPERROR, stringNode(msg), a1);
 }
 
 void Error(const char* msg, LispObj a1, LispObj a2)
 {
+	if (!isFunction(LISPERROR)) {
+		fprintf(stderr, "Error: %s\n", msg);
+		exit(1);
+	}
 	LispCall4(Funcall, LISPERROR, stringNode(msg), a1, a2);
 }
 
 void Error(const char* msg, LispObj a1, LispObj a2, LispObj a3)
 {
+	if (!isFunction(LISPERROR)) {
+		fprintf(stderr, "Error: %s\n", msg);
+		exit(1);
+	}
 	LispCall5(Funcall, LISPERROR, stringNode(msg), a1, a2, a3);
 }
 

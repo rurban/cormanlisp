@@ -935,7 +935,7 @@ __attribute__((naked)) LispObj AllocVector(long num)
 		"jg loop_vec\n\t"
 		"3:\n\t"
 		"mov %%edi, %%eax\n\t"
-		"add $0x06, %%eax\n\t"
+		"add $0x05, %%eax\n\t"
 		"push %%eax\n\t"
 		"call LeaveGCCriticalSection\n\t"
 		"pop %%eax\n\t"
