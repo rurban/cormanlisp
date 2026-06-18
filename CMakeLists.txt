@@ -21,16 +21,11 @@ set(CORMAN_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/CormanLispServer/include
 )
 
-if(WIN32)
-    # ---- zlib (static library, bundled for Windows) ----
+    # ---- zlib (bundled static library) ----
     set(SKIP_EXAMPLES ON CACHE BOOL "Skip building zlib example binaries")
     add_subdirectory(zlib)
     set_target_properties(zlibstatic PROPERTIES OUTPUT_NAME z)
-else()
-    # On Linux, use system zlib (32-bit -m32 finds /usr/lib/libz.so)
-    set(ZLIB_LIBRARIES z)
-    set(ZLIB_INCLUDE_DIRS "")
-endif()
+    target_compile_options(zlibstatic PRIVATE -m32 -fPIC)
 
 # ---- distorm (static library) ----
 set(DISTORM_DIR ${CMAKE_SOURCE_DIR}/CormanLispServer/distorm)
@@ -50,7 +45,7 @@ target_include_directories(distorm PUBLIC
     ${DISTORM_DIR}/include
     ${DISTORM_DIR}/src
 )
-target_compile_options(distorm PRIVATE -m32 -w)
+target_compile_options(distorm PRIVATE -m32 -fPIC -w)
 
 # ---- CormanLisp shared library ----
 set(CORMAN_SERVER_SRCS
@@ -83,12 +78,8 @@ if(WIN32)
 endif()
 
 target_compile_definitions(cormanlisp PRIVATE LINUX _CormanLispServer)
-if(WIN32)
-    target_link_libraries(cormanlisp PRIVATE zlibstatic distorm pthread dl m)
-else()
-    target_link_libraries(cormanlisp PRIVATE ${ZLIB_LIBRARIES} distorm pthread dl m)
-    target_include_directories(cormanlisp PRIVATE ${ZLIB_INCLUDE_DIRS})
-endif()
+target_include_directories(cormanlisp PRIVATE ${CMAKE_BINARY_DIR}/zlib)
+target_link_libraries(cormanlisp PRIVATE zlibstatic distorm pthread dl m)
 set_target_properties(cormanlisp PROPERTIES
     C_VISIBILITY_PRESET hidden
     CXX_VISIBILITY_PRESET hidden

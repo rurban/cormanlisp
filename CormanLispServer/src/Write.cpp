@@ -219,7 +219,7 @@ outputList(LispObj s, LispObj os)
 {
 	if (s == UNINITIALIZED)
 	{
-		char* s = "|--Uninitialized--|";
+		const char* s = "|--Uninitialized--|";
 		outputChars(stringNode(s), strlen(s), os);
 		return;
 	}
@@ -342,7 +342,7 @@ static void
 outputStructure(LispObj n, LispObj os)
 {
 	long i = 0;
-	char* s = "#< STRUCTURE: ";
+	const char* s = "#< STRUCTURE: ";
 	long len = 0;
 	outputChars(stringNode(s), strlen(s), os);
 	len = (uvectorSize(n) - 1) * 2;

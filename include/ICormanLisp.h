@@ -66,7 +66,7 @@ interface ICormanLisp : public IUnknown
 //
 interface ICormanLispTextOutput : public IUnknown
 {
-    STDMETHOD(OutputText)(THIS_ char* text, long numChars) PURE;
+    STDMETHOD(OutputText)(THIS_ const char* text, long numChars) PURE;
     STDMETHOD(GetAppInstance)(THIS_ HINSTANCE* appInstance) PURE;
     STDMETHOD (GetAppMainWindow)(THIS_ HWND* appMainWindow) PURE;
 };
@@ -76,7 +76,7 @@ interface ICormanLispTextOutput : public IUnknown
 //
 interface ICormanLispStatusMessage : public ICormanLispTextOutput
 {
-    STDMETHOD(SetMessage)(THIS_ char* text) PURE;
+    STDMETHOD(SetMessage)(THIS_ const char* text) PURE;
 	STDMETHOD(GetMessage)(THIS_ char* text, long maxMessageLength) PURE;
     STDMETHOD(SetDefaultMessage)(THIS_) PURE;
     STDMETHOD(OpenEditWindow)(THIS_ char* file, HWND* wnd) PURE;
@@ -87,7 +87,7 @@ interface ICormanLispStatusMessage : public ICormanLispTextOutput
 	// ReplaceSelection is like OutputText, except that the sent
 	// text is used to replace the current selection.
 	//
-    STDMETHOD(ReplaceSelection)(THIS_ char* text, long numChars) PURE;
+    STDMETHOD(ReplaceSelection)(THIS_ const char* text, long numChars) PURE;
 };
 
 //
@@ -108,7 +108,7 @@ interface ICormanLispDirectCall : public IUnknown
 //
 interface ICormanLispShutdown : public IUnknown
 {
-    STDMETHOD(LispShutdown)(THIS_ char* text, long numChars) PURE;
+    STDMETHOD(LispShutdown)(THIS_ const char* text, long numChars) PURE;
 };
 
 #endif	// ICORMANLISP_H

@@ -1514,7 +1514,7 @@ LispFunction(_Output_Chars)
 
 const long errbufSize = 256;
 char errbuf[errbufSize];
-char* errorStart = ";; Error: ";
+const char* errorStart = ";; Error: ";
 
 LispFunction(LispError)
 {
@@ -4742,7 +4742,7 @@ FunctEntry functTable[] =
 };
 long sizeFunctTable = sizeof(functTable)/sizeof(FunctEntry);
 
-char* specialOperatorTable[] =
+const char* specialOperatorTable[] =
 {
 	"BLOCK",
 	"CATCH",

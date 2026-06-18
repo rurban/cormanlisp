@@ -52,10 +52,10 @@ public:
 	STDMETHODIMP EnumConnectionPoints(IEnumConnectionPoints** pEnumConnectionPoints);
 	STDMETHODIMP FindConnectionPoint(REFIID riid, IConnectionPoint** ppConnectionPoint);
 
-    STDMETHODIMP SetMessage(char* text);
+    STDMETHODIMP SetMessage(const char* text);
 	STDMETHODIMP GetMessage(char* text, long maxMessageLength);
     STDMETHODIMP SetDefaultMessage();
-    STDMETHODIMP OutputText(char* text, long numChars);
+    STDMETHODIMP OutputText(const char* text, long numChars);
     STDMETHODIMP GetAppInstance(HINSTANCE* appInstance);
     STDMETHODIMP GetAppMainWindow(HWND* appMainWindow);
     STDMETHODIMP OpenEditWindow(char* file, HWND* wnd);
@@ -71,7 +71,7 @@ public:
     STDMETHODIMP HandleStructuredException(long exception, LPEXCEPTION_POINTERS info, long* result);
 
 	// ICormanLispShutdown
-    STDMETHODIMP LispShutdown(char* text, long numChars);
+    STDMETHODIMP LispShutdown(const char* text, long numChars);
 
 private:
 	long m_cRef;

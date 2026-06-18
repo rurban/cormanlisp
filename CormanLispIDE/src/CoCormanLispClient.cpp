@@ -60,7 +60,7 @@ STDMETHODIMP_(ULONG) CoCormanLispClient::Release()
     return 0;
 }
 
-STDMETHODIMP CoCormanLispClient::OutputText(char* text, long numBytes)
+STDMETHODIMP CoCormanLispClient::OutputText(const char* text, long numBytes)
 {
 	long offset = 0;
 	long ret = 0;
@@ -73,7 +73,7 @@ STDMETHODIMP CoCormanLispClient::OutputText(char* text, long numBytes)
 	return S_OK;
 }
 
-STDMETHODIMP CoCormanLispClient::SetMessage(char* message)
+STDMETHODIMP CoCormanLispClient::SetMessage(const char* message)
 {
 	theApp.SetMessage(message);
 	return S_OK;
@@ -177,7 +177,7 @@ STDMETHODIMP CoCormanLispClient::AddMenuItem(char* /*menuName*/, char* /*menuIte
 	return S_OK;
 }
 
-STDMETHODIMP CoCormanLispClient::ReplaceSelection(char* text, long numBytes)
+STDMETHODIMP CoCormanLispClient::ReplaceSelection(const char* text, long numBytes)
 {
 	theApp.SetReplaceSelection(text, numBytes);
 	return S_OK;
@@ -231,10 +231,11 @@ STDMETHODIMP_(ULONG) CoCormanLispShutdownClient::Release()
 
 extern void DisableLispSystem();
 
-STDMETHODIMP CoCormanLispShutdownClient::LispShutdown(char* text, long numBytes)
+STDMETHODIMP CoCormanLispShutdownClient::LispShutdown(const char* text, long numBytes)
 {
-	text[numBytes] = 0;
-	::MessageBox(AfxGetApp()->GetMainWnd()->m_hWnd, text, "Lisp Shutdown", MB_OK);
+	char* t = const_cast<char*>(text);
+	t[numBytes] = 0;
+	::MessageBox(AfxGetApp()->GetMainWnd()->m_hWnd, t, "Lisp Shutdown", MB_OK);
 	DisableLispSystem();
 	long offset = 0;
 	return S_OK;

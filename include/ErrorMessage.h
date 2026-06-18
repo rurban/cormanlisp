@@ -19,7 +19,7 @@ inline void ErrorMessage(LPCTSTR szFn, DWORD dwError = GetLastError())
                               0);
     if (!bRet)
         lstrcpy(szPrompt, __TEXT("Unknown Error"));
-    wsprintf(szTitle, __TEXT("%s failed with error code (0x%x)! Do you want to exit?"), szFn, dwError);
+    wsprintf(szTitle, __TEXT("%s failed with error code (0x%lx)! Do you want to exit?"), szFn, dwError);
     int id = MessageBox(HWND_DESKTOP, szPrompt, szTitle, MB_YESNO|MB_SETFOREGROUND);
     if (id != IDNO)
         ExitProcess(0);

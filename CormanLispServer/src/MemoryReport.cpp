@@ -67,13 +67,13 @@ static bool checkSimpleCharVector(LispObj str)
     return true;
 }
 
-static void writeHeapInfo(LispHeap* heap, FILE* file, char* name)
+static void writeHeapInfo(LispHeap* heap, FILE* file, const char* name)
 {
-    fprintf(file, "Heap: %s  Generation: %x\n", name, heap->generation);
-    fprintf(file, "  Start: %08.8x", (unsigned int)heap->start);
-    fprintf(file, "  End: %08.8x", (unsigned int)heap->end);
-    fprintf(file, "  Current: %08.8x", (unsigned int)heap->current);
-    fprintf(file, "  Overflow: %08.8x", (unsigned int)heap->overflow);
+    fprintf(file, "Heap: %s  Generation: %lx\n", name, heap->generation);
+    fprintf(file, "  Start: %08lx", (unsigned long)heap->start);
+    fprintf(file, "  End: %08lx", (unsigned long)heap->end);
+    fprintf(file, "  Current: %08lx", (unsigned long)heap->current);
+    fprintf(file, "  Overflow: %08lx", (unsigned long)heap->overflow);
     fprintf(file, "\n\n");
 }
 
@@ -90,19 +90,19 @@ static void outputUvector(FILE* file, LispObj uvector)
     int length = 0;
     if (!pointsIntoAnyLispHeap((void*)uvector))
     {
-        fprintf(file, "{Warning: Unknown or untagged value: %08.8x}", uvector);
+        fprintf(file, "{Warning: Unknown or untagged value: %08lx}", uvector);
         return;
     }
 
     if (IsBadReadPtr((void*)stripTag(uvector), 8))
     {
-        fprintf(file, "{Error: Apparent heap object at address %08.8x is not accessible}", stripTag(uvector));
+        fprintf(file, "{Error: Apparent heap object at address %08lx is not accessible}", stripTag(uvector));
         return;
     }
     length = uvectorSize(uvector) * 8;
     if (IsBadReadPtr((void*)stripTag(uvector), length))
     {
-        fprintf(file, "{Error: Apparent heap object at address %08.8x is not accessible}", stripTag(uvector));
+        fprintf(file, "{Error: Apparent heap object at address %08lx is not accessible}", stripTag(uvector));
         return;
     }
 
@@ -113,15 +113,15 @@ static void outputUvector(FILE* file, LispObj uvector)
             if (functionEnvironment(uvector) == NIL)
                 fprintf(file, "{Function: Environment = NIL");
             else
-                fprintf(file, "{Function: Environment = %08.8x", functionEnvironment(uvector));
-            fprintf(file, ", Code Buffer = %08.8x}", (unsigned int)UVECTOR(uvector) + FUNCTION_ADDRESS);
+                fprintf(file, "{Function: Environment = %08lx", functionEnvironment(uvector));
+            fprintf(file, ", Code Buffer = %08lx}", (unsigned long)UVECTOR(uvector) + FUNCTION_ADDRESS);
             break;
         case KFunctionType:	
             if (functionEnvironment(uvector) == NIL)
                 fprintf(file, "{Kernel Function: Environment = NIL");
             else
-                fprintf(file, "{Kernel Function: Environment = %08.8x", functionEnvironment(uvector));
-            fprintf(file, ", C Function Pointer = %08.8x}", (unsigned int)UVECTOR(uvector) + FUNCTION_ADDRESS);
+                fprintf(file, "{Kernel Function: Environment = %08lx", functionEnvironment(uvector));
+            fprintf(file, ", C Function Pointer = %08lx}", (unsigned long)UVECTOR(uvector) + FUNCTION_ADDRESS);
             break;
         case StructureType:	
             fprintf(file, "{Structure}");
@@ -211,7 +211,7 @@ static void outputUvector(FILE* file, LispObj uvector)
     }
 }
 
-char* getHeapName(LispObj obj)
+static const char* getHeapName(LispObj obj)
 {
     if (EphemeralHeap1.inHeap((byte*)obj))
     {
@@ -251,37 +251,37 @@ static void outputReferencedObject(FILE* file, LispObj obj, int indent)
     if (isFixnum(obj))
 	{
 		if (obj != 0 && (void*)obj <= stackStart && (void*)obj >= stackEnd)
-			fprintf(file, "{Warning: Integer %x or possible stack reference: %08.8x}", integer(obj), obj);		// may indicate a reference into the stack
+			fprintf(file, "{Warning: Integer %lx or possible stack reference: %08lx}", integer(obj), obj);		// may indicate a reference into the stack
 		else
-			fprintf(file, "{Integer: %x}", integer(obj));
+			fprintf(file, "{Integer: %lx}", integer(obj));
 	}
     else if (isCons(obj))
     {
         if (obj < 0x10000)
         {
-            fprintf(file, "{Untagged value: %08.8x}", obj);
+            fprintf(file, "{Untagged value: %08lx}", obj);
             return;
         }
         if (!pointsIntoAnyLispHeap((void*)obj))
         {
 			if (obj != 0 && (void*)obj <= stackStart && (void*)obj >= stackEnd)
-				fprintf(file, "{Warning: Stack reference: %08.8x}", obj);		// indicates a reference into the stack
+				fprintf(file, "{Warning: Stack reference: %08lx}", obj);		// indicates a reference into the stack
 			else
-				fprintf(file, "{Warning: Unknown or untagged value: %08.8x}", obj);
+				fprintf(file, "{Warning: Unknown or untagged value: %08lx}", obj);
             return;
         }
 
         if (IsBadReadPtr((void*)stripTag(obj), 8))
-            fprintf(file, "{Error: Apparent heap object at address %08.8x is not accessible}", stripTag(obj));
+            fprintf(file, "{Error: Apparent heap object at address %08lx is not accessible}", stripTag(obj));
         else
         {
-            fprintf(file, "{Cons (in %s): CAR = %08.8x, CDR = %08.8x}", 
+            fprintf(file, "{Cons (in %s): CAR = %08lx, CDR = %08lx}", 
                 getHeapName(obj), CAR(obj), CDR(obj));
         }
     }
     else if (obj == JumpBufferMarker)
     {
-        fprintf(file, "{JumpBufferMarker: %08.8x}", obj);
+        fprintf(file, "{JumpBufferMarker: %08lx}", obj);
     }
     else if (isShortFloat(obj))
     {
@@ -291,7 +291,7 @@ static void outputReferencedObject(FILE* file, LispObj obj, int indent)
     {
         if (obj < 0x10000)
         {
-            fprintf(file, "{Untagged value: %08.8x}", obj);
+            fprintf(file, "{Untagged value: %08lx}", obj);
             return;
         }
 
@@ -301,10 +301,10 @@ static void outputReferencedObject(FILE* file, LispObj obj, int indent)
     {
         if (obj < 0x10000)
         {
-            fprintf(file, "{Untagged value: %08.8x}", obj);
+            fprintf(file, "{Untagged value: %08lx}", obj);
             return;
         }
-        fprintf(file, "{Uvector Header: Uvector length = %08.8x bytes}", (obj >> 8) * 8);
+        fprintf(file, "{Uvector Header: Uvector length = %08lx bytes}", (obj >> 8) * 8);
     }
     else if (isUvector(obj))
     {
@@ -314,10 +314,10 @@ static void outputReferencedObject(FILE* file, LispObj obj, int indent)
     {
         if (obj < 0x10000)
         {
-            fprintf(file, "{Untagged value: %08.8x}", obj);
+            fprintf(file, "{Untagged value: %08lx}", obj);
             return;
         }
-        fprintf(file, "{UNKNOWN OBJECT: %08.8x}", obj);
+        fprintf(file, "{UNKNOWN OBJECT: %08lx}", obj);
     }
 }
 
@@ -333,7 +333,7 @@ static char* getTime()
 
     // Print local time as a string.
 
-    errNum = asctime_s(timeBuffer, 32, &newtime);
+    asctime_s(timeBuffer, 32, &newtime);
     return timeBuffer;
 }
 
@@ -343,35 +343,35 @@ void writeThreadRegistersReport(FILE* file, ThreadRecord* th)
     lispContext.ContextFlags = CONTEXT_CONTROL|CONTEXT_INTEGER;
     GetThreadContext(th->thread, &lispContext);
 
-    fprintf(file, "Thread ID %08.8x Registers:\n", th->threadID);
+    fprintf(file, "Thread ID %08lx Registers:\n", th->threadID);
 
-    fprintf(file, "  EAX: %08.8x\n", lispContext.Eax); 
+    fprintf(file, "  EAX: %08lx\n", lispContext.Eax); 
     outputReferencedObject(file, lispContext.Eax, 4);
     fprintf(file, "\n");
 
-    fprintf(file, "  EBX: %08.8x\n", lispContext.Ebx); 
+    fprintf(file, "  EBX: %08lx\n", lispContext.Ebx); 
     outputReferencedObject(file, lispContext.Ebx, 4);
     fprintf(file, "\n");
 
-    fprintf(file, "  ECX: %08.8x\n", lispContext.Ecx); 
+    fprintf(file, "  ECX: %08lx\n", lispContext.Ecx); 
     outputReferencedObject(file, lispContext.Ecx, 4);
     fprintf(file, "\n");
 
-    fprintf(file, "  EDX: %08.8x\n", lispContext.Edx); 
+    fprintf(file, "  EDX: %08lx\n", lispContext.Edx); 
     outputReferencedObject(file, lispContext.Edx, 4);
     fprintf(file, "\n");
 
-    fprintf(file, "  ESI: %08.8x\n", lispContext.Esi); 
+    fprintf(file, "  ESI: %08lx\n", lispContext.Esi); 
     outputReferencedObject(file, lispContext.Esi, 4);
     fprintf(file, "\n");
 
-    fprintf(file, "  EDI: %08.8x\n", lispContext.Edi); 
+    fprintf(file, "  EDI: %08lx\n", lispContext.Edi); 
     outputReferencedObject(file, lispContext.Edi, 4);
     fprintf(file, "\n");
 
-    fprintf(file, "  ESP: %08.8x\n", lispContext.Esp); 
-    fprintf(file, "  EBP: %08.8x\n", lispContext.Ebp); 
-    fprintf(file, "  EIP: %08.8x\n", lispContext.Eip); 
+    fprintf(file, "  ESP: %08lx\n", lispContext.Esp); 
+    fprintf(file, "  EBP: %08lx\n", lispContext.Ebp); 
+    fprintf(file, "  EIP: %08lx\n", lispContext.Eip); 
     fprintf(file, "\n");
 }
 
@@ -620,7 +620,7 @@ void writeThreadSummary(FILE* file, ThreadRecord* th)
     static CONTEXT lispContext;
     lispContext.ContextFlags = CONTEXT_CONTROL|CONTEXT_INTEGER;
     GetThreadContext(th->thread, &lispContext);
-    char* msg;
+    const char* msg;
     if (th->stackStart == 0)
         msg = "Not started";
     unsigned long* basePointer = (unsigned long*)lispContext.Ebp;
@@ -647,8 +647,8 @@ void writeThreadSummary(FILE* file, ThreadRecord* th)
     // Every even segment should be a lisp (tagged) segment,
     int index = qv[STACK_MARKER_INDEX_Index] >> 2;
     int i = 0;
-    char* frameName = 0;
-    char* executionContext = 0;
+    const char* frameName = 0;
+    const char* executionContext = 0;
     LispObj* x = 0;
 
     for (x = start; x >= end; x--)
@@ -661,7 +661,7 @@ void writeThreadSummary(FILE* file, ThreadRecord* th)
         {
             DWORD addr = stack[x - end].value;
             DWORD funcBase = 0;
-            char* name = 0;
+            const char* name = 0;
 
             // try to find the name of the frame
             DWORD index = x - end - 1;
@@ -709,7 +709,7 @@ void writeThreadSummary(FILE* file, ThreadRecord* th)
 
     if (!frameName)
         frameName = "<Unknown>";
-    fprintf(file, "Thread ID %08.8x  Executing function: %s  Execution context: %s", 
+    fprintf(file, "Thread ID %08lx  Executing function: %s  Execution context: %s", 
         th->threadID, frameName, executionContext);
 }
 
@@ -723,7 +723,7 @@ void writeThreadStackReport(FILE* file, ThreadRecord* th)
 
     if (start == 0)
     {
-        fprintf(file, "Thread ID %08.8x has not been started--no stack trace will be output\n", th->threadID);
+        fprintf(file, "Thread ID %08lx has not been started--no stack trace will be output\n", th->threadID);
         return;			// watch for the case where a thread has not actually started
     }
     int i = 0;
@@ -733,9 +733,9 @@ void writeThreadStackReport(FILE* file, ThreadRecord* th)
     LispObj* qv = th->QV_rec;
     int index = 0;
 
-    fprintf(file, "Thread ID %08.8x Stack:\n", th->threadID);
-    fprintf(file, "  Stack start (base) address: %08.8x\n", (unsigned int)start);
-    fprintf(file, "  Stack end (top of stack) address: %08.8x\n", (unsigned int)end);
+    fprintf(file, "Thread ID %08lx Stack:\n", th->threadID);
+    fprintf(file, "  Stack start (base) address: %08lx\n", (unsigned long)start);
+    fprintf(file, "  Stack end (top of stack) address: %08lx\n", (unsigned long)end);
     fprintf(file, "\n");
 
     // make a copy of the stack
@@ -764,16 +764,16 @@ void writeThreadStackReport(FILE* file, ThreadRecord* th)
     {
         if (stack[x - end].ebp != 0)
         {
-            fprintf(file, "    %08.8x: %08.8x  ", (unsigned int)x, (unsigned int)*x);
-            fprintf(file, " {EBP Link: %08.8x}\n", (unsigned int)stack[x - end].value);
+            fprintf(file, "    %08lx: %08lx  ", (unsigned long)x, (unsigned long)*x);
+            fprintf(file, " {EBP Link: %08lx}\n", (unsigned long)stack[x - end].value);
             continue;
         }
         else if (stack[x - end].returnAddress != 0)
         {
             DWORD addr = stack[x - end].value;
             DWORD funcBase = 0;
-            char* frameName = 0;
-            char* name = 0;
+            const char* frameName = 0;
+            const char* name = 0;
 
             // try to find the name of the frame
             DWORD index = x - end - 1;
@@ -795,15 +795,15 @@ void writeThreadStackReport(FILE* file, ThreadRecord* th)
             if (!name || name[0] == 0)
                 name = "<Unknown>";
 
-            fprintf(file, "    %08.8x: %08.8x  ", (unsigned int)x, (unsigned int)*x);
-            fprintf(file, " {Return address: %08.8x [%s + %x]}\n", (unsigned int)stack[x - end].value, name,
-				(unsigned int)(addr - funcBase));
+            fprintf(file, "    %08lx: %08lx  ", (unsigned long)x, (unsigned long)*x);
+            fprintf(file, " {Return address: %08lx [%s + %lx]}\n", (unsigned long)stack[x - end].value, name,
+				(unsigned long)(addr - funcBase));
             continue;
         }
 
         if (EVEN(i))
         {
-            fprintf(file, "    %08.8x: %08.8x  ", (unsigned int)x, (unsigned int)*x);
+            fprintf(file, "    %08lx: %08lx  ", (unsigned long)x, (unsigned long)*x);
             if (inAnyLispHeap(*x) && *(unsigned long*)x == JumpBufferMarker)
             {
                 outputReferencedObject(file, *(x - 4), 0);	// x -> EDI
@@ -819,7 +819,7 @@ void writeThreadStackReport(FILE* file, ThreadRecord* th)
                     && *(unsigned char*)(x - (2 * (*x >> 8))) == ForeignStackStartMarker)
             {
                 // foreign stack block
-                fprintf(file, "{Foreign Stack Block: Start = %08.8x, Length = %08.8x bytes}",
+                fprintf(file, "{Foreign Stack Block: Start = %08lx, Length = %08lx bytes}",
                     *x, (2 * (*x >> 8)) * 4);
                 x -= ((2 * (*x >> 8)) - 1);
             }
@@ -853,7 +853,7 @@ void writeThreadStackReport(FILE* file, ThreadRecord* th)
         }
         else
         {
-            fprintf(file, "    %08.8x: %08.8x  Foreign stack\n", (unsigned int)x, (unsigned int)*x);
+            fprintf(file, "    %08lx: %08lx  Foreign stack\n", (unsigned long)x, (unsigned long)*x);
         }
         if ((i < index) && ((unsigned long)x) <= qv[(i * 2) + STACK_MARKERS_Index])
             i++;
@@ -873,7 +873,7 @@ void writeThreadStackReport(FILE* file, ThreadRecord* th)
 	fprintf(file, "\nQV Array:\n");
 	for (i = 0; i < SYSTEM_OBJ_MAX; i++)
 	{
-        fprintf(file, "    %08.8x: %08.8x  ", i, qv[i]);
+        fprintf(file, "    %08x: %08lx  ", i, qv[i]);
         LispObj o = qv[i];
         if (isHeapBlock(o))
         {
@@ -905,7 +905,7 @@ void writeThreadStackReport(FILE* file, ThreadRecord* th)
 
 static FILE* dumpFile = 0;
 
-static char* UvectorTypeNames[32] =
+static const char* UvectorTypeNames[32] =
 {
     "FUNCTION",							// FunctionType					0
     "KERNEL-FUNCTION",					// KFunctionType				1
@@ -972,7 +972,7 @@ void dumpUvector(FILE* file, LispObj u)
     DWORD blockLength = uvectorSize(u) * 8;
     DWORD* block = (DWORD*)stripTag(u);
     int type = uvectorType(u);
-    fprintf(dumpFile, "  %08.8x: UVECTOR %08.8x bytes     %s", 
+    fprintf(dumpFile, "  %08lx: UVECTOR %08lx bytes     %s", 
         stripTag(u), blockLength, UvectorTypeNames[type]);
     if (type == SymbolType)
     {
@@ -1005,7 +1005,7 @@ void dumpUvector(FILE* file, LispObj u)
             {
                 if ((i % 8) == 0)
                     fprintf(file, "\n                    ");
-                fprintf(file, "%08.8x ", block[i]);
+                fprintf(file, "%08lx ", block[i]);
             }
         }
     }
@@ -1014,10 +1014,10 @@ void dumpUvector(FILE* file, LispObj u)
 
 void dumpCons(FILE* file, LispObj c)
 {
-    fprintf(file, "  %08.8x: CONS    %08.8x ", stripTag(c), *(LispObj*)stripTag(c));
+    fprintf(file, "  %08lx: CONS    %08lx ", stripTag(c), *(LispObj*)stripTag(c));
 	outputReferencedObject(file, *(LispObj*)stripTag(c), 0);
 	fprintf(file, "\n"); 
-	fprintf(file, "                    %08.8x ", *(LispObj*)(stripTag(c) + 4));
+	fprintf(file, "                    %08lx ", *(LispObj*)(stripTag(c) + 4));
 	outputReferencedObject(file, *(LispObj*)(stripTag(c) + 4), 0);
 	fprintf(file, "\n"); 
 }
@@ -1040,7 +1040,7 @@ void dumpHeapBlock(LispObj block)
 }
 
 
-void dumpLispHeap(FILE* file, LispHeap* heap, char* name)
+void dumpLispHeap(FILE* file, LispHeap* heap, const char* name)
 {
     ConsCount = 0;
     UvectorCount = 0;
@@ -1051,20 +1051,20 @@ void dumpLispHeap(FILE* file, LispHeap* heap, char* name)
     doHeapBlock(heap, dumpHeapBlock);
     dumpFile = 0;
     fprintf(file, "\n%s Heap Summary:\n", name);
-    fprintf(file, "  Total number of heap objects:                 %08.8x\n", ConsCount + UvectorCount);
-    fprintf(file, "  Number of CONS objects:                       %08.8x\n", ConsCount); 
-    fprintf(file, "  Number of UVECTOR objects:                    %08.8x\n", UvectorCount); 
+    fprintf(file, "  Total number of heap objects:                 %08x\n", ConsCount + UvectorCount);
+    fprintf(file, "  Number of CONS objects:                       %08x\n", ConsCount);
+    fprintf(file, "  Number of UVECTOR objects:                    %08x\n", UvectorCount);
     fprintf(file, "\n");
     fprintf(file, "  Object Totals By Type\n");
     fprintf(file, "  ---------------------\n");
     for (int i = 0; i < 28; i++)
     {
-        char* name = UvectorTypeNames[i];
+        const char* name = UvectorTypeNames[i];
         int len = strlen(name);
         fprintf(file, "  %s", name); 
         for (int n = 0; n <  (28 - len); n++)
             fprintf(file, " ");
-        fprintf(file, "%08.8x\n", UvectorCounts[i]); 
+        fprintf(file, "%08x\n", UvectorCounts[i]);
     }
 }
 
@@ -1106,36 +1106,36 @@ void writeMemoryReport(void* address, CONTEXT* context)
             
             if (address != (void*)(-2))
             {
-                fprintf(file, "The operating system has reported a memory access violation at the address %08.8x.\n\n", (unsigned int)address);
+                fprintf(file, "The operating system has reported a memory access violation at the address %08lx.\n\n", (unsigned long)address);
                 fprintf(file, "Registers:\n"); 
 
-                fprintf(file, "  EAX: %08.8x\n", context->Eax); 
+                fprintf(file, "  EAX: %08lx\n", context->Eax); 
                 outputReferencedObject(file, context->Eax, 4);
                 fprintf(file, "\n");
 
-                fprintf(file, "  EBX: %08.8x\n", context->Ebx); 
+                fprintf(file, "  EBX: %08lx\n", context->Ebx); 
                 outputReferencedObject(file, context->Ebx, 4);
                 fprintf(file, "\n");
 
-                fprintf(file, "  ECX: %08.8x\n", context->Ecx); 
+                fprintf(file, "  ECX: %08lx\n", context->Ecx); 
                 outputReferencedObject(file, context->Ecx, 4);
                 fprintf(file, "\n");
 
-                fprintf(file, "  EDX: %08.8x\n", context->Edx); 
+                fprintf(file, "  EDX: %08lx\n", context->Edx); 
                 outputReferencedObject(file, context->Edx, 4);
                 fprintf(file, "\n");
 
-                fprintf(file, "  ESI: %08.8x\n", context->Esi); 
+                fprintf(file, "  ESI: %08lx\n", context->Esi); 
                 outputReferencedObject(file, context->Esi, 4);
                 fprintf(file, "\n");
 
-                fprintf(file, "  EDI: %08.8x\n", context->Edi); 
+                fprintf(file, "  EDI: %08lx\n", context->Edi); 
                 outputReferencedObject(file, context->Edi, 4);
                 fprintf(file, "\n");
 
-                fprintf(file, "  ESP: %08.8x\n", context->Esp); 
-                fprintf(file, "  EBP: %08.8x\n", context->Ebp); 
-                fprintf(file, "  EIP: %08.8x\n", context->Eip); 
+                fprintf(file, "  ESP: %08lx\n", context->Esp); 
+                fprintf(file, "  EBP: %08lx\n", context->Ebp); 
+                fprintf(file, "  EIP: %08lx\n", context->Eip); 
                 fprintf(file, "\n");
             }
 
@@ -1202,7 +1202,7 @@ void writeMemoryReport(void* address, CONTEXT* context)
     {
         // if the memory report task fails with a serious error, we need to abort
         // the whole lisp process
-        char* msg = "A problem has occurred while writing the memory report.\n"
+        const char* msg = "A problem has occurred while writing the memory report.\n"
                         "This is probably a serious problem, so the Lisp process will be closed down.\n";
         CormanLispServer->LispShutdown(msg, strlen(msg));
     }

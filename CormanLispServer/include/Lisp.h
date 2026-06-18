@@ -2123,7 +2123,7 @@ extern PageTableEntry* PageTable;
 
 struct FunctEntry
 {
-	char* functName;
+	const char* functName;
 	LispFunc functAddr;
 	long isKernel;
 };

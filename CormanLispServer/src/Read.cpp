@@ -583,7 +583,7 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 
 	LispObj lis = NIL;
 	LispObj p = lis;
-	LispObj n = NULL;
+	LispObj n = 0;
 	LispObj c = 0;
 	int foundDot = 0;
 	int count = 0;

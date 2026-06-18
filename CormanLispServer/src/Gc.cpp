@@ -1657,7 +1657,7 @@ void garbageCollect(long level)
 
                 CormanLispServer->GetAppMainWindow(&wnd);
 
-                char* msg = "A problem has occurred during garbage collection.\n"
+                const char* msg = "A problem has occurred during garbage collection.\n"
                                 "This may be because the heap has become corrupted, \n"
                                 "or some other system failure has occurred. \n"
                                 "All lisp threads will be exited and you will need to restart \n"
@@ -1908,7 +1908,7 @@ static long gcHandleStructuredException(long exception, LPEXCEPTION_POINTERS inf
 
         CormanLispServer->GetAppMainWindow(&wnd);
 
-        char* msg = "A memory access violation has occurred during garbage collection.\n"
+        const char* msg = "A memory access violation has occurred during garbage collection.\n"
                         "This may be because the heap has become corrupted, \n"
                         "or some other system failure has occurred. \n"
                         "All lisp threads will be exited and you will need to restart \n"
@@ -1947,7 +1947,7 @@ static long gcHandleStructuredExceptionDuringFinalization(long exception, LPEXCE
         WriteMemoryReportTask(attemptedAddress, info->ContextRecord);
 
         CormanLispServer->GetAppMainWindow(&wnd);
-        char* msg = "A memory access violation has occurred during the finalization stage\n"
+        const char* msg = "A memory access violation has occurred during the finalization stage\n"
                         "of garbage collection.\n"
                         "This may be because the heap has become corrupted, \n"
                         "or some other system failure has occurred. \n"
@@ -3102,7 +3102,7 @@ promoteBlock(LispObj* ptr, LispHeap* toSpace)
         {
             if (checkVerifyUvector(obj) == 0)
             {
-                char* message = "Invalid heap object detected.";
+                const char* message = "Invalid heap object detected.";
                 CormanLispServer->OutputText(message, strlen(message));
             }
         }
@@ -3337,7 +3337,7 @@ void CHeapBlocks::add(void* paddr, long size, long type)
 //
 
 unsigned long CormanLispImageID = 0xC0C0BABE;
-char* LispImageCopyright = "Corman Lisp Copyright (c) Corman Technologies. See LICENSE.txt for license information.";
+const char* LispImageCopyright = "Corman Lisp Copyright (c) Corman Technologies. See LICENSE.txt for license information.";
 struct LispImageHeader
 {
     unsigned long imageID;
@@ -3439,7 +3439,7 @@ static FILE* openWriteEXE(LispObj path)
 IMAGE_SECTION_HEADER LispSectionHeader = { 0 };
 IMAGE_SECTION_HEADER PrevSectionHeader;
 
-static FILE* openReadEXE(LispObj path, char* sectionName)
+static FILE* openReadEXE(LispObj path, const char* sectionName)
 {
     long pos = 0;
     long extra = 0;
@@ -3488,7 +3488,7 @@ static FILE* openReadEXE(LispObj path, char* sectionName)
     return exe;
 }
 
-static int finishEXE(FILE* exe, char* sectionName)
+static int finishEXE(FILE* exe, const char* sectionName)
 {
     long pos = 0;
     long extra = 0;
@@ -3984,7 +3984,7 @@ LONG getImageLoadsCount(void)
 	return (LONG)res;
 }
 
-void writePESection(LispObj path, char* sectionName, void (*writeFn)(FILE*))
+void writePESection(LispObj path, const char* sectionName, void (*writeFn)(FILE*))
 {
     FILE* file = 0;
     file = openWriteEXE(path);
@@ -4015,7 +4015,7 @@ void writeHeapToFile(LispObj path)
         writeImgFile(path, writeHeap);
 }
 
-void readPESection(LispObj path, char* sectionName, void (*readFn)(FILE*))
+void readPESection(LispObj path, const char* sectionName, void (*readFn)(FILE*))
 {
     FILE* file = 0;
     file = openReadEXE(path, sectionName);
@@ -4991,7 +4991,7 @@ void* nextHeapObject(void* addr)
 			unsigned long page_id = address_to_page(addr);
 			page_id++;	// advance to next page
 			unsigned long offset = PageOffset(page_id);
-			return (page_address(page_id) + offset);
+			return (char*)page_address(page_id) + offset;
 		}
 		else
 			return (p + (ulength / 2));

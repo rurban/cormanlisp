@@ -1073,7 +1073,7 @@ LispObj _Multiply(LispObj n1, LispObj n2)
 		register unsigned long _eax asm("eax") = (unsigned long)n1;
 		asm volatile(
 			"shr $3, %%eax\n\t"
-			"imul %[n2]\n\t"
+			"imull %[n2]\n\t"
 			"jo do_bignum_%=\n\t"
 			"mov %%eax, %[res]\n\t"
 			"jmp done_mul_%=\n\t"
@@ -4786,4 +4786,5 @@ LispObj __declspec(naked) addShortFloats(LispObj /*n1*/, LispObj /*n2*/)
 		ret
 	}
 #endif
+	return NIL;
 }

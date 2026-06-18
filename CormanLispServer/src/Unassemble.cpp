@@ -8,7 +8,7 @@
 
 #pragma warning (disable:4996) // sprintf() is insecure.
 
-#define OUTPUT_BUF_SIZE (128)
+#define OUTPUT_BUF_SIZE (256)
 #define MAX_INSTRUCTION_SIZE (15) // maximum size of the instruction on x86
 
 char gDisassemblyOutputBuf[OUTPUT_BUF_SIZE];
@@ -61,7 +61,7 @@ long unassemble(unsigned long addr, unsigned long offset)
 		}
 	}
 
-	sprintf(gDisassemblyOutputBuf, "%-24s %s", (const char *)hex_buf, (const char *)mnemonic_buf);
+	snprintf(gDisassemblyOutputBuf, sizeof(gDisassemblyOutputBuf), "%-24s %s", (const char *)hex_buf, (const char *)mnemonic_buf);
 
 	/* stop on RET */
 	if (inst.opcode == I_RET)

@@ -40,10 +40,10 @@ HRESULT CoCormanLisp::GetCurrentUserPersonalDirectory(char* buf, size_t* len) {
 HRESULT CoCormanLisp::GetImageLoadsCount(LONG* count) { *count = 0; return S_OK; }
 HRESULT CoCormanLisp::EnumConnectionPoints(IEnumConnectionPoints**) { return 0x80004001L; }
 HRESULT CoCormanLisp::FindConnectionPoint(REFIID, IConnectionPoint**) { return 0x80004001L; }
-HRESULT CoCormanLisp::SetMessage(char*) { return S_OK; }
+HRESULT CoCormanLisp::SetMessage(const char*) { return S_OK; }
 HRESULT CoCormanLisp::GetMessage(char*, long) { return S_OK; }
 HRESULT CoCormanLisp::SetDefaultMessage() { return S_OK; }
-HRESULT CoCormanLisp::OutputText(char*, long) { return S_OK; }
+HRESULT CoCormanLisp::OutputText(const char*, long) { return S_OK; }
 HRESULT CoCormanLisp::GetAppInstance(HINSTANCE*) { return 0x80004001L; }
 HRESULT CoCormanLisp::GetAppMainWindow(HWND*) { return 0x80004001L; }
 HRESULT CoCormanLisp::OpenEditWindow(char*, HWND*) { return S_OK; }
@@ -55,7 +55,7 @@ HRESULT CoCormanLisp::BlessThread() { return S_OK; }
 HRESULT CoCormanLisp::UnblessThread() { return S_OK; }
 HRESULT CoCormanLisp::GetFunctionAddress(wchar_t*, wchar_t*, void**) { return 0x80004001L; }
 HRESULT CoCormanLisp::HandleStructuredException(long, LPEXCEPTION_POINTERS, long*) { return S_OK; }
-HRESULT CoCormanLisp::LispShutdown(char*, long) { return S_OK; }
+HRESULT CoCormanLisp::LispShutdown(const char*, long) { return S_OK; }
 
 // Missing internal functions — C linkage for asm callers
 // LeaveGCCriticalSection defined in Gc.cpp (may conflict if un-stubbed)

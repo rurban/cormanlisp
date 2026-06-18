@@ -26,8 +26,8 @@ public:
     STDMETHODIMP_(ULONG) Release();
 
 // ICormanLisp methods
-    STDMETHODIMP OutputText(char* text, long numChars);
-    STDMETHODIMP SetMessage(char* text);
+    STDMETHODIMP OutputText(const char* text, long numChars);
+    STDMETHODIMP SetMessage(const char* text);
 	STDMETHODIMP GetMessage(char* text, long maxMessageLength);
     STDMETHODIMP SetDefaultMessage();
     STDMETHODIMP GetAppInstance(HINSTANCE* appInstance);
@@ -36,7 +36,7 @@ public:
     STDMETHODIMP OpenURL(char* file, HWND* wnd);
     STDMETHODIMP AddMenu(char* menuName);
     STDMETHODIMP AddMenuItem(char* menuName, char* menuItem);
-    STDMETHODIMP ReplaceSelection(char* text, long numChars);
+    STDMETHODIMP ReplaceSelection(const char* text, long numChars);
 
 // Helper functions
 	STDMETHODIMP Connect(IConnectionPoint* pConnectionPoint);
@@ -61,7 +61,7 @@ public:
     STDMETHODIMP_(ULONG) Release();
 
 // ICormanLispShutdown methods
-    STDMETHODIMP LispShutdown(char* text, long numChars);
+    STDMETHODIMP LispShutdown(const char* text, long numChars);
 
 // Helper functions
 	STDMETHODIMP Connect(IConnectionPoint* pConnectionPoint);

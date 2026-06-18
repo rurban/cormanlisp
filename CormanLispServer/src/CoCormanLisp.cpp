@@ -262,7 +262,7 @@ CoCormanLisp::FindConnectionPoint(REFIID riid, IConnectionPoint** ppConnectionPo
 }
 
 STDMETHODIMP 
-CoCormanLisp::SetMessage(char* text)
+CoCormanLisp::SetMessage(const char* text)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
@@ -346,7 +346,7 @@ CoCormanLisp::SetDefaultMessage()
 }
 
 STDMETHODIMP 
-CoCormanLisp::OutputText(char* text, long numChars)
+CoCormanLisp::OutputText(const char* text, long numChars)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
@@ -374,7 +374,7 @@ CoCormanLisp::OutputText(char* text, long numChars)
 }
 
 STDMETHODIMP 
-CoCormanLisp::LispShutdown(char* text, long numChars)
+CoCormanLisp::LispShutdown(const char* text, long numChars)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
