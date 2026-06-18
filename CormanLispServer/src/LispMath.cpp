@@ -1063,6 +1063,13 @@ LispObj _Multiply(LispObj n1, LispObj n2)
 	if (both_fixnums(n1, n2))
 	{
 		// attempt fixnum multiply — use extended asm with register variable
+#ifdef _WIN32
+		__asm mov eax, dword ptr n1
+		__asm shr eax, 3
+		__asm imul dword ptr n2
+		__asm jo do_bignum
+		__asm mov [result], eax
+#else
 		register unsigned long _eax asm("eax") = (unsigned long)n1;
 		asm volatile(
 			"shr $3, %%eax\n\t"
@@ -1076,6 +1083,7 @@ LispObj _Multiply(LispObj n1, LispObj n2)
 			: [n2] "m"(n2)
 			: "eax", "edx", "cc"
 		);
+#endif
 		return result;
 	}
 
@@ -4060,6 +4068,12 @@ static LispObj _Lognot(LispObj n)
 
 	if (isFixnum(n))
 	{
+#ifdef _WIN32
+		__asm mov eax, dword ptr n
+		__asm not eax
+		__asm and eax, -8
+		__asm mov dword ptr result, eax
+#else
 		register unsigned long _eax asm("eax") = (unsigned long)n;
 		asm volatile(
 			"not %%eax\n\t"
@@ -4069,6 +4083,7 @@ static LispObj _Lognot(LispObj n)
 			:
 			: "eax", "cc"
 		);
+#endif
 	}
 	else
 		result = bignumNot(n);

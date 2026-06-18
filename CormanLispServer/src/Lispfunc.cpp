@@ -195,6 +195,81 @@ extern unsigned long NumReturnValues;
 __attribute__((naked))
 LispFunction(Funcall)
 {
+#ifdef _WIN32
+	__asm 
+	{
+		push	ebp
+		mov		ebp, esp
+		push	ebx
+		push	edi
+		push	0			;; one cell local storage at [ebp - 12]
+
+		cmp		ecx, 1
+		jge		short t1
+		call 	WrongNumberOfArgs
+	t1:
+		mov		eax, [ebp + ecx*4 + 4]		;; eax = function
+		mov		edx, eax
+		and		edx, 7
+		cmp		edx, UvectorTag				;; see if func arg is a uvector
+		je		short t2
+		push	eax
+		call	checkFunction
+	t2:
+		mov		edx, [eax - UvectorTag]		;; edx = uvector header
+		shr 	dl, 3
+		cmp		dl, SymbolType				;; see if it is a symbol
+		jne		short t3
+		;; get the function that is bound to the symbol
+		mov		eax, [eax + ((SYMBOL_FUNCTION * 4) - UvectorTag)]
+		mov		eax, [eax - 4]
+		mov		edx, eax
+		and		edx, 7
+		cmp		edx, UvectorTag
+		je 		short t9
+		push	dword ptr [ebp + ecx*4 + 4]
+		call	checkFunction
+	t9:
+		mov		edx, [eax - UvectorTag]		;; edx = uvector header
+		shr 	dl, 3
+	t3: ;; we now know we have a function in eax, and dl is the type
+
+		;; push all the arguments
+		mov		[ebp - 12], esp
+		mov		ebx, ecx
+		dec		ecx
+	t4:
+		dec		ebx
+		jle		short t5
+		push 	dword ptr [ebp + ebx*4 + 4]
+		jmp		short t4
+	t5:
+		cmp 	dl, FunctionType
+		jne		short t6
+		mov		edi, [eax + ((FUNCTION_ENVIRONMENT * 4) - UvectorTag)] 
+		mov		eax, [eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
+		lea		eax, [eax + ((COMPILED_CODE_OFFSET * 4) - UvectorTag)]
+		call	eax	
+		jmp		short t8
+	t6:
+		cmp 	dl, KFunctionType
+		jne		short t7
+		mov		edi, [esi]		;; environment for kfunctions is always NIL
+		call	[eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
+		jmp		short t8
+	t7:
+		push	eax
+		call	checkFunction
+	t8:
+		mov		esp, [ebp - 12]
+		pop		edi
+		pop		edi
+		pop		ebx
+		mov		esp, ebp
+		pop		ebp
+		ret
+	}
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -275,6 +350,7 @@ LispFunction(Funcall)
 		  [kfunctype] "i"(KFunctionType)
 		: "eax", "ebx", "ecx", "edx", "edi", "memory"
 	);
+#endif
 }
 
 #define ARGS_OFFSET	8
@@ -283,6 +359,94 @@ LispFunction(Funcall)
 __attribute__((naked))
 LispFunction(Apply)
 {
+#ifdef _WIN32
+	__asm 
+	{
+		push	ebp
+		mov		ebp, esp
+		push	ebx
+		push	edi
+		push	0			;; one cell local storage at [ebp - 12]
+
+		cmp		ecx, 2
+		jge		short t1
+		call 	WrongNumberOfArgs
+	t1:
+		mov		eax, [ebp + ecx*4 + 4]		;; eax = function
+		mov		edx, eax
+		and		edx, 7
+		cmp		edx, UvectorTag				;; see if func arg is a uvector
+		je		short t2
+		push	eax
+		call	checkFunction
+	t2:
+		mov		edx, [eax - UvectorTag]		;; edx = uvector header
+		shr 	dl, 3
+		cmp		dl, SymbolType				;; see if it is a symbol
+		jne		short t4
+		;; get the function that is bound to the symbol
+		mov		eax, [eax + ((SYMBOL_FUNCTION * 4) - UvectorTag)]
+		mov		eax, [eax - 4]
+		mov		edx, eax
+		and		edx, 7
+		cmp		edx, UvectorTag
+		je 		short t3
+		push	dword ptr [ebp + ecx*4 + 4]
+		call	checkFunction
+	t3:
+		mov		edx, [eax - UvectorTag]		;; edx = uvector header
+		shr 	dl, 3
+	t4: ;; we now know we have a function in eax, and dl is the type
+
+		;; push all the arguments except the last
+		mov		[ebp - 12], esp
+		dec		ecx
+		mov		ebx, ecx
+		dec		ecx
+	t5:
+		dec		ebx
+		jle		short t6
+		push 	dword ptr [ebp + ebx*4 + 8]
+		jmp		short t5
+	t6:
+		;; the last argument is a list of remaining arguments
+		mov		edi, [ebp + ARGS_OFFSET]
+	t7:
+		mov		ebx, edi
+		and		ebx, 7
+		cmp		ebx, ConsTag				;; is a cons cell?
+		jne		short t8					;; if not, exit
+		push	[edi - 4]
+		inc		ecx
+		mov		edi, [edi]
+		jmp		short t7
+	t8:
+		cmp 	dl, FunctionType
+		jne		short t9
+		mov		edi, [eax + ((FUNCTION_ENVIRONMENT * 4) - UvectorTag)] 
+		mov		eax, [eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
+		lea		eax, [eax + ((COMPILED_CODE_OFFSET * 4) - UvectorTag)]
+		call	eax	
+		jmp		short t11
+	t9:
+		cmp 	dl, KFunctionType
+		jne		short t10
+		mov		edi, [esi]		;; environment for kfunctions is always NIL
+		call	[eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
+		jmp		short t11
+	t10:
+		push	eax
+		call	checkFunction
+	t11:
+		mov		esp, [ebp - 12]
+		pop		edi				;; remove local storage
+		pop		edi
+		pop		ebx
+		mov		esp, ebp
+		pop		ebp
+		ret
+	}
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -296,20 +460,20 @@ LispFunction(Apply)
 		"mov 4(%%ebp, %%ecx, 4), %%eax\n\t"
 		"mov %%eax, %%edx\n\t"
 		"and $7, %%edx\n\t"
-		"cmp %c[utag], %%edx\n\t"
+		"cmp $%c[utag], %%edx\n\t"
 		"je 2f\n\t"
 		"push %%eax\n\t"
 		"call checkFunction\n\t"
 		"2:\n\t"
 		"mov -%c[utag](%%eax), %%edx\n\t"
 		"shr $3, %%dl\n\t"
-		"cmp %c[symtype], %%dl\n\t"
+		"cmp $%c[symtype], %%dl\n\t"
 		"jne 4f\n\t"
 		"mov %c[symfunc](%%eax), %%eax\n\t"
 		"mov -4(%%eax), %%eax\n\t"
 		"mov %%eax, %%edx\n\t"
 		"and $7, %%edx\n\t"
-		"cmp %c[utag], %%edx\n\t"
+		"cmp $%c[utag], %%edx\n\t"
 		"je 3f\n\t"
 		"push 4(%%ebp, %%ecx, 4)\n\t"
 		"call checkFunction\n\t"
@@ -331,14 +495,14 @@ LispFunction(Apply)
 		"7:\n\t"
 		"mov %%edi, %%ebx\n\t"
 		"and $7, %%ebx\n\t"
-		"cmp %c[constag], %%ebx\n\t"
+		"cmp $%c[constag], %%ebx\n\t"
 		"jne 8f\n\t"
 		"push -4(%%edi)\n\t"
 		"inc %%ecx\n\t"
 		"mov (%%edi), %%edi\n\t"
 		"jmp 7b\n\t"
 		"8:\n\t"
-		"cmp %c[functype], %%dl\n\t"
+		"cmp $%c[functype], %%dl\n\t"
 		"jne 9f\n\t"
 		"mov %c[funcenv](%%eax), %%edi\n\t"
 		"mov %c[funcaddr](%%eax), %%eax\n\t"
@@ -346,7 +510,7 @@ LispFunction(Apply)
 		"call *%%eax\n\t"
 		"jmp 11f\n\t"
 		"9:\n\t"
-		"cmp %c[kfunctype], %%dl\n\t"
+		"cmp $%c[kfunctype], %%dl\n\t"
 		"jne 10f\n\t"
 		"mov (%%esi), %%edi\n\t"
 		"call *%c[funcaddr](%%eax)\n\t"
@@ -374,6 +538,7 @@ LispFunction(Apply)
 		  [kfunctype] "i"(KFunctionType)
 		: "eax", "ebx", "ecx", "edx", "edi", "memory"
 	);
+#endif
 }
 //
 //	Lisp function create-closure
@@ -918,7 +1083,13 @@ LispFunction(Get_Instruction_Count)
 	
 //	__asm db 0fH, 31H
 
+#ifdef _WIN32
+	__asm rdtsc
+	__asm mov dword ptr lowtime, eax
+	__asm mov dword ptr hightime, edx
+#else
 	asm volatile("rdtsc" : "=a"(lowtime), "=d"(hightime));
+#endif
 
 	UVECTOR(bn)[BIGNUM_FIRST_CELL] = lowtime;
 	UVECTOR(bn)[BIGNUM_FIRST_CELL + 1] = hightime;
@@ -3471,6 +3642,14 @@ LispFunction(Lookup_Ftype)
 
 __attribute__((naked)) void Load_QV_Reg()
 {
+#ifdef _WIN32
+	__asm	push	ebp
+	__asm	mov		ebp, esp
+	TlsGetValue(QV_Index);
+	__asm	mov		esi, eax
+	__asm	pop		ebp
+	__asm	ret
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -3480,18 +3659,38 @@ __attribute__((naked)) void Load_QV_Reg()
 		"ret"
 		: : : "memory"
 	);
+#endif
 }
 
 __attribute__((naked)) void genericThunkFunc()
 {
+#ifdef _WIN32
+	__asm	mov		eax, dword ptr [0x1000000]		;; use global QV
+	__asm	jmp		dword ptr [eax+0x12345678] ;; replace this with actual offset
+#else
 	asm volatile(
 		"movl $0x1000000, %eax\n\t"
 		"jmp *0x12345678(%eax)\n\t"
 	);
+#endif
 }
 
 __attribute__((naked)) void Minus_EAX_EDX()
 {
+#ifdef _WIN32
+	__asm	push	ebp
+	__asm	mov		ebp, esp
+    __asm   push    edi
+	__asm	push	eax
+	__asm	push	edx
+	__asm	mov		edi, dword ptr [esi]
+	__asm	mov		ecx, 2
+	__asm	call	Minus
+	__asm	add		esp, 8
+    __asm   pop     edi
+	__asm	pop		ebp
+	__asm	ret
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -3507,10 +3706,25 @@ __attribute__((naked)) void Minus_EAX_EDX()
 		"ret"
 		: : : "memory"
 	);
+#endif
 }
 
 __attribute__((naked)) void Plus_EAX_EDX()
 {
+#ifdef _WIN32
+	__asm	push	ebp
+	__asm	mov		ebp, esp
+    __asm   push    edi
+	__asm	push	edx
+	__asm	push	eax
+	__asm	mov		edi, dword ptr [esi]
+	__asm	mov		ecx, 2
+	__asm	call	Plus
+	__asm	add		esp, 8
+    __asm   pop     edi
+	__asm	pop		ebp
+	__asm	ret
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -3526,6 +3740,7 @@ __attribute__((naked)) void Plus_EAX_EDX()
 		"ret"
 		: : : "memory"
 	);
+#endif
 }
 
 const int sizeGenericThunk = 11;	// have to measure this and keep in sync
@@ -4694,7 +4909,11 @@ LispFunction(Stack_Trace)
 	long count = 30;  // maximum of 30 frames
 	LispObj* stackStart = ((ThreadRecord*)TlsGetValue(Thread_Index))->stackStart;
 
+#ifdef _WIN32
+	__asm mov basePointer, ebp
+#else
 	asm volatile("mov %%ebp, %0" : "=m"(basePointer) : : "memory");
+#endif
 
 	while (basePointer < stackStart)
 	{

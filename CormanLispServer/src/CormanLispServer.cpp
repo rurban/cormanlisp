@@ -453,7 +453,7 @@ ThreadQV()
 
 LispObj* ThreadQV()
 {
-	return (LispObj*)TlsGetValue(QV_Index);
+	return (LispObj*)pthread_getspecific((pthread_key_t)QV_Index);
 }
 
 extern int lispmain();
@@ -468,7 +468,11 @@ UINT LispMainProc(LPVOID /*pParam*/)
 	currThreadID = GetCurrentThreadId();
 	WSADATA wsd;
 
+#ifdef _WIN32
+	__asm	mov  dummy, ebp
+#else
 	asm volatile("mov %%ebp, %0" : "=r"(dummy));
+#endif
 
 	// find our thread record
 	th = ThreadList.getList();
@@ -583,7 +587,11 @@ SecondaryThreadProc(LPVOID func)
 		return 0;
 	}
 
+#ifdef _WIN32
+	__asm	mov  dummy, ebp
+#else
 	asm volatile("mov %%ebp, %0" : "=r"(dummy));
+#endif
 
 	thisThread->stackStart = (unsigned long*)dummy;
 	TlsSetValue(Thread_Index, thisThread);
@@ -830,7 +838,12 @@ static CONTEXT lispContext;
 // This simulates a call from the original function,
 __attribute__((naked)) void CallThrowUserExceptionStub()
 {
+#ifdef _WIN32
+	__asm push eax  ;; push return address
+	__asm jmp ThrowUserException;
+#else
 	asm volatile("jmp ThrowUserException");
+#endif
 }
 
 // Aborts the primary thread
@@ -875,10 +888,18 @@ static CONTEXT terminateContext;
 __attribute__((naked)) void TerminateLispThreadException()
 {
 	LispObj result;
+#ifdef _WIN32
+	__asm mov result, edi
+#else
 	asm volatile("mov %%edi, %0" : "=r"(result));
+#endif
 	// LispCall4 deferred to Phase 5
 	(void)result;
+#ifdef _WIN32
+	LispCall4(Funcall, THROW_EXCEPTION, EXIT_THREAD_TAG, result, wrapInteger(1));
+#else
 	asm volatile("ret");
+#endif
 }
 
 void TerminateLispThread(LispObj threadID, LispObj ret)

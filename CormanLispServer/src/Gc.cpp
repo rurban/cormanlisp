@@ -600,7 +600,32 @@ extern "C" void __enter_gc_critical_section()
 
 __attribute__((naked)) void EnterGCCriticalSection()
 {
+#ifdef _WIN32
+    __asm
+    {
+        push	ebp
+        mov		ebp, esp
+        push    edi
+    }
+    LISP_TO_FOREIGN()
+    __asm
+    {
+        push	4	;; push argument length (bytes)
+        lea		eax, dword ptr GCCriticalSection.m_sect
+        push	eax
+        call	dword ptr EnterCriticalSection
+        add		esp, 4	;; pop argument length
+    }
+    FOREIGN_RETURN_TO_LISP()
+    __asm
+    {
+        pop     edi
+        pop		ebp
+        ret
+    }
+#else
 	asm volatile("jmp __enter_gc_critical_section");
+#endif
 }
 
 extern "C" void __leave_gc_critical_section()
@@ -612,7 +637,32 @@ extern "C" void __leave_gc_critical_section()
 
 __attribute__((naked)) void LeaveGCCriticalSection()
 {
+#ifdef _WIN32
+    __asm
+    {
+        push	ebp
+        mov		ebp, esp
+        push    edi
+    }
+    LISP_TO_FOREIGN()
+    __asm
+    {
+        push	4	;; push argument length (bytes)
+        lea		eax, dword ptr GCCriticalSection.m_sect
+        push	eax
+        call	dword ptr LeaveCriticalSection
+        add		esp, 4	;; pop argument length
+    }
+    FOREIGN_RETURN_TO_LISP()
+    __asm
+    {
+        pop     edi
+        pop		ebp
+        ret
+    }
+#else
 	asm volatile("jmp __leave_gc_critical_section");
+#endif
 }
 
 #if 0
@@ -719,6 +769,25 @@ __declspec(naked) void LeaveGCCriticalSection()
 // to be called from Lisp code only
 __attribute__((naked)) LispObj AllocLocalCons()
 {
+#ifdef _WIN32
+    __asm
+    {
+        push	ebp
+        mov		ebp, esp
+    try1:
+        mov		eax, [esi + THREAD_HEAP_Index*4]
+        add		eax, 4
+        lea		edx, [eax + 4]
+        cmp		edx, [esi + THREAD_HEAP_END_Index*4]
+        jle		done
+        call	LoadLocalHeap
+        jmp		short try1
+    done:
+        mov		[esi + THREAD_HEAP_Index*4], edx
+        pop		ebp
+        ret
+    }
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -738,6 +807,7 @@ __attribute__((naked)) LispObj AllocLocalCons()
 		:
 		: "eax", "edx"
 	);
+#endif
 }
 
 //
@@ -747,6 +817,73 @@ __attribute__((naked)) LispObj AllocLocalCons()
 //
 __attribute__((naked)) LispObj AllocVector(long num)
 {
+#ifdef _WIN32
+    __asm
+    {
+        push	ebp
+        mov		ebp, esp
+        push	edi
+        push	esi
+        push	ebx
+        call	ThreadQV
+        mov		esi, eax		;; set up esi
+        mov		edx, dword ptr num
+        cmp		edx, 8000h		;; num < 32k cells?
+        jb		t1
+        shl     edx, 3          ;; pass tagged size
+        push	edx				;; num >= 32k cells, alloc from primary heap
+        call	AllocLargeVector
+        add		esp, 4
+        jmp		end
+    t1:
+        add		edx, 2
+        sar		edx, 1			;; cells = (num + 2) >> 1
+
+        // multi-threaded version
+        push	edx
+        call	EnterGCCriticalSection
+        pop		edx
+        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
+        lea		ecx, [eax + edx*8]
+        cmp		ecx, dword ptr EphemeralHeap1.end
+        jl		t2
+        push	edx
+        push	0
+        call	garbageCollect
+        add		esp, 4
+        pop		edx
+        mov		eax, dword ptr EphemeralHeap1.current
+        lea		ecx, [eax + edx*8]
+    t2:
+        mov		dword ptr EphemeralHeap1.current, ecx
+        mov		ecx, edx				;; ecx = num 8-byte cells
+        shl		edx, 8
+        or		dl, UvectorLengthTag
+        mov		dword ptr [eax], edx	;; set block header cell
+        mov		edi, eax
+        mov		eax, 0 ;;initialize to 0
+        mov		[edi + 4], eax
+        dec		ecx
+        jle		skip_loop1
+    loop1:
+        mov		[edi + ecx*8], eax
+        mov		[edi + ecx*8 + 4], eax
+        dec		ecx
+        jg		loop1
+    skip_loop1:
+        mov		eax, edi
+        add		eax, UvectorTag
+        push	eax
+        call	LeaveGCCriticalSection
+        pop		eax
+    end:
+        pop		ebx
+        pop		esi
+        pop		edi
+        pop		ebp
+        ret
+    }
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -813,6 +950,7 @@ __attribute__((naked)) LispObj AllocVector(long num)
 		  [end] "m"(EphemeralHeap1.end)
 		: "eax", "ecx", "edx", "edi", "memory"
 	);
+#endif
 }
 //	storing the length in the upper 24 bits, and 6 in the lower 3 bits.
 //	Same as AllocVector(), but expects to be called from Lisp code.
@@ -820,6 +958,71 @@ __attribute__((naked)) LispObj AllocVector(long num)
 //
 __attribute__((naked)) LispObj LispAllocVector(long num)
 {
+#ifdef _WIN32
+    __asm
+    {
+        push	ebp
+        mov		ebp, esp
+        push	edi
+        push	esi
+        push	ebx
+        mov		edx, dword ptr num
+        cmp		edx, 8000h		;; num < 32k cells?
+        jb		t1
+        push	edx				;; num >= 32k cells, alloc from primary heap
+        shl     edx, 3          ;; pass tagged size
+        call	AllocLargeVector
+        add		esp, 4
+        jmp		end
+    t1:
+        add		edx, 2
+        sar		edx, 1			;; cells = (num + 2) >> 1
+
+        // multi-threaded version
+        push	edx
+        call	EnterGCCriticalSection
+        pop		edx
+        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
+        lea		ecx, [eax + edx*8]
+        cmp		ecx, dword ptr EphemeralHeap1.end
+        jl		t2
+        push	edx
+        push	0
+        call	garbageCollect
+        add		esp, 4
+        pop		edx
+        mov		eax, dword ptr EphemeralHeap1.current
+        lea		ecx, [eax + edx*8]
+    t2:
+        mov		dword ptr EphemeralHeap1.current, ecx
+        mov		ecx, edx				;; ecx = num 8-byte cells
+        shl		edx, 8
+        or		dl, UvectorLengthTag
+        mov		dword ptr [eax], edx	;; set block header cell
+        mov		edi, eax
+        mov		eax, 0 ;;initialize to 0
+        mov		[edi + 4], eax
+        dec		ecx
+        jle		skip_loop1
+    loop1:
+        mov		[edi + ecx*8], eax
+        mov		[edi + ecx*8 + 4], eax
+        dec		ecx
+        jg		loop1
+    skip_loop1:
+        mov		eax, edi
+        add		eax, UvectorTag
+        push	eax
+        call	LeaveGCCriticalSection
+        pop		eax
+end:
+        pop		ebx
+        pop		esi
+        pop		edi
+        pop		ebp
+        ret
+    }
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -884,6 +1087,7 @@ __attribute__((naked)) LispObj LispAllocVector(long num)
 		  [utag] "i"((unsigned)UvectorLengthTag),
 		  [utag2] "i"((unsigned)UvectorTag)
 	);
+#endif
 }
 
 //
@@ -895,6 +1099,75 @@ __attribute__((naked)) LispObj LispAllocVector(long num)
 //
 __attribute__((naked)) LispObj LispAllocVectorTagged(LispObj num)
 {
+#ifdef _WIN32
+    __asm
+    {
+        push	ebp
+        mov		ebp, esp
+        push	edi
+        push	esi
+        push	ebx
+        mov		edx, dword ptr num
+        cmp		edx, 40000h		;; num < 32k (tagged) cells?
+        jb		t1
+        push	edx				;; num >= 32k cells, alloc from primary heap
+        call	AllocLargeVector
+        add		esp, 4
+        jmp		end
+    t1:
+        add		edx, 16
+        and     edx, 0xfffffff0
+        sar		edx, 1			;; cells = (num + 2) >> 1
+
+        // multi-threaded version
+        push	edx
+        call	EnterGCCriticalSection
+        pop		edx
+        shr     edx, 3                                  ;; safe in critical section, untagged edx
+        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
+        lea		ecx, [eax + edx*8]
+        cmp		ecx, dword ptr EphemeralHeap1.end
+        jl		t2
+        push	edx
+        push	0
+        call	garbageCollect
+        add		esp, 4
+        pop		edx
+        mov		eax, dword ptr EphemeralHeap1.current
+        lea		ecx, [eax + edx*8]
+    t2:
+        mov		dword ptr EphemeralHeap1.current, ecx
+        mov		ecx, edx				;; ecx = num 8-byte cells
+        shl		edx, 8
+        or		dl, UvectorLengthTag
+        mov		dword ptr [eax], edx	;; set block header cell
+        mov		edi, eax
+        mov		eax, 0 ;; initialize to 0
+        mov		[edi + 4], eax
+        dec		ecx
+        jle		skip_loop1
+    loop1:
+        mov		[edi + ecx*8], eax
+        mov		[edi + ecx*8 + 4], eax
+        dec		ecx
+        jg		loop1
+    skip_loop1:
+        mov		eax, edi
+        add		eax, UvectorTag
+        push	eax
+        mov     ecx, 1
+        mov     edx, 1
+        call	LeaveGCCriticalSection
+        pop		eax
+        mov     ecx, 1
+end:
+        pop		ebx
+        pop		esi
+        pop		edi
+        pop		ebp
+        ret
+    }
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -964,6 +1237,7 @@ __attribute__((naked)) LispObj LispAllocVectorTagged(LispObj num)
 		  [utag] "i"((unsigned)UvectorLengthTag),
 		  [utag2] "i"((unsigned)UvectorTag)
 	);
+#endif
 }
 
 //
@@ -971,6 +1245,49 @@ __attribute__((naked)) LispObj LispAllocVectorTagged(LispObj num)
 //	Reserves 2048 conses on the ephemeral heap (16k worth)
 __attribute__((naked)) LispObj LoadLocalHeap()
 {
+#ifdef _WIN32
+    __asm
+    {
+        push	ebp
+        mov		ebp, esp
+        push	edi
+        push	esi
+        push	ebx
+
+        // multi-threaded version
+        call	EnterGCCriticalSection
+        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
+        lea		ecx, [eax + LocalHeapSize]
+        cmp		ecx, dword ptr EphemeralHeap1.end
+        jl		t2
+        push	0
+        call	garbageCollect
+        add		esp, 4
+        mov		eax, dword ptr EphemeralHeap1.current
+        lea		ecx, [eax + LocalHeapSize]
+    t2:
+        mov		dword ptr EphemeralHeap1.current, ecx
+        mov		ecx, (LocalHeapSize/8)				;; ecx = num 8-byte cells
+        mov		edi, eax
+        mov		eax, 0 ;;initialize to 0
+        dec		ecx
+    loop1:
+        mov		[edi + ecx*8], eax
+        mov		[edi + ecx*8 + 4], eax
+        dec		ecx
+        jge		loop1
+
+        mov		[esi + THREAD_HEAP_Index*4], edi
+        add		edi, (LocalHeapSize - 16)	;; leave two conses as pad
+        mov		[esi + THREAD_HEAP_END_Index*4], edi
+        call	LeaveGCCriticalSection
+        pop		ebx
+        pop		esi
+        pop		edi
+        pop		ebp
+        ret
+    }
+#else
 	asm volatile(
 		"push %%ebp\n\t"
 		"mov %%esp, %%ebp\n\t"
@@ -1012,6 +1329,7 @@ __attribute__((naked)) LispObj LoadLocalHeap()
 		  [end] "m"(EphemeralHeap1.end)
 		: "eax", "ecx", "edx", "edi", "memory"
 	);
+#endif
 }
 
 //
@@ -1065,6 +1383,24 @@ static LispObj AllocLargeVector(long num)
             }
         }
     }
+#ifdef _WIN32
+    *(LispObj*)block = (cells << 8) | UvectorLengthTag;
+
+//	__asm		push edi  // unnecessary if done in prolog
+    __asm		mov	ecx, dword ptr cells
+    __asm		mov eax, 0 ;;initialize to 0
+    __asm		mov edi, dword ptr block
+    __asm		mov [edi + 4], eax
+    __asm		dec	ecx
+    __asm		jle skip_loop
+    __asm	loop1:
+    __asm		mov [edi + ecx*8], eax
+    __asm		mov [edi + ecx*8 + 4], eax
+    __asm		dec ecx
+    __asm		jg loop1
+    __asm	skip_loop:
+//	__asm		pop edi
+#else
 	asm volatile(
 		"mov %[cells], %%ecx\n\t"
 		"xor %%eax, %%eax\n\t"
@@ -1082,6 +1418,7 @@ static LispObj AllocLargeVector(long num)
 		: [cells] "m"(cells), [block] "m"(block)
 		: "eax", "ecx", "edi", "memory"
 	);
+#endif
 
     ret = ((LispObj)block) + UvectorTag;
     cells = 0;
@@ -1336,7 +1673,11 @@ void garbageCollect(long level)
             GarbageEntry++;
 
 			// save current ebp, esp values
+#ifdef _WIN32
+			__asm mov	gBasePointer, ebp
+#else
 			asm volatile("mov %%ebp, %0" : "=r"(gBasePointer) : : "memory");
+#endif
 			//__asm mov	gStackEnd, esp
 
             // link back to the values before entry into this function
@@ -2185,6 +2526,14 @@ checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
     {
 
         // check registers -- processor specific
+#ifdef _WIN32
+        __asm mov regs[0], eax
+        __asm mov regs[4], ebx
+        __asm mov regs[8], ecx
+        __asm mov regs[12], edx
+        __asm mov regs[16], esi
+        __asm mov regs[20], edi
+#else
 		asm volatile(
 			"mov %%eax, %0\n\t"
 			"mov %%ebx, %1\n\t"
@@ -2197,6 +2546,7 @@ checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 			:
 			: "memory"
 		);
+#endif
 
 		for (i = 0; i < 6; i++)
 		{
@@ -2204,6 +2554,14 @@ checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 				promoteBlock(&regs[i], toSpace);
 		}
 
+#ifdef _WIN32
+        __asm mov eax, regs[0]
+        __asm mov ebx, regs[4]
+        __asm mov ecx, regs[8]
+        __asm mov edx, regs[12]
+        __asm mov esi, regs[16]
+        __asm mov edi, regs[20]
+#else
 		asm volatile(
 			"mov %0, %%eax\n\t"
 			"mov %1, %%ebx\n\t"
@@ -2216,6 +2574,7 @@ checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 			  "m"(regs[3]), "m"(regs[4]), "m"(regs[5])
 			: "eax", "ebx", "ecx", "edx", "esi", "edi"
 		);
+#endif
     }
 
     // check stacks of all suspended threads
@@ -2758,6 +3117,32 @@ promoteBlock(LispObj* ptr, LispHeap* toSpace)
         //assert((gettag(*pp) == UvectorLengthTag)
         //		&& numNodes > 0 && numNodes <= MAX_CELLS_PER_ARRAY / 2);
 
+#ifdef _WIN32
+        __asm
+        {
+                push eax
+                push ecx
+                push edi
+                push esi
+                mov esi, dword ptr pp
+                mov edi, dword ptr destAddr
+                mov	ecx, dword ptr numNodes
+                dec ecx
+
+            loop1:
+                mov	eax, dword ptr [esi + ecx*8]
+                mov	dword ptr [edi + ecx *8], eax
+                mov	eax, dword ptr [esi + ecx*8 + 4]
+                mov	dword ptr [edi + ecx*8 + 4], eax
+                dec ecx
+                jge loop1
+
+                pop esi
+                pop edi
+                pop ecx
+                pop eax
+        }
+#else
 		asm volatile(
 			"push %%eax\n\t"
 			"push %%ecx\n\t"
@@ -2782,6 +3167,7 @@ promoteBlock(LispObj* ptr, LispHeap* toSpace)
 			: [pp] "m"(pp), [dst] "m"(destAddr), [n] "m"(numNodes)
 			: "eax", "ecx", "esi", "edi", "memory"
 		);
+#endif
 
         toSpace->current += numNodes;
 
@@ -3536,7 +3922,11 @@ void readHeap(FILE* is)
 
             // now replace all heap references on the stack with
             // NIL.
+#ifdef _WIN32
+			__asm	mov	dword ptr [end], esp		// go to stack pointer
+#else
 			asm volatile("mov %%esp, %0" : "=m"(end) : : "memory");
+#endif
 
             for (x = stackStart; x >= end; x--)
             {
