@@ -23,9 +23,13 @@
 #include "clsids.h"
 #include "CoCormanLisp.h"
 
-// Linux port: replace COM client interfaces with callback struct
+// Linux port: replace COM client interfaces with callback struct.
+// Not used on Windows at all - that path still goes through the original
+// COM Initialize()/InitializeCormanLisp()/RunCormanLisp() below.
+#ifndef _WIN32
 #include "cormanlisp_api.h"
 static const CormanLispCallbacks* g_callbacks = NULL;
+#endif
 IUnknown*				 ClientUnknown		= 0;
 ICormanLispTextOutput*	 ClientTextOutput	= 0;
 ICormanLispStatusMessage* ClientMessage		= 0;
@@ -158,6 +162,11 @@ bool g_lisp_bootstrapping = true;
 bool g_batch_input_done = false;
 extern void initLisp();  // in Lisp.cpp
 
+// The cl_* direct-link C API is the Linux replacement for COM; the Windows
+// path never calls it (it still goes through Initialize()/
+// InitializeCormanLisp()/RunCormanLisp() below via COM clients).
+#ifndef _WIN32
+
 // Matches the extern "C" declarations in cormanlisp_api.h; MSVC (unlike
 // GCC) requires the definitions to restate the linkage explicitly rather
 // than inheriting it from the earlier header declaration.
@@ -276,6 +285,8 @@ CL_API long cl_get_image_loads_count(void)
 }
 
 } // extern "C"
+
+#endif // !_WIN32
 
 LONG g_cLocks = 0;
 void SvcLock()	{ InterlockedIncrement(&g_cLocks); }
