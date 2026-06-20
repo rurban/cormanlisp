@@ -1096,6 +1096,7 @@ void LispLoop()
 	LispObj x = 0;
 	LispObj val = 0;
 	LispObj vals = 0;
+	extern bool g_batch_input_done;
 
 	while (1)
 	{
@@ -1117,13 +1118,31 @@ void LispLoop()
 				// No image — enter REPL directly
 			}
 			setSymbolValue(SOURCE_LINE, NIL);
-			x = LispCall2(Funcall, symbolFunction(READ), symbolValue(STANDARD_INPUT));
+			x = LispCall5(Funcall, symbolFunction(READ), symbolValue(STANDARD_INPUT), NIL, UNINITIALIZED, NIL);
+			if (x == UNINITIALIZED)		// EOF
+			{
+				extern bool g_batch_input_done;
+				if (g_batch_input_done)
+					return;
+				else
+					Error("End of file encountered in stream ~A", symbolValue(STANDARD_INPUT));
+			}
+#ifdef _DEBUG
+			fprintf(stderr, "[LispLoop] read x=%p\n", (void*)x);
+#endif
 			val = eval(x, NIL);
 			if (NumReturnValues == 1)
 			{
+#ifdef _DEBUG
+				fprintf(stderr, "[LispLoop] writing val=%p to stream=%p\n",
+					(void*)val, (void*)symbolValue(STANDARD_OUTPUT));
+#endif
 				LispCall2(Write, val, symbolValue(STANDARD_OUTPUT));	// just echo for now
 				LispCall1(Terpri, symbolValue(STANDARD_OUTPUT));
 				LispCall1(Force_Output, symbolValue(STANDARD_OUTPUT));
+#ifdef _DEBUG
+				fprintf(stderr, "[LispLoop] done writing\n");
+#endif
 			}
 			else
 			if (NumReturnValues > 1)
@@ -2458,7 +2477,7 @@ void setSymbolFunction(LispObj sym, LispObj func, LispObj type)
 	LispObj env = 0;
 
 	checkFunction(func);
-	UVECTOR(sym)[SYMBOL_FUNCTION] = func;
+	CAR(UVECTOR(sym)[SYMBOL_FUNCTION]) = func;
 	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = type;
 	env = UVECTOR(func)[FUNCTION_ENVIRONMENT];
 	updateJumpTable(sym, func, env);
@@ -2783,14 +2802,14 @@ LispFunc functionAddress(LispObj func)
 
 LispObj setSymbolMacro(LispObj sym, LispObj func)
 {
-	UVECTOR(sym)[SYMBOL_FUNCTION] = func;
+	CAR(UVECTOR(sym)[SYMBOL_FUNCTION]) = func;
 	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = MACRO;
 	return 0;
 }
 
 LispObj setSpecialOperator(LispObj sym)
 {
-	UVECTOR(sym)[SYMBOL_FUNCTION] = NIL;
+	CAR(UVECTOR(sym)[SYMBOL_FUNCTION]) = NIL;
 	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = SPECIAL_OPERATOR;
 	return 0;
 }

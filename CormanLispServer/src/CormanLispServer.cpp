@@ -28,7 +28,37 @@
 // COM Initialize()/InitializeCormanLisp()/RunCormanLisp() below.
 #ifndef _WIN32
 #include "cormanlisp_api.h"
+#include <stdint.h>
 static const CormanLispCallbacks* g_callbacks = NULL;
+
+// The console overflow code passes a UTF-16 buffer (LISP_CHAR is 16-bit)
+// and a byte count. Convert it to UTF-8 for the char-based Linux callback.
+static void output_text_adapter(wchar_t* text, long numBytes)
+{
+    if (!g_callbacks || !g_callbacks->output_text || numBytes <= 0)
+        return;
+    const uint16_t* w = (const uint16_t*)text;
+    long wlen = numBytes / 2;
+    if (wlen <= 0)
+        return;
+    char* out = new char[wlen * 3 + 1];
+    long op = 0;
+    for (long i = 0; i < wlen; i++) {
+        uint16_t c = w[i];
+        if (c < 0x80) {
+            out[op++] = (char)c;
+        } else if (c < 0x800) {
+            out[op++] = (char)(0xc0 | (c >> 6));
+            out[op++] = (char)(0x80 | (c & 0x3f));
+        } else {
+            out[op++] = (char)(0xe0 | (c >> 12));
+            out[op++] = (char)(0x80 | ((c >> 6) & 0x3f));
+            out[op++] = (char)(0x80 | (c & 0x3f));
+        }
+    }
+    g_callbacks->output_text(out, op);
+    delete[] out;
+}
 #endif
 IUnknown*				 ClientUnknown		= 0;
 ICormanLispTextOutput*	 ClientTextOutput	= 0;
@@ -179,6 +209,7 @@ CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, i
 	if (Thread_Index == 0) Thread_Index = TlsAlloc();
 
 	g_callbacks = cb;
+	TextOutputFuncPtr = (cb && cb->output_text) ? output_text_adapter : 0;
 	// Store image name
 	if (imageName && *imageName)
 		strncpy(LispImageName, imageName, MAX_PATH);

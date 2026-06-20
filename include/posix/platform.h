@@ -31,6 +31,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <climits>
 #include <stdlib.h>
 #include <climits>
@@ -121,15 +124,31 @@ inline int strncpy_s(char* dst, size_t sz, const char* src, size_t cnt) {
 }
 #define fopen_s(ppf, path, mode) ((*(ppf) = fopen(path, mode)) ? 0 : errno)
 
+// ---- File handle helpers ----
+// File handles are encoded as negative values so they don't collide with
+// thread/event/mutex handles (positive pointers or 1).
+// fd 0 -> -2, fd 1 -> -3, ... ; INVALID_HANDLE_VALUE (-1) remains an error.
+inline HANDLE FileHandleFromFd(int fd) { return (HANDLE)(intptr_t)(-fd - 2); }
+inline int FdFromFileHandle(HANDLE h) {
+    intptr_t v = (intptr_t)h;
+    return (v < -1) ? (int)(-v - 2) : -1;
+}
+inline int IsFileHandle(HANDLE h) { return (intptr_t)h < -1; }
+
 // ---- Misc stubs ----
-// CloseHandle at line 98
 inline DWORD GetModuleFileName(void*, char* buf, DWORD sz) { buf[0]=0; return 0; }
 #define MessageBeep(x)          ((void)0)
 #define OutputDebugString(s)    fprintf(stderr, "%s", s)
 #define Sleep(ms)               usleep((ms) * 1000)
 #define GetLastError()          (errno)
 #define SetLastError(x)         (errno = (x))
-inline int CloseHandle(HANDLE) { return 0; }  // return int not void for Lispfunc.cpp
+inline int CloseHandle(HANDLE h) {
+    if (IsFileHandle(h)) {
+        int fd = FdFromFileHandle(h);
+        return (close(fd) == 0) ? 1 : 0;
+    }
+    return 1;  // non-file handles are always valid on Linux
+}  // return int not void for Lispfunc.cpp
 #define _MAX_PATH MAX_PATH
 inline size_t wcslen(const wchar_t* s) { size_t n = 0; while (s[n]) n++; return n; }
 
@@ -272,8 +291,23 @@ inline DWORD WaitForSingleObject(HANDLE, DWORD) { return WAIT_OBJECT_0; }
 inline HANDLE CreateMutex(void*, int, const char*) { return (HANDLE)1; }
 // MemoryReport.cpp stubs
 inline int IsBadReadPtr(const void*, size_t) { return 0; }
-inline int ReadFile(HANDLE, void*, DWORD, DWORD*, void*) { return 0; }
-inline int WriteFile(HANDLE, const void*, DWORD, DWORD*, void*) { return 0; }
+
+inline int ReadFile(HANDLE h, void* buf, DWORD size, DWORD* readBytes, void*) {
+    int fd = FdFromFileHandle(h);
+    if (fd < 0) { if (readBytes) *readBytes = 0; return 0; }
+    ssize_t n = read(fd, buf, size);
+    if (n < 0) { if (readBytes) *readBytes = 0; return 0; }
+    if (readBytes) *readBytes = (DWORD)n;
+    return 1;
+}
+inline int WriteFile(HANDLE h, const void* buf, DWORD size, DWORD* written, void*) {
+    int fd = FdFromFileHandle(h);
+    if (fd < 0) { if (written) *written = 0; return 0; }
+    ssize_t n = write(fd, buf, size);
+    if (n < 0) { if (written) *written = 0; return 0; }
+    if (written) *written = (DWORD)n;
+    return 1;
+}
 typedef __time_t __time32_t;
 typedef int errno_t;
 #define _time32(t) time(t)
@@ -459,10 +493,37 @@ inline void LeaveCriticalSection(void*) {}
 #define FILE_ATTRIBUTE_NORMAL    0x80
 #define INVALID_HANDLE_VALUE     ((HANDLE)-1)
 #define FILE_MAP_READ            4
-inline HANDLE CreateFile(const char*, DWORD, DWORD, void*, DWORD, DWORD, HANDLE) {
-    return INVALID_HANDLE_VALUE;
+#define CREATE_ALWAYS            2
+inline HANDLE CreateFile(const char* path, DWORD access, DWORD, void*, DWORD creation,
+                         DWORD, HANDLE) {
+    int flags = 0;
+    if ((access & (GENERIC_READ | GENERIC_WRITE)) == (GENERIC_READ | GENERIC_WRITE))
+        flags = O_RDWR;
+    else if (access & GENERIC_WRITE)
+        flags = O_WRONLY;
+    else
+        flags = O_RDONLY;
+
+    if (creation == CREATE_ALWAYS)
+        flags |= O_CREAT | O_TRUNC;
+    else if (creation == OPEN_EXISTING)
+        ; // no extra flags
+    else
+        flags |= O_CREAT;
+
+    int fd = open(path, flags, 0666);
+    if (fd < 0) return INVALID_HANDLE_VALUE;
+    return FileHandleFromFd(fd);
 }
-inline DWORD GetFileSize(HANDLE, DWORD*) { return 0; }
+inline DWORD GetFileSize(HANDLE h, DWORD*) {
+    int fd = FdFromFileHandle(h);
+    if (fd < 0) return 0xffffffff;
+    off_t cur = lseek(fd, 0, SEEK_CUR);
+    if (cur < 0) return 0xffffffff;
+    off_t end = lseek(fd, 0, SEEK_END);
+    lseek(fd, cur, SEEK_SET);
+    return (end < 0) ? 0xffffffff : (DWORD)end;
+}
 inline HANDLE CreateFileMapping(HANDLE, void*, DWORD, DWORD, DWORD, const char*) { return INVALID_HANDLE_VALUE; }
 inline void* MapViewOfFile(HANDLE, DWORD, DWORD, DWORD, size_t) { return NULL; }
 inline void FlushViewOfFile(void*, size_t) {}

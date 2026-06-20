@@ -10,6 +10,9 @@
 #include "Stdafx.h"
 #include <ctype.h>
 #include <stdlib.h>
+#ifdef _DEBUG
+#include <stdio.h>
+#endif
 #include <io.h>
 #include <fcntl.h>
 
@@ -88,6 +91,15 @@ LispObj readtableNode()
 	setDispatchFunction(readtable, '#', '\\', symbolFunction(findSymbol("%POUNDBACKSLASHMACRO")));
 	setDispatchFunction(readtable, '#', '|', symbolFunction(findSymbol("%BRACKETEDCOMMENTMACRO")));
 
+#ifdef _DEBUG
+	{
+		LispObj tbl = UVECTOR(readtable)[READTABLE_TABLE];
+		LispObj rp = arrayStart(tbl)[')' * 2 + 1];
+		LispObj lp = arrayStart(tbl)['(' * 2 + 1];
+		fprintf(stderr, "[readtableNode] table=%p ')' macro=%p '(' macro=%p\n", (void*)tbl, (void*)rp, (void*)lp);
+	}
+#endif
+
 	return readtable;
 }
 
@@ -140,8 +152,18 @@ LispObj readExpression(LispObj stream)
 			if (charType == TERMINATING_MACRO_CHAR_TYPE
 				|| charType == NON_TERMINATING_MACRO_CHAR_TYPE)
 			{
-				callret = LispCall3(Funcall, READTABLE_START(readtable)[character(x) * 2 + 1],
-									stream, x);
+				{
+					LispObj macrofn = READTABLE_START(readtable)[character(x) * 2 + 1];
+#ifdef _DEBUG
+					fprintf(stderr, "[readExpression macro] char=%c macrofn=%p\n",
+						(char)integer(x), (void*)macrofn);
+#endif
+					callret = LispCall3(Funcall, macrofn, stream, x);
+				}
+#ifdef _DEBUG
+				fprintf(stderr, "[readExpression macro] char=%c callret=%p NumReturnValues=%d\n",
+					(char)integer(x), (void*)callret, (int)NumReturnValues);
+#endif
 				if (NumReturnValues == 0)
 					return NIL;
 				else
@@ -580,6 +602,10 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 	checkChar(ch);
 	LispObj searchChar = ch;
 	LispObj rt = symbolValue(READTABLE);
+#ifdef _DEBUG
+	fprintf(stderr, "[Cread_delimited_list] RIGHT_PAREN=%p readtable=%p THREAD_HEAP=%p THREAD_HEAP_END=%p\n",
+		(void*)RIGHT_PAREN, (void*)rt, (void*)THREAD_HEAP, (void*)THREAD_HEAP_END);
+#endif
 
 	LispObj lis = NIL;
 	LispObj p = lis;
@@ -615,6 +641,9 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 		}
 		else	
 			n = LispCall5(Funcall, READ, stream, T, NIL, T);
+#ifdef _DEBUG
+		fprintf(stderr, "[Cread_delimited_list] n=%p NumReturnValues=%d\n", (void*)n, (int)NumReturnValues);
+#endif
 			
 		if (n == UNINITIALIZED)
 			Error("Unexpected end of file", 0); 
@@ -637,18 +666,35 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 				if (foundDot >= 2)
 					Error("Error in dotted expression", 0);
 				if (p == NIL)
-					p = lis = cons(n, NIL);
+				{
+					LispObj newcons = cons(n, NIL);
+#ifdef _DEBUG
+					fprintf(stderr, "[Cread_delimited_list] cons(%p, NIL) = %p CAR=%p CDR=%p\n",
+						(void*)n, (void*)newcons, (void*)CAR(newcons), (void*)CDR(newcons));
+#endif
+					p = lis = newcons;
+				}
 				else
 				{
-					CDR(p) = cons(n, NIL);				
+					LispObj newcons = cons(n, NIL);
+#ifdef _DEBUG
+					fprintf(stderr, "[Cread_delimited_list] cons(%p, NIL) = %p CAR=%p CDR=%p\n",
+						(void*)n, (void*)newcons, (void*)CAR(newcons), (void*)CDR(newcons));
+#endif
+					CDR(p) = newcons;				
 					p = CDR(p);
 				}
 				count++;
 			}
+#ifdef _DEBUG
+			fprintf(stderr, "[Cread_delimited_list] lis=%p p=%p\n", (void*)lis, (void*)p);
+#endif
 		}
 	}
 exit:
-		
+#ifdef _DEBUG
+	fprintf(stderr, "[Cread_delimited_list] return lis=%p\n", (void*)lis);
+#endif
 	return lis;
 }	
 	

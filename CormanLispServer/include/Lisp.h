@@ -1848,7 +1848,7 @@ double shortFloat(LispObj);
 
 #define isSpecialOperator(sym)	(UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] == SPECIAL_OPERATOR)
 #define isLambdaForm(n)			(isCons(n) && CAR(n) == LAMBDA)
-#define symbolFunction(s)		(UVECTOR(s)[SYMBOL_FUNCTION])
+#define symbolFunction(s)		(CAR(UVECTOR(s)[SYMBOL_FUNCTION]))
 #define isSpecialSymbol(s)		(UVECTOR(s)[SYMBOL_FLAGS] & SYMBOL_SPECIAL_FLAG)
 #define isConstantSymbol(s)		(UVECTOR(s)[SYMBOL_FLAGS] & SYMBOL_CONSTANT_FLAG)
 #define setSpecialSymbol(s)		(UVECTOR(s)[SYMBOL_FLAGS] |= SYMBOL_SPECIAL_FLAG)
@@ -1987,8 +1987,8 @@ __asm								\
     _arg_ptr += (_arg_count - 1);   \
     CheckNumArgsRange(minargs, maxargs)
 
-#define LISP_FUNC_RETURN(val)       do { ret = (val); return ret; } while(0)
-#define LISP_FUNC_RETURN_NO_VALUES() do { ret = NIL; return ret; } while(0)
+#define LISP_FUNC_RETURN(val)       do { ret = (val); unsigned long _dummy; asm volatile("movl $1, %0" : "=c"(_dummy)); return ret; } while(0)
+#define LISP_FUNC_RETURN_NO_VALUES() do { ret = NIL; unsigned long _dummy; asm volatile("movl $0, %0" : "=c"(_dummy)); return ret; } while(0)
 #define LISP_TO_FOREIGN()           do{}while(0);
 
 #endif

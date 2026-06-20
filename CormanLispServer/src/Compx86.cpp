@@ -31,6 +31,7 @@
 #include "Stdafx.h"
 #include <setjmp.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "Generic.h"
 #include "Lisp.h"
@@ -40,6 +41,53 @@
 typedef LispObj LispObj;
 
 static int ExpandMacrosInline = 1;
+
+// Debugging helper: print a terse representation of a Lisp object to a C stream.
+static void describeForm(LispObj x, FILE* f, int depth = 0)
+{
+    if (x == NIL) {
+        fprintf(f, "NIL");
+    } else if (isSymbol(x)) {
+        LispObj name = symbolName(x);
+        long len = integer(vectorLength(name));
+        LISP_CHAR* p = charArrayStart(name);
+        for (long i = 0; i < len; i++) {
+            LISP_CHAR c = p[i];
+            if (c < 128) fputc((char)c, f);
+            else fprintf(f, "\\u%04x", (unsigned)c);
+        }
+    } else if (isCons(x)) {
+        if (depth > 10) {
+            fprintf(f, "(...)");
+            return;
+        }
+        fprintf(f, "(");
+        describeForm(CAR(x), f, depth + 1);
+        LispObj rest = CDR(x);
+        while (isCons(rest)) {
+            fprintf(f, " ");
+            describeForm(CAR(rest), f, depth + 1);
+            rest = CDR(rest);
+        }
+        if (rest != NIL) {
+            fprintf(f, " . ");
+            describeForm(rest, f, depth + 1);
+        }
+        fprintf(f, ")");
+    } else if (isImmediate(x)) {
+        if (isCharacter(x))
+            fprintf(f, "#\\%c", (char)character(x));
+        else
+            fprintf(f, "#<immediate %p>", (void*)x);
+    } else if (gettag(x) == FixnumTag) {
+        fprintf(f, "%ld", integer(x));
+    } else if (isUvector(x)) {
+        int ut = uvectorType(x);
+        fprintf(f, "#<uvector %p type=%d>", (void*)x, ut);
+    } else {
+        fprintf(f, "#<%p tag=%ld>", (void*)x, (long)gettag(x));
+    }
+}
 
 #define CURRENT_IP		(CBlength())
 #define CURRENT_IP_RAW	(integer(CBlength()))
@@ -1970,7 +2018,13 @@ static LispObj compileList(LispObj x, LispObj dest, LispObj resultType)
 		retval = compileFunctionExpressionForm(funcallForm, dest, resultType); 
 	}
 	else
+	{
+		fprintf(stderr, "[Compx86] Cannot compile form: ");
+		describeForm(x, stderr);
+		fprintf(stderr, "\n");
+		fflush(stderr);
 		Error("Cannot compile form: ~A", x);
+	}
 
 	return retval;
 }

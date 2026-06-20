@@ -280,7 +280,7 @@ LispFunction(Funcall)
 		"jge 1f\n\t"
 		"call WrongNumberOfArgs\n\t"
 		"1:\n\t"
-		"mov 8(%%ebp), %%eax\n\t"     // eax = function (first argument on stack)
+		"mov 4(%%ebp, %%ecx, 4), %%eax\n\t"     // eax = function = [ebp + ecx*4 + 4]
 		"mov %%eax, %%edx\n\t"
 		"and $7, %%edx\n\t"
 		"cmp $%c[utag], %%edx\n\t"              // UvectorTag
@@ -293,6 +293,7 @@ LispFunction(Funcall)
 		"cmp $%c[symtype], %%dl\n\t"            // SymbolType
 		"jne 3f\n\t"
 		"mov %c[symfunc](%%eax), %%eax\n\t"     // SYMBOL_FUNCTION*4-UvectorTag
+		"mov -4(%%eax), %%eax\n\t"
 		"mov %%eax, %%edx\n\t"
 		"and $7, %%edx\n\t"
 		"cmp $%c[utag], %%edx\n\t"
@@ -306,13 +307,11 @@ LispFunction(Funcall)
 		"mov %%esp, -12(%%ebp)\n\t"
 		"mov %%ecx, %%ebx\n\t"
 		"dec %%ecx\n\t"                            // ecx = number of actual args (numargs - 1)
-		"test %%ecx, %%ecx\n\t"                    // zero actual args?
-		"jz 5f\n\t"
 		"4:\n\t"
+		"dec %%ebx\n\t"                            // pre-decrement, then test (skip position 1 = function)
+		"jle 5f\n\t"
 		"push 4(%%ebp, %%ebx, 4)\n\t"             // push arg at position ebx
-		"dec %%ebx\n\t"
-		"cmp $1, %%ebx\n\t"
-		"jg 4b\n\t"                                // loop while ebx > 1 (skip position 1 = function)
+		"jmp 4b\n\t"
 		"5:\n\t"
 		"cmp $%c[functype], %%dl\n\t"            // FunctionType
 		"jne 6f\n\t"
@@ -650,6 +649,8 @@ loadFile(LispObj inputStream)
 			x = LispCall5(Funcall, symbolFunction(READ), inputStream, NIL, Eof, NIL);
 			if (x == Eof)
 				break;
+			fprintf(stderr, "[loadFile] form %ld\n", count);
+			fflush(stderr);
 			val = eval(x, NIL);
 		}
 		catch (LispObj)
@@ -1218,6 +1219,9 @@ LispFunction(Read)
 	while (TRUE)
 	{
 		ret = readExpression(s);
+#ifdef _DEBUG
+		fprintf(stderr, "[Read] ret=%p cons=%d\n", (void*)ret, (int)isCons(ret));
+#endif
 		if (ret == UNINITIALIZED)		// if end of file
 		{
 			if (eof_error_p != NIL)
@@ -1522,7 +1526,12 @@ LispFunction(LispError)
 
 	// Naked functions break C++ exception unwinding.
 	// For now, just exit on any Lisp error.
-	fprintf(stderr, "Lisp error (exiting)\n");
+	if (isString(msg)) {
+		LispObj terminated = nullTerminate(msg);
+		fprintf(stderr, "Lisp error: %s\n", (char*)byteArrayStart(terminated));
+	} else {
+		fprintf(stderr, "Lisp error (exiting): object=%p\n", (void*)msg);
+	}
 	exit(1);
 }
 

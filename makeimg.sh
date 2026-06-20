@@ -4,8 +4,9 @@
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLCONSOLE="${CLCONSOLE:-$SCRIPT_DIR/build/clconsole}"
 
 rm -f "$SCRIPT_DIR/CormanLisp.img"
-"$SCRIPT_DIR/clconsole" -execute "$SCRIPT_DIR/sys/compile-sys.lisp" -image ""
+"$CLCONSOLE" --batch -execute "$SCRIPT_DIR/Sys/compile-sys.lisp" -image ""
 
 echo "Image built: CormanLisp.img"
