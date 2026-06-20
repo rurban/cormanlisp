@@ -158,6 +158,11 @@ bool g_lisp_bootstrapping = true;
 bool g_batch_input_done = false;
 extern void initLisp();  // in Lisp.cpp
 
+// Matches the extern "C" declarations in cormanlisp_api.h; MSVC (unlike
+// GCC) requires the definitions to restate the linkage explicitly rather
+// than inheriting it from the earlier header declaration.
+extern "C" {
+
 CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
 {
 	// Ensure TLS keys are initialized (defensive — constructor should have done this)
@@ -269,6 +274,8 @@ CL_API long cl_get_image_loads_count(void)
 {
 	return getImageLoadsCount();
 }
+
+} // extern "C"
 
 LONG g_cLocks = 0;
 void SvcLock()	{ InterlockedIncrement(&g_cLocks); }
