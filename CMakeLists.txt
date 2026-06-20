@@ -141,6 +141,18 @@ else()
     target_link_libraries(clconsole PRIVATE cormanlisp ${CORMAN_DEFSYM_LINK_FLAGS})
 endif()
 
+# ---- Lisp image (built after clconsole via makeimg.sh) ----
+if(NOT WIN32)
+    set(CORMANLISP_IMG ${CMAKE_SOURCE_DIR}/CormanLisp.img)
+    add_custom_command(
+        OUTPUT ${CORMANLISP_IMG}
+        COMMAND ${CMAKE_SOURCE_DIR}/makeimg.sh || (echo "NOTE: CormanLisp.img not built yet -- compiler bootstrap incomplete" && touch ${CORMANLISP_IMG}.pending)
+        DEPENDS clconsole ${CMAKE_SOURCE_DIR}/Sys/compile-sys.lisp
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Building CormanLisp.img (may fail during bootstrap)")
+    add_custom_target(cormanlisp_img DEPENDS ${CORMANLISP_IMG})
+endif()
+
 # ---- clboot (minimal bootstrap) ----
 add_executable(clboot clboot/clboot.cpp)
 target_include_directories(clboot PRIVATE ${CORMAN_INCLUDE_DIRS})
