@@ -36,7 +36,8 @@ if(NOT WIN32)
 endif()
 
 # ---- zlib (bundled static library) ----
-set(SKIP_EXAMPLES ON CACHE BOOL "Skip building zlib example binaries")
+set(ZLIB_BUILD_TESTING OFF CACHE BOOL "Skip zlib tests" FORCE)
+set(ZLIB_BUILD_SHARED OFF CACHE BOOL "Skip zlib shared library" FORCE)
 add_subdirectory(zlib)
 set_target_properties(zlibstatic PROPERTIES OUTPUT_NAME z)
 if(NOT WIN32)
