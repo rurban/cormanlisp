@@ -1287,9 +1287,9 @@ CL_NAKED LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 #else
 	asm volatile(
 		SETUP_LISP_CALL(2)
-        "mov 16(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
         "mov 12(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+        "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $8, %%esp\n\t"
@@ -1317,11 +1317,11 @@ CL_NAKED LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, LispObj a3)
 #else
 	asm volatile(
 		SETUP_LISP_CALL(3)
-        "mov 20(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
         "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-        "mov 12(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $12, %%esp\n\t"
@@ -1351,13 +1351,13 @@ CL_NAKED LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #else
 	asm volatile(
 		SETUP_LISP_CALL(4)
-        "mov 24(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 20(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
         "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-        "mov 12(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+        "mov 24(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $16, %%esp\n\t"
@@ -1389,15 +1389,15 @@ CL_NAKED LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #else
 	asm volatile(
 		SETUP_LISP_CALL(5)
-        "mov 28(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 24(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 20(%%ebp), %%eax\n\t"
+        "mov 12(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
         "mov 16(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
-        "mov 12(%%ebp), %%eax\n\t"
+        "mov 20(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+        "mov 24(%%ebp), %%eax\n\t"
+		"push %%eax\n\t"
+        "mov 28(%%ebp), %%eax\n\t"
 		"push %%eax\n\t"
 		"call *8(%%ebp)\n\t"
 		"add $20, %%esp\n\t"
