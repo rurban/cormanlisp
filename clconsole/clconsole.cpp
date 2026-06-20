@@ -850,9 +850,19 @@ int main(int argc, char* argv[])
 {
 	int argidx = 1;
 
-	// Parse -image, -execute, and --batch
+	// Parse -image, -execute, --batch, and --help
 	while (argidx < argc) {
-		if (!strcmp(argv[argidx], "--batch") || !strcmp(argv[argidx], "-batch")) {
+		if (!strcmp(argv[argidx], "--help") || !strcmp(argv[argidx], "-help")
+			|| !strcmp(argv[argidx], "-h")) {
+			printf("Usage: clconsole [OPTIONS]\n\n");
+			printf("Corman Common Lisp console REPL (Linux port).\n\n");
+			printf("Options:\n");
+			printf("  --batch, -batch      Run in batch mode (process input, then exit)\n");
+			printf("  -execute FILE         Load and evaluate FILE before starting REPL\n");
+			printf("  -image FILE           Load Lisp image FILE on startup\n");
+			printf("  --help, -help, -h     Show this help and exit\n");
+			return 0;
+		} else if (!strcmp(argv[argidx], "--batch") || !strcmp(argv[argidx], "-batch")) {
 			g_batch_mode = 1;
 		} else if ((!_stricmp(argv[argidx], "-image") || !strcmp(argv[argidx], "-image"))
 			&& argidx + 1 < argc) {
@@ -863,8 +873,6 @@ int main(int argc, char* argv[])
 		}
 		argidx++;
 	}
-
-	// Initialize Lisp
 	int ret = cl_initialize(&g_callbacks, g_image_name, CL_CONSOLE);
 	if (ret != 0) {
 		fprintf(stderr, "Failed to initialize Corman Lisp.\n");
