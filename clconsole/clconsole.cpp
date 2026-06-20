@@ -98,8 +98,8 @@ public:
     STDMETHODIMP_(ULONG) Release();
 
 // ICormanLisp methods
-    STDMETHODIMP OutputText(char* text, long numChars);
-    STDMETHODIMP SetMessage(char* text);
+    STDMETHODIMP OutputText(const char* text, long numChars);
+    STDMETHODIMP SetMessage(const char* text);
 	STDMETHODIMP GetMessage(char* text, long maxMessageLength);
     STDMETHODIMP SetDefaultMessage();
     STDMETHODIMP GetAppInstance(HINSTANCE* appInstance);
@@ -108,7 +108,7 @@ public:
     STDMETHODIMP AddMenu(char* menuName);
     STDMETHODIMP AddMenuItem(char* menuName, char* menuItem);
     STDMETHODIMP OpenURL(char* file, HWND* wnd);
-    STDMETHODIMP ReplaceSelection(char* text, long numChars);
+    STDMETHODIMP ReplaceSelection(const char* text, long numChars);
 
 // Helper functions
 	STDMETHODIMP Connect(IConnectionPoint* pConnectionPoint);
@@ -132,7 +132,7 @@ public:
     STDMETHODIMP_(ULONG) Release();
 
 // ICormanLispShutdown methods
-    STDMETHODIMP LispShutdown(char* text, long numChars);
+    STDMETHODIMP LispShutdown(const char* text, long numChars);
 
 // Helper functions
 	STDMETHODIMP Connect(IConnectionPoint* pConnectionPoint);
@@ -598,7 +598,7 @@ STDMETHODIMP_(ULONG) ConsoleCormanLispClient::Release()
     return 0;
 }
 
-STDMETHODIMP ConsoleCormanLispClient::OutputText(char* text, long numBytes)
+STDMETHODIMP ConsoleCormanLispClient::OutputText(const char* text, long numBytes)
 {
 	for (int i = 0; i < numBytes; i++)
 	{
@@ -608,7 +608,7 @@ STDMETHODIMP ConsoleCormanLispClient::OutputText(char* text, long numBytes)
 	return S_OK;
 }
 
-STDMETHODIMP ConsoleCormanLispClient::SetMessage(char* /*message*/)
+STDMETHODIMP ConsoleCormanLispClient::SetMessage(const char* /*message*/)
 {
 	return S_OK;
 }
@@ -665,7 +665,7 @@ STDMETHODIMP ConsoleCormanLispClient::AddMenuItem(char* /*menuName*/, char* /*me
 	return E_FAIL;
 }
 
-STDMETHODIMP ConsoleCormanLispClient::ReplaceSelection(char* /*text*/, long /*numChars*/)
+STDMETHODIMP ConsoleCormanLispClient::ReplaceSelection(const char* /*text*/, long /*numChars*/)
 {
 	return E_FAIL;
 }
@@ -750,7 +750,7 @@ STDMETHODIMP_(ULONG) ConsoleCormanLispShutdownClient::Release()
     return 0;
 }
 
-STDMETHODIMP ConsoleCormanLispShutdownClient::LispShutdown(char* text, long numBytes)
+STDMETHODIMP ConsoleCormanLispShutdownClient::LispShutdown(const char* text, long numBytes)
 {
 	for (int i = 0; i < numBytes; i++)
 	{
