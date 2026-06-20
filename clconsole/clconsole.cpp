@@ -39,9 +39,9 @@
 
 static char gModuleName[MAX_PATH];
 static char gImageName [MAX_PATH];
-const char* consoleAppName = "CLCONSOLE.EXE";
 
 #ifdef _WIN32
+const char* consoleAppName = "CLCONSOLE.EXE";
 bool isTemplateApp = false;
 const char SERVER_TITLE[] = "CormanLispServer.dll";
 char LispServerPath[MAX_PATH + 1 + sizeof(SERVER_TITLE)];
@@ -50,6 +50,7 @@ static HINSTANCE getLocalCormanLispServer();
 static IClassFactory* getCormanLispClassFactory();
 static IClassFactory* getCormanLispRegisteredClassFactory();
 #else
+const char* consoleAppName = "clconsole";
 bool isTemplateApp = false;
 #endif
 
@@ -706,6 +707,38 @@ BYTE* MapFile(const char* path, DWORD* length)
 void UnmapFile(BYTE* mapping)
 {
 	UnmapViewOfFile(mapping);
+}
+
+static void LoadFile(const char* filename)
+{
+	const char* ext = filename + strlen(filename);
+	while (ext > filename && *ext != '.')
+		ext--;
+	if (*ext == '.' && !_stricmp(ext, ".fasl"))
+	{
+		// load a compiled file
+		char command[512];
+		strcpy_s(command, sizeof(command), "(common-lisp:load #P\"");
+		strcat_s(command, sizeof(command), filename);
+		strcat_s(command, sizeof(command), "\")");
+		pCormanLisp->ProcessSource(command, strlen(command));
+		return;
+	}
+
+	// load the file into memory
+	DWORD fileSize;
+	BYTE* data = MapFile(filename, &fileSize);
+
+	if (!data)
+	{
+		fprintf(stderr, "Error: Could not open file %s.\n", filename);
+		return;
+	}
+
+	// process code in the file
+	pCormanLisp->ProcessSource((char*)data, fileSize);
+
+	UnmapFile(data);
 }
 
 //////////////////////////////////////////////////////////////////////
