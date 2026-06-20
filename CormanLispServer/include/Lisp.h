@@ -21,6 +21,18 @@
 
 #include "Generic.h"
 
+#ifdef _WIN32
+  #define CL_EXPORT
+#else
+  #define CL_EXPORT __attribute__((visibility("default")))
+#endif
+
+#ifdef _MSC_VER
+  #define CL_NAKED __declspec(naked)
+#else
+  #define CL_NAKED __attribute__((naked))
+#endif
+
 typedef unsigned long LispObj;
 
 #include "LispThreadQueue.h"
@@ -1297,9 +1309,9 @@ const long FirstSpecialSymbolEntry = FirstJumpTableEntry +
 const long NumSpecialSymbolEntries = 8192;
 const long QV_MAX = FirstSpecialSymbolEntry + NumSpecialSymbolEntries;
 
-extern __attribute__((visibility("default"))) LispObj* QV;
-extern __attribute__((visibility("default"))) DWORD QV_Index;
-extern __attribute__((visibility("default"))) DWORD Thread_Index;
+extern CL_EXPORT LispObj* QV;
+extern CL_EXPORT DWORD QV_Index;
+extern CL_EXPORT DWORD Thread_Index;
 
 #define NIL							QV[Nil_Index]
 #define T							QV[T_Index]

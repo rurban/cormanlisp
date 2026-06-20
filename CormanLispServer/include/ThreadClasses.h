@@ -5,17 +5,115 @@
 //
 //		File:		ThreadClasses.h
 //		Contents:	Thread synchronization classes for Corman Lisp.
-//		            Linux port: Win32 primitives replaced with pthreads.
+//		            Windows: native CRITICAL_SECTION/Event/Semaphore.
+//		            Linux:   Win32 primitives replaced with pthreads.
 //		History:	8/5/97  RGC Created.
 //
 
 #ifndef THREADCLASSES_H
 #define THREADCLASSES_H
 
-#include "platform.h"
 #include <assert.h>
 
-// ---- CriticalSection (pthread_mutex_t) ----
+#ifdef _WIN32
+
+#include <windows.h>
+
+class PLSingleLock;
+class PLSyncObject
+{
+public:
+	PLSyncObject(LPCTSTR pstrName);
+	virtual ~PLSyncObject();
+
+	operator HANDLE() const;
+	HANDLE  m_hObject;
+
+	virtual BOOL Lock(DWORD dwTimeout = INFINITE);
+	virtual BOOL Unlock() = 0;
+	virtual BOOL Unlock(LONG, LPLONG) { return TRUE; }
+
+	friend class PLSingleLock;
+};
+
+class PLEvent : public PLSyncObject
+{
+public:
+	PLEvent(BOOL bInitiallyOwn = FALSE, BOOL bManualReset = FALSE,
+		LPCTSTR lpszName = NULL, LPSECURITY_ATTRIBUTES lpsaAttribute = NULL);
+	virtual ~PLEvent();
+
+	BOOL SetEvent();
+	BOOL PulseEvent();
+	BOOL ResetEvent();
+	BOOL Unlock();
+};
+
+class PLSemaphore : public PLSyncObject
+{
+public:
+	PLSemaphore(LONG lInitialCount = 1, LONG lMaxCount = 1,
+		LPCTSTR pstrName = NULL, LPSECURITY_ATTRIBUTES lpsaAttributes = NULL);
+	virtual ~PLSemaphore();
+
+	virtual BOOL Unlock();
+	virtual BOOL Unlock(LONG lCount, LPLONG lprevCount = NULL);
+};
+
+class PLSingleLock
+{
+public:
+	PLSingleLock(PLSyncObject* pObject, BOOL bInitialLock = FALSE);
+	~PLSingleLock();
+
+	BOOL Lock(DWORD dwTimeOut = INFINITE);
+	BOOL Unlock();
+	BOOL Unlock(LONG lCount, LPLONG lPrevCount = NULL);
+	BOOL IsLocked();
+
+protected:
+	PLSyncObject* m_pObject;
+	HANDLE  m_hObject;
+	BOOL    m_bAcquired;
+};
+
+class CriticalSection
+{
+public:
+	CriticalSection() { InitializeCriticalSection(&m_sect); }
+	~CriticalSection(){	DeleteCriticalSection(&m_sect); }
+	void Enter()	  { EnterCriticalSection(&m_sect); }
+	void Leave()	  { LeaveCriticalSection(&m_sect); }
+public:
+	CRITICAL_SECTION m_sect;
+};
+
+class ScopedLock
+{
+public:
+	ScopedLock(CriticalSection &cs) : m_cs(cs) {m_cs.Enter();}
+	~ScopedLock() { m_cs.Leave(); }
+public:
+	CriticalSection &m_cs;
+};
+
+inline PLSyncObject::operator HANDLE() const
+	{ return m_hObject;}
+
+inline BOOL PLSemaphore::Unlock()
+	{ return Unlock(1, NULL); }
+
+inline BOOL PLEvent::SetEvent()   { return ::SetEvent(m_hObject); }
+inline BOOL PLEvent::PulseEvent() { return ::PulseEvent(m_hObject); }
+inline BOOL PLEvent::ResetEvent() { return ::ResetEvent(m_hObject); }
+
+inline PLSingleLock::~PLSingleLock() { Unlock(); }
+inline BOOL PLSingleLock::IsLocked() { return m_bAcquired; }
+
+#else // !_WIN32 (Linux)
+
+#include "platform.h"
+
 // ---- CriticalSection (recursive pthread_mutex_t) ----
 // Windows CRITICAL_SECTION is recursive, so we match that behavior.
 // This is essential: functions like stringNode() enter the GC critical
@@ -141,5 +239,7 @@ inline BOOL PLEvent::ResetEvent()
 	pthread_mutex_unlock(&m_eventMutex);
 	return TRUE;
 }
+
+#endif // _WIN32
 
 #endif // THREADCLASSES_H

@@ -4785,7 +4785,7 @@ LispFunction(Mod_Bignums)
 	LISP_FUNC_RETURN(ret);
 }
 
-LispObj __declspec(naked) addShortFloats(LispObj /*n1*/, LispObj /*n2*/)
+LispObj addShortFloats(LispObj /*n1*/, LispObj /*n2*/)
 {
 	#if 0 // __asm port pending
 	{

@@ -37,8 +37,8 @@
 
 #pragma warning (disable:4127)				// conditional expression is constant
 
-__attribute__((visibility("default"))) DWORD QV_Index = 0;
-__attribute__((visibility("default"))) DWORD Thread_Index = 0;
+CL_EXPORT DWORD QV_Index = 0;
+CL_EXPORT DWORD Thread_Index = 0;
 
 LispObj QV__[QV_MAX] = {0};
 LispObj* QV = QV__;
@@ -1014,7 +1014,7 @@ long gStackOverflowAddress = 0;
 
 // This function stub is used by plungeBackIn() to force
 // a call to the ThrowUserException() function.
-__attribute__((naked)) void CallThrowOSExceptionStub()
+CL_NAKED void CallThrowOSExceptionStub()
 {
 #ifdef _MSC_VER
 	__asm push edx
@@ -1209,7 +1209,7 @@ void LispLoop()
 
 #endif
 
-__attribute__((naked)) LispObj LispCall0(LispFunc func)
+CL_NAKED LispObj LispCall0(LispFunc func)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(0);
@@ -1228,7 +1228,7 @@ __attribute__((naked)) LispObj LispCall0(LispFunc func)
 #endif
 }
 
-__attribute__((naked)) LispObj LispCall1(LispFunc func, LispObj a1)
+CL_NAKED LispObj LispCall1(LispFunc func, LispObj a1)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(1);
@@ -1252,7 +1252,7 @@ __attribute__((naked)) LispObj LispCall1(LispFunc func, LispObj a1)
 #endif
 }
 
-__attribute__((naked)) LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
+CL_NAKED LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(2);
@@ -1280,7 +1280,7 @@ __attribute__((naked)) LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 #endif
 }
 
-__attribute__((naked)) LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, LispObj a3)
+CL_NAKED LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, LispObj a3)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(3);
@@ -1312,7 +1312,7 @@ __attribute__((naked)) LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, 
 #endif
 }
 
-__attribute__((naked)) LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4)
+CL_NAKED LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(4);
@@ -1348,7 +1348,7 @@ __attribute__((naked)) LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, 
 #endif
 }
 
-__attribute__((naked)) LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5)
+CL_NAKED LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(5);
@@ -1388,7 +1388,7 @@ __attribute__((naked)) LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, 
 #endif
 }
 
-__attribute__((naked)) LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6)
+CL_NAKED LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(6);
@@ -1432,7 +1432,7 @@ __attribute__((naked)) LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, 
 #endif
 }
 
-__attribute__((naked)) LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7)
+CL_NAKED LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(7);
@@ -1480,7 +1480,7 @@ __attribute__((naked)) LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, 
 #endif
 }
 
-__attribute__((naked)) LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7, LispObj a8)
+CL_NAKED LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7, LispObj a8)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(8);
@@ -1730,7 +1730,7 @@ weakPointer()
 //
 // This may be called from non-lisp contexts, so we need to set up ESI
 //
-__attribute__((naked)) LispObj cons(LispObj a, LispObj b)
+CL_NAKED LispObj cons(LispObj a, LispObj b)
 {
 #ifdef _MSC_VER
 	__asm
@@ -2838,7 +2838,7 @@ LispObj createShortFloat_foo(double d)
 }
 
 
-__attribute__((naked)) LispObj createShortFloat(double /*d*/)
+CL_NAKED LispObj createShortFloat(double /*d*/)
 {
 #ifdef _MSC_VER
 	__asm
@@ -2902,7 +2902,7 @@ __attribute__((naked)) LispObj createShortFloat(double /*d*/)
 }
 
 
-__attribute__((naked)) double shortFloat(LispObj /*d*/)
+CL_NAKED double shortFloat(LispObj /*d*/)
 {
 #ifdef _MSC_VER
 	__asm

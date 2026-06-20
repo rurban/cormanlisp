@@ -45,7 +45,7 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure
 
-  # ── Windows (MSVC x86, build-only for now) ──────────────────────
+  # ── Windows (MSVC x86) ───────────────────────────────────────────
   windows:
     runs-on: windows-latest
     strategy:
@@ -58,12 +58,9 @@ jobs:
 
       - name: Configure CMake (x86)
         run: cmake -B build -A Win32 -DCMAKE_BUILD_TYPE=Release
-        continue-on-error: true
 
       - name: Build
         run: cmake --build build --config Release
-        continue-on-error: true
 
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
-        continue-on-error: true

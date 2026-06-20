@@ -58,7 +58,62 @@ const int g_cRegKeyValues = sizeof(g_szRegKeyValues)
                             /sizeof(*g_szRegKeyValues);
 int DLL_Loaded = false;		// we may get run when statically linked
 
-// Linux port: constructor replaces DllMain DLL_PROCESS_ATTACH
+#ifdef _WIN32
+
+void processAttach(HINSTANCE hInstance)
+{
+	char* result = 0;
+	QV_Index = TlsAlloc();
+	Thread_Index = TlsAlloc();
+	TlsSetValue(QV_Index, 0);
+	TlsSetValue(Thread_Index, 0);
+	TlsGetValue(QV_Index);
+	TlsGetValue(Thread_Index);
+	GetModuleFileName(hInstance, g_szFileName, MAX_PATH);
+
+	// create a named mutex that is used to determine if the
+	// Corman Lisp kernel is loaded
+	CreateMutex(NULL, FALSE, "CormanLispServer");
+
+	// setup the DLL directory
+	strcpy_s(CormanLispServerDirectory, sizeof(CormanLispServerDirectory), g_szFileName);
+	result = strrchr(CormanLispServerDirectory, '\\');
+	if (result)
+		*result = 0;
+	else
+		CormanLispServerDirectory[0] = 0;
+}
+
+extern "C" int __declspec( dllexport ) __stdcall
+DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
+{
+	switch (dwReason)
+	{
+		case DLL_PROCESS_ATTACH:
+			DLL_Loaded = true;
+			processAttach(hInstance);
+			break;
+		case DLL_PROCESS_DETACH:
+			TlsFree(QV_Index);
+			TlsFree(Thread_Index);
+			break;
+		case DLL_THREAD_ATTACH:
+			TlsSetValue(QV_Index, 0);
+			TlsSetValue(Thread_Index, 0);
+			TlsGetValue(QV_Index);
+			TlsGetValue(Thread_Index);
+			break;
+		case DLL_THREAD_DETACH:
+			// need to free QV, ThreadRecord
+			TlsSetValue(QV_Index, 0);
+			TlsSetValue(Thread_Index, 0);
+			break;
+	}
+	return 1;   // ok
+}
+
+#else // !_WIN32 (Linux): a shared library has no DllMain, use ctor/dtor attrs
+
 __attribute__((constructor)) static void _init_cormanlisp()
 {
 	char* result = 0;
@@ -93,13 +148,14 @@ __attribute__((destructor)) static void _fini_cormanlisp()
 	TlsFree(Thread_Index);
 }
 
+#endif // _WIN32
+
 // ---- Public C API (replaces COM ICormanLisp) ----
 
 
 bool g_lisp_bootstrapping = true;
 // Set by batch clients after loading all input; consoleUnderflow returns EOF when drained.
 bool g_batch_input_done = false;
-extern LispObj* g_tls_qv;
 extern void initLisp();  // in Lisp.cpp
 
 CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
@@ -119,7 +175,7 @@ CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, i
 	ClientMessage = (ICormanLispStatusMessage*)(cb ? (void*)1 : 0);
 	ClientShutdown = (ICormanLispShutdown*)(cb ? (void*)1 : 0);
 
-	g_tls_qv = QV;
+	TlsSetValue(QV_Index, QV);
 	initLisp();
 	g_lisp_bootstrapping = false;
 	return 0;
@@ -457,14 +513,10 @@ ThreadQV()
 }
 #endif
 
-// QV pointer — plain global for compatibility with naked asm (no TLS in PIC).
-// Multi-threading: each thread must set this before entering Lisp code.
-LispObj* g_tls_qv = NULL;
-
-__attribute__((visibility("default")))
+CL_EXPORT
 LispObj* ThreadQV()
 {
-	return g_tls_qv;
+	return (LispObj*)TlsGetValue(QV_Index);
 }
 
 extern int lispmain();
@@ -847,7 +899,7 @@ static CONTEXT lispContext;
 // This function is used by AbortLispThread() to force
 // a call to the ThrowUserException() function.
 // This simulates a call from the original function,
-__attribute__((naked)) void CallThrowUserExceptionStub()
+CL_NAKED void CallThrowUserExceptionStub()
 {
 #ifdef _MSC_VER
 	__asm push eax  ;; push return address
@@ -896,7 +948,7 @@ void AbortLispThread()
 
 static CONTEXT terminateContext;
 
-__attribute__((naked)) void TerminateLispThreadException()
+CL_NAKED void TerminateLispThreadException()
 {
 	LispObj result;
 #ifdef _MSC_VER

@@ -192,7 +192,7 @@ LispFunction(lispList)
 extern unsigned long NumReturnValues;
 
 // redefined in lisp
-__attribute__((naked))
+CL_NAKED
 LispFunction(Funcall)
 {
 #ifdef _MSC_VER
@@ -355,7 +355,7 @@ LispFunction(Funcall)
 #define ARGS_OFFSET	8
 
 // redefined in lisp
-__attribute__((naked))
+CL_NAKED
 LispFunction(Apply)
 {
 #ifdef _MSC_VER
@@ -3637,7 +3637,7 @@ LispFunction(Lookup_Ftype)
 }
 
 
-__attribute__((naked)) void Load_QV_Reg()
+CL_NAKED void Load_QV_Reg()
 {
 #ifdef _MSC_VER
 	__asm	push	ebp
@@ -3659,7 +3659,7 @@ __attribute__((naked)) void Load_QV_Reg()
 #endif
 }
 
-__attribute__((naked)) void genericThunkFunc()
+CL_NAKED void genericThunkFunc()
 {
 #ifdef _MSC_VER
 	__asm	mov		eax, dword ptr [0x1000000]		;; use global QV
@@ -3672,7 +3672,7 @@ __attribute__((naked)) void genericThunkFunc()
 #endif
 }
 
-__attribute__((naked)) void Minus_EAX_EDX()
+CL_NAKED void Minus_EAX_EDX()
 {
 #ifdef _MSC_VER
 	__asm	push	ebp
@@ -3706,7 +3706,7 @@ __attribute__((naked)) void Minus_EAX_EDX()
 #endif
 }
 
-__attribute__((naked)) void Plus_EAX_EDX()
+CL_NAKED void Plus_EAX_EDX()
 {
 #ifdef _MSC_VER
 	__asm	push	ebp

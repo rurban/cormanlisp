@@ -598,7 +598,7 @@ extern "C" void __enter_gc_critical_section()
 	FOREIGN_RETURN_TO_LISP()
 }
 
-__attribute__((naked)) void EnterGCCriticalSection()
+CL_NAKED void EnterGCCriticalSection()
 {
 #ifdef _MSC_VER
     __asm
@@ -635,7 +635,7 @@ extern "C" void __leave_gc_critical_section()
 	FOREIGN_RETURN_TO_LISP()
 }
 
-__attribute__((naked)) void LeaveGCCriticalSection()
+CL_NAKED void LeaveGCCriticalSection()
 {
 #ifdef _MSC_VER
     __asm
@@ -767,7 +767,7 @@ __declspec(naked) void LeaveGCCriticalSection()
 #endif
 
 // to be called from Lisp code only
-__attribute__((naked)) LispObj AllocLocalCons()
+CL_NAKED LispObj AllocLocalCons()
 {
 #ifdef _MSC_VER
     __asm
@@ -815,7 +815,7 @@ __attribute__((naked)) LispObj AllocLocalCons()
 //	Allocates an n-cell vector, with the first cell (cell 0) always
 //	storing the length in the upper 24 bits, and 6 in the lower 3 bits.
 //
-__attribute__((naked)) LispObj AllocVector(long num)
+CL_NAKED LispObj AllocVector(long num)
 {
 #ifdef _MSC_VER
     __asm
@@ -956,7 +956,7 @@ __attribute__((naked)) LispObj AllocVector(long num)
 //	Same as AllocVector(), but expects to be called from Lisp code.
 //  This function expects the passed length to be untagged.
 //
-__attribute__((naked)) LispObj LispAllocVector(long num)
+CL_NAKED LispObj LispAllocVector(long num)
 {
 #ifdef _MSC_VER
     __asm
@@ -1097,7 +1097,7 @@ end:
 //	Same as AllocVector(), but expects to be called from Lisp code.
 //  This function expects the passed length to be tagged.
 //
-__attribute__((naked)) LispObj LispAllocVectorTagged(LispObj num)
+CL_NAKED LispObj LispAllocVectorTagged(LispObj num)
 {
 #ifdef _MSC_VER
     __asm
@@ -1243,7 +1243,7 @@ end:
 //
 //	LoadLocalHeap()
 //	Reserves 2048 conses on the ephemeral heap (16k worth)
-__attribute__((naked)) LispObj LoadLocalHeap()
+CL_NAKED LispObj LoadLocalHeap()
 {
 #ifdef _MSC_VER
     __asm
