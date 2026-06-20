@@ -107,6 +107,7 @@ else()
     list(APPEND CORMAN_SERVER_SRCS CormanLispServer/src/CoCormanLispStubs.cpp)
     add_library(cormanlisp STATIC ${CORMAN_SERVER_SRCS})
     target_compile_definitions(cormanlisp PRIVATE LINUX _CormanLispServer)
+target_compile_definitions(cormanlisp PRIVATE $<$<CONFIG:Debug>:_DEBUG>)
 endif()
 
 target_include_directories(cormanlisp PRIVATE
