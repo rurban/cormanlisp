@@ -2011,7 +2011,7 @@ static LispObj compileList(LispObj x, LispObj dest, LispObj resultType)
 			retval = compileFunctionExpressionForm(x, dest, resultType);
 	}
 	else
-	if (isLambdaForm(first))
+	if (isLambdaForm(first) || isUvector(first))
 	{
 		funcallForm = cons(list(FUNCTION, first, END_LIST), CDR(x));
 		funcallForm = cons(FUNCALL, funcallForm);
@@ -3201,6 +3201,12 @@ static LispObj compileFunctionSpecialOperator(LispObj x, LispObj dest)
 			retval = compileFunctionExpressionForm(
 				list(SYMBOL_FUNCTION_SYM, list(QUOTE, f, END_LIST), END_LIST), dest, T);
 		}
+	}
+	else
+	if (isUvector(f))
+	{
+		// Already a compiled function or KFunction — return it directly.
+		retval = f;
 	}
 	else
 	if (isCons(f) && CAR(f) == SETF && isCons(CDR(f)) && isSymbol(CAR(CDR(f))))
