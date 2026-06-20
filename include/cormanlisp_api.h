@@ -1,4 +1,6 @@
+#ifndef _WIN32
 #include "platform.h"
+#endif
 
 //		-------------------------------
 //		Copyright (c) Corman Technologies Inc.

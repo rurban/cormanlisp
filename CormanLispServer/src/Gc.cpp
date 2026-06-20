@@ -1243,6 +1243,8 @@ end:
 //
 //	LoadLocalHeap()
 //	Reserves 2048 conses on the ephemeral heap (16k worth)
+#define LocalHeapSize 0x4000
+
 CL_NAKED LispObj LoadLocalHeap()
 {
 #ifdef _MSC_VER
