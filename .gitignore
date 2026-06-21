@@ -47,6 +47,10 @@ CormanLisp*.zip
 20*.txt
 kimi-export-session*.md
 session_*.zip
+.claude
+.mcp.json
+.opencode
+omp-session-*.html
 # CMake build directories
 build-O0/
 build_dbg/

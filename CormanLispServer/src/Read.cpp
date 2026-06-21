@@ -1135,7 +1135,21 @@ LispObj getCharacter(LispObj s)
 		LispCall3(Funcall, FUNCALL, streamUnderflowFunc(s), s);
 	if (streamInputBufferPos(s) == streamInputBufferNum(s))
 		return Eof;
-	c = wrapCharacter(charArrayStart(streamInputBuffer(s))[integer(streamInputBufferPos(s))]);
+	long pos = integer(streamInputBufferPos(s));
+	long buflen = integer(vectorLength(streamInputBuffer(s)));
+	if (pos < 0 || pos >= buflen) {
+		streamInputBufferPos(s) = 0;
+		pos = 0;
+	}
+	c = wrapCharacter(charArrayStart(streamInputBuffer(s))[pos]);
+	unsigned int code = c >> 8;
+	if (code > 255) {
+#ifdef _DEBUG
+		static int warn = 0;
+		if (warn++ < 3) fprintf(stderr, "[getCharacter] code=0x%x pos=%ld -> space\n", code, pos);
+#endif
+		c = wrapCharacter(' ');
+	}
 	streamInputBufferPos(s) = streamInputBufferPos(s) + wrapInteger(1);
 	if (c == wrapCharacter(ASCII_NEWLINE))
 		streamLineNumber(s) = streamLineNumber(s) + wrapInteger(1);
