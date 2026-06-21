@@ -19,15 +19,15 @@
 (defconstant character-names-table (make-array char-code-limit :initial-element nil))
 
 (defun sys::check-character (c)
-	(unless (characterp c)
-		(error "Not a character: ~A" c))
-	c)
+  (unless (characterp c)
+    (error "Not a character: ~A" c))
+  c)
 
 (defmacro defcharname (name char)
-	`(progn
-		(sys::check-character ,char)
-		(set (intern ,name :character-names) ,char)
-		(setf (elt character-names-table (char-int ,char)) ,name)))
+  `(progn
+     (sys::check-character ,char)
+     (set (intern ,name :character-names) ,char)
+     (setf (elt character-names-table (char-int ,char)) ,name)))
 
 (defcharname "NUL" 					(int-char 0))
 (defcharname "NULL" 				(int-char 0))
@@ -102,45 +102,45 @@
 ;; etc.
 
 (defun output-readable-char (ch stream)
-	(declare (ignore stream))
-	(format t "#\\~A"
-		(let ((name (elt character-names-table (char-int ch))))
-			(if name name ch))))
+  (declare (ignore stream))
+  (format t "#\\~A"
+	  (let ((name (elt character-names-table (char-int ch))))
+	    (if name name ch))))
 
 (defun find-named-character (sym)
-	(let ((char-sym (find-symbol (symbol-name sym) :character-names)))
-		(if (and char-sym (boundp char-sym))(symbol-value char-sym) nil)))
+  (let ((char-sym (find-symbol (symbol-name sym) :character-names)))
+    (if (and char-sym (boundp char-sym))(symbol-value char-sym) nil)))
 ;;;
 ;;; Common Lisp CHAR-NAME function.
 ;;;
 (defun char-name (char)
-	(let ((name (elt character-names-table (char-int char))))
-			(if name name)))
+  (let ((name (elt character-names-table (char-int char))))
+    (if name name)))
 
 ;;;
 ;;; Common Lisp NAME-CHAR function.
 ;;;
 (defun name-char (obj)
-    (if (symbolp obj)
-        (setf obj (symbol-name obj))
-        (if (characterp obj)
-            (setf obj (string obj))))
-    (unless (stringp obj)
-        (signal-type-error obj '(or string symbol character)))
-    (let ((char-sym (find-symbol obj :character-names)))
-        (if (and char-sym (boundp char-sym))
-            (symbol-value char-sym))))
+  (if (symbolp obj)
+      (setf obj (symbol-name obj))
+      (if (characterp obj)
+          (setf obj (string obj))))
+  (unless (stringp obj)
+    (signal-type-error obj '(or string symbol character)))
+  (let ((char-sym (find-symbol obj :character-names)))
+    (if (and char-sym (boundp char-sym))
+        (symbol-value char-sym))))
 
 ;;;
 ;;;	Common Lisp char= function.
 ;;;
 (defun char= (&rest characters)
-	(unless characters (return-from char= t))
-	(let ((c (sys::check-character (car characters))))
-		(dolist (x (cdr characters))
- 			(unless (eq c (sys::check-character x))
-				(return-from char= nil)))
-		t))
+  (unless characters (return-from char= t))
+  (let ((c (sys::check-character (car characters))))
+    (dolist (x (cdr characters))
+      (unless (eq c (sys::check-character x))
+	(return-from char= nil)))
+    t))
 
 ;;;
 ;;;	Common Lisp char/= function.
@@ -148,145 +148,145 @@
 ;;;	two arguments i.e. (char/= #\1 #\2 #\2) -> t
 ;;;
 (defun char/= (&rest characters)
-	(unless characters (return-from char/= t))
-	(let ((c (sys::check-character (car characters))))
-		(dolist (x (cdr characters))
- 			(unless (not (eq c (sys::check-character x)))
-				(return-from char/= nil)))
-		t))
+  (unless characters (return-from char/= t))
+  (let ((c (sys::check-character (car characters))))
+    (dolist (x (cdr characters))
+      (unless (not (eq c (sys::check-character x)))
+	(return-from char/= nil)))
+    t))
 
 ;;;
 ;;;	Common Lisp char< function.
 ;;;
 (defun char< (&rest characters)
-	(unless characters (return-from char< t))
-	(let ((c (char-int (car characters))))
-		(dolist (x (cdr characters))
- 			(unless (< c (char-int x))
-				(return-from char< nil))
-			(setf c (char-int x)))
-		t))
+  (unless characters (return-from char< t))
+  (let ((c (char-int (car characters))))
+    (dolist (x (cdr characters))
+      (unless (< c (char-int x))
+	(return-from char< nil))
+      (setf c (char-int x)))
+    t))
 
 ;;;
 ;;;	Common Lisp char> function.
 ;;;
 (defun char> (&rest characters)
-	(unless characters (return-from char> t))
-	(let ((c (char-int (car characters))))
-		(dolist (x (cdr characters))
- 			(unless (> c (char-int x))
-				(return-from char> nil))
-			(setf c (char-int x)))
-		t))
+  (unless characters (return-from char> t))
+  (let ((c (char-int (car characters))))
+    (dolist (x (cdr characters))
+      (unless (> c (char-int x))
+	(return-from char> nil))
+      (setf c (char-int x)))
+    t))
 
 ;;;
 ;;;	Common Lisp char<= function.
 ;;;
 (defun char<= (&rest characters)
-	(unless characters (return-from char<= t))
-	(let ((c (char-int (car characters))))
-		(dolist (x (cdr characters))
- 			(unless (<= c (char-int x))
-				(return-from char<= nil))
-			(setf c (char-int x)))
-		t))
+  (unless characters (return-from char<= t))
+  (let ((c (char-int (car characters))))
+    (dolist (x (cdr characters))
+      (unless (<= c (char-int x))
+	(return-from char<= nil))
+      (setf c (char-int x)))
+    t))
 
 ;;;
 ;;;	Common Lisp char>= function.
 ;;;
 (defun char>= (&rest characters)
-	(unless characters (return-from char>= t))
-	(let ((c (char-int (car characters))))
-		(dolist (x (cdr characters))
- 			(unless (>= c (char-int x))
-				(return-from char>= nil))
-			(setf c (char-int x)))
-		t))
+  (unless characters (return-from char>= t))
+  (let ((c (char-int (car characters))))
+    (dolist (x (cdr characters))
+      (unless (>= c (char-int x))
+	(return-from char>= nil))
+      (setf c (char-int x)))
+    t))
 
 ;;;
 ;;;	Common Lisp char-equal function.
 ;;;
 (defun char-equal (&rest characters)
-	(unless characters (return-from char-equal t))
-	(let ((c (char-upcase (car characters))))
-		(dolist (x (cdr characters))
- 			(unless (eq c (char-upcase x))
-				(return-from char-equal nil)))
-		t))
+  (unless characters (return-from char-equal t))
+  (let ((c (char-upcase (car characters))))
+    (dolist (x (cdr characters))
+      (unless (eq c (char-upcase x))
+	(return-from char-equal nil)))
+    t))
 
 ;;;
 ;;;	Common Lisp char-not-equal function.
 ;;;
 (defun char-not-equal (&rest characters)
-	(unless characters (return-from char-not-equal t))
-	(let ((c (char-upcase (car characters))))
-		(dolist (x (cdr characters))
- 			(unless (not (eq c (char-upcase x)))
-				(return-from char-not-equal nil)))
-		t))
+  (unless characters (return-from char-not-equal t))
+  (let ((c (char-upcase (car characters))))
+    (dolist (x (cdr characters))
+      (unless (not (eq c (char-upcase x)))
+	(return-from char-not-equal nil)))
+    t))
 
 ;;;
 ;;;	Common Lisp char-lessp function.
 ;;;
 (defun char-lessp (&rest characters)
-	(unless characters (return-from char-lessp t))
-	(let ((c (char-int (char-upcase (car characters)))))
-		(dolist (x (cdr characters))
- 			(unless (< c (char-int (char-upcase x)))
-				(return-from char-lessp nil))
-			(setf c (char-int (char-upcase x))))
-		t))
+  (unless characters (return-from char-lessp t))
+  (let ((c (char-int (char-upcase (car characters)))))
+    (dolist (x (cdr characters))
+      (unless (< c (char-int (char-upcase x)))
+	(return-from char-lessp nil))
+      (setf c (char-int (char-upcase x))))
+    t))
 
 ;;;
 ;;;	Common Lisp char-greaterp function.
 ;;;
 (defun char-greaterp (&rest characters)
-	(unless characters (return-from char-greaterp t))
-	(let ((c (char-int (char-upcase (car characters)))))
-		(dolist (x (cdr characters))
- 			(unless (> c (char-int (char-upcase x)))
-				(return-from char-greaterp nil))
-			(setf c (char-int (char-upcase x))))
-		t))
+  (unless characters (return-from char-greaterp t))
+  (let ((c (char-int (char-upcase (car characters)))))
+    (dolist (x (cdr characters))
+      (unless (> c (char-int (char-upcase x)))
+	(return-from char-greaterp nil))
+      (setf c (char-int (char-upcase x))))
+    t))
 
 ;;;
 ;;;	Common Lisp char-not-lessp function.
 ;;;
 (defun char-not-lessp (&rest characters)
-	(unless characters (return-from char-not-lessp t))
-	(let ((c (char-int (char-upcase (car characters)))))
-		(dolist (x (cdr characters))
- 			(unless (>= c (char-int (char-upcase x)))
-				(return-from char-not-lessp nil))
-			(setf c (char-int (char-upcase x))))
-		t))
+  (unless characters (return-from char-not-lessp t))
+  (let ((c (char-int (char-upcase (car characters)))))
+    (dolist (x (cdr characters))
+      (unless (>= c (char-int (char-upcase x)))
+	(return-from char-not-lessp nil))
+      (setf c (char-int (char-upcase x))))
+    t))
 
 ;;;
 ;;;	Common Lisp char-not-greaterp function.
 ;;;
 (defun char-not-greaterp (&rest characters)
-	(unless characters (return-from char-not-greaterp t))
-	(let ((c (char-int (char-upcase (car characters)))))
-		(dolist (x (cdr characters))
- 			(unless (<= c (char-int (char-upcase x)))
-				(return-from char-not-greaterp nil))
-			(setf c (char-int (char-upcase x))))
-		t))
+  (unless characters (return-from char-not-greaterp t))
+  (let ((c (char-int (char-upcase (car characters)))))
+    (dolist (x (cdr characters))
+      (unless (<= c (char-int (char-upcase x)))
+	(return-from char-not-greaterp nil))
+      (setf c (char-int (char-upcase x))))
+    t))
 
 ;;;
 ;;;	Common Lisp GRAPHIC-CHAR-P function.
 ;;;
 (defun graphic-char-p (ch)
-	(if (member ch '(#\Space #\Newline #\Return #\Backspace #\Tab
-		#\Escape #\Left-arrow #\Right-arrow #\Up-arrow #\Down-arrow))
-		nil
-		t))
+  (if (member ch '(#\Space #\Newline #\Return #\Backspace #\Tab
+		   #\Escape #\Left-arrow #\Right-arrow #\Up-arrow #\Down-arrow))
+      nil
+      t))
 
 ;;;
 ;;;	Common Lisp (SETF CHAR) function.
 ;;;
 (defun (setf char) (char string index)
-	(setf (elt string index) char))
+  (setf (elt string index) char))
 
 ;;;
 ;;;	Common Lisp SCHAR function.
@@ -297,7 +297,7 @@
 ;;;	Common Lisp (SETF SCHAR) function.
 ;;;
 (defun (setf schar) (char string index)
-	(setf (elt string index) char))
+  (setf (elt string index) char))
 
 ;;;
 ;;;	Common Lisp CODE-CHAR function.
@@ -308,29 +308,29 @@
 ;;; Common Lisp CHARACTER function.
 ;;;
 (defun character (c)
-    (if (characterp c)
-        c
-        (if (and (stringp c) (= (length c) 1))
-            (aref c 0)
-            (if (symbolp c)
-                (let ((name (symbol-name c)))
-                    (if (= (length name) 1)
-                        (aref name 0)
-                        (error "The object ~S cannot be coerced to a character" c)))
-                (error "The object ~S cannot be coerced to a character" c)))))
+  (if (characterp c)
+      c
+      (if (and (stringp c) (= (length c) 1))
+          (aref c 0)
+          (if (symbolp c)
+              (let ((name (symbol-name c)))
+                (if (= (length name) 1)
+                    (aref name 0)
+                    (error "The object ~S cannot be coerced to a character" c)))
+              (error "The object ~S cannot be coerced to a character" c)))))
 
 ;;;
 ;;; Common Lisp DIGIT-CHAR function.
 ;;;
 (defun digit-char (weight &optional (radix 10))
-    (unless (and (integerp radix) (>= radix 2) (<= radix 36))
-        (error "Illegal radix specified for DIGIT-CHAR: ~S" radix))
-    (unless (and (integerp weight) (>= weight 0))
-        (error "Illegal weight specified for DIGIT-CHAR: ~S" weight))
-    (if (< weight radix)
-        (if (< weight 10)
-            (int-char (+ (char-int #\0) weight))
-            (int-char (+ (char-int #\A) (- weight 10))))))
+  (unless (and (integerp radix) (>= radix 2) (<= radix 36))
+    (error "Illegal radix specified for DIGIT-CHAR: ~S" radix))
+  (unless (and (integerp weight) (>= weight 0))
+    (error "Illegal weight specified for DIGIT-CHAR: ~S" weight))
+  (if (< weight radix)
+      (if (< weight 10)
+          (int-char (+ (char-int #\0) weight))
+          (int-char (+ (char-int #\A) (- weight 10))))))
 
 ;;;
 ;;; Common Lisp BOTH-CASE-P function.
@@ -343,34 +343,34 @@
 ;;; Define some compiler macros for better performance.
 ;;;
 (define-compiler-macro sys::check-character (form)
-    (if (>= ccl:*COMPILER-OPTIMIZE-SPEED* ccl:*COMPILER-OPTIMIZE-SAFETY*)
-        form
-        (let ((tempsym (gensym)))
-            `(let ((,tempsym ,form))
-                 (unless (characterp ,tempsym)
-                    (sys::invalid-char ,tempsym))
-                ,tempsym))))
+  (if (>= ccl:*COMPILER-OPTIMIZE-SPEED* ccl:*COMPILER-OPTIMIZE-SAFETY*)
+      form
+      (let ((tempsym (gensym)))
+        `(let ((,tempsym ,form))
+           (unless (characterp ,tempsym)
+             (sys::invalid-char ,tempsym))
+           ,tempsym))))
 
 (define-compiler-macro char= (&rest chars)
-    (cond ((null chars)
-            (warn "Function CHAR= called with no arguments, which will cause a runtime error")
-            `(signal-program-error "CHAR= called with no arguments"))
-          ((null (cdr chars))
-           (if (characterp (car chars))
-               't
-               `(progn (sys::check-character ,(car chars)) 't)))
-          (t
-            (let ((expr
-                        `(eq ,(if (characterp (car chars))
-                                (car chars)
-                                `(sys::check-character ,(car chars)))
-                             ,(if (characterp (cadr chars))
-                                (cadr chars)
-                                `(sys::check-character ,(cadr chars))))))
-                (do ((x (cddr chars) (cdr x)))
-                    ((null x))
-                    (setf expr
-                        `(eq ,expr ,(if (characterp (car x))
-                                (car x)
-                                `(sys::check-character ,(car x))))))
-                expr))))
+  (cond ((null chars)
+         (warn "Function CHAR= called with no arguments, which will cause a runtime error")
+         `(signal-program-error "CHAR= called with no arguments"))
+        ((null (cdr chars))
+         (if (characterp (car chars))
+             't
+             `(progn (sys::check-character ,(car chars)) 't)))
+        (t
+         (let ((expr
+                `(eq ,(if (characterp (car chars))
+                          (car chars)
+                          `(sys::check-character ,(car chars)))
+                     ,(if (characterp (cadr chars))
+                          (cadr chars)
+                          `(sys::check-character ,(cadr chars))))))
+           (do ((x (cddr chars) (cdr x)))
+               ((null x))
+             (setf expr
+                   `(eq ,expr ,(if (characterp (car x))
+                                   (car x)
+                                   `(sys::check-character ,(car x))))))
+           expr))))

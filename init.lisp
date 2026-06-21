@@ -17,7 +17,7 @@
 ;;; but you don’t have an IPv6 connection, it is best to set *IPV6* to
 ;;; NIL as it may slow down connections by trying to unsuccessfully
 ;;; connect to IPv6 addresses.
-; (setq sockets:*ipv6* nil)
+					; (setq sockets:*ipv6* nil)
 
 ;;; Set ccl:*auto-update-enabled* to NIL if you wish to disable
 ;;; automatic checking for updates (patches) by the IDE.
@@ -34,47 +34,47 @@
 ;;;
 #|
 (setf sockets:*default-proxy-server*
-    (make-instance 'sockets:generic-proxy-server
-        :host "proxy.myserver.com"      ;; your proxy server name or IP address
-        :port 8080))                    ;; your proxy server port ID
+(make-instance 'sockets:generic-proxy-server
+:host "proxy.myserver.com"      ;; your proxy server name or IP address
+:port 8080))                    ;; your proxy server port ID
 |#
 
 ;;;
 ;;; If running in the IDE, initialize menus
 ;;;
 (when (eq (cormanlisp-client-type) :ide-client)
-    (ide::setup-ide-menus))
+  (ide::setup-ide-menus))
 
 ;;; IDE colorization overrides
 ;;; To define a custom color:
 ;;; example: (defconstant red (win:RGB 255 0 0))
 ;;;
 (setf ide:comment-format
-    (ide:make-text-format
-        :color ide:dark-green
-        :italic t))
+      (ide:make-text-format
+       :color ide:dark-green
+       :italic t))
 
 (setf ide:keyword-format
-    (ide:make-text-format
-        :color ide:blue))
+      (ide:make-text-format
+       :color ide:blue))
 
 (setf ide:lisp-symbol-format
-    (ide:make-text-format
-        :bold t))
+      (ide:make-text-format
+       :bold t))
 
 (setf ide:string-format
-    (ide:make-text-format
-        :color (win:RGB #xa0 #x00 #x00)
-        :italic t))
+      (ide:make-text-format
+       :color (win:RGB #xa0 #x00 #x00)
+       :italic t))
 
 ;; the color of the user's preference will be used if it has been set, and
 ;; the color of normal-format ignored
 (setf ide:normal-format (ide:make-text-format :bold nil :italic nil :color ide:black))
 
 (when (eq (cormanlisp-client-type) :console-client)
-	(setf cl::*top-level-prompt* "?")
-	(format t "Type :quit to exit.~%")
-	(values))
+  (setf cl::*top-level-prompt* "?")
+  (format t "Type :quit to exit.~%")
+  (values))
 
 ;;; set your own local path for the Hyperspec
 ;; eg. (setq *hyperspec-local-path* "c:/roger/lisp/HyperSpec/")
@@ -83,24 +83,24 @@
 
 ;; Automatically set HyperSpec path to the one installed with Corman Lisp.
 (let ((hyperspec-install-path (merge-pathnames "HyperSpec\\"
-											   (namestring *cormanlisp-directory*))))
+					       (namestring *cormanlisp-directory*))))
   (when (probe-file (merge-pathnames "Front\\Contents.htm" hyperspec-install-path))
-	(setq *hyperspec-local-path* (namestring hyperspec-install-path))))
+    (setq *hyperspec-local-path* (namestring hyperspec-install-path))))
 
 ;;; set your own declaration symbols list
 ;; eg. (setf ide:*declaration-symbols* '("defun" "define-symbol-macro")) or
 ;;     (setf ide:*declaration-symbols* (append ide:*declaration-symbols* '("defwinconstant" "defwinapi")))
 (setf ide:*declaration-symbols* '("defun" "defconstant" "defparameter" "defvar" "defclass"
-                               "defmacro" "defmethod" "defasm" "defop" "defgeneric"
-                               "deftype" "defstruct" "defsetf" "defpackage" "in-package"))
+				  "defmacro" "defmethod" "defasm" "defop" "defgeneric"
+				  "deftype" "defstruct" "defsetf" "defpackage" "in-package"))
 
 ;; Clear out any History menu items left from building the image file
 (cl::truncate-command-history 0)
 
 ;; Auto-update feature
 (when (and ccl:*auto-update-enabled*
-        (eq (cormanlisp-client-type) :ide-client))
-    (ccl:auto-update))
+           (eq (cormanlisp-client-type) :ide-client))
+  (ccl:auto-update))
 
 ;; export from CL package
 (export (find-symbol "LOAD-DEFAULT-IMAGE" 'cl) 'cl)

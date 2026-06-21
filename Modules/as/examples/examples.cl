@@ -44,8 +44,8 @@
 
 (defparameter *example-pathname* *load-truename*) ; where this file is
 (defmacro example-file (name)
-    ;; create an absolute address for this file we'll load
-    `(merge-pathnames ,name *example-pathname*))
+  ;; create an absolute address for this file we'll load
+  `(merge-pathnames ,name *example-pathname*))
 
 
 
@@ -144,13 +144,13 @@
 
 	       (with-http-response (req ent)
 		 (with-http-body (req ent)
-		     (html (:head (:title "Allegro gc parameters"))
-			   (:body
-			    ((:table :bgcolor "silver" :bordercolor "blue"
-				     :border "3" :cellpadding "3"
-				     :cellspacing "3")
-			     (:tr (:td (:b "gsgc parameter")) (:td (:b "Value")))
-			     (build-gsgc-table)))))))))
+		   (html (:head (:title "Allegro gc parameters"))
+			 (:body
+			  ((:table :bgcolor "silver" :bordercolor "blue"
+				   :border "3" :cellpadding "3"
+				   :cellspacing "3")
+			   (:tr (:td (:b "gsgc parameter")) (:td (:b "Value")))
+			   (build-gsgc-table)))))))))
 
 
 
@@ -178,23 +178,23 @@
 	   #'(lambda (req ent)
 	       (with-http-response (req ent)
 		 (with-http-body (req ent :format :binary)
-		   ; here is where you would generate the picture.
-		   ; we're just reading it from a file in this example
+					; here is where you would generate the picture.
+					; we're just reading it from a file in this example
 		   (let ((stream (request-reply-stream req)))
 		     (with-open-file (p (nth selector
 					     `(,(example-file "prfile9.jpg")
-					       ,(example-file "fresh.jpg")))
-				      :element-type '(unsigned-byte 8))
+						,(example-file "fresh.jpg")))
+					:element-type '(unsigned-byte 8))
 
 		       (setq selector (mod (1+ selector) 2))
 
 		       (loop
-			 (let ((val (read-byte p nil nil)))
-			   (if* (null val)
-			      then ;eof
-				   (return))
-			   (write-byte val stream)
-			   )))))))))
+			(let ((val (read-byte p nil nil)))
+			  (if* (null val)
+			       then ;eof
+			       (return))
+			  (write-byte val stream)
+			  )))))))))
 
 
 
@@ -234,9 +234,9 @@
 		 (format t "got body ~s~%" body)
 		 (let ((gotname (assoc "username"
 				       (form-urlencoded-to-query body)
-					:test #'equal)))
+				       :test #'equal)))
 		   (if* gotname
-		      then (setq name (cdr gotname)))))
+			then (setq name (cdr gotname)))))
 
 	       (with-http-response (req ent)
 		 (with-http-body (req ent)
@@ -276,40 +276,40 @@
 		  :p
 
 		  (if* lookup
-		     then (html :hr (:b "Apropos") " of "
-				(:princ-safe (cdr lookup))
-				:br
-				:br)
-			  (let ((ans (apropos-list (cdr lookup))))
-			    (if* (null ans)
-			       then (html "No Match Found")
-			       else (macrolet ((my-td (str)
-						 `(html ((:td
-							  :bgcolor "blue")
-							 ((:font :color "white"
-								 :size "+1")
-							  (:b ,str))))))
+		       then (html :hr (:b "Apropos") " of "
+				  (:princ-safe (cdr lookup))
+				  :br
+				  :br)
+		       (let ((ans (apropos-list (cdr lookup))))
+			 (if* (null ans)
+			      then (html "No Match Found")
+			      else (macrolet ((my-td (str)
+						`(html ((:td
+							 :bgcolor "blue")
+							((:font :color "white"
+								:size "+1")
+							 (:b ,str))))))
 
-				      (html ((:table
-					      :bgcolor "silver"
-					      :bordercolor "blue"
-					      :border 3
-					      :cellpadding 3
-					      )
+				     (html ((:table
+					     :bgcolor "silver"
+					     :bordercolor "blue"
+					     :border 3
+					     :cellpadding 3
+					     )
 
-					     (:tr
-					      (my-td "Symbol")
-					      (my-td "boundp")
-					      (my-td "fboundp"))
+					    (:tr
+					     (my-td "Symbol")
+					     (my-td "boundp")
+					     (my-td "fboundp"))
 
 
-					     (dolist (val ans)
-					       (html (:tr
-						      (:td (:prin1-safe val))
-						      (:td (:prin1 (and (boundp val) t)))
-						      (:td (:prin1 (and (fboundp val) t))))
-						     :newline)))))))
-		     else (html "Enter name and type enter")))
+					    (dolist (val ans)
+					      (html (:tr
+						     (:td (:prin1-safe val))
+						     (:td (:prin1 (and (boundp val) t)))
+						     (:td (:prin1 (and (fboundp val) t))))
+						    :newline)))))))
+		       else (html "Enter name and type enter")))
 		 :newline))))))
 
 
@@ -358,16 +358,16 @@
 	 #'(lambda (req ent)
 	     (multiple-value-bind (name password) (get-basic-authorization req)
 	       (if* (and (equal name "foo") (equal password "bar"))
-		  then (with-http-response (req ent)
-			 (with-http-body (req ent)
-			   (html (:head (:title "Secret page"))
-				 (:body "You made it to the secret page"))))
-		  else
-		       (with-http-response (req ent :response
-						*response-unauthorized*)
-			 (set-basic-authorization req
-						   "secretserver")
-			 (with-http-body (req ent)))))))
+		    then (with-http-response (req ent)
+			   (with-http-body (req ent)
+			     (html (:head (:title "Secret page"))
+				   (:body "You made it to the secret page"))))
+		    else
+		    (with-http-response (req ent :response
+					     *response-unauthorized*)
+		      (set-basic-authorization req
+					       "secretserver")
+		      (with-http-body (req ent)))))))
 
 
 (publish :path "/local-secret"
@@ -378,27 +378,27 @@
 				      (request-socket req))
 				     -24)))
 	       (if* (equal net-address 127)
-		  then (with-http-response (req ent)
-			 (with-http-body (req ent)
-			   (html (:head (:title "Secret page"))
-				 (:body (:b "Congratulations. ")
-					"You are on the local network"))))
-		  else
-		       (with-http-response (req ent)
-			 (with-http-body (req ent)
-			   (html
-			    (:html (:head (:title "Unauthorized"))
-				   (:body
-				    "You cannot access this page "
-				    "from your location")))))))))
+		    then (with-http-response (req ent)
+			   (with-http-body (req ent)
+			     (html (:head (:title "Secret page"))
+				   (:body (:b "Congratulations. ")
+					  "You are on the local network"))))
+		    else
+		    (with-http-response (req ent)
+		      (with-http-body (req ent)
+			(html
+			 (:html (:head (:title "Unauthorized"))
+				(:body
+				 "You cannot access this page "
+				 "from your location")))))))))
 
 
 (publish :path "/local-secret-auth"
 	 :content-type "text/html"
 	 :authorizer (make-instance 'location-authorizer
-		       :patterns '((:accept "127.0" 8)
-				   (:accept "tiger.franz.com")
-				   :deny))
+				    :patterns '((:accept "127.0" 8)
+						(:accept "tiger.franz.com")
+						:deny))
 	 :function
 	 #'(lambda (req ent)
 	     (with-http-response (req ent)
@@ -446,10 +446,10 @@
 (publish :path "/secret-auth"
 	 :content-type "text/html"
 	 :authorizer (make-instance 'password-authorizer
-		       :allowed '(("foo2" . "bar2")
-				  ("foo3" . "bar3")
-				  )
-		       :realm  "SecretAuth")
+				    :allowed '(("foo2" . "bar2")
+					       ("foo3" . "bar3")
+					       )
+				    :realm  "SecretAuth")
 	 :function
 	 #'(lambda (req ent)
 	     (with-http-response (req ent)
@@ -472,55 +472,55 @@
 		     (files-written)
 		     )
 		 (loop
-		   ; get headers for the next item
-		   (if* (null (setq h (get-multipart-header req)))
-		      then ; no more items
-			   (return))
-		   ; we can get the filename from the header if
-		   ; it was an <input type="file"> item.  If there is
-		   ; no filename, we just create one.
-		   (let ((cd (assoc "content-disposition" h :test #'equalp))
-			 (filename)
-			 (sep))
-		     (if* (and cd (consp (cadr cd)))
-			then (setq filename (cdr (assoc "filename"
-							(cddr (cadr cd))
-							:test #'equalp)))
-			     (if* filename
-				then ;; locate the part of the filename
-				     ;; after the last directory separator.
-				     ;; the common lisp pathname functions are
-				     ;; no help since the filename syntax
-				     ;; may be foreign to the OS on which
-				     ;; the server is running.
-				     (setq sep
-				       (max (or (position #\/ filename
-							  :from-end t) -1)
-					    (or (position #\\ filename
-							  :from-end t) -1)))
-				     (setq filename
-				       (subseq filename (1+ sep)
-					       (length filename)))))
-		     (if* (null filename)
-			then (setq filename (format nil "tempfile~d"
-						    (incf counter))))
+					; get headers for the next item
+		  (if* (null (setq h (get-multipart-header req)))
+		       then ; no more items
+		       (return))
+					; we can get the filename from the header if
+					; it was an <input type="file"> item.  If there is
+					; no filename, we just create one.
+		  (let ((cd (assoc "content-disposition" h :test #'equalp))
+			(filename)
+			(sep))
+		    (if* (and cd (consp (cadr cd)))
+			 then (setq filename (cdr (assoc "filename"
+							 (cddr (cadr cd))
+							 :test #'equalp)))
+			 (if* filename
+			      then ;; locate the part of the filename
+			      ;; after the last directory separator.
+			      ;; the common lisp pathname functions are
+			      ;; no help since the filename syntax
+			      ;; may be foreign to the OS on which
+			      ;; the server is running.
+			      (setq sep
+				    (max (or (position #\/ filename
+						       :from-end t) -1)
+					 (or (position #\\ filename
+						       :from-end t) -1)))
+			      (setq filename
+				    (subseq filename (1+ sep)
+					    (length filename)))))
+		    (if* (null filename)
+			 then (setq filename (format nil "tempfile~d"
+						     (incf counter))))
 
-		     (push filename files-written)
-		     (with-open-file (pp filename :direction :output
-				      :if-exists :supersede
-				      :element-type '(unsigned-byte 8))
-		       (format t "writing file ~s~%" filename)
-		       (let ((buffer (make-array 1024
-						 :element-type '(unsigned-byte 8))))
+		    (push filename files-written)
+		    (with-open-file (pp filename :direction :output
+					:if-exists :supersede
+					:element-type '(unsigned-byte 8))
+		      (format t "writing file ~s~%" filename)
+		      (let ((buffer (make-array 1024
+						:element-type '(unsigned-byte 8))))
 
-			 (loop (let ((count (get-multipart-sequence
-					     req
-					     buffer
-					     :raw t)))
-				 (if* (null count) then (return))
-				 (write-sequence buffer pp :end count)))))
+			(loop (let ((count (get-multipart-sequence
+					    req
+					    buffer
+					    :raw t)))
+				(if* (null count) then (return))
+				(write-sequence buffer pp :end count)))))
 
-		     ))
+		    ))
 
 
 		 ;; now send back a response for the browser
@@ -591,8 +591,8 @@
 
 ;; the franz home page
 #+ignore (publish-directory :prefix "/"
-		   :destination "/net/tanya/home/httpd/html/"
-		   )
+			    :destination "/net/tanya/home/httpd/html/"
+			    )
 
 
 (publish-directory :prefix "/int"

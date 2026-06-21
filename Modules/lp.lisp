@@ -209,7 +209,7 @@
 #|
 (setf (lp:physical-host-type "MY-LISPM") :symbolics)
 (setf (lp:logical-pathname-translations "foo")
-      '(("**;*.*.*" "MY-LISPM:>library>foo>**>")))
+'(("**;*.*.*" "MY-LISPM:>library>foo>**>")))
 
 <cl> (lp:translate-logical-pathname "foo:bar;baz;mum.quux.3" :namestring)
 "MY-LISPM:>library>foo>bar>baz>mum.quux.3"
@@ -217,12 +217,12 @@
 (setf (lp:physical-host-type "U") :unix)
 (setf (lp:physical-host-type "V") :vms)
 (setf (lp:logical-pathname-translations "prog")
-      '(("RELEASED;*.*.*"    "U:/sys/bin/my-prog/")
-	("RELEASED;*;*.*.*"  "U:/sys/bin/my-prog/*/")
-	("EXPERIMENTAL;*.*.*" "U:/usr/Joe/development/prog/")
-	("EXPERIMENTAL;DOCUMENTATION;*.*.*" "V:SYS$DISK:[JOE.DOC]")
-	("EXPERIMENTAL;*;*.*.*" "U:/usr/Joe/development/prog/*/")
-	("MAIL;**;*.MAIL"       "V:SYS$DISK:[JOE.MAIL.PROG...]*.MBX")))
+'(("RELEASED;*.*.*"    "U:/sys/bin/my-prog/")
+("RELEASED;*;*.*.*"  "U:/sys/bin/my-prog/*/")
+("EXPERIMENTAL;*.*.*" "U:/usr/Joe/development/prog/")
+("EXPERIMENTAL;DOCUMENTATION;*.*.*" "V:SYS$DISK:[JOE.DOC]")
+("EXPERIMENTAL;*;*.*.*" "U:/usr/Joe/development/prog/*/")
+("MAIL;**;*.MAIL"       "V:SYS$DISK:[JOE.MAIL.PROG...]*.MBX")))
 
 <cl> (lp:translate-logical-pathname "prog:mail;save;ideas.mail.3" :namestring)
 "V:SYS$DISK:[JOE.MAIL.PROG.SAVE]IDEAS.MBX.3"
@@ -230,22 +230,22 @@
 "U:/usr/Joe/development/prog/spreadsheet.c"
 
 (setf (lp:logical-pathname-translations "prog")
-      '(("CODE;*.*.*"    "/lib/prog/")))
+'(("CODE;*.*.*"    "/lib/prog/")))
 <cl> (lp:translate-logical-pathname "prog:code;documentation.lisp" :namestring)
 "/lib/prog/documentation.lisp"
 
 (setf (lp:logical-pathname-translations "prog")
-      '(("CODE;DOCUMENTATION.*.*"    "/lib/prog/docum.*")
-	("CODE;*.*.*"    "/lib/prog/")))
+'(("CODE;DOCUMENTATION.*.*"    "/lib/prog/docum.*")
+("CODE;*.*.*"    "/lib/prog/")))
 <cl> (lp:translate-logical-pathname "prog:code;documentation.lisp" :namestring)
 "/lib/prog/docum.lisp"
 
 
 (setf (lp:logical-pathname-translations "prog")
-      `(("**;*.LISP.*"  ,(lp:logical-pathname "PROG:**;*.L.*"))
-	("**;*.FASL.*"  ,(lp:logical-pathname "PROG:**;*.B.*"))
-	("CODE;DOCUMENTATION.*.*" "/lib/prog/documentatio.*")
-	("CODE;*.*.*"             "/lib/prog/")))
+`(("**;*.LISP.*"  ,(lp:logical-pathname "PROG:**;*.L.*"))
+("**;*.FASL.*"  ,(lp:logical-pathname "PROG:**;*.B.*"))
+("CODE;DOCUMENTATION.*.*" "/lib/prog/documentatio.*")
+("CODE;*.*.*"             "/lib/prog/")))
 <cl> (lp:translate-logical-pathname "prog:code;documentation.lisp" :namestring)
 "/lib/prog/documentatio.l"
 
@@ -334,11 +334,11 @@
 	   (values nil (+ start dlength)))
 	  ;; The following clause is subsumed by the last cond clause,
 	  ;; and hence should probably be eliminated.
-;	  ((= delim-pos (- end dlength))
-;	   ;; The delimiter is at the end of the string, so return the
-;	   ;; field and skip to the end.
-;	   (values (subseq string start delim-pos)
-;		   end))
+					;	  ((= delim-pos (- end dlength))
+					;	   ;; The delimiter is at the end of the string, so return the
+					;	   ;; field and skip to the end.
+					;	   (values (subseq string start delim-pos)
+					;		   end))
 	  (t
 	   ;; The delimiter is in the middle of the string. Return the
 	   ;; field and skip over the delimiter.
@@ -346,7 +346,7 @@
 		   (+ delim-pos dlength))))))
 
 (defun parse-with-string-delimiter* (delim string &key (start 0) end
-					   include-last)
+						    include-last)
   "Breaks STRING into a list of strings, each of which was separated
    from the previous by DELIM. If INCLUDE-LAST is nil (the default),
    will not include the last string if it wasn't followed by DELIM
@@ -414,7 +414,7 @@
   (defmacro nth-value (n form)
     "Returns the nth value of the values returned by form."
     `(nth ,n (multiple-value-list ,form)))
-  ; (export 'lisp::nth-value "LISP")
+					; (export 'lisp::nth-value "LISP")
   )
 
 ;;; ********************************
@@ -423,7 +423,7 @@
 (defvar *logical-pathname-translations-table* (make-hash-table :test #'equal))
 (defun canonicalize-logical-hostname (host)
   (when host
-	(string-upcase host)))
+    (string-upcase host)))
 (defun LOGICAL-PATHNAME-TRANSLATIONS (host)
   "If HOST is the host component of a logical pathname and has been defined
    as a logical pathname host name by SETF of LOGICAL-PATHNAME-TRANSLATIONS,
@@ -448,14 +448,14 @@
    host's translations are replaced. Logical pathname host names are
    compared with string-equal."
   (progn
-     (when (and *warn-about-host-type-collisions*
-		(physical-host-type host))
-       (format t "~&Warning in (SETF LOGICAL-PATHNAME-TRANSLATIONS):~
+    (when (and *warn-about-host-type-collisions*
+	       (physical-host-type host))
+      (format t "~&Warning in (SETF LOGICAL-PATHNAME-TRANSLATIONS):~
                   ~&   ~S is defined as both a physical host and a logical host."
-	     host))
-     (setf (gethash (canonicalize-logical-hostname host)
-		    *logical-pathname-translations-table*)
-	   translations)))
+	      host))
+    (setf (gethash (canonicalize-logical-hostname host)
+		   *logical-pathname-translations-table*)
+	  translations)))
 
 ;;; ********************************
 ;;; Load Logical Translations ******
@@ -497,13 +497,13 @@
   (gethash host *physical-host-table*))
 (defun (setf physical-host-type) (type host)
   (progn
-     (when (and *warn-about-host-type-collisions*
-		(logical-pathname-translations host))
-       (format t "~&Warning in (SETF PHYSICAL-HOST-TYPE):~
+    (when (and *warn-about-host-type-collisions*
+	       (logical-pathname-translations host))
+      (format t "~&Warning in (SETF PHYSICAL-HOST-TYPE):~
                   ~&   ~S is defined as both a physical host and a logical host."
-	       host))
-     (setf (gethash host *physical-host-table*)
-	   type)))
+	      host))
+    (setf (gethash host *physical-host-table*)
+	  type)))
 
 (defconstant local-host-table		; &&&
   #+:vms "chaos$root:[host.tables]nethosts.txt"
@@ -526,8 +526,8 @@
       (do* ((host (read hostab nil :eof)(read hostab nil :eof))
 	    ;; host should be NET or HOST.
 	    (line (read-line hostab nil :eof)(read-line hostab nil :eof)))
-	  ;; Exit on end of file.
-	  ((or (eq host :eof)(eq line :eof)))
+	   ;; Exit on end of file.
+	   ((or (eq host :eof)(eq line :eof)))
 	;; For each line in the host table, do
 	(cond ((null line)
 	       (warn "Unexpected EOF in hostab ~S, exiting." local-hostab)
@@ -538,7 +538,7 @@
 	       (let ((pos 0) name system machine nicknames delim-not-found)
 		 ;; Snarf the machine NAME.
 		 (multiple-value-setq (name pos)
-		     (parse-with-string-delimiter "," line :start pos))
+		   (parse-with-string-delimiter "," line :start pos))
 		 ;; Throw away chaos host numbers.
 		 (setq pos
 		       (nth-value 1 (parse-with-string-delimiter
@@ -551,9 +551,9 @@
 								 :start pos)))
 		 ;; Snarf the system and machine types.
 		 (multiple-value-setq (system pos)
-		     (parse-with-string-delimiter "," line :start pos))
+		   (parse-with-string-delimiter "," line :start pos))
 		 (multiple-value-setq (machine pos delim-not-found)
-		     (parse-with-string-delimiter "," line :start pos))
+		   (parse-with-string-delimiter "," line :start pos))
 		 (when (and (not delim-not-found)
 			    (> (length line) pos))
 		   ;; Snarf the nicknames.
@@ -601,19 +601,19 @@
 
 ;;; Setup Default Physical Host
 (eval-when (load eval)  ; &&&
-(setf (physical-host-type nil)		; nil is default host
-      (or #+:vms        :vms
-	  #+:explorer   :explorer
-	  #+:symbolics  :symbolics
-	  #+:unix       :unix
-	  #+:hp         :unix
-	  #+:cmu        :unix
-	  #+:cormanlisp :win32
-	  :unix				; default. change if necessary
-	  ))
-(setf (physical-host-type "Default")
-      (physical-host-type nil))
-)
+  (setf (physical-host-type nil)		; nil is default host
+	(or #+:vms        :vms
+	    #+:explorer   :explorer
+	    #+:symbolics  :symbolics
+	    #+:unix       :unix
+	    #+:hp         :unix
+	    #+:cmu        :unix
+	    #+:cormanlisp :win32
+	    :unix				; default. change if necessary
+	    ))
+  (setf (physical-host-type "Default")
+	(physical-host-type nil))
+  )
 
 ;;; ********************************
 ;;; Translation Rules **************
@@ -636,10 +636,10 @@
 
 (defmacro define-translation-rule (host-type
 				   &key case char-mappings component-mappings
-				   version-case
-				   type-case
-				   name-case
-				   component-case)
+				     version-case
+				     type-case
+				     name-case
+				     component-case)
   "Defines translation rules for hosts of type host-type.
    Case may be :unchanged, :upper, :lower, or :capitalize. This provides a
    default case translation; version-case, type-case, name-case, and
@@ -671,36 +671,36 @@
 
 (defun casify (thing case)
   (if (stringp thing)
-    (case case
-      (:upper (string-upcase thing))
-      (:lower (string-downcase thing))
-      (:capitalize (string-capitalize thing))
-      (:unchanged thing)
-      (otherwise thing))
-    thing))
+      (case case
+	(:upper (string-upcase thing))
+	(:lower (string-downcase thing))
+	(:capitalize (string-capitalize thing))
+	(:unchanged thing)
+	(otherwise thing))
+      thing))
 
 (define-translation-rule :vms
-  :case :upper :char-mappings ((#\- #\_)))
+    :case :upper :char-mappings ((#\- #\_)))
 
 (define-translation-rule :unix
-  :case :unchanged ; :lower
-  :type-case :lower
-  )
+    :case :unchanged ; :lower
+    :type-case :lower
+    )
 
 (define-translation-rule :win32
-  :case :unchanged ; :lower
-  :type-case :lower
-  )
+    :case :unchanged ; :lower
+    :type-case :lower
+    )
 
 (define-translation-rule :unc
-  :case :unchanged ; :lower
-  :type-case :lower
-  )
+    :case :unchanged ; :lower
+    :type-case :lower
+    )
 
 
 (define-translation-rule :logical
-  :case :upper
-  :name-case :unchanged)
+    :case :upper
+    :name-case :unchanged)
 
 ;;; ********************************
 ;;; Canonical Types ****************
@@ -724,15 +724,15 @@
 		 (remove ',canonical
 			 (gethash ',level *default-canonical-types*)
 			 :key #'car)))
-;     (push (list ',canonical ',default)
-;	   (gethash ',level *default-canonical-types*))
+					;     (push (list ',canonical ',default)
+					;	   (gethash ',level *default-canonical-types*))
      (setf (gethash ',level *canonical-types-alist*)
 	   (cons (list* ',canonical ',specs)
 		 (remove ',canonical
 			 (gethash ',level *canonical-types-alist*)
 			 :key #'car)))
-;     (push (list* ',canonical ',specs)
-;	   (gethash ',level *canonical-types-alist*))
+					;     (push (list* ',canonical ',specs)
+					;	   (gethash ',level *canonical-types-alist*))
      ))
 
 (defun member-or-eq (x list-or-atom)
@@ -776,29 +776,29 @@
 ;;; *** Some Sample Types ***
 
 (define-canonical host :default ""
-  (:unix #+:CMU "Mach" "" "Default"))
+		  (:unix #+:CMU "Mach" "" "Default"))
 
 (define-canonical host "Default" ""
-  (:unix nil "" "Default"))
+		  (:unix nil "" "Default"))
 
 (define-canonical device :unspecific "")
 
 (define-canonical component :absolute ""
-  (:unix "/")
-  (:win32 "/" "\\")
-  (:symbolics ">")
-  (:logical   "")
-  (:vms       ""))
+		  (:unix "/")
+		  (:win32 "/" "\\")
+		  (:symbolics ">")
+		  (:logical   "")
+		  (:vms       ""))
 (define-canonical component :relative ""
-  (:unix "")
-  (:win32 "")
-  (:unc "")
-  (:symbolics "")
-  (:logical   ";")
-  (:vms       "."))
+		  (:unix "")
+		  (:win32 "")
+		  (:unc "")
+		  (:symbolics "")
+		  (:logical   ";")
+		  (:vms       "."))
 (define-canonical component :wild "*")
 (define-canonical component :wild-inferiors "**"
-  (:vms ".."))
+		  (:vms ".."))
 
 (define-canonical name :wild "*")
 
@@ -807,32 +807,32 @@
 
 ;; uncommented the "L" causes the last Steele example to break, of course.
 (define-canonical type :lisp "LISP"
-  (:unix-ucb "LISP")
-  (:unix #+(and :sun :kcl :unix) "lsp"
-	 "lisp" ; "L" #+:excl "cl"
-)
-  (:win32 "lisp" "cl" "lsp")
-  (:unc "lisp" "cl" "lsp")
-  (:vms "LSP" "LISP")
-  ;; (:vms4 "LSP" "LISP")
-  ((:tops-20 :tenex) "LISP" "LSP"))
+		  (:unix-ucb "LISP")
+		  (:unix #+(and :sun :kcl :unix) "lsp"
+			 "lisp" ; "L" #+:excl "cl"
+			 )
+		  (:win32 "lisp" "cl" "lsp")
+		  (:unc "lisp" "cl" "lsp")
+		  (:vms "LSP" "LISP")
+		  ;; (:vms4 "LSP" "LISP")
+		  ((:tops-20 :tenex) "LISP" "LSP"))
 
 (define-canonical type :text "TEXT"
-  (:unix "text" "txt" "tx")
-  (:win32 "txt" "text")
-  (:vms "TXT")
-  ((:tops-20 :tenex) "TXT"))
+		  (:unix "text" "txt" "tx")
+		  (:win32 "txt" "text")
+		  (:vms "TXT")
+		  ((:tops-20 :tenex) "TXT"))
 
 (define-canonical type :fasl "FASL"
-  (:unix #+:hp "b"
-	 #+(and :sun :kcl :unix) "o"
-	 #+:cmu "fasl"
-	 "fasl" "bin" "BN")
-  (:win32 "fasl")
-  (:vms "FAS" "BIN")
-  (:explorer "XLD")
-  (:symbolics "BIN")
-  ((:tops-20 :tenex) "BIN"))
+		  (:unix #+:hp "b"
+			 #+(and :sun :kcl :unix) "o"
+			 #+:cmu "fasl"
+			 "fasl" "bin" "BN")
+		  (:win32 "fasl")
+		  (:vms "FAS" "BIN")
+		  (:explorer "XLD")
+		  (:symbolics "BIN")
+		  ((:tops-20 :tenex) "BIN"))
 
 (define-canonical version :wild "*")
 (define-canonical version :newest "newest")
@@ -901,11 +901,11 @@
 ;;; a guarrantee of the pathname syntax.
 ;;;
 (defstruct (physical-pathname
-	    (:conc-name %physical-pathname-)
-	    (:print-function %print-physical-pathname)
-	    (:constructor %make-physical-pathname
-	     (host device directory name type version))
-	    (:predicate physical-pathnamep))
+	     (:conc-name %physical-pathname-)
+	     (:print-function %print-physical-pathname)
+	     (:constructor %make-physical-pathname
+			   (host device directory name type version))
+	     (:predicate physical-pathnamep))
   "Physical-Pathname is the underlying structure for a pathname."
   (host nil :type (or null keyword string))
   (device nil :type (or null keyword string))
@@ -967,12 +967,12 @@
 ;;; Logical Pathname Defstruct *****
 ;;; ********************************
 (defstruct (logical-pathname
-	    (:include physical-pathname)
-	    (:conc-name %logical-pathname-)
-	    (:print-function %print-logical-pathname)
-	    (:constructor %make-logical-pathname
-			  (host device directory name type version))
-	    (:predicate logical-pathnamep))
+	     (:include physical-pathname)
+	     (:conc-name %logical-pathname-)
+	     (:print-function %print-logical-pathname)
+	     (:constructor %make-logical-pathname
+			   (host device directory name type version))
+	     (:predicate logical-pathnamep))
   "Logical-pathname is the underlying structure for a logical pathname.")
 
 (defun %print-logical-pathname (pname stream depth)
@@ -1068,7 +1068,7 @@
     result))
 
 (defun %directory-string (dirlist &optional (host-type :logical)
-				  (dir-delim #\;))
+				    (dir-delim #\;))
   "Converts a vector of the form #(\"foo\" \"bar\" ... \"baz\") into
    a string of the form \"foo;bar;...;baz;\""
   (declare (simple-vector dirlist))
@@ -1115,8 +1115,8 @@
 	       (i (1- len) (1- i))
 	       (q version) ; quotient
 	       (r)) ; residue
-	     ((zerop q) ; nothing left
-	      res)
+	      ((zerop q) ; nothing left
+	       res)
 	   (declare (string res)
 		    (fixnum len i r))
 	   (multiple-value-setq (q r) (truncate q 10))
@@ -1127,12 +1127,12 @@
   (setq pathname (physical-pathname pathname))
   (let* ((host (%physical-pathname-host pathname))
 	 (host-type (host-type host))
-	(device    (%physical-pathname-device pathname))
-	(directory (coerce (%physical-pathname-directory pathname) 'list))
-	(name      (%physical-pathname-name pathname))
-	(type      (%physical-pathname-type pathname))
-	(version   (%physical-pathname-version pathname))
-	(ptype (pathname-host-type pathname)))
+	 (device    (%physical-pathname-device pathname))
+	 (directory (coerce (%physical-pathname-directory pathname) 'list))
+	 (name      (%physical-pathname-name pathname))
+	 (type      (%physical-pathname-type pathname))
+	 (version   (%physical-pathname-version pathname))
+	 (ptype (pathname-host-type pathname)))
     (setq host (surface-form host host-type 'host)
 	  name (surface-form name host-type 'name)
 	  type (surface-form type host-type 'type)
@@ -1157,7 +1157,7 @@
 		      (otherwise ""))
 	       (cdr directory)
 	       name type version))
-	  (:win32
+      (:win32
        (format nil "~@[~A:~]~A~{~A\\~}~@[~A~@[.~A~@[.~A~]~]~]"
 	       host (case (car directory)
 		      (:absolute "\\")
@@ -1219,7 +1219,7 @@
 				       :force-logical t)))
     (physical-pathname thing)
     (logical-pathname thing)
-	#+cormanlisp (lisp::pathname (physical-pathname (lisp::namestring thing) host))
+    #+cormanlisp (lisp::pathname (physical-pathname (lisp::namestring thing) host))
     #+:CMU(stream           (logical-pathname (lisp::file-name thing) host))))
 
 (defun physical-pathname (thing &optional host)
@@ -1234,9 +1234,9 @@
     #+:CMU(stream           (physical-pathname (lisp::file-name thing) host))))
 
 (defun parse-generic-namestring (thing &optional host
-				       (defaults *default-pathname-defaults*)
-				       &key (start 0) end junk-allowed
-				       force-logical)
+					 (defaults *default-pathname-defaults*)
+				 &key (start 0) end junk-allowed
+				   force-logical)
   "Convert namestring into a pathname."
   (declare (ignore junk-allowed))
   (unless end (setf end (length thing)))
@@ -1251,7 +1251,7 @@
 	      host))
     (if force-logical
 	(setq host-type :logical)
-      (setq host-type (host-type host-string)))
+	(setq host-type (host-type host-string)))
     (if host-type
 	(multiple-value-bind (parsed-host device directory name type version)
 	    (do-generic-pathname-parse thing host-type start end)
@@ -1264,7 +1264,7 @@
 		(make-logical-pathname
 		 :host	(or parsed-host host
 			    (and defaults-p (logical-pathname-host defaults))
-;			    (when directory "Default")
+					;			    (when directory "Default")
 			    )
 		 :directory (or directory
 				(and defaults-p
@@ -1282,7 +1282,7 @@
 		(make-physical-pathname
 		 :host	(or parsed-host host
 			    (and defaults-p (physical-pathname-host defaults))
-;			    (when directory "Default")
+					;			    (when directory "Default")
 			    )
 		 :device    (or device
 				(and defaults-p
@@ -1301,9 +1301,9 @@
 				     (physical-pathname-version defaults))))))
 	     end)))
 	;; Unknown host type, wing it with parse-namestring.
-      (when thing
-	(lisp:parse-namestring thing host defaults
-			       :start start :end end)))))
+	(when thing
+	  (lisp:parse-namestring thing host defaults
+				 :start start :end end)))))
 
 ;;; ********************************
 ;;; Parse Physical Pathnames *******
@@ -1321,7 +1321,7 @@
      ;; Parses Unix pathnames of the following format:
      ;;     host:/dir1/dir2/*/name.type.version
      (parse-generic-pathname string start end ":" t "/" "." "." "."))
-	(:win32
+    (:win32
      ;; Parses Win32 pathnames of the following format:
      ;;     host:\\dir1\\dir2\\*\\name.type.version
      (parse-generic-pathname string start end ":" t "\\" "." "." "."))
@@ -1335,17 +1335,17 @@
 		nil)))
 
 (defun parse-generic-pathname (string &optional (start 0) end
-				      (host-delim ":")(lead-is-abs t)
-				      (dir-delim "/")
-				      (name-delim ".")(type-delim ".")
-				      (version-delim "."))
+					(host-delim ":")(lead-is-abs t)
+					(dir-delim "/")
+					(name-delim ".")(type-delim ".")
+					(version-delim "."))
   "Splits string into a host, vector of directories, a file name, type,
    and version. Parses generic pathnames."
   (declare (string string))
   (setq end (or end (length string)))
   (let (host a-vs-r directories name type version host-type)
     (multiple-value-setq (host start)
-	(get-host-string string host-delim start end))
+      (get-host-string string host-delim start end))
     (setq host-type (host-type host))
     ;; Absolute vs. Relative
     (cond ((and (not (string-equal string "" :start1 start))
@@ -1365,16 +1365,16 @@
     ;; Split off the name, type, and version
     (when (< start end)
       (multiple-value-setq (name start)
-	  (parse-with-string-delimiter name-delim string
-				       :start start :end end))
+	(parse-with-string-delimiter name-delim string
+				     :start start :end end))
       (when (< start end)
 	(multiple-value-setq (type start)
-	    (parse-with-string-delimiter type-delim string
-					 :start start :end end))
+	  (parse-with-string-delimiter type-delim string
+				       :start start :end end))
 	(when (< start end)
 	  (multiple-value-setq (version start)
-	      (parse-with-string-delimiter version-delim string
-					   :start start :end end)))))
+	    (parse-with-string-delimiter version-delim string
+					 :start start :end end)))))
     ;; Return the values
     (values host
 	    :unspecific
@@ -1405,11 +1405,11 @@
     (when (plusp (length string))
       (case (char string start)
 	(#\[  (multiple-value-setq (directories start)
-		  (parse-with-string-delimiter "]" string
-					       :start (1+ start) :end end)))
+		(parse-with-string-delimiter "]" string
+					     :start (1+ start) :end end)))
 	(#\<  (multiple-value-setq (directories start)
-		  (parse-with-string-delimiter ">" string
-					       :start (1+ start) :end end)))))
+		(parse-with-string-delimiter ">" string
+					     :start (1+ start) :end end)))))
     ;; Absolute vs. Relative
     (cond ((and (not (zerop (length directories)))
 		(char= #\. (char directories 0)))
@@ -1432,19 +1432,19 @@
     ;; Split off the name, type, and version
     (when (< start end)
       (multiple-value-setq (name start)
-	  (parse-with-string-delimiter "." string :start start :end end))
+	(parse-with-string-delimiter "." string :start start :end end))
       (when (< start end)
 	(multiple-value-bind (new-type new-start delim-not-found)
 	    (parse-with-string-delimiter ";" string :start start :end end)
 	  (cond (delim-not-found
 		 (multiple-value-setq (type start)
-		     (parse-with-string-delimiter "." string
-						  :start start :end end)))
+		   (parse-with-string-delimiter "." string
+						:start start :end end)))
 		(t
 		 (setq type new-type start new-start))))
 	(when (< start end)
 	  (multiple-value-setq (version start)
-	      (parse-with-string-delimiter "." string :start start :end end)))))
+	    (parse-with-string-delimiter "." string :start start :end end)))))
     ;; Return the values
     (values host
 	    device
@@ -1464,10 +1464,10 @@
   (setq end (or end (length string)))
   (let (host a-vs-r (directories "") name type version)
     (multiple-value-setq (host start)
-	(get-host-string string ":" start end))
+      (get-host-string string ":" start end))
     (multiple-value-setq (directories start)
-	(parse-with-string-delimiter ";" string
-				     :start start :end end))
+      (parse-with-string-delimiter ";" string
+				   :start start :end end))
     ;; Absolute vs. Relative
     (cond ((and (not (zerop (length directories)))
 		(char= #\. (char directories 0)))
@@ -1492,10 +1492,10 @@
 	  (setq name new-name start new-start)))
       (when (< start end)
 	(multiple-value-setq (type start)
-	    (parse-with-string-delimiter "#" string :start start :end end))
+	  (parse-with-string-delimiter "#" string :start start :end end))
 	(when (< start end)
 	  (multiple-value-setq (version start)
-	      (parse-with-string-delimiter "." string :start start :end end)))))
+	    (parse-with-string-delimiter "." string :start start :end end)))))
     ;; Return the values
     (values host
 	    :unspecific
@@ -1593,7 +1593,7 @@
 
 (defun translate-logical-pathname (logical-pathname
 				   &optional
-				   (output-format *translation-output*))
+				     (output-format *translation-output*))
   "Translates a logical pathname to the corresponding physical pathname.
    The pathname argument is first coerced to a logical pathname [this
    should really be pathname, but for that we'd have to redefine
@@ -1619,12 +1619,12 @@
     (let ((namestring (logical-namestring logical-pathname)))
       (setf (gethash namestring *circularity-check-table*) T))
     (unwind-protect
-	(resolve-logical-pathname logical-pathname output-format)
+	 (resolve-logical-pathname logical-pathname output-format)
       (clrhash *circularity-check-table*))))
 
 (defun resolve-logical-pathname (logical-pathname
 				 &optional
-				 (output-format *translation-output*))
+				   (output-format *translation-output*))
   "Resolve the logical pathname into a physical pathname using the
    translations table."
   (let ((logical-host (logical-pathname-host logical-pathname)))
@@ -1680,7 +1680,7 @@
 (defun translate-logical-pathname-aux (logical-pathname
 				       from-pathname to-pathname
 				       &optional
-				       (output-format *translation-output*))
+					 (output-format *translation-output*))
   "Translates the logical pathname using the substitution specified by
    a particular translation."
   (let* ((host (physical-pathname-host to-pathname))
@@ -1760,7 +1760,7 @@
 	       (match-strings template string t-start (1+ s-start))
 	       (match-strings template string (1+ t-start) (1+ s-start))))
 	  ((char-equal (char template t-start)
-		  (char string s-start)) ; includes * against *
+		       (char string s-start)) ; includes * against *
 	   (match-strings template string (1+ t-start) (1+ s-start))))))
 
 (defun match-directories (template dirs &optional (t-start 0) (d-start 0))
@@ -1785,7 +1785,7 @@
 	   (match-directories template dirs (1+ t-start) (1+ d-start))))))
 
 (defun map-wildcard-word (string source target
-				 &optional case char-mappings string-mappings)
+			  &optional case char-mappings string-mappings)
   (let ((result
 	 (cond ((and (stringp target)
 		     (not (wildcard-wordp target)))
@@ -1813,8 +1813,8 @@
     result))
 
 (defun map-strings (string source target
-			   &optional (result "")
-			   (s-start 0) (st-start 0) (tt-start 0))
+		    &optional (result "")
+		      (s-start 0) (st-start 0) (tt-start 0))
   (let* ((s-length (length string))
 	 (st-length (length source))
 	 (tt-length (length target))
@@ -1865,9 +1865,9 @@
 				result (subseq target tt-start)))))))))
 
 (defun map-directories (dirs source target
-			     &optional (result *null-vector*)
-			     (d-start 0) (s-start 0) (t-start 0)
-			     case char-map string-map)
+			&optional (result *null-vector*)
+			  (d-start 0) (s-start 0) (t-start 0)
+			  case char-map string-map)
   (let* ((d-length (length dirs))
 	 (s-length (length source))
 	 (t-length (length target))
@@ -1895,7 +1895,7 @@
 	     result))
 	  ((eq :wild-inferiors (#+:cmu svref #-:cmu aref target t-start))
 	   (cond ((eq :wild-inferiors (#+:cmu svref
-				       #-:cmu aref source s-start))
+					      #-:cmu aref source s-start))
 		  (or (map-directories dirs source target result
 				       d-start (1+ s-start) (1+ t-start)
 				       case char-map string-map)
@@ -1903,8 +1903,8 @@
 				       (concatenate 'simple-vector result
 						    (list (map-wildcard-word
 							   (#+:cmu svref
-							    #-:cmu aref
-							    dirs d-start)
+								   #-:cmu aref
+								   dirs d-start)
 							   :wild :wild
 							   case char-map
 							   string-map)))
@@ -1914,8 +1914,8 @@
 				       (concatenate 'simple-vector result
 						    (list (map-wildcard-word
 							   (#+:cmu svref
-							    #-:cmu aref
-							    dirs d-start)
+								   #-:cmu aref
+								   dirs d-start)
 							   :wild :wild
 							   case char-map
 							   string-map)))
@@ -1931,13 +1931,13 @@
 		  (map-directories dirs source target
 				   (concatenate 'simple-vector result
 						(list (map-wildcard-word
-						 (#+:cmu svref
-						  #-:cmu aref dirs d-start)
-						 (#+:cmu svref
-						  #-:cmu aref source s-start)
-						 (#+:cmu svref
-						  #-:cmu aref target t-start)
-						 case char-map string-map)))
+						       (#+:cmu svref
+							       #-:cmu aref dirs d-start)
+						       (#+:cmu svref
+							       #-:cmu aref source s-start)
+						       (#+:cmu svref
+							       #-:cmu aref target t-start)
+						       case char-map string-map)))
 				   (1+ d-start) (1+ s-start) (1+ t-start)
 				   case char-map string-map))
 		 ((string-equal (#+:cmu svref #-:cmu aref dirs d-start)
@@ -1987,52 +1987,52 @@
 		   (logical-pathname-version relative-dir))))))
 
 (eval-when (compile load eval)
-(defun real-filename (filename)
-  (if (and filename
-	   (eq (pathname-host-type filename) :logical))
-      (translate-logical-pathname filename :namestring)
-      filename))
+  (defun real-filename (filename)
+    (if (and filename
+	     (eq (pathname-host-type filename) :logical))
+	(translate-logical-pathname filename :namestring)
+	filename))
 
-#|
-(defmacro convert-file-function (name &optional optionalp)
+  #|
+  (defmacro convert-file-function (name &optional optionalp)
   (let ((old-name (intern (concatenate 'string "OLD-" (string name)))))
-    `(unless (fboundp ',old-name)
-	     (setf (symbol-function ',old-name)(symbol-function ',name))
-	     (setf (symbol-function ',name)
-		   #'(lambda ,(if optionalp
-				  '(&optional filename &rest args)
-				'(filename &rest args))
-		       (apply #',old-name (real-filename filename) args))))))
-|#
+  `(unless (fboundp ',old-name)
+  (setf (symbol-function ',old-name)(symbol-function ',name))
+  (setf (symbol-function ',name)
+  #'(lambda ,(if optionalp
+  '(&optional filename &rest args)
+  '(filename &rest args))
+  (apply #',old-name (real-filename filename) args))))))
+  |#
 
-(defmacro convert-file-function (name &optional optionalp)
-  (let ((old-name (intern (concatenate 'string "OLD-" (string name)))))
-    `(unless (fboundp ',old-name)
-       ;; Yes, some lisps will give compiler warnings about OLD-name
-       ;; not being declared or defined as a function. But what can
-       ;; we do, with most lisps not yet recognizing CLtL2's ftype
-       ;; declaration?
-       (setf (symbol-function ',old-name)(symbol-function ',name))
-       (setf (symbol-function ',name)
-	     #'(lambda ,(if optionalp
-			    '(&optional filename &rest args)
-			  '(filename &rest args))
-		 ,(if optionalp
-		      `(if filename
-			   (apply #',old-name (real-filename filename) args)
-			 (,old-name)) ; instead of (funcall #',old-name)
-		    `(apply #',old-name (real-filename filename) args)))))))
+  (defmacro convert-file-function (name &optional optionalp)
+    (let ((old-name (intern (concatenate 'string "OLD-" (string name)))))
+      `(unless (fboundp ',old-name)
+	 ;; Yes, some lisps will give compiler warnings about OLD-name
+	 ;; not being declared or defined as a function. But what can
+	 ;; we do, with most lisps not yet recognizing CLtL2's ftype
+	 ;; declaration?
+	 (setf (symbol-function ',old-name)(symbol-function ',name))
+	 (setf (symbol-function ',name)
+	       #'(lambda ,(if optionalp
+			      '(&optional filename &rest args)
+			      '(filename &rest args))
+		   ,(if optionalp
+			`(if filename
+			     (apply #',old-name (real-filename filename) args)
+			     (,old-name)) ; instead of (funcall #',old-name)
+			`(apply #',old-name (real-filename filename) args)))))))
 
-(defmacro convert-file-function-2-args (name)
-  (let ((old-name (intern (concatenate 'string "OLD-" (string name)))))
-    `(unless (fboundp ',old-name)
-       (setf (symbol-function ',old-name)(symbol-function ',name))
-       (setf (symbol-function ',name)
-	     #'(lambda (filename1 filename2 &rest args)
-		 (apply #',old-name
-			(real-filename filename1)(real-filename filename2)
-			args))))))
-)
+  (defmacro convert-file-function-2-args (name)
+    (let ((old-name (intern (concatenate 'string "OLD-" (string name)))))
+      `(unless (fboundp ',old-name)
+	 (setf (symbol-function ',old-name)(symbol-function ',name))
+	 (setf (symbol-function ',name)
+	       #'(lambda (filename1 filename2 &rest args)
+		   (apply #',old-name
+			  (real-filename filename1)(real-filename filename2)
+			  args))))))
+  )
 
 (convert-file-function lisp::load)
 (convert-file-function lisp::open)
@@ -2053,8 +2053,8 @@
   (setf (symbol-function 'old-parse-namestring)
 	(symbol-function 'lisp::parse-namestring))
   (defun lisp::parse-namestring (thing &optional host
-				       (defaults *default-pathname-defaults*)
-				       &key (start 0) end junk-allowed)
+					 (defaults *default-pathname-defaults*)
+				 &key (start 0) end junk-allowed)
     "Convert THING (string, symbol, pathname, or stream) into a pathname."
     (declare (ignore junk-allowed))
     (cond ((null thing) nil) ; try to fix bug with (ed). probably not here.
@@ -2078,22 +2078,22 @@ Corman Lisp Example:
 
 (setf (physical-host-type "c") :win32)
 (setf (logical-pathname-translations "ccl")
-	  '(("*.*.*" "c:\\program files\\ccl\\")
-		("**;*.*.*" "c:\\program files\\ccl\\**\\")
-		(";**;*.*.*" "c:\\program files\\ccl\\**\\")))
+'(("*.*.*" "c:\\program files\\ccl\\")
+("**;*.*.*" "c:\\program files\\ccl\\**\\")
+(";**;*.*.*" "c:\\program files\\ccl\\**\\")))
 (translate-logical-pathname "ccl:documentation;credits.txt")
 
 (probe-file "ccl:documentation;credits.txt")
 (with-open-file (fs "ccl:test.txt" :direction :output)
-   (write-line "blah" fs))
+(write-line "blah" fs))
 
 (with-open-file (fs "c:\\program files\\ccl\\test2.txt" :direction :output)
-   (write-line "blah" fs))
+(write-line "blah" fs))
 
 (with-open-file (fs "ccl:documentation;credits.txt")
-    (let ((x (make-string (file-length fs))))
-       (read-sequence x fs)
-       x))
+(let ((x (make-string (file-length fs))))
+(read-sequence x fs)
+x))
 |#
 
 ;;; *EOF*

@@ -10,16 +10,16 @@
 
 (defvar *hooklevel* 0)
 (defun hook (x)
-	(let ((*evalhook* 'eval-hook-function))
-		(eval x)))
+  (let ((*evalhook* 'eval-hook-function))
+    (eval x)))
 
 (defun eval-hook-function (form &rest env)
-	(let ((*hooklevel* (+ *hooklevel* 1)))
-		(format t "~%Form: ~A" form)
-		(let ((values (multiple-value-list
-						(evalhook form #'eval-hook-function nil env))))
-			(format t "~%Value:~{ ~A~}" values)
-			(values-list values))))
+  (let ((*hooklevel* (+ *hooklevel* 1)))
+    (format t "~%Form: ~A" form)
+    (let ((values (multiple-value-list
+		   (evalhook form #'eval-hook-function nil env))))
+      (format t "~%Value:~{ ~A~}" values)
+      (values-list values))))
 
 ;; example
 ;; (hook '(cons (values 3 2) 'b))

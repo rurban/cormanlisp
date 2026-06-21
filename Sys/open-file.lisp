@@ -39,27 +39,27 @@
 (defwintype LPCTSTR 	lpstr)
 
 (defwinstruct OPENFILENAME
-((lStructSize			DWORD)
- (hwndOwner				HWND)
- (hInstance				HINSTANCE)
- (lpstrFilter			LPCTSTR)
- (lpstrCustomFilter		LPTSTR)
- (nMaxCustFilter		DWORD)
- (nFilterIndex			DWORD)
- (lpstrFile				LPTSTR)
- (nMaxFile				DWORD)
- (lpstrFileTitle		LPTSTR)
- (nMaxFileTitle			DWORD)
- (lpstrInitialDir		LPCTSTR)
- (lpstrTitle			LPCTSTR)
- (Flags					DWORD)
- (nFileOffset			WORD)
- (nFileExtension		WORD)
- (lpstrDefExt			LPCTSTR)
- (lCustData				DWORD)
- (lpfnHook				LPOFNHOOKPROC)
- (lpTemplateName		LPCTSTR)
-))
+    ((lStructSize			DWORD)
+     (hwndOwner				HWND)
+     (hInstance				HINSTANCE)
+     (lpstrFilter			LPCTSTR)
+     (lpstrCustomFilter		LPTSTR)
+     (nMaxCustFilter		DWORD)
+     (nFilterIndex			DWORD)
+     (lpstrFile				LPTSTR)
+     (nMaxFile				DWORD)
+     (lpstrFileTitle		LPTSTR)
+     (nMaxFileTitle			DWORD)
+     (lpstrInitialDir		LPCTSTR)
+     (lpstrTitle			LPCTSTR)
+     (Flags					DWORD)
+     (nFileOffset			WORD)
+     (nFileExtension		WORD)
+     (lpstrDefExt			LPCTSTR)
+     (lCustData				DWORD)
+     (lpfnHook				LPOFNHOOKPROC)
+     (lpTemplateName		LPCTSTR)
+     ))
 
 (defvar *open-file-info* (ct:malloc (ct:sizeof 'OPENFILENAME)))
 (defwinconstant _MAX_PATH		260)
@@ -69,56 +69,56 @@
 
 ;; BOOL  APIENTRY     GetOpenFileName(LPOPENFILENAMEA);
 (defwinapi GetOpenFileName
-	((s (OPENFILENAME *)))
-	:return-type BOOL
-	:library-name "comdlg32.dll"
-	:entry-name "GetOpenFileNameA"
-	:linkage-type :pascal)
+    ((s (OPENFILENAME *)))
+  :return-type BOOL
+  :library-name "comdlg32.dll"
+  :entry-name "GetOpenFileNameA"
+  :linkage-type :pascal)
 
 ;; DWORD CommDlgExtendedError()
 (defwinapi CommDlgExtendedError
-	()
-	:return-type DWORD
-	:library-name "comdlg32.dll"
-	:entry-name "CommDlgExtendedError"
-	:linkage-type :pascal)
+    ()
+  :return-type DWORD
+  :library-name "comdlg32.dll"
+  :entry-name "CommDlgExtendedError"
+  :linkage-type :pascal)
 
 ;; take all the filter strings passed, and concatenate them all
 ;; together into a c string with null bytes terminating each one
 (defun make-filter-string (filters)
-	(let ((index 0)
-		  (cstr (ct:malloc
-			(+ (reduce #'+ (mapcar #'length filters)) (length filters) 1))))
-		(dolist (f filters)
-			(dotimes (i (length f))
-				(setf (cref LPCSTR cstr index) (char-int (elt f i)))
-				(incf index))
-			(setf (cref LPCSTR cstr index) 0)
-			(incf index))
-		(setf (cref LPCSTR cstr index) 0)
-		cstr))
+  (let ((index 0)
+	(cstr (ct:malloc
+	       (+ (reduce #'+ (mapcar #'length filters)) (length filters) 1))))
+    (dolist (f filters)
+      (dotimes (i (length f))
+	(setf (cref LPCSTR cstr index) (char-int (elt f i)))
+	(incf index))
+      (setf (cref LPCSTR cstr index) 0)
+      (incf index))
+    (setf (cref LPCSTR cstr index) 0)
+    cstr))
 
 (defun init-open-file (hwnd filters)
-	(setf (cref OPENFILENAME *open-file-info* lStructSize) (ct:sizeof 'OPENFILENAME))
-	(setf (cref OPENFILENAME *open-file-info* hwndOwner) hwnd)
-	(setf (cref OPENFILENAME *open-file-info* hInstance) ct:null)
-	(setf (cref OPENFILENAME *open-file-info* lpstrFilter) (make-filter-string filters))
-	(setf (cref OPENFILENAME *open-file-info* lpstrCustomFilter) ct:null)
-	(setf (cref OPENFILENAME *open-file-info* nMaxCustFilter) 0)
-	(setf (cref OPENFILENAME *open-file-info* nFilterIndex) 0)
-	(setf (cref OPENFILENAME *open-file-info* lpstrFile) ct:null)
-	(setf (cref OPENFILENAME *open-file-info* nMaxFile) _MAX_PATH)
-	(setf (cref OPENFILENAME *open-file-info* lpstrFileTitle) ct:null)
-	(setf (cref OPENFILENAME *open-file-info* nMaxFileTitle) (+ _MAX_FNAME _MAX_EXT))
-	(setf (cref OPENFILENAME *open-file-info* lpstrInitialDir) ct:null)
-	(setf (cref OPENFILENAME *open-file-info* lpstrTitle) ct:null)
-	(setf (cref OPENFILENAME *open-file-info* Flags) 0)
-;	(setf (cref OPENFILENAME *open-file-info* nFileOffset) 0)
-;	(setf (cref OPENFILENAME *open-file-info* nFileExtension) 0)
-	(setf (cref OPENFILENAME *open-file-info* lpstrDefExt) (ct:create-c-string "txt"))
-	(setf (cref OPENFILENAME *open-file-info* lCustData) 0)
-	(setf (cref OPENFILENAME *open-file-info* lpfnHook) ct:null)
-	(setf (cref OPENFILENAME *open-file-info* lpTemplateName) ct:null))
+  (setf (cref OPENFILENAME *open-file-info* lStructSize) (ct:sizeof 'OPENFILENAME))
+  (setf (cref OPENFILENAME *open-file-info* hwndOwner) hwnd)
+  (setf (cref OPENFILENAME *open-file-info* hInstance) ct:null)
+  (setf (cref OPENFILENAME *open-file-info* lpstrFilter) (make-filter-string filters))
+  (setf (cref OPENFILENAME *open-file-info* lpstrCustomFilter) ct:null)
+  (setf (cref OPENFILENAME *open-file-info* nMaxCustFilter) 0)
+  (setf (cref OPENFILENAME *open-file-info* nFilterIndex) 0)
+  (setf (cref OPENFILENAME *open-file-info* lpstrFile) ct:null)
+  (setf (cref OPENFILENAME *open-file-info* nMaxFile) _MAX_PATH)
+  (setf (cref OPENFILENAME *open-file-info* lpstrFileTitle) ct:null)
+  (setf (cref OPENFILENAME *open-file-info* nMaxFileTitle) (+ _MAX_FNAME _MAX_EXT))
+  (setf (cref OPENFILENAME *open-file-info* lpstrInitialDir) ct:null)
+  (setf (cref OPENFILENAME *open-file-info* lpstrTitle) ct:null)
+  (setf (cref OPENFILENAME *open-file-info* Flags) 0)
+					;	(setf (cref OPENFILENAME *open-file-info* nFileOffset) 0)
+					;	(setf (cref OPENFILENAME *open-file-info* nFileExtension) 0)
+  (setf (cref OPENFILENAME *open-file-info* lpstrDefExt) (ct:create-c-string "txt"))
+  (setf (cref OPENFILENAME *open-file-info* lCustData) 0)
+  (setf (cref OPENFILENAME *open-file-info* lpfnHook) ct:null)
+  (setf (cref OPENFILENAME *open-file-info* lpTemplateName) ct:null))
 
 ;;
 ;;	Returns:
@@ -126,22 +126,22 @@
 ;;		The pathname of the selected file (if successful)
 ;;
 (defun get-open-file-name (&optional (filetypes '("All Files (*.*)" "*.*")))
-	"GET-OPEN-FILE-NAME &optional filetypes
+  "GET-OPEN-FILE-NAME &optional filetypes
 	 Example: (GET-OPEN-FILE-NAME
 				'(\"Text Files (*.TXT)\" 	\"*.txt\"
 				\"All Files (*.ASC)\" \"*.*\"))"
 
-	(let ((file-name (ct:malloc _MAX_PATH))
-		  (title-name (ct:malloc (+ _MAX_FNAME _MAX_EXT))))
+  (let ((file-name (ct:malloc _MAX_PATH))
+	(title-name (ct:malloc (+ _MAX_FNAME _MAX_EXT))))
 
-		(init-open-file (cl::get-application-main-window) filetypes)
+    (init-open-file (cl::get-application-main-window) filetypes)
 
-		(setf (cref OPENFILENAME *open-file-info* lpstrFile) file-name)
-		(setf (cref OPENFILENAME *open-file-info* lpstrFileTitle) title-name)
-		(setf (cref OPENFILENAME *open-file-info* Flags)
-			(logior OFN_HIDEREADONLY OFN_CREATEPROMPT))
+    (setf (cref OPENFILENAME *open-file-info* lpstrFile) file-name)
+    (setf (cref OPENFILENAME *open-file-info* lpstrFileTitle) title-name)
+    (setf (cref OPENFILENAME *open-file-info* Flags)
+	  (logior OFN_HIDEREADONLY OFN_CREATEPROMPT))
 
-		(setf (cref LPSTR file-name 0) 0)
-		(setf (cref LPSTR title-name 0) 0)
-		(if (GetOpenFileName *open-file-info*)
-			(pathname (ct:c-string-to-lisp-string file-name)))))
+    (setf (cref LPSTR file-name 0) 0)
+    (setf (cref LPSTR title-name 0) 0)
+    (if (GetOpenFileName *open-file-info*)
+	(pathname (ct:c-string-to-lisp-string file-name)))))

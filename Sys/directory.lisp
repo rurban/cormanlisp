@@ -23,52 +23,52 @@
 (ct:defctype _fsize_t :unsigned-long)
 
 (defwinstruct _finddata_t
-	((attrib :unsigned-long)
-	 (time_create time_t)
-	 (time_access time_t)
-	 (time_write time_t)
-	 (size _fsize_t)
-	 (name (:char 260))
-	))
+    ((attrib :unsigned-long)
+     (time_create time_t)
+     (time_access time_t)
+     (time_write time_t)
+     (size _fsize_t)
+     (name (:char 260))
+     ))
 
 (ct:defun-dll _findfirst ((filespec (:char *))(fileinfo (_finddata_t *)))
-   :return-type :long
-   :library-name "msvcrt.dll"
-   :entry-name "_findfirst"
-   :linkage-type :c)
+  :return-type :long
+  :library-name "msvcrt.dll"
+  :entry-name "_findfirst"
+  :linkage-type :c)
 
 (ct:defun-dll _findnext ((handle :long)(fileinfo (_finddata_t *)))
-   :return-type :long
-   :library-name "msvcrt.dll"
-   :entry-name "_findnext"
-   :linkage-type :c)
+  :return-type :long
+  :library-name "msvcrt.dll"
+  :entry-name "_findnext"
+  :linkage-type :c)
 
 (ct:defun-dll _findclose ((handle :long))
-   :return-type :long
-   :library-name "msvcrt.dll"
-   :entry-name "_findclose"
-   :linkage-type :c)
+  :return-type :long
+  :library-name "msvcrt.dll"
+  :entry-name "_findclose"
+  :linkage-type :c)
 
 ;; int _chdir( const char *dirname );
 (ct:defun-dll _chdir ((dirname (:char *)))
-   :return-type :long
-   :library-name "msvcrt.dll"
-   :entry-name "_chdir"
-   :linkage-type :c)
+  :return-type :long
+  :library-name "msvcrt.dll"
+  :entry-name "_chdir"
+  :linkage-type :c)
 
 ;; char *_getcwd( char *buffer, int maxlen );
 (ct:defun-dll _getcwd ((buffer (:unsigned-char *)) (maxlen :long))
-   :return-type (:unsigned-char *)
-   :library-name "msvcrt.dll"
-   :entry-name "_getcwd"
-   :linkage-type :c)
+  :return-type (:unsigned-char *)
+  :library-name "msvcrt.dll"
+  :entry-name "_getcwd"
+  :linkage-type :c)
 
 ;; BOOL CreateDirectory(LPCTSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 (ct:defun-dll CreateDirectory ((lpPathName LPCTSTR) (lpSecurityAttributes LPSECURITY_ATTRIBUTES))
-   :return-type BOOL
-   :library-name "kernel32.dll"
-   :entry-name "CreateDirectoryA"
-   :linkage-type :pascal)
+  :return-type BOOL
+  :library-name "kernel32.dll"
+  :entry-name "CreateDirectoryA"
+  :linkage-type :pascal)
 
 (defconstant _A_NORMAL #x00)
 (defconstant _A_RDONLY #x01)
@@ -88,8 +88,8 @@
       (append
        (pathname-directory directory-pathname)
        (list (if (pathname-type p1)
-               (format nil "~A.~A" (pathname-name p1) (pathname-type p1))
-               (pathname-name p1))))
+		 (format nil "~A.~A" (pathname-name p1) (pathname-type p1))
+		 (pathname-name p1))))
       :name name
       :type type
       :version version
@@ -109,7 +109,7 @@
 
 ;;; forward declaration
 (defun cl::directory (pathspec &key (recurse nil))
-    (declare (ignore pathspec recurse)))
+  (declare (ignore pathspec recurse)))
 
 (defun cl::directory-internal (pathspec files? subdirs? recurse?)
 
@@ -161,9 +161,9 @@
 	(unless (or (string= subdir-name ".") (string= subdir-name ".."))
 	  (let* ((subdir-path
 		  (subdirectory-pathname
-		      pathname subdir-name
-		      :name name-part :type extension-part
-		      ))
+		   pathname subdir-name
+		   :name name-part :type extension-part
+		   ))
 		 (files (cl::directory (truename subdir-path) :recurse t)))
 	    (if files (push files file-list))
 	    ))))
@@ -198,19 +198,19 @@
 ;;; New implementation, adds :RECURSE keyword.
 ;;;
 (defun cl::directory (pathspec &key (recurse nil))
-    (cl::directory-files pathspec :recurse recurse))
+  (cl::directory-files pathspec :recurse recurse))
 
 (defun ccl::get-current-directory ()
-	(let* ((buf (ct:malloc 256))
-		   (ret (_getcwd buf 256)))
-		(if (zerop (cl::foreign-ptr-to-int ret))
-			(error "Could not get current directory")
-			(let* ((str (ct:c-string-to-lisp-string ret))
-				   (last-char (char str (- (length str) 1))))
-				;; make sure the directory ends with a slash
-				(unless (or (char= last-char #\\) (char= last-char #\/))
-					(setf str (concatenate 'string str "\\")))
-				(values (parse-namestring str))))))
+  (let* ((buf (ct:malloc 256))
+	 (ret (_getcwd buf 256)))
+    (if (zerop (cl::foreign-ptr-to-int ret))
+	(error "Could not get current directory")
+	(let* ((str (ct:c-string-to-lisp-string ret))
+	       (last-char (char str (- (length str) 1))))
+	  ;; make sure the directory ends with a slash
+	  (unless (or (char= last-char #\\) (char= last-char #\/))
+	    (setf str (concatenate 'string str "\\")))
+	  (values (parse-namestring str))))))
 
 ;;;
 ;;; Modified by Edi Weitz to set the *default-pathname-defaults* to the new directory
@@ -218,42 +218,42 @@
 (defun ccl::set-current-directory (dir)
   (let ((ret (_chdir (namestring dir))))
     (if (= ret -1)
-      (error "Could not set current directory to ~A" dir)
-      (setq *default-pathname-defaults*
+	(error "Could not set current directory to ~A" dir)
+	(setq *default-pathname-defaults*
               (pl::get-current-directory)))))
 
 (defun ccl::current-directory () (ccl::get-current-directory))
 (defun (setf ccl::current-directory) (dir)
-	(ccl::set-current-directory dir))
+  (ccl::set-current-directory dir))
 
 ;;;
 ;;;	Common Lisp ENSURE-DIRECTORIES-EXIST function
 ;;;
 (defun ensure-directories-exist (pathspec &key verbose)
-	(let* ((path (truename pathspec))
-		   (dirs (cdr (pathname-directory path)))
-		   (created nil)
-		   (dir (list ':absolute)))
-		(dolist (x dirs)
-			(setf dir (append dir (list x)))
-			(setf path
-				(make-pathname :device (pathname-device path)
-							   :directory dir))
-			(when (CreateDirectory (ct:lisp-string-to-c-string (namestring path)) ct:null)
-				(setf created t)
-				(if verbose
-					(format t "~&Created directory ~A~%" (namestring path)))))
-		(values pathspec created)))
+  (let* ((path (truename pathspec))
+	 (dirs (cdr (pathname-directory path)))
+	 (created nil)
+	 (dir (list ':absolute)))
+    (dolist (x dirs)
+      (setf dir (append dir (list x)))
+      (setf path
+	    (make-pathname :device (pathname-device path)
+			   :directory dir))
+      (when (CreateDirectory (ct:lisp-string-to-c-string (namestring path)) ct:null)
+	(setf created t)
+	(if verbose
+	    (format t "~&Created directory ~A~%" (namestring path)))))
+    (values pathspec created)))
 
 ;;; Implementation of RENAME-FILE for Corman Lisp.
 ;;; JP Massar.  10/9/01.
 ;;; Put in  VERBOSE keyword.
 
 (ct:defun-dll MoveFile ((old LPCTSTR) (new LPCTSTR))
-   :return-type BOOL
-   :library-name "kernel32.dll"
-   :entry-name "MoveFileA"
-   :linkage-type :pascal)
+  :return-type BOOL
+  :library-name "kernel32.dll"
+  :entry-name "MoveFileA"
+  :linkage-type :pascal)
 
 ;;;
 ;;;	Common Lisp RENAME-FILE function
@@ -267,31 +267,31 @@
 
     (flet
         ((verify-for-rename
-          (path)
-          (let ((name (pathname-name path))
-                (type (pathname-type path))
-                (dir (pathname-directory path))
-                )
-            (when (and dir
-                       (or (null name) (eq name :unspecific))
-                       (or (null type) (eq type :unspecific))
-                       )
-              (error "Invalid path: ~A. ~% ~
+             (path)
+           (let ((name (pathname-name path))
+                 (type (pathname-type path))
+                 (dir (pathname-directory path))
+                 )
+             (when (and dir
+			(or (null name) (eq name :unspecific))
+			(or (null type) (eq type :unspecific))
+			)
+               (error "Invalid path: ~A. ~% ~
                       Use a pathname with a :NAME component.~% ~
                       (If you are trying to rename a directory specify the~% ~
                       path as a string without a trailing slash.)"
-                path
-                ))
-            (when (or ;(wild-device-or-directory-component? path)
-                      (eq name :wild)
-                      (eq :name :unspecific)
-                      (null name)
-                      (and (stringp name) (string= name "*"))
-                      (eq type :wild)
-                      (and (stringp type) (string= type "*"))
-                      )
-              (error "Invalid component in pathname: ~A" path)
-              ))))
+                      path
+                      ))
+             (when (or ;(wild-device-or-directory-component? path)
+                    (eq name :wild)
+                    (eq :name :unspecific)
+                    (null name)
+                    (and (stringp name) (string= name "*"))
+                    (eq type :wild)
+                    (and (stringp type) (string= type "*"))
+                    )
+               (error "Invalid component in pathname: ~A" path)
+               ))))
 
       (verify-for-rename old-pathname)
       (verify-for-rename new-pathname)
@@ -314,18 +314,18 @@
         (if (null (MoveFile (ct:lisp-string-to-c-string old-name)
                             (ct:lisp-string-to-c-string new-name)))
             (error "Could not rename file.  'MoveFile' OS call returned error code.")
-          (values
-           new-pathname
-           true-old
-           (truename new-pathname)
-           ))
+            (values
+             new-pathname
+             true-old
+             (truename new-pathname)
+             ))
 
         ))))
 
 ;; Make sure the default pathname gets set when an image is loaded.
 (flet ((init-default-path ()
-			(setq cl::*default-pathname-defaults* (ccl::get-current-directory))))
-	(init-default-path)
-	(cl::register-load-image-restore-func #'init-default-path))
+	 (setq cl::*default-pathname-defaults* (ccl::get-current-directory))))
+  (init-default-path)
+  (cl::register-load-image-restore-func #'init-default-path))
 
 (export '(ccl::get-current-directory ccl::set-current-directory ccl::current-directory) "CORMANLISP")

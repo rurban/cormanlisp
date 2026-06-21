@@ -24,8 +24,8 @@
 #! (:export t :library "comctl32" :pascal "WINAPI" :ignore "WINCOMMCTRLAPI")
 #define STATUSCLASSNAMEA        "msctls_statusbar32"
 typedef struct tagINITCOMMONCONTROLSEX {
-    DWORD dwSize;             // size of this structure
-    DWORD dwICC;              // flags indicating which classes to be initialized
+DWORD dwSize;             // size of this structure
+DWORD dwICC;              // flags indicating which classes to be initialized
 } INITCOMMONCONTROLSEX, *LPINITCOMMONCONTROLSEX;
 WINCOMMCTRLAPI BOOL WINAPI InitCommonControlsEx(LPINITCOMMONCONTROLSEX);
 WINCOMMCTRLAPI void WINAPI InitCommonControls();
@@ -52,8 +52,8 @@ WINCOMMCTRLAPI void WINAPI InitCommonControls();
 
 #! (:export t :library "user32" :pascal "WINAPI")
 /*
- * WM_SIZE message wParam values
- */
+* WM_SIZE message wParam values
+*/
 #define SIZE_RESTORED       0
 #define SIZE_MINIMIZED      1
 #define SIZE_MAXIMIZED      2
@@ -61,8 +61,8 @@ WINCOMMCTRLAPI void WINAPI InitCommonControls();
 #define SIZE_MAXHIDE        4
 
 /*
- * SetWindowPos Flags
- */
+* SetWindowPos Flags
+*/
 #define SWP_NOSIZE          0x0001
 #define SWP_NOMOVE          0x0002
 #define SWP_NOZORDER        0x0004
@@ -80,8 +80,8 @@ WINCOMMCTRLAPI void WINAPI InitCommonControls();
 #define SWP_ASYNCWINDOWPOS  0x4000
 
 /*
- * Window field offsets for GetWindowLong()
- */
+* Window field offsets for GetWindowLong()
+*/
 #define GWL_WNDPROC         -4
 #define GWL_HINSTANCE       -6
 #define GWL_HWNDPARENT      -8
@@ -95,25 +95,25 @@ WINCOMMCTRLAPI void WINAPI InitCommonControls();
 typedef void* HACCEL;
 
 /*
- * Window information snapshot
- */
+* Window information snapshot
+*/
 typedef struct tagWINDOWINFO
 {
-    DWORD cbSize;
-    RECT  rcWindow;
-    RECT  rcClient;
-    DWORD dwStyle;
-    DWORD dwExStyle;
-    DWORD dwWindowStatus;
-    UINT  cxWindowBorders;
-    UINT  cyWindowBorders;
-    ATOM  atomWindowType;
-    WORD  wCreatorVersion;
+DWORD cbSize;
+RECT  rcWindow;
+RECT  rcClient;
+DWORD dwStyle;
+DWORD dwExStyle;
+DWORD dwWindowStatus;
+UINT  cxWindowBorders;
+UINT  cyWindowBorders;
+ATOM  atomWindowType;
+WORD  wCreatorVersion;
 } WINDOWINFO, *PWINDOWINFO, *LPWINDOWINFO;
 
 /*
- * Dialog Styles
- */
+* Dialog Styles
+*/
 #define DS_ABSALIGN         0x01L
 #define DS_SYSMODAL         0x02L
 #define DS_LOCALEDIT        0x20L   /* Edit items get Local storage. */
@@ -533,16 +533,16 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
     (setf (window-hdc window) nil))
 
 #|
-(defmethod handle-message :before ((window <window>) (message <paint-message>) wparam lparam)
-	(declare (ignore message wparam lparam))
-	(setf (window-hdc window)
-		(BeginPaint (window-hwnd window) (window-paintstruct window))))
+					(defmethod handle-message :before ((window <window>) (message <paint-message>) wparam lparam)
+						   (declare (ignore message wparam lparam))
+						   (setf (window-hdc window)
+							 (BeginPaint (window-hwnd window) (window-paintstruct window))))
 
-(defmethod handle-message :after ((window <window>) (message <paint-message>) wparam lparam)
-	(declare (ignore message wparam lparam))
-	(EndPaint (window-hwnd window) (window-paintstruct window))
-	(setf (window-hdc window) nil))
-|#
+					(defmethod handle-message :after ((window <window>) (message <paint-message>) wparam lparam)
+						   (declare (ignore message wparam lparam))
+						   (EndPaint (window-hwnd window) (window-paintstruct window))
+						   (setf (window-hdc window) nil))
+					|#
 (defmethod create-window ((window <window>)
 		&key class-name ex-style caption style x y width height parent menu param)
     (let ((hwnd
@@ -833,10 +833,10 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 		(do ()
 			((not (GetMessage msg NULL 0 0)))
  #|
-            (if (and (not (TranslateMDISysAccel mdi-client-hwnd msg))
-                     (= (TranslateAccelerator mdi-frame-hwnd hAccel msg))
-                    ))
- |#
+					(if (and (not (TranslateMDISysAccel mdi-client-hwnd msg))
+						 (= (TranslateAccelerator mdi-frame-hwnd hAccel msg))
+						 ))
+					|#
                 (TranslateMDISysAccel mdi-client-hwnd msg)
                 (TranslateMessage msg)
 			    (DispatchMessage msg))))

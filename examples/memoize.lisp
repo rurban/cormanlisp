@@ -38,15 +38,15 @@
   (declare (type function fn key test))
   (let ((table (make-hash-table :test test)))
     (values
-      #'(lambda (&rest args)
-	  (declare (dynamic-extent args))
-	  (let ((k (funcall key args)))
-	    (multiple-value-bind (val found-p) (gethash k table)
-	      (if found-p
-		  val
-		  (setf (gethash k table)
-			(apply fn args))))))
-      table)))
+     #'(lambda (&rest args)
+	 (declare (dynamic-extent args))
+	 (let ((k (funcall key args)))
+	   (multiple-value-bind (val found-p) (gethash k table)
+	     (if found-p
+		 val
+		 (setf (gethash k table)
+		       (apply fn args))))))
+     table)))
 
 ;;; semi user-interface fns
 
@@ -139,9 +139,9 @@ compilers optimizing away self calls & stuff like that."
        ',name)))
 #||
 (def-memoized-function fib (n)
-  (if (<= n 1)
-      1
-      (+ (fib (- n 1)) (fib (- n 2)))))
+(if (<= n 1)
+1
+(+ (fib (- n 1)) (fib (- n 2)))))
 ||#
 
 
@@ -160,47 +160,47 @@ DEF-MEMOIZED-FUNCTION."
   ;; expansion). Can MAKE-LOAD-FORM do this better?
   `(labels ,(loop for (fspec fargs . fbod) in labdefs
 		  collect
-		    (destructuring-bind (fname &key (key '(function first))
-						    (test '(function eql)))
-			(if (listp fspec)
-			    ;; FSPEC is of the form (NAME :key
-			    ;; .. :test ..), where we use the keywords
-			    ;; to get the key from the arglist and
-			    ;; decide what test to use for the
-			    ;; hashtable.
-			    fspec
-			    (list fspec :key '(function first)
-				  :test '(function eql)))
-		      (let ((htn (make-symbol "HT"))	;hashtable name
-			    (kn (make-symbol "K"))	;key from arglist name
-			    (vn (make-symbol "V"))	;value found name
-			    (fpn (make-symbol "FP"))	;foundp name
-			    (argsn (make-symbol "ARGS")))	;args name
-			;; here's the definition clause in the LABELS:
-			;; note we have to generalise rthe args to an
-			;; &REST, but hopefully the DYNAMIC-EXTENT
-			;; avoids too much lossage.
-			`(,fname (&rest ,argsn)
-			  (declare (dynamic-extent ,argsn)	;stop consing
-				   (notinline ,fname))	;stop TRO (?)
-			  ;; this use of LOAD-TIME-VALUE should ensure
-			  ;; that the hashtable is unique in compiled
-			  ;; code.  This has kind of interesting
-			  ;; effects, as it's shared amongst seperate
-			  ;; closures that you might return, so use of
-			  ;; one can speed up another!
-			  (let ((,htn (load-time-value (make-hash-table
-							 :test ,test)))
-				(,kn (funcall ,key ,argsn)))
-			    (multiple-value-bind (,vn ,fpn)
-				(gethash ,kn ,htn)
-			      (if ,fpn
-				  ,vn		;found in table: return value
-				  ;; didn't find it: compute value
-				  (setf (gethash ,kn ,htn)
-					(apply #'(lambda ,fargs
-						   ,@fbod)
-					       ,argsn)))))))))
+		  (destructuring-bind (fname &key (key '(function first))
+					     (test '(function eql)))
+		      (if (listp fspec)
+			  ;; FSPEC is of the form (NAME :key
+			  ;; .. :test ..), where we use the keywords
+			  ;; to get the key from the arglist and
+			  ;; decide what test to use for the
+			  ;; hashtable.
+			  fspec
+			  (list fspec :key '(function first)
+				:test '(function eql)))
+		    (let ((htn (make-symbol "HT"))	;hashtable name
+			  (kn (make-symbol "K"))	;key from arglist name
+			  (vn (make-symbol "V"))	;value found name
+			  (fpn (make-symbol "FP"))	;foundp name
+			  (argsn (make-symbol "ARGS")))	;args name
+		      ;; here's the definition clause in the LABELS:
+		      ;; note we have to generalise rthe args to an
+		      ;; &REST, but hopefully the DYNAMIC-EXTENT
+		      ;; avoids too much lossage.
+		      `(,fname (&rest ,argsn)
+			       (declare (dynamic-extent ,argsn)	;stop consing
+					(notinline ,fname))	;stop TRO (?)
+			       ;; this use of LOAD-TIME-VALUE should ensure
+			       ;; that the hashtable is unique in compiled
+			       ;; code.  This has kind of interesting
+			       ;; effects, as it's shared amongst seperate
+			       ;; closures that you might return, so use of
+			       ;; one can speed up another!
+			       (let ((,htn (load-time-value (make-hash-table
+							     :test ,test)))
+				     (,kn (funcall ,key ,argsn)))
+				 (multiple-value-bind (,vn ,fpn)
+				     (gethash ,kn ,htn)
+				   (if ,fpn
+				       ,vn		;found in table: return value
+				       ;; didn't find it: compute value
+				       (setf (gethash ,kn ,htn)
+					     (apply #'(lambda ,fargs
+							,@fbod)
+						    ,argsn)))))))))
      ,@bod))
 
 ;;; indentation for zmacs

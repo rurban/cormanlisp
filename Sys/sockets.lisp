@@ -178,155 +178,155 @@
 (require 'WINSOCK)
 
 (defpackage "SOCKETS"
-	(:use
-		:COMMON-LISP
-		:WIN
-		:C-TYPES
-		:WINSOCK)
-	(:export
-		"START-SOCKETS"
-		"STOP-SOCKETS"
-		"WITH-SOCKETS-STARTED"
-                        "*IPV6*"
-                        "IPV6-INSTALLED-P"
-		"HOST-TO-IPADDR"
-		"IPADDR-TO-NAME"
-		"IPADDR-TO-DOTTED"
-		"BASE-SOCKET"
-		"SOCKET-DESCRIPTOR"
-		"REMOTE-SOCKET"
-		"PROXY-SOCKET-MIXIN"
-		"PROXY-CLIENT-SOCKET"
-		"PROXY-INITIALIZED"
-		"*DEFAULT-PROXY-SERVER*"
-		"PROXY-SERVER"
-		"GENERIC-PROXY-SERVER"
-		"PROXY-SERVER-HOST"
-		"PROXY-SERVER-PORT"
-		"LOCAL-SOCKET"
-		"SOCKET-HOST"
-		"SOCKET-PORT"
-		"CLIENT-SOCKET"
-		"SERVER-SOCKET"
-		"ACCEPT-SOCKET"
-		"CLOSE-SOCKET"
-                        "RECEIVE-FROM"
-                        "SEND-TO"
-		"WRITE-SOCKET-LINE"
-		"DO-FFI-READ-SOCKET"
-		"DO-FFI-WRITE-SOCKET"
-		"READ-SOCKET-LINE"
-		"READ-SOCKET"
-		"READ-SOCKET-CHAR"
-		"WRITE-SOCKET"
-		"MAKE-CLIENT-SOCKET"
-		"MAKE-SERVER-SOCKET"
-		"WITH-CLIENT-SOCKET"
-		"WITH-SERVER-SOCKET"
-		"WITH-SERVER-ACCEPT"
-		"WITH-THREADED-SERVER-ACCEPT"
-		"START-SOCKET-SERVER"
-		"START-THREADED-SOCKET-SERVER"
-		"MAKE-SOCKET-STREAM"
-		"WITH-SOCKET-STREAM"
-		"STREAM-SOCKET-HANDLE"
-		"REMOTE-SOCKET-CLASS"
-		"REMOTE-SOCKET-IPADDR"
-        "SOCKET-STREAM"
-        "SOCKET-STREAM-P"
-        "GET-HTTP-FILE"
-		))
+  (:use
+   :COMMON-LISP
+   :WIN
+   :C-TYPES
+   :WINSOCK)
+  (:export
+   "START-SOCKETS"
+   "STOP-SOCKETS"
+   "WITH-SOCKETS-STARTED"
+   "*IPV6*"
+   "IPV6-INSTALLED-P"
+   "HOST-TO-IPADDR"
+   "IPADDR-TO-NAME"
+   "IPADDR-TO-DOTTED"
+   "BASE-SOCKET"
+   "SOCKET-DESCRIPTOR"
+   "REMOTE-SOCKET"
+   "PROXY-SOCKET-MIXIN"
+   "PROXY-CLIENT-SOCKET"
+   "PROXY-INITIALIZED"
+   "*DEFAULT-PROXY-SERVER*"
+   "PROXY-SERVER"
+   "GENERIC-PROXY-SERVER"
+   "PROXY-SERVER-HOST"
+   "PROXY-SERVER-PORT"
+   "LOCAL-SOCKET"
+   "SOCKET-HOST"
+   "SOCKET-PORT"
+   "CLIENT-SOCKET"
+   "SERVER-SOCKET"
+   "ACCEPT-SOCKET"
+   "CLOSE-SOCKET"
+   "RECEIVE-FROM"
+   "SEND-TO"
+   "WRITE-SOCKET-LINE"
+   "DO-FFI-READ-SOCKET"
+   "DO-FFI-WRITE-SOCKET"
+   "READ-SOCKET-LINE"
+   "READ-SOCKET"
+   "READ-SOCKET-CHAR"
+   "WRITE-SOCKET"
+   "MAKE-CLIENT-SOCKET"
+   "MAKE-SERVER-SOCKET"
+   "WITH-CLIENT-SOCKET"
+   "WITH-SERVER-SOCKET"
+   "WITH-SERVER-ACCEPT"
+   "WITH-THREADED-SERVER-ACCEPT"
+   "START-SOCKET-SERVER"
+   "START-THREADED-SOCKET-SERVER"
+   "MAKE-SOCKET-STREAM"
+   "WITH-SOCKET-STREAM"
+   "STREAM-SOCKET-HANDLE"
+   "REMOTE-SOCKET-CLASS"
+   "REMOTE-SOCKET-IPADDR"
+   "SOCKET-STREAM"
+   "SOCKET-STREAM-P"
+   "GET-HTTP-FILE"
+   ))
 
 (in-package :sockets)
 
 (defmacro with-c-buffer ((buffer length) &body body)
-	"Helper macro to automatically free a malloced buffer."
-	`(let ((,buffer (malloc ,length)))
-		(unwind-protect
-			(progn
-				,@body)
-			(free ,buffer))))
+  "Helper macro to automatically free a malloced buffer."
+  `(let ((,buffer (malloc ,length)))
+     (unwind-protect
+	  (progn
+	    ,@body)
+       (free ,buffer))))
 
 (defparameter *socket-buffer-length* 20000
-	"Size of buffer used to read data from the socket stream.")
+  "Size of buffer used to read data from the socket stream.")
 
 (defun make-word ( low-byte high-byte )
-	(logior (logand low-byte #xff) (ash (logand high-byte #xff) 8)))
+  (logior (logand low-byte #xff) (ash (logand high-byte #xff) 8)))
 
 (define-condition winsock-error (error)
-	((original-error-code :initarg :original-error-code :initform nil :reader winsock-original-error-code)
-		(last-error-code :initarg :last-error-code :initform nil :reader winsock-last-error-code))
-	(:report (lambda (condition stream)
-			(format stream "Winsock error number ~A (WSALastError=~A)."
-				(winsock-original-error-code condition)
-				(winsock-last-error-code condition)))))
+  ((original-error-code :initarg :original-error-code :initform nil :reader winsock-original-error-code)
+   (last-error-code :initarg :last-error-code :initform nil :reader winsock-last-error-code))
+  (:report (lambda (condition stream)
+	     (format stream "Winsock error number ~A (WSALastError=~A)."
+		     (winsock-original-error-code condition)
+		     (winsock-last-error-code condition)))))
 
 (defun handle-winsock-error (&optional original-code)
-	"Handle the result of a winsock function returning an error value."
-	(cerror "Winsock Error"
-		'winsock-error
-		:original-error-code original-code
-		:last-error-code (WSAGetLastError)))
+  "Handle the result of a winsock function returning an error value."
+  (cerror "Winsock Error"
+	  'winsock-error
+	  :original-error-code original-code
+	  :last-error-code (WSAGetLastError)))
 
 (defun default-winsock-error-test (x)
-	"Tests against the standard 0 success code."
-	(not (= x 0)))
+  "Tests against the standard 0 success code."
+  (not (= x 0)))
 
 (defmacro with-winsock-error-handling ((&key (error-test #'default-winsock-error-test)) winsock-call &body body)
-	(let ((result-code (gensym)))
-		`(let ((,result-code ,winsock-call))
-			(if (funcall ,error-test ,result-code)
-				(handle-winsock-error ,result-code)
-				(progn ,result-code ,@body)))))
+  (let ((result-code (gensym)))
+    `(let ((,result-code ,winsock-call))
+       (if (funcall ,error-test ,result-code)
+	   (handle-winsock-error ,result-code)
+	   (progn ,result-code ,@body)))))
 
 (defmacro with-invalid-socket-check (() winsock-call &body body)
-	"Checks the result of the winsock call and signals an error if it
+  "Checks the result of the winsock call and signals an error if it
 	is an INVALID_SOCKET. Otherwise processes the body forms."
-	(declare (ignore nil))
-	`(with-winsock-error-handling
-		(:error-test #'(lambda (x) (= x INVALID_SOCKET)))
-		,winsock-call
-		,@body))
+  (declare (ignore nil))
+  `(with-winsock-error-handling
+       (:error-test #'(lambda (x) (= x INVALID_SOCKET)))
+     ,winsock-call
+     ,@body))
 
 (defmacro with-socket-error-check (() winsock-call &body body)
-	"Checks the result of the winsock call and signals an error if it
+  "Checks the result of the winsock call and signals an error if it
 	is a SOCKET_ERROR. Otherwise processes the body forms."
-	(declare (ignore nil))
-	`(with-winsock-error-handling
-		(:error-test #'(lambda (x) (= x SOCKET_ERROR)))
-		,winsock-call
-		,@body))
+  (declare (ignore nil))
+  `(with-winsock-error-handling
+       (:error-test #'(lambda (x) (= x SOCKET_ERROR)))
+     ,winsock-call
+     ,@body))
 
 (defmacro with-winsock-pointer-expected (() winsock-call &body body)
-	"Checks that the result of the winsock call is a non-null pointer.
+  "Checks that the result of the winsock call is a non-null pointer.
 	If it is null, then raises an error and does not process the body
 	of the macro."
-	(declare (ignore nil))
-	(let ((pointer-result (gensym)))
-		`(let ((,pointer-result ,winsock-call))
-			(if (cpointer-null ,pointer-result)
-				(handle-winsock-error)
-				(progn ,pointer-result ,@body)))))
+  (declare (ignore nil))
+  (let ((pointer-result (gensym)))
+    `(let ((,pointer-result ,winsock-call))
+       (if (cpointer-null ,pointer-result)
+	   (handle-winsock-error)
+	   (progn ,pointer-result ,@body)))))
 
 (defvar *sockets-started* t ; WinSock is initialised by the new beta Lisp kenel
-	"Set to T when START-SOCKETS is called.")
+  "Set to T when START-SOCKETS is called.")
 
 (defun start-sockets ()
-	"Initialize the winsock libraries."
-	t)
+  "Initialize the winsock libraries."
+  t)
 
 (defun stop-sockets ()
-	"Shutdown the winsock libraries."
-	nil)
+  "Shutdown the winsock libraries."
+  nil)
 
 (defmacro with-sockets-started (&body body)
-	"Helper macro to automatically start and stop sockets."
-	`(progn
-		(start-sockets)
-		(unwind-protect
-			(progn
-				,@body)
-			(stop-sockets))))
+  "Helper macro to automatically start and stop sockets."
+  `(progn
+     (start-sockets)
+     (unwind-protect
+	  (progn
+	    ,@body)
+       (stop-sockets))))
 
 (defvar *ipv6* nil "Controls whether IPv6 addresses will be looked up by default during name resolution. Valid values: nil, :only or t.")
 
@@ -344,619 +344,619 @@
 (defun host-to-ipaddr (dotted-or-name &key port (ipv6 *ipv6*) all) "Return the ipaddr (addr) given a host name, a dotted IP address or an addr.
 Port: symbol, string or integer. IPv6: nil, :only or t.
 All: If it is nil, return the first address available otherwise return the list of all addresses."
-    (let ((res (if (stringp dotted-or-name)
+       (let ((res (if (stringp dotted-or-name)
                       (get-addr-info dotted-or-name :port (or port 0) :host-is-name :unspec :ipv6 ipv6 :errorp t)
                       (list dotted-or-name))))
-        (if all res (car res))))
+         (if all res (car res))))
 
 (defun ipaddr-to-name (addr) "Given an ipaddr (addr), lookup the host name."
-    (get-name-info addr :errorp t))
+       (get-name-info addr :errorp t))
 
 (defun ipaddr-to-dotted (addr) "Given an ipaddr (addr), return the dotted name."
-    (or (getf addr :dotted) (get-name-info addr :dottedp t :errorp t)))
+       (or (getf addr :dotted) (get-name-info addr :dottedp t :errorp t)))
 
 (defclass base-socket ()
-	((socket-descriptor
-			:initform nil
-			:initarg :descriptor
-			:accessor socket-descriptor)
-		(read-buffer :initform nil :accessor socket-read-buffer)
-		(read-complete :initform nil :accessor socket-read-complete))
-	(:documentation
-		"On finalization the socket will be closed if CLOSE-SOCKET
+  ((socket-descriptor
+    :initform nil
+    :initarg :descriptor
+    :accessor socket-descriptor)
+   (read-buffer :initform nil :accessor socket-read-buffer)
+   (read-complete :initform nil :accessor socket-read-complete))
+  (:documentation
+   "On finalization the socket will be closed if CLOSE-SOCKET
 		has not already been called."))
 
 (defclass remote-socket (base-socket)
-	((address :initform nil :initarg :address :accessor remote-socket-ipaddr))
-	(:documentation
-		"The socket returned by an ACCEPT-SOCKET call. This socket is
+  ((address :initform nil :initarg :address :accessor remote-socket-ipaddr))
+  (:documentation
+   "The socket returned by an ACCEPT-SOCKET call. This socket is
 		used to communicate with the remote host."))
 
 (defclass local-socket (base-socket)
-    ((host-ipaddr :initform nil :accessor socket-host-ipaddr)
-     (port :initform nil :accessor socket-port)
-     (type :accessor socket-type))
-    (:documentation
-"Base abstract class for sockets that are created and used on the client machine.
+  ((host-ipaddr :initform nil :accessor socket-host-ipaddr)
+   (port :initform nil :accessor socket-port)
+   (type :accessor socket-type))
+  (:documentation
+   "Base abstract class for sockets that are created and used on the client machine.
 Takes the keywords :HOST, :PORT, and :TYPE on creation of an instance.
 HOST: can be a hostname, a dotted ip address or an addr.
 PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 
 (defclass client-socket (local-socket) ()
-	(:documentation
-		"Socket used for client programming."))
+  (:documentation
+   "Socket used for client programming."))
 
 (defclass server-socket (local-socket) ()
-	(:documentation
-		"Socket used for writing servers. Allows calling of ACCEPT-SOCKET and returning
+  (:documentation
+   "Socket used for writing servers. Allows calling of ACCEPT-SOCKET and returning
 		of the remote-socket for communicating with the incoming connection."))
 
 (defvar *default-proxy-server* nil)
 
 (defclass proxy-server ()
-	((host :initform nil :initarg :host :accessor proxy-server-host)
-		(port :initform nil :initarg :port :accessor proxy-server-port))
-	(:documentation
-		"Base class for holding proxy server information. Derived classes
+  ((host :initform nil :initarg :host :accessor proxy-server-host)
+   (port :initform nil :initarg :port :accessor proxy-server-port))
+  (:documentation
+   "Base class for holding proxy server information. Derived classes
 		should exist to implement the protocol specific to the type of
 		proxy server."))
 
 (defclass generic-proxy-server (proxy-server)
-	()
-	(:documentation
-		"Implements the proxy server protocol for those proxy servers that
+  ()
+  (:documentation
+   "Implements the proxy server protocol for those proxy servers that
 		support tunnelling via the CONNECT method."))
 
 (defgeneric proxy-server-connect (server socket host port))
 
 (defmethod proxy-server-connect ((server generic-proxy-server) s host port)
-	(declare (ignore server))
-	(write-socket-line s
-		(format nil "CONNECT ~A:~A HTTP/1.0" host port))
-	(write-socket-line s "")
-	(read-socket-line s) ;; Verify here?
-	(loop as line = (read-socket-line s)
-		until (= (length line) 0)))
+  (declare (ignore server))
+  (write-socket-line s
+		     (format nil "CONNECT ~A:~A HTTP/1.0" host port))
+  (write-socket-line s "")
+  (read-socket-line s) ;; Verify here?
+  (loop as line = (read-socket-line s)
+	until (= (length line) 0)))
 
 (defclass proxy-socket-mixin ()
-	((initialized :initform nil :accessor proxy-initialized))
-	(:documentation
-		"Class to mixin with other socket classes to provide the ability
+  ((initialized :initform nil :accessor proxy-initialized))
+  (:documentation
+   "Class to mixin with other socket classes to provide the ability
 		to work through a proxy server."))
 
 (defclass proxy-client-socket (client-socket proxy-socket-mixin)
-	()
-	(:documentation
-		"A standard socket that is used through a proxy server."))
+  ()
+  (:documentation
+   "A standard socket that is used through a proxy server."))
 
 (defmethod initialize-instance :after ((s base-socket) &allow-other-keys)
-	(ccl:register-finalization s #'(lambda (x) (close-socket x))))
+  (ccl:register-finalization s #'(lambda (x) (close-socket x))))
 
 (defmethod initialize-instance ((s local-socket) &key type &allow-other-keys)
-    (call-next-method)
-    (setf (socket-type s) (if (eq type :datagram) 'sock_dgram 'sock_stream)))
+  (call-next-method)
+  (setf (socket-type s) (if (eq type :datagram) 'sock_dgram 'sock_stream)))
 
 (defmethod initialize-instance :after ((s local-socket) &allow-other-keys)
-    (let ((local (malloc *addr-size*)) (addr-size (malloc (sizeof 'int))))
-        (setf (cref (int *) addr-size *) *addr-size*)
-        (with-socket-error-check () (getsockname (socket-descriptor s) local addr-size)
-            (setf (socket-port s) (getf (c-to-addr local) :port)))))
+  (let ((local (malloc *addr-size*)) (addr-size (malloc (sizeof 'int))))
+    (setf (cref (int *) addr-size *) *addr-size*)
+    (with-socket-error-check () (getsockname (socket-descriptor s) local addr-size)
+			     (setf (socket-port s) (getf (c-to-addr local) :port)))))
 
 (defmethod initialize-instance ((s client-socket) &key host port &allow-other-keys)
-    (call-next-method)
-    (let (lsocs)
-        (unwind-protect
-            (dolist (addr (host-to-ipaddr host :port port :all t) (error "No response from ~a at port ~a." host port))
-                (let* ((fam (getf addr :family)) (soc (car (find fam lsocs :key #'cadr))))
-                    (unless soc (setq soc (caar (push (list (with-invalid-socket-check () (socket (symbol-value fam) (symbol-value (socket-type s)) 0)) fam) lsocs))))
-                    (when (zerop (connect soc (addr-to-c addr) *addr-size*)) (setf (socket-host-ipaddr s) addr (socket-descriptor s) soc) (return))))
-            (mapc #'(lambda (x) (unless (eq (socket-descriptor s) (car x)) (closesocket (car x)))) lsocs))))
+  (call-next-method)
+  (let (lsocs)
+    (unwind-protect
+         (dolist (addr (host-to-ipaddr host :port port :all t) (error "No response from ~a at port ~a." host port))
+           (let* ((fam (getf addr :family)) (soc (car (find fam lsocs :key #'cadr))))
+             (unless soc (setq soc (caar (push (list (with-invalid-socket-check () (socket (symbol-value fam) (symbol-value (socket-type s)) 0)) fam) lsocs))))
+             (when (zerop (connect soc (addr-to-c addr) *addr-size*)) (setf (socket-host-ipaddr s) addr (socket-descriptor s) soc) (return))))
+      (mapc #'(lambda (x) (unless (eq (socket-descriptor s) (car x)) (closesocket (car x)))) lsocs))))
 
 (defmethod initialize-instance ((s server-socket) &key host port &allow-other-keys)
-    (call-next-method)
-    (let* ((addr (host-to-ipaddr host :port port))
-             (type (socket-type s))
-             (soc (with-invalid-socket-check () (socket (symbol-value (getf addr :family)) (symbol-value type) 0))))
-        (setf (socket-host-ipaddr s) addr (socket-descriptor s) soc)
-        (with-socket-error-check () (bind soc (addr-to-c addr) *addr-size*))
-        (when (eq type 'sock_stream) (with-socket-error-check () (winsock::listen soc SOMAXCONN)))))
+  (call-next-method)
+  (let* ((addr (host-to-ipaddr host :port port))
+         (type (socket-type s))
+         (soc (with-invalid-socket-check () (socket (symbol-value (getf addr :family)) (symbol-value type) 0))))
+    (setf (socket-host-ipaddr s) addr (socket-descriptor s) soc)
+    (with-socket-error-check () (bind soc (addr-to-c addr) *addr-size*))
+    (when (eq type 'sock_stream) (with-socket-error-check () (winsock::listen soc SOMAXCONN)))))
 
 (defmethod initialize-instance :after ((s proxy-socket-mixin) &key real-host real-port proxy &allow-other-keys)
-	(proxy-server-connect proxy s real-host real-port)
-	(setf (proxy-initialized s) t))
+  (proxy-server-connect proxy s real-host real-port)
+  (setf (proxy-initialized s) t))
 
 (defgeneric remote-socket-class (s)
-	(:documentation "Given a server socket, return the class
+  (:documentation "Given a server socket, return the class
 		used for the remote socket for that server socket type."))
 
 (defmethod remote-socket-class ((s server-socket))
-	(declare (ignore s))
-	'remote-socket)
+  (declare (ignore s))
+  'remote-socket)
 
 (defgeneric accept-socket (s)
-	(:documentation
-		"Block until a connection is received on the port for this server
+  (:documentation
+   "Block until a connection is received on the port for this server
 		socket. When a connection is received, return a REMOTE-SOCKET for
 		communicating with the remote host."))
 
 (defmethod accept-socket ((s server-socket))
-    (let ((remote (malloc *addr-size*)) (addr-size (malloc (sizeof 'int))))
-        (setf (cref (int *) addr-size *) *addr-size*)
-        (let ((as (with-invalid-socket-check () (accept (socket-descriptor s) remote addr-size))))
-            (make-instance (remote-socket-class s) :descriptor as :address (c-to-addr remote)))))
+  (let ((remote (malloc *addr-size*)) (addr-size (malloc (sizeof 'int))))
+    (setf (cref (int *) addr-size *) *addr-size*)
+    (let ((as (with-invalid-socket-check () (accept (socket-descriptor s) remote addr-size))))
+      (make-instance (remote-socket-class s) :descriptor as :address (c-to-addr remote)))))
 
 (defgeneric close-socket (s)
-	(:documentation
-		"Close the socket connection. This function does not need
+  (:documentation
+   "Close the socket connection. This function does not need
 		to be called explicitly as it will be called during finalization of the
 		object if required."))
 
 (defmethod close-socket ((s base-socket))
-	(let ((descriptor (socket-descriptor s)))
-		(when descriptor
-		    (shutdown descriptor 1)
-			(with-c-buffer (buffer (+ 1 *socket-buffer-length*))
-				(loop
-					(let ((result (recv descriptor buffer *socket-buffer-length* 0)))
-						(when (or (= result SOCKET_ERROR) (= result 0))
-							(return)))))
-			(closesocket descriptor)
-			(setf (socket-descriptor s) nil) t)))
+  (let ((descriptor (socket-descriptor s)))
+    (when descriptor
+      (shutdown descriptor 1)
+      (with-c-buffer (buffer (+ 1 *socket-buffer-length*))
+	(loop
+	 (let ((result (recv descriptor buffer *socket-buffer-length* 0)))
+	   (when (or (= result SOCKET_ERROR) (= result 0))
+	     (return)))))
+      (closesocket descriptor)
+      (setf (socket-descriptor s) nil) t)))
 
 (defmethod close-socket ((s local-socket))
-    (let ((soc (socket-descriptor s)))
-        (when soc (if (eq (socket-type s) 'sock_stream) (call-next-method)
-                             (let () (closesocket soc) (setf (socket-descriptor s) nil) t)))))
+  (let ((soc (socket-descriptor s)))
+    (when soc (if (eq (socket-type s) 'sock_stream) (call-next-method)
+                  (let () (closesocket soc) (setf (socket-descriptor s) nil) t)))))
 
 ;;; Methods to read and write Datagrams
 
 (defvar *datagram-size* 1024)
 
 (defmethod receive-from ((socket local-socket) &optional bytep)
-    (unless (eq (socket-type socket) 'sock_dgram) (error "RECEIVE-FROM is used for Datagram Sockets only."))
-    (let* ((data (malloc *datagram-size*)) (from (malloc *addr-size*))
-             (addr-size (let ((addr-size (malloc 4))) (setf (cref (int *) addr-size *) *addr-size*) addr-size))
-             (n (with-socket-error-check () (recvfrom (socket-descriptor socket) data *datagram-size* 0 from addr-size))))
-        (and (not bytep) (< n *datagram-size*) (setf (cref (byte *) data n) 0))
-        (values (if bytep (c-bytes-to-lisp-bytes data n) (c-string-to-lisp-string data)) (c-to-addr from))))
+  (unless (eq (socket-type socket) 'sock_dgram) (error "RECEIVE-FROM is used for Datagram Sockets only."))
+  (let* ((data (malloc *datagram-size*)) (from (malloc *addr-size*))
+         (addr-size (let ((addr-size (malloc 4))) (setf (cref (int *) addr-size *) *addr-size*) addr-size))
+         (n (with-socket-error-check () (recvfrom (socket-descriptor socket) data *datagram-size* 0 from addr-size))))
+    (and (not bytep) (< n *datagram-size*) (setf (cref (byte *) data n) 0))
+    (values (if bytep (c-bytes-to-lisp-bytes data n) (c-string-to-lisp-string data)) (c-to-addr from))))
 
 (defmethod send-to :before ((socket server-socket) byte-vector-or-string &key to)
-    (declare (ignore byte-vector-or-string))
-    (unless to (error "The :TO key must be specified for Server Sockets.")))
+  (declare (ignore byte-vector-or-string))
+  (unless to (error "The :TO key must be specified for Server Sockets.")))
 
 (defmethod send-to ((socket local-socket) byte-vector-or-string &key to)
-    (unless (eq (socket-type socket) 'sock_dgram) (error "SEND-TO is used for Datagram Sockets only."))
-    (with-socket-error-check ()
-        (sendto (socket-descriptor socket)
-                     (if (eq (array-element-type byte-vector-or-string) 'character)
-                         (lisp-string-to-c-string byte-vector-or-string)
-                         (lisp-bytes-to-c-bytes byte-vector-or-string))
-                     (length byte-vector-or-string) 0 (if to (addr-to-c to) null) *addr-size*)))
+  (unless (eq (socket-type socket) 'sock_dgram) (error "SEND-TO is used for Datagram Sockets only."))
+  (with-socket-error-check ()
+    (sendto (socket-descriptor socket)
+            (if (eq (array-element-type byte-vector-or-string) 'character)
+                (lisp-string-to-c-string byte-vector-or-string)
+                (lisp-bytes-to-c-bytes byte-vector-or-string))
+            (length byte-vector-or-string) 0 (if to (addr-to-c to) null) *addr-size*)))
 
 ;;;
 
 (defgeneric do-ffi-write-socket (s buffer length)
-	(:documentation
-		"Perform FFI function to write socket data. Extracted out to allow sharing
+  (:documentation
+   "Perform FFI function to write socket data. Extracted out to allow sharing
 		of commonality between standard sockets and SSL sockets. BUFFER should be
 		a C buffer."))
 
 (defmethod do-ffi-write-socket ((s base-socket) buffer length)
   (with-c-buffer (c-buffer (+ length 1))
-		(dotimes (n length)
-            (let ((x (elt buffer n)))
-                (setf (ct:cref (:unsigned-char *) c-buffer n) (if (characterp x)(char-int x) x))))
-		(with-socket-error-check ()
-			(send (socket-descriptor s) c-buffer length 0))))
+    (dotimes (n length)
+      (let ((x (elt buffer n)))
+        (setf (ct:cref (:unsigned-char *) c-buffer n) (if (characterp x)(char-int x) x))))
+    (with-socket-error-check ()
+      (send (socket-descriptor s) c-buffer length 0))))
 
 (defmethod do-ffi-write-socket :around ((s proxy-socket-mixin) buffer length)
-	(if (proxy-initialized s)
-		(call-next-method)
-		(with-c-buffer (c-buffer (+ length 1))
-			(dotimes (n length)
-				(setf (ct:cref (:unsigned-char *) c-buffer n) (char-int (elt buffer n))))
-			(with-socket-error-check ()
-				(send (socket-descriptor s) c-buffer length 0)))))
+  (if (proxy-initialized s)
+      (call-next-method)
+      (with-c-buffer (c-buffer (+ length 1))
+	(dotimes (n length)
+	  (setf (ct:cref (:unsigned-char *) c-buffer n) (char-int (elt buffer n))))
+	(with-socket-error-check ()
+	  (send (socket-descriptor s) c-buffer length 0)))))
 
 (defgeneric write-socket (s string)
-	(:documentation
-		"Send a string of bytes across the socket."))
+  (:documentation
+   "Send a string of bytes across the socket."))
 
 (defmethod write-socket ((s base-socket) string)
-	(do-ffi-write-socket s string (length string)))
+  (do-ffi-write-socket s string (length string)))
 
 (defgeneric write-socket-line (s string)
-	(:documentation
-		"Send a string across the socket, terminating with a carriage
+  (:documentation
+   "Send a string across the socket, terminating with a carriage
 		return and line feed."))
 
 (defmethod write-socket-line ((s base-socket) line)
-	(let* ((line-buffer (concatenate 'string line (list #\Return #\Newline)))
-			(line-length (length line-buffer)))
-		(do-ffi-write-socket s line-buffer line-length)))
+  (let* ((line-buffer (concatenate 'string line (list #\Return #\Newline)))
+	 (line-length (length line-buffer)))
+    (do-ffi-write-socket s line-buffer line-length)))
 
 (defgeneric read-socket (s length &optional eof-error-p eof-value)
-	(:documentation
-		"Read a number of bytes from the socket and return as a string."))
+  (:documentation
+   "Read a number of bytes from the socket and return as a string."))
 
 (defgeneric read-socket-char (s &optional eof-error-p eof-value)
-	(:documentation
-		"Read a single character from the socket and return it."))
+  (:documentation
+   "Read a single character from the socket and return it."))
 
 (defmethod read-socket ((s base-socket) len &optional eof-error-p eof-value)
-	(declare (ignore eof-error-p))
-	(when (< (length (socket-read-buffer s)) len)
-		(populate-socket-read-buffer s
-			:block t
-			:len (- len (length (socket-read-buffer s)))))
-	(if (zerop (length (socket-read-buffer s)))
-		eof-value
-		(let ((len (min len (length (socket-read-buffer s)))))
-			(prog1
-				(subseq (socket-read-buffer s) 0 len)
-				(setf (socket-read-buffer s)
-					(subseq
-						(socket-read-buffer s) len))))))
+  (declare (ignore eof-error-p))
+  (when (< (length (socket-read-buffer s)) len)
+    (populate-socket-read-buffer s
+				 :block t
+				 :len (- len (length (socket-read-buffer s)))))
+  (if (zerop (length (socket-read-buffer s)))
+      eof-value
+      (let ((len (min len (length (socket-read-buffer s)))))
+	(prog1
+	    (subseq (socket-read-buffer s) 0 len)
+	  (setf (socket-read-buffer s)
+		(subseq
+		 (socket-read-buffer s) len))))))
 
 (defmethod read-socket-char ((s base-socket) &optional eof-error-p eof-value)
-	(declare (ignore eof-error-p))
-	(when (< (length (socket-read-buffer s)) 1)
-		(populate-socket-read-buffer s
-			:block t
-			:len 1))
-	(if (zerop (length (socket-read-buffer s)))
-		eof-value
-		(prog1
-			(elt (socket-read-buffer s) 0)
-			(setf (socket-read-buffer s)
-				(subseq
-					(socket-read-buffer s) 1)))))
+  (declare (ignore eof-error-p))
+  (when (< (length (socket-read-buffer s)) 1)
+    (populate-socket-read-buffer s
+				 :block t
+				 :len 1))
+  (if (zerop (length (socket-read-buffer s)))
+      eof-value
+      (prog1
+	  (elt (socket-read-buffer s) 0)
+	(setf (socket-read-buffer s)
+	      (subseq
+	       (socket-read-buffer s) 1)))))
 
 (defun socket-data-available (s)
-	"Return the number of bytes available to be read on
+  "Return the number of bytes available to be read on
 	the socket without blocking."
-	(with-fresh-foreign-block (argp 'ULONG)
-		(setf (cref (:unsigned-long *) argp 0) 0)
-		(ioctlsocket (socket-descriptor s) 1074030207 argp)
-		(cref (:unsigned-long *) argp 0)))
+  (with-fresh-foreign-block (argp 'ULONG)
+    (setf (cref (:unsigned-long *) argp 0) 0)
+    (ioctlsocket (socket-descriptor s) 1074030207 argp)
+    (cref (:unsigned-long *) argp 0)))
 
 (defun c-buffer-to-string (buffer bytes)
   "Create a lisp string from the BYTES first bytes of BUFFER.
  BUFFER may contain null bytes."
   (coerce (loop for i below bytes
-             collect (code-char (cref (:unsigned-char *) buffer i)))
+		collect (code-char (cref (:unsigned-char *) buffer i)))
           'string))
 
 (defun populate-socket-read-buffer (s &key block len)
-	"Fill the socket read buffer with data from the socket.
+  "Fill the socket read buffer with data from the socket.
 	Attempt to read at least LEN bytes into the buffer. The
 	function will block waiting for data if BLOCK is T. If
 	LEN is not supplied, read as much data is available from
 	the socket without blocking."
-	(when (and (> (length (socket-read-buffer s)) 0)
-			(or (null len)
-				(<= len (length (socket-read-buffer s)))))
-		(return-from populate-socket-read-buffer))
-	(with-c-buffer (buffer (+ *socket-buffer-length* 1))
-		(loop
-			(let ((bytes (do-ffi-read-socket s buffer *socket-buffer-length*)))
-				(when (<= bytes 0)
-					(setf (socket-read-complete s) t)
-					(return))
-				(setf (socket-read-buffer s)
-					(concatenate 'string
-						(socket-read-buffer s)
-						(c-buffer-to-string buffer bytes)))
-				(when (and len (<= (decf len bytes) 0))
-					(return))
-				(when (and (not block) (zerop (socket-data-available s)))
-					(return))))))
+  (when (and (> (length (socket-read-buffer s)) 0)
+	     (or (null len)
+		 (<= len (length (socket-read-buffer s)))))
+    (return-from populate-socket-read-buffer))
+  (with-c-buffer (buffer (+ *socket-buffer-length* 1))
+    (loop
+     (let ((bytes (do-ffi-read-socket s buffer *socket-buffer-length*)))
+       (when (<= bytes 0)
+	 (setf (socket-read-complete s) t)
+	 (return))
+       (setf (socket-read-buffer s)
+	     (concatenate 'string
+			  (socket-read-buffer s)
+			  (c-buffer-to-string buffer bytes)))
+       (when (and len (<= (decf len bytes) 0))
+	 (return))
+       (when (and (not block) (zerop (socket-data-available s)))
+	 (return))))))
 
 (defun populate-socket-binary-read-buffer (s &key block len)
-	"Fill the socket read buffer with binary data from the socket.
+  "Fill the socket read buffer with binary data from the socket.
 	Attempt to read at least LEN bytes into the buffer. The
 	function will block waiting for data if BLOCK is T. If
 	LEN is not supplied, read as much data is available from
 	the socket without blocking."
-    (let ((socket-buffer (socket-read-buffer s)))
-    	(when (and (> (length socket-buffer) 0)
-    			(or (null len)
-    				(<= len (length socket-buffer))))
-    		(return-from populate-socket-binary-read-buffer))
-    	(with-c-buffer (buffer (+ *socket-buffer-length* 1))
-    		(loop
-    			(let ((bytes (do-ffi-read-socket s buffer *socket-buffer-length*)))
-    				(when (<= bytes 0)
-    					(setf (socket-read-complete s) t)
-    					(return))
-                    ;; copy the bytes we received to the read-buffer
-                    (if (null socket-buffer)
-                        (setf socket-buffer (make-array *socket-buffer-length* :fill-pointer 0)))
-                    (dotimes (i bytes)
-                        (vector-push-extend (ct:cref (:unsigned-char *) buffer i) socket-buffer))
-    				(when (and len (<= (decf len bytes) 0))
-    					(return))
-    				(when (and (not block) (zerop (socket-data-available s)))
-    					(return)))))))
+  (let ((socket-buffer (socket-read-buffer s)))
+    (when (and (> (length socket-buffer) 0)
+    	       (or (null len)
+    		   (<= len (length socket-buffer))))
+      (return-from populate-socket-binary-read-buffer))
+    (with-c-buffer (buffer (+ *socket-buffer-length* 1))
+      (loop
+       (let ((bytes (do-ffi-read-socket s buffer *socket-buffer-length*)))
+    	 (when (<= bytes 0)
+    	   (setf (socket-read-complete s) t)
+    	   (return))
+         ;; copy the bytes we received to the read-buffer
+         (if (null socket-buffer)
+             (setf socket-buffer (make-array *socket-buffer-length* :fill-pointer 0)))
+         (dotimes (i bytes)
+           (vector-push-extend (ct:cref (:unsigned-char *) buffer i) socket-buffer))
+    	 (when (and len (<= (decf len bytes) 0))
+    	   (return))
+    	 (when (and (not block) (zerop (socket-data-available s)))
+    	   (return)))))))
 
 (defgeneric read-socket-line (s &optional eof-error-p eof-value)
-	(:documentation
-		"Read a line of text data from the socket and return as a string."))
+  (:documentation
+   "Read a line of text data from the socket and return as a string."))
 
 (defgeneric do-ffi-read-socket (s buffer length)
-	(:documentation
-		"Perform FFI function to read socket. Extracted out to allow sharing
+  (:documentation
+   "Perform FFI function to read socket. Extracted out to allow sharing
 		of commonality between standard sockets and SSL sockets."))
 
 (defmethod do-ffi-read-socket ((s base-socket) buffer length)
-	(with-socket-error-check ()
-		(recv (socket-descriptor s) buffer length 0)))
+  (with-socket-error-check ()
+    (recv (socket-descriptor s) buffer length 0)))
 
 (defmethod do-ffi-read-socket :around ((s proxy-socket-mixin) buffer length)
-	(if (proxy-initialized s)
-		(call-next-method)
-		(with-socket-error-check ()
-			(recv (socket-descriptor s) buffer length 0))))
+  (if (proxy-initialized s)
+      (call-next-method)
+      (with-socket-error-check ()
+	(recv (socket-descriptor s) buffer length 0))))
 
 ;; Much of the READ-SOCKET-LINE code is based on READ-LINE from the Corman
 ;; Lisp implementation.
 (defmethod read-socket-line ((s base-socket) &optional eof-error-p eof-value)
-	(declare (ignore eof-error-p))
-	(let ((str (make-array 256 :element-type 'character :fill-pointer t)))
-		(setf (fill-pointer str) 0)
-		(do ((ch (read-socket-char s nil :eof) (read-socket-char s nil :eof)))
-			((and (not (eq ch :eof)) (eql ch #\Newline)) (concatenate 'string str))
-			(if (eq ch :eof)
-				(if (> (length str) 0)
-					(return-from read-socket-line (concatenate 'string str))
-					(return-from read-socket-line eof-value)))
-			(when (not (eql ch #\Return))
-				(vector-push-extend ch str)))))
+  (declare (ignore eof-error-p))
+  (let ((str (make-array 256 :element-type 'character :fill-pointer t)))
+    (setf (fill-pointer str) 0)
+    (do ((ch (read-socket-char s nil :eof) (read-socket-char s nil :eof)))
+	((and (not (eq ch :eof)) (eql ch #\Newline)) (concatenate 'string str))
+      (if (eq ch :eof)
+	  (if (> (length str) 0)
+	      (return-from read-socket-line (concatenate 'string str))
+	      (return-from read-socket-line eof-value)))
+      (when (not (eql ch #\Return))
+	(vector-push-extend ch str)))))
 
 (defun make-client-socket (&key host port type (proxy *default-proxy-server*))
-	"Create and return a client socket attached to the HOST and PORT."
-	(if proxy
-		(make-instance 'proxy-client-socket
-			:host (proxy-server-host proxy)
-			:port (proxy-server-port proxy)
-			:real-host host
-			:real-port port
-			:proxy proxy)
-		(make-instance 'client-socket :host host :port port :type type)))
+  "Create and return a client socket attached to the HOST and PORT."
+  (if proxy
+      (make-instance 'proxy-client-socket
+		     :host (proxy-server-host proxy)
+		     :port (proxy-server-port proxy)
+		     :real-host host
+		     :real-port port
+		     :proxy proxy)
+      (make-instance 'client-socket :host host :port port :type type)))
 
 (defun make-server-socket (&key host port type)
-	"Create and return a sever socket listening on the HOST and PORT."
-	(make-instance 'server-socket :host host :port port :type type))
+  "Create and return a sever socket listening on the HOST and PORT."
+  (make-instance 'server-socket :host host :port port :type type))
 
 (defmacro with-client-socket ((socket &key host port type proxy) &body body)
-	"Ensures that the SOCKET is closed when scope of WITH-CLIENT-SOCKET
+  "Ensures that the SOCKET is closed when scope of WITH-CLIENT-SOCKET
 	has ended."
-	(let ((p-name (gensym)))
-		`(let* ((,p-name (if ,proxy ,proxy *default-proxy-server*))
-				(,socket (make-client-socket :host ,host :port ,port :type ,type :proxy ,p-name)))
-			(unwind-protect
-				(progn
-					,@body)
-				(close-socket ,socket)))))
+  (let ((p-name (gensym)))
+    `(let* ((,p-name (if ,proxy ,proxy *default-proxy-server*))
+	    (,socket (make-client-socket :host ,host :port ,port :type ,type :proxy ,p-name)))
+       (unwind-protect
+	    (progn
+	      ,@body)
+	 (close-socket ,socket)))))
 
 (defmacro with-server-socket ((socket &key host port type) &body body)
-	"Ensures that the SOCKET is closed when scope of WITH-SERVER-SOCKET
+  "Ensures that the SOCKET is closed when scope of WITH-SERVER-SOCKET
 	has ended."
-	`(let ((,socket (make-server-socket :host ,host :port ,port :type ,type)))
-		(unwind-protect
-			(progn
-				,@body)
-			(close-socket ,socket))))
+  `(let ((,socket (make-server-socket :host ,host :port ,port :type ,type)))
+     (unwind-protect
+	  (progn
+	    ,@body)
+       (close-socket ,socket))))
 
 (defmacro with-server-accept ((remote-socket server-socket) &body body)
-	"Ensures that the REMOTE-SOCKET is closed when scope of WITH-REMOTE-SOCKET
+  "Ensures that the REMOTE-SOCKET is closed when scope of WITH-REMOTE-SOCKET
 	has ended."
-	`(let ((,remote-socket (accept-socket ,server-socket)))
-		(unwind-protect
-			(progn
-				,@body)
-			(close-socket ,remote-socket))))
+  `(let ((,remote-socket (accept-socket ,server-socket)))
+     (unwind-protect
+	  (progn
+	    ,@body)
+       (close-socket ,remote-socket))))
 
 (defmacro with-threaded-server-accept ((remote-socket server-socket) &body body)
-	"Ensures that the REMOTE-SOCKET is closed when scope of WITH-REMOTE-SOCKET
+  "Ensures that the REMOTE-SOCKET is closed when scope of WITH-REMOTE-SOCKET
 	has ended."
-	`(let ((,remote-socket (accept-socket ,server-socket)))
-		(th:create-thread #'(lambda ()
-				(unwind-protect
-					(progn
-						,@body)
-					(close-socket ,remote-socket))))))
+  `(let ((,remote-socket (accept-socket ,server-socket)))
+     (th:create-thread #'(lambda ()
+			   (unwind-protect
+				(progn
+				  ,@body)
+			     (close-socket ,remote-socket))))))
 
 (defmacro start-socket-server ((server-socket remote-socket) &body body)
-	"Starts an ACCEPT-SOCKET loop, and evaluates the BODY with the
+  "Starts an ACCEPT-SOCKET loop, and evaluates the BODY with the
 	REMOTE-SOCKET bound to the result of the ACCEPT-SOCKET call. The loop
 	continues indefinitely or until a RETURN expression."
-	`(loop
-		(with-server-accept (,remote-socket ,server-socket)
-			,@body)))
+  `(loop
+    (with-server-accept (,remote-socket ,server-socket)
+      ,@body)))
 
 (defmacro start-threaded-socket-server ((server-socket remote-socket) &body body)
-	"Starts an ACCEPT-SOCKET loop, and evaluates the BODY with the
+  "Starts an ACCEPT-SOCKET loop, and evaluates the BODY with the
 	REMOTE-SOCKET bound to the result of the ACCEPT-SOCKET call. The loop
 	continues indefinitely or until a RETURN expression."
-	`(loop
-		(with-threaded-server-accept (,remote-socket ,server-socket)
-			,@body)))
+  `(loop
+    (with-threaded-server-accept (,remote-socket ,server-socket)
+      ,@body)))
 
 (defun socket-stream-underflow-function (s)
-	"Function that gets called by the Corman Lisp stream functions when
+  "Function that gets called by the Corman Lisp stream functions when
 	the stream buffer is exhausted."
-    ;; File streams have 2 buffers too, but their second buffer
-    ;; is only temporary in the overflow function...
-	(let* ((buffer (cl::stream-input-buffer s))
-			(socket (cl::stream-handle s)))
-		(populate-socket-read-buffer socket :block nil)
-		(let* ((socket-buffer (socket-read-buffer socket))
-				(real-length (min (length socket-buffer)
-						(cl::stream-input-buffer-length s))))
-            (let ((compressed-length 0))
-			    (dotimes (i real-length) ;; same as file stream's compress-line-feeds
-                    (let ((c (elt socket-buffer i)))
-                        (unless (eq c #\Return)
-                            (setf (elt buffer compressed-length) c)
-                            (incf compressed-length))))
-                (setf (cl::stream-input-buffer-pos s) 0)
-			    (setf (cl::stream-input-buffer-num s) compressed-length)
-			    (setf (socket-read-buffer socket) (subseq (socket-read-buffer socket) real-length))))))
+  ;; File streams have 2 buffers too, but their second buffer
+  ;; is only temporary in the overflow function...
+  (let* ((buffer (cl::stream-input-buffer s))
+	 (socket (cl::stream-handle s)))
+    (populate-socket-read-buffer socket :block nil)
+    (let* ((socket-buffer (socket-read-buffer socket))
+	   (real-length (min (length socket-buffer)
+			     (cl::stream-input-buffer-length s))))
+      (let ((compressed-length 0))
+	(dotimes (i real-length) ;; same as file stream's compress-line-feeds
+          (let ((c (elt socket-buffer i)))
+            (unless (eq c #\Return)
+              (setf (elt buffer compressed-length) c)
+              (incf compressed-length))))
+        (setf (cl::stream-input-buffer-pos s) 0)
+	(setf (cl::stream-input-buffer-num s) compressed-length)
+	(setf (socket-read-buffer socket) (subseq (socket-read-buffer socket) real-length))))))
 
 (defun socket-stream-binary-underflow-function (s)
-	"Function that gets called by the Corman Lisp stream functions when
+  "Function that gets called by the Corman Lisp stream functions when
 	the socket stream binary input buffer is exhausted."
-    ;; File streams have 2 buffers too, but their second buffer
-    ;; is only temporary in the overflow function...
-	(let* ((buffer (cl::stream-input-buffer s))
-			(socket (cl::stream-handle s)))
-		(populate-socket-binary-read-buffer socket :block nil)
-		(let* ((socket-buffer (socket-read-buffer socket))
-				(real-length (min (length socket-buffer)
-						(cl::stream-input-buffer-length s))))
-            (let ((compressed-length 0))
-				(declare (ignore compressed-length))
-			    (dotimes (i real-length) ;; copy bytes from socket-buffer to stream-buffer
-                    (let ((c (elt socket-buffer i)))
-                        (setf (elt buffer i) c)))
-                (setf (cl::stream-input-buffer-pos s) 0)
-			    (setf (cl::stream-input-buffer-num s) real-length)
-			    (setf (socket-read-buffer socket) (subseq (socket-read-buffer socket) real-length))))))
+  ;; File streams have 2 buffers too, but their second buffer
+  ;; is only temporary in the overflow function...
+  (let* ((buffer (cl::stream-input-buffer s))
+	 (socket (cl::stream-handle s)))
+    (populate-socket-binary-read-buffer socket :block nil)
+    (let* ((socket-buffer (socket-read-buffer socket))
+	   (real-length (min (length socket-buffer)
+			     (cl::stream-input-buffer-length s))))
+      (let ((compressed-length 0))
+	(declare (ignore compressed-length))
+	(dotimes (i real-length) ;; copy bytes from socket-buffer to stream-buffer
+          (let ((c (elt socket-buffer i)))
+            (setf (elt buffer i) c)))
+        (setf (cl::stream-input-buffer-pos s) 0)
+	(setf (cl::stream-input-buffer-num s) real-length)
+	(setf (socket-read-buffer socket) (subseq (socket-read-buffer socket) real-length))))))
 
 (defun socket-stream-overflow-function (s)
-	"Called by the Corman Lisp library when the stream output buffer
+  "Called by the Corman Lisp library when the stream output buffer
 	is full."
-	(let* ((buffer (cl::stream-output-buffer s))
-			(buffer-length (cl::stream-output-buffer-pos s))
-			(socket (cl::stream-handle s)))
-	  (if (= buffer-length (cl::stream-output-buffer-length s))
-		  (write-socket socket buffer)
-		(let ((new-buffer (make-array ;; create a buffer and estimate the number of new-lines to expand,
-                                      ;; based on the average line length of 40 (lines ranging from 0
-                                      ;; to 80 characters); include the est. #newline expansions in the
-                                      ;; size of the allocated buffer.
-                                      (+ buffer-length (ceiling (/ buffer-length 40)))
-                                      :element-type 'character
-                                      :adjustable t :fill-pointer 0)))
-		  (dotimes (i buffer-length)
+  (let* ((buffer (cl::stream-output-buffer s))
+	 (buffer-length (cl::stream-output-buffer-pos s))
+	 (socket (cl::stream-handle s)))
+    (if (= buffer-length (cl::stream-output-buffer-length s))
+	(write-socket socket buffer)
+	(let ((new-buffer (make-array ;; create a buffer and estimate the number of new-lines to expand,
+                           ;; based on the average line length of 40 (lines ranging from 0
+                           ;; to 80 characters); include the est. #newline expansions in the
+                           ;; size of the allocated buffer.
+                           (+ buffer-length (ceiling (/ buffer-length 40)))
+                           :element-type 'character
+                           :adjustable t :fill-pointer 0)))
+	  (dotimes (i buffer-length)
             (let ((c (char buffer i)))
-                (when (eq c #\Newline)  ;; expand Newline-s
-                   (vector-push-extend #\Return new-buffer))
-                (vector-push-extend c new-buffer)))
-		  (write-socket socket new-buffer)))
-	  (setf (cl::stream-output-buffer-pos s) 0)))
+              (when (eq c #\Newline)  ;; expand Newline-s
+                (vector-push-extend #\Return new-buffer))
+              (vector-push-extend c new-buffer)))
+	  (write-socket socket new-buffer)))
+    (setf (cl::stream-output-buffer-pos s) 0)))
 
 (defun socket-stream-binary-overflow-function (s)
-	"Called by the Corman Lisp library when the binary socket stream output buffer
+  "Called by the Corman Lisp library when the binary socket stream output buffer
 	is full."
-	(let* ((buffer (cl::stream-output-buffer s))
-			(buffer-length (cl::stream-output-buffer-pos s))
-			(socket (cl::stream-handle s)))
-	  (if (= buffer-length (cl::stream-output-buffer-length s))
-		  (write-socket socket buffer)
-		(let ((new-buffer (make-array ;; create a buffer and estimate the number of new-lines to expand,
-                                      ;; based on the average line length of 40 (lines ranging from 0
-                                      ;; to 80 characters); include the est. #newline expansions in the
-                                      ;; size of the allocated buffer.
-                                      (+ buffer-length (ceiling (/ buffer-length 40)))
-                                      :element-type 'byte
-                                      :adjustable t :fill-pointer 0)))
-		  (dotimes (i buffer-length)
+  (let* ((buffer (cl::stream-output-buffer s))
+	 (buffer-length (cl::stream-output-buffer-pos s))
+	 (socket (cl::stream-handle s)))
+    (if (= buffer-length (cl::stream-output-buffer-length s))
+	(write-socket socket buffer)
+	(let ((new-buffer (make-array ;; create a buffer and estimate the number of new-lines to expand,
+                           ;; based on the average line length of 40 (lines ranging from 0
+                           ;; to 80 characters); include the est. #newline expansions in the
+                           ;; size of the allocated buffer.
+                           (+ buffer-length (ceiling (/ buffer-length 40)))
+                           :element-type 'byte
+                           :adjustable t :fill-pointer 0)))
+	  (dotimes (i buffer-length)
             (let ((b (elt buffer i)))
-                (vector-push-extend b new-buffer)))
-		  (write-socket socket new-buffer)))
-	  (setf (cl::stream-output-buffer-pos s) 0)))
+              (vector-push-extend b new-buffer)))
+	  (write-socket socket new-buffer)))
+    (setf (cl::stream-output-buffer-pos s) 0)))
 
 ;;;
 ;;; Socket streams default to text, binary optional via switch
 ;;;
 (defun make-socket-stream (s &key (binary nil))
-	"Given a socket return a stream that allows reads and writes
+  "Given a socket return a stream that allows reads and writes
 	to that socket."
-	(let ((stream (cl::alloc-uvector cl::stream-size cl::uvector-stream-tag)))
-		(setf (cl::uref stream cl::stream-name-offset) nil)
-		(setf (cl::uref stream cl::stream-subclass-offset) 'socket-stream)
-		(setf (cl::uref stream cl::stream-underflow-func-offset)
-            (if binary #'socket-stream-binary-underflow-function #'socket-stream-underflow-function))
-		(setf (cl::uref stream cl::stream-overflow-func-offset)
-            (if binary #'socket-stream-binary-overflow-function #'socket-stream-overflow-function))
-		(setf (cl::uref stream cl::stream-position-offset) 0)
-		(setf (cl::uref stream cl::stream-col-position-offset) 0)
-		(setf (cl::uref stream cl::stream-handle-offset) s)
-		(setf (cl::uref stream cl::stream-binary-offset) binary)
-		(setf (cl::uref stream cl::stream-line-number-offset) 0)
-		(setf (cl::uref stream cl::stream-open-offset) t)
-		(setf (cl::uref stream cl::stream-direction-offset) :bidirectional)
-		(setf (cl::uref stream cl::stream-interactive-offset) nil)
-		(setf (cl::uref stream cl::stream-element-type-offset) (if binary 'byte 'character))
-		(setf (cl::uref stream cl::stream-associated-streams-offset) nil)
-		(setf (cl::uref stream cl::stream-output-buffer-offset)
-            (make-array (+ *socket-buffer-length* 0)
-                :element-type (if binary 'byte 'character)))
-		(setf (cl::uref stream cl::stream-output-buffer-length-offset) *socket-buffer-length*)
-		(setf (cl::uref stream cl::stream-output-buffer-pos-offset) 0)
-		(setf (cl::uref stream cl::stream-input-buffer-offset)
-            (make-array *socket-buffer-length*
-                :element-type (if binary 'byte 'character)))
-		(setf (cl::uref stream cl::stream-input-buffer-length-offset) *socket-buffer-length*)
-		(setf (cl::uref stream cl::stream-input-buffer-pos-offset) 0)
-		(setf (cl::uref stream cl::stream-input-buffer-num-offset) 0)
-		stream))
+  (let ((stream (cl::alloc-uvector cl::stream-size cl::uvector-stream-tag)))
+    (setf (cl::uref stream cl::stream-name-offset) nil)
+    (setf (cl::uref stream cl::stream-subclass-offset) 'socket-stream)
+    (setf (cl::uref stream cl::stream-underflow-func-offset)
+          (if binary #'socket-stream-binary-underflow-function #'socket-stream-underflow-function))
+    (setf (cl::uref stream cl::stream-overflow-func-offset)
+          (if binary #'socket-stream-binary-overflow-function #'socket-stream-overflow-function))
+    (setf (cl::uref stream cl::stream-position-offset) 0)
+    (setf (cl::uref stream cl::stream-col-position-offset) 0)
+    (setf (cl::uref stream cl::stream-handle-offset) s)
+    (setf (cl::uref stream cl::stream-binary-offset) binary)
+    (setf (cl::uref stream cl::stream-line-number-offset) 0)
+    (setf (cl::uref stream cl::stream-open-offset) t)
+    (setf (cl::uref stream cl::stream-direction-offset) :bidirectional)
+    (setf (cl::uref stream cl::stream-interactive-offset) nil)
+    (setf (cl::uref stream cl::stream-element-type-offset) (if binary 'byte 'character))
+    (setf (cl::uref stream cl::stream-associated-streams-offset) nil)
+    (setf (cl::uref stream cl::stream-output-buffer-offset)
+          (make-array (+ *socket-buffer-length* 0)
+                      :element-type (if binary 'byte 'character)))
+    (setf (cl::uref stream cl::stream-output-buffer-length-offset) *socket-buffer-length*)
+    (setf (cl::uref stream cl::stream-output-buffer-pos-offset) 0)
+    (setf (cl::uref stream cl::stream-input-buffer-offset)
+          (make-array *socket-buffer-length*
+                      :element-type (if binary 'byte 'character)))
+    (setf (cl::uref stream cl::stream-input-buffer-length-offset) *socket-buffer-length*)
+    (setf (cl::uref stream cl::stream-input-buffer-pos-offset) 0)
+    (setf (cl::uref stream cl::stream-input-buffer-num-offset) 0)
+    stream))
 
 (defun stream-socket-handle (stream)
-	"If the STREAM is a SOCKET-STREAM, return the socket handle
+  "If the STREAM is a SOCKET-STREAM, return the socket handle
 	that the stream works on."
-	(cl::stream-handle stream))
+  (cl::stream-handle stream))
 
 (defmacro with-socket-stream ((stream socket) &body body)
-	"Creates a socket stream for the given SOCKET and closes it
+  "Creates a socket stream for the given SOCKET and closes it
 	when the scope of the macro ends."
-	`(let ((,stream (make-socket-stream ,socket)))
-		(unwind-protect
-			(progn
-				,@body)
-			(close ,stream))))
+  `(let ((,stream (make-socket-stream ,socket)))
+     (unwind-protect
+	  (progn
+	    ,@body)
+       (close ,stream))))
 
 (defun socket-stream-p (obj)
-    (and (streamp obj)
-        (eq (cl::stream-subclass obj) 'socket-stream)))
+  (and (streamp obj)
+       (eq (cl::stream-subclass obj) 'socket-stream)))
 
 ;;;
 ;;; Redefined Common Lisp CLOSE function to work with sockets
 ;;;
 (in-package :cl)
 (defun close (stream &key (abort nil))
-    (declare (ignore abort))    ;; we don't currently do anything with this
-    (unless (streamp stream)
-        (signal-type-error stream 'stream))
-    (cond ((and (cl::file-stream-p stream) (cl::stream-open stream))
-           (if (output-stream-p stream)
-                (force-output stream))
-           (let ((ret (win:CloseHandle (ct:int-to-foreign-ptr (cl::stream-handle stream)))))
-                (setf (cl::stream-open stream) nil)
-                ret))
-         ((typep stream 'sockets:base-socket)
-			(ignore-errors
-				(sockets:close-socket stream)))
-         ((sockets:socket-stream-p stream)
-			(ignore-errors
-				(force-output stream)
-				(sockets:close-socket (cl::stream-handle stream)))))
-    t)
+  (declare (ignore abort))    ;; we don't currently do anything with this
+  (unless (streamp stream)
+    (signal-type-error stream 'stream))
+  (cond ((and (cl::file-stream-p stream) (cl::stream-open stream))
+         (if (output-stream-p stream)
+             (force-output stream))
+         (let ((ret (win:CloseHandle (ct:int-to-foreign-ptr (cl::stream-handle stream)))))
+           (setf (cl::stream-open stream) nil)
+           ret))
+        ((typep stream 'sockets:base-socket)
+	 (ignore-errors
+	   (sockets:close-socket stream)))
+        ((sockets:socket-stream-p stream)
+	 (ignore-errors
+	   (force-output stream)
+	   (sockets:close-socket (cl::stream-handle stream)))))
+  t)
 
 (in-package :sockets)
 
 ;;;
 ;;; Clients must call START-SOCKETS explicitly
 ;;;
-;(unless *sockets-started*
-;	(start-sockets))
+					;(unless *sockets-started*
+					;	(start-sockets))
 
 (cl::register-load-image-restore-func
-    #'(lambda () (if (ipv6-installed-p)
-                            (let () (pushnew :ipv6 *features*) (setq *ipv6* t))
-                            (setq *features* (delete :ipv6 *features*) *ipv6* nil))))
+ #'(lambda () (if (ipv6-installed-p)
+                  (let () (pushnew :ipv6 *features*) (setq *ipv6* t))
+                  (setq *features* (delete :ipv6 *features*) *ipv6* nil))))
 
 (provide 'SOCKETS)
 
@@ -965,276 +965,276 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 ;;;
 ;;; Example:
 #|
- (sockets:get-http-file
-       "www.cormanlisp.com"
-       "/CormanLisp/patches/2_5/time.lisp"
-       "temp.txt")
+(sockets:get-http-file
+"www.cormanlisp.com"
+"/CormanLisp/patches/2_5/time.lisp"
+"temp.txt")
 |#
 ;;;
 (defun get-http-file (server local-url local-name)
-    (handler-bind ((winsock-error (lambda (c) (declare (ignore c)) (return-from get-http-file nil))))
-        (start-sockets)
-        (with-client-socket (s :host server :port 80)
-        	(write-socket-line s (format nil "GET ~A HTTP/1.0" local-url))
-        	(write-socket-line s "")
-            (let ((firstline (read-socket-line s)))
-                (if (or (not (stringp firstline))
-                        (= (length firstline) 0)
-                        (= (parse-integer firstline :start (1+ (position #\space firstline)) :junk-allowed t)
-                            404))
-                    (return-from get-http-file nil))
-            	(let ((content-length 0))
-            		(loop as line = (read-socket-line s)
-            			while (and line (> (length line) 0))
-            			do
-            			(when (equal
-            					(string-upcase (subseq line 0 (search ":" line)))
-            					"CONTENT-LENGTH")
-            				(setq content-length
-            					(parse-integer line :start (+ (search ":" line) 1)))))
-            		;; Read contents
-                    (with-open-file (file local-name :direction :output :element-type 'unsigned-byte)
-                        (do (str)
-                            ((= content-length 0) nil)
-                            (setf str (read-socket s content-length))
-                            (decf content-length (length str))
-                            (if (= (length str) 0)
-                                (return))
-                            (dotimes (i (length str))
-                                (write-byte (char-int (char str i)) file))))
-                    local-name)))))
+  (handler-bind ((winsock-error (lambda (c) (declare (ignore c)) (return-from get-http-file nil))))
+    (start-sockets)
+    (with-client-socket (s :host server :port 80)
+      (write-socket-line s (format nil "GET ~A HTTP/1.0" local-url))
+      (write-socket-line s "")
+      (let ((firstline (read-socket-line s)))
+        (if (or (not (stringp firstline))
+                (= (length firstline) 0)
+                (= (parse-integer firstline :start (1+ (position #\space firstline)) :junk-allowed t)
+                   404))
+            (return-from get-http-file nil))
+        (let ((content-length 0))
+          (loop as line = (read-socket-line s)
+            	while (and line (> (length line) 0))
+            	do
+            	(when (equal
+            	       (string-upcase (subseq line 0 (search ":" line)))
+            	       "CONTENT-LENGTH")
+            	  (setq content-length
+            		(parse-integer line :start (+ (search ":" line) 1)))))
+          ;; Read contents
+          (with-open-file (file local-name :direction :output :element-type 'unsigned-byte)
+            (do (str)
+                ((= content-length 0) nil)
+              (setf str (read-socket s content-length))
+              (decf content-length (length str))
+              (if (= (length str) 0)
+                  (return))
+              (dotimes (i (length str))
+                (write-byte (char-int (char str i)) file))))
+          local-name)))))
 
 #|
 
 ;;Example of reading from an HTTP server.
 (start-sockets)
 (let ((s (make-client-socket :host "www.cormanlisp.com" :port 80)))
-  (write-socket-line s "GET / HTTP/1.0")
-  (write-socket-line s "")
-  (loop as line = (read-socket-line s nil :eof)
-	  until (eq line :eof)
-	  do (format t "~A~%" line))
-  (close-socket s))
+(write-socket-line s "GET / HTTP/1.0")
+(write-socket-line s "")
+(loop as line = (read-socket-line s nil :eof)
+until (eq line :eof)
+do (format t "~A~%" line))
+(close-socket s))
 
 ;; Same example using stream support
 (let ((s (make-client-socket :host "www.cormanlisp.com" :port 80)))
-	(with-socket-stream (stream s)
-		(write-line "GET / HTTP/1.0" stream)
-		(write-line "" stream)
-		(force-output stream)
-		(loop as line = (read-line stream nil :eof)
-			until (eq line :eof)
-			do (format t "~A~%" line))))
+(with-socket-stream (stream s)
+(write-line "GET / HTTP/1.0" stream)
+(write-line "" stream)
+(force-output stream)
+(loop as line = (read-line stream nil :eof)
+until (eq line :eof)
+do (format t "~A~%" line))))
 
 ;; Same example using a proxy
 (let* ((*default-proxy-server*
-			(make-instance 'generic-proxy-server :host "proxy.myserver.com" :port 8080))
-		(s (make-client-socket :host "www.cormanlisp.com" :port 80)))
-	(with-socket-stream (stream s)
-		(write-line "GET / HTTP/1.0" stream)
-		(write-line "" stream)
-		(force-output stream)
-		(loop as line = (read-line stream nil :eof)
-			until (eq line :eof)
-			do (format t "~A~%" line))))
+(make-instance 'generic-proxy-server :host "proxy.myserver.com" :port 8080))
+(s (make-client-socket :host "www.cormanlisp.com" :port 80)))
+(with-socket-stream (stream s)
+(write-line "GET / HTTP/1.0" stream)
+(write-line "" stream)
+(force-output stream)
+(loop as line = (read-line stream nil :eof)
+until (eq line :eof)
+do (format t "~A~%" line))))
 
 ;; Reading from an HTTP server, using Content-Length and SOCKET-READ.
 ;; Loops through the headers looking for Content-Length. When all the
 ;; headers are read, read the content data using the length previously
 ;; provided.
 (with-client-socket (s :host "www.cormanlisp.com" :port 80)
-	(write-socket-line s "GET / HTTP/1.0")
-	(write-socket-line s "")
-	(let ((content-length 0))
-		(loop as line = (read-socket-line s)
-			while (and line (> (length line) 0))
-			do
-			(when (equal
-					(string-upcase (subseq line 0 (search ":" line)))
-					"CONTENT-LENGTH")
-				(setq content-length
-					(parse-integer line :start (+ (search ":" line) 1)))))
-		;; Read contents
-		(read-socket s content-length)))
+(write-socket-line s "GET / HTTP/1.0")
+(write-socket-line s "")
+(let ((content-length 0))
+(loop as line = (read-socket-line s)
+while (and line (> (length line) 0))
+do
+(when (equal
+(string-upcase (subseq line 0 (search ":" line)))
+"CONTENT-LENGTH")
+(setq content-length
+(parse-integer line :start (+ (search ":" line) 1)))))
+;; Read contents
+(read-socket s content-length)))
 
 ;; Same example using stream support
 (with-client-socket (s :host "www.cormanlisp.com" :port 80)
-	(with-socket-stream (stream s)
-		(write-line "GET / HTTP/1.0" stream)
-		(write-line "" stream)
-		(force-output stream)
-		(let ((content-length 0))
-			(loop as line = (read-line stream nil :eof)
-				while (and (not (eq line :eof)) (> (length line) 0))
-				do
-			(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
-					(setq content-length
-						(parse-integer line :start (+ (search ":" line) 1)))))
-			(format t "Total: ~A~%" content-length)
-			;; Read contents
-			(let ((contents (make-string content-length)))
-				(read-sequence contents stream)
-				contents))))
+(with-socket-stream (stream s)
+(write-line "GET / HTTP/1.0" stream)
+(write-line "" stream)
+(force-output stream)
+(let ((content-length 0))
+(loop as line = (read-line stream nil :eof)
+while (and (not (eq line :eof)) (> (length line) 0))
+do
+(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
+(setq content-length
+(parse-integer line :start (+ (search ":" line) 1)))))
+(format t "Total: ~A~%" content-length)
+;; Read contents
+(let ((contents (make-string content-length)))
+(read-sequence contents stream)
+contents))))
 
 ;; Same example using a proxy
 (let ((*default-proxy-server*
-			(make-instance 'generic-proxy-server :host "proxy.myserver.com" :port 8080)))
-	(with-client-socket (s :host "www.cormanlisp.com" :port 80)
-		(with-socket-stream (stream s)
-			(write-line "GET / HTTP/1.0" stream)
-			(write-line "" stream)
-			(force-output stream)
-			(let ((content-length 0))
-				(loop as line = (read-line stream nil :eof)
-					while (and (not (eq line :eof)) (> (length line) 0))
-					do
-				(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
-						(setq content-length
-							(parse-integer line :start (+ (search ":" line) 1)))))
-				(format t "Total: ~A~%" content-length)
-				;; Read contents
-				(let ((contents (make-string content-length)))
-					(read-sequence contents stream)
-					contents)))))
+(make-instance 'generic-proxy-server :host "proxy.myserver.com" :port 8080)))
+(with-client-socket (s :host "www.cormanlisp.com" :port 80)
+(with-socket-stream (stream s)
+(write-line "GET / HTTP/1.0" stream)
+(write-line "" stream)
+(force-output stream)
+(let ((content-length 0))
+(loop as line = (read-line stream nil :eof)
+while (and (not (eq line :eof)) (> (length line) 0))
+do
+(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
+(setq content-length
+(parse-integer line :start (+ (search ":" line) 1)))))
+(format t "Total: ~A~%" content-length)
+;; Read contents
+(let ((contents (make-string content-length)))
+(read-sequence contents stream)
+contents)))))
 
 ;; NNTP - retrieves help text from nntp server and uses with-client-socket
 (with-client-socket (ns :host "news.xtra.co.nz" :port 119)
-	(format t "~A~%" (read-socket-line ns))
-	(write-socket-line ns "help")
-	(loop as line = (read-socket-line ns)
-		while (and  line (not (eql (elt line 0) #\.)))
-		do 	(format t "~A~%" line)))
+(format t "~A~%" (read-socket-line ns))
+(write-socket-line ns "help")
+(loop as line = (read-socket-line ns)
+while (and  line (not (eql (elt line 0) #\.)))
+do 	(format t "~A~%" line)))
 
 ;; Same example using streams
 (with-client-socket (s :host "news.xtra.co.nz" :port 119)
-	(with-socket-stream (stream s)
-		(format t "~A~%" (read-line stream))
-		(write-line "help" stream)
-		(force-output stream)
-		(loop as line = (read-line stream nil :eof)
-			while (and  (not (eq line :eof)) (not (eql (elt line 0) #\.)))
-			do 	(format t "~A~%" line))))
+(with-socket-stream (stream s)
+(format t "~A~%" (read-line stream))
+(write-line "help" stream)
+(force-output stream)
+(loop as line = (read-line stream nil :eof)
+while (and  (not (eq line :eof)) (not (eql (elt line 0) #\.)))
+do 	(format t "~A~%" line))))
 
 ;; Server test - echoes lines back to client until 'quit' is received, then closes down.
 (defun start-server-test (&optional (port 8001))
-	(with-server-socket (s :host "0.0.0.0" :port port)
-		(with-server-accept (remote-socket s)
-			(format t "Connection made ~A ~A~%"
-				(socket-descriptor remote-socket) (socket-descriptor s))
-			(loop
-				(let ((value (read-socket-line remote-socket nil :eof)))
-				  (when (eq value :eof)
-					(return))
-					(format t "~A~%" value)
-					(force-output *standard-output*)
-					(write-socket-line remote-socket value)
-					(when (equal value "quit")
-						(return)))))))
+(with-server-socket (s :host "0.0.0.0" :port port)
+(with-server-accept (remote-socket s)
+(format t "Connection made ~A ~A~%"
+(socket-descriptor remote-socket) (socket-descriptor s))
+(loop
+(let ((value (read-socket-line remote-socket nil :eof)))
+(when (eq value :eof)
+(return))
+(format t "~A~%" value)
+(force-output *standard-output*)
+(write-socket-line remote-socket value)
+(when (equal value "quit")
+(return)))))))
 (start-server-test)
 
 ;; Start the above server in a seperate thread, and connect to it on the current thread.
 (th:create-thread #'start-server-test)
 (with-client-socket (s :host "localhost" :port 8001)
-	(write-socket-line s "Hello Socket World!")
-	(format t "Got: ~A~%" (read-socket-line s))
-	(write-socket-line s "quit"))
+(write-socket-line s "Hello Socket World!")
+(format t "Got: ~A~%" (read-socket-line s))
+(write-socket-line s "quit"))
 
 ;; with streams...
 (th:create-thread #'start-server-test)
 (with-client-socket (s :host "localhost" :port 8001)
-	(with-socket-stream (stream s)
-		(write-line "Hello Socket World!" stream)
-		(force-output stream)
-		(format t "Got: ~A~%" (read-line stream))
-		(write-line "quit" stream)))
+(with-socket-stream (stream s)
+(write-line "Hello Socket World!" stream)
+(force-output stream)
+(format t "Got: ~A~%" (read-line stream))
+(write-line "quit" stream)))
 
 ;; Another server test - uses start-socket-server and streams
 (defun start-server-test2 (&optional (port 8000))
-	(with-server-socket (s :host "0.0.0.0" :port port)
-		(start-socket-server (s rs)
-			(let ((stream (make-socket-stream rs)))
-				(when (equal (read-line stream) "quit")
-					(return-from start-server-test2))
-				(write-line
-					(coerce (make-list 80 :initial-element #\Z) 'string)
-					stream)
-				(write-line
-					(coerce (make-list 80 :initial-element #\A) 'string)
-					stream)
-				(force-output stream)))))
+(with-server-socket (s :host "0.0.0.0" :port port)
+(start-socket-server (s rs)
+(let ((stream (make-socket-stream rs)))
+(when (equal (read-line stream) "quit")
+(return-from start-server-test2))
+(write-line
+(coerce (make-list 80 :initial-element #\Z) 'string)
+stream)
+(write-line
+(coerce (make-list 80 :initial-element #\A) 'string)
+stream)
+(force-output stream)))))
 (th:create-thread #'start-server-test2)
 
 ;; Use the server
 (with-client-socket (s :host "localhost" :port 8000)
-	(write-socket-line s "GO")
-	(format t "~A~%" (read-socket-line s))
-	(format t "~A~%" (read-socket-line s)))
+(write-socket-line s "GO")
+(format t "~A~%" (read-socket-line s))
+(format t "~A~%" (read-socket-line s)))
 
 ;; Use the server with streams
 (with-client-socket (s :host "localhost" :port 8000)
-	(with-socket-stream (stream s)
-		(write-line "GO" stream)
-		(force-output stream)
-		(format t "~A~%" (read-line stream))
-		(format t "~A~%" (read-line stream))))
+(with-socket-stream (stream s)
+(write-line "GO" stream)
+(force-output stream)
+(format t "~A~%" (read-line stream))
+(format t "~A~%" (read-line stream))))
 
 ;; Close the server
 (with-client-socket (s :host "localhost" :port 8000)
-	(write-socket-line s "quit"))
+(write-socket-line s "quit"))
 
 ;; Datagram Server test.
 (defun start-server-test3 (&optional (port 8001))
-    (with-server-socket (s :host "0.0.0.0" :port port :type :datagram)
-        (do () (()) (multiple-value-bind (string addr) (receive-from s)
-                          (format t "Datagram from ~A in server ~A. Received ~s~%" (getf addr :dotted) (socket-descriptor s) string) (force-output)
-                          (send-to s (format nil "Hello ~a." (getf addr :dotted)) :to addr)
-                          (when (equal string "quit") (return))))))
+(with-server-socket (s :host "0.0.0.0" :port port :type :datagram)
+(do () (()) (multiple-value-bind (string addr) (receive-from s)
+(format t "Datagram from ~A in server ~A. Received ~s~%" (getf addr :dotted) (socket-descriptor s) string) (force-output)
+(send-to s (format nil "Hello ~a." (getf addr :dotted)) :to addr)
+(when (equal string "quit") (return))))))
 (th:create-thread #'start-server-test3)
 
 ;; Use the datagram server.
 (with-client-socket (s :host "localhost" :port 8001 :type :datagram)
-    (send-to s "Sending out an SOS.")
-    (format t "Got: ~s~%" (receive-from s)) (force-output)
-    (send-to s "quit"))
+(send-to s "Sending out an SOS.")
+(format t "Got: ~s~%" (receive-from s)) (force-output)
+(send-to s "quit"))
 
 ;; Use IPv6
 (setq *ipv6* :only)
 
 ;;Example of reading from an HTTP server.
 (let ((s (make-client-socket :host "www.yahoo.com" :port 'http)))
-  (write-socket-line s "GET / HTTP/1.0")
-  (write-socket-line s "")
-  (loop as line = (read-socket-line s nil :eof)
-	  until (eq line :eof)
-	  do (format t "~A~%" line))
-  (close-socket s))
+(write-socket-line s "GET / HTTP/1.0")
+(write-socket-line s "")
+(loop as line = (read-socket-line s nil :eof)
+until (eq line :eof)
+do (format t "~A~%" line))
+(close-socket s))
 
 ;; Server test - uses start-socket-server, streams and IPv6.
 (defun start-server-test4 (&optional (port 8000))
-	(with-server-socket (s :host "::" :port port)
-		(start-socket-server (s rs)
-			(let ((stream (make-socket-stream rs)))
-				(when (equal (read-line stream) "quit")
-					(return-from start-server-test4))
-				(write-line
-					(coerce (make-list 80 :initial-element #\Z) 'string)
-					stream)
-				(write-line
-					(coerce (make-list 80 :initial-element #\A) 'string)
-					stream)
-				(force-output stream)))))
+(with-server-socket (s :host "::" :port port)
+(start-socket-server (s rs)
+(let ((stream (make-socket-stream rs)))
+(when (equal (read-line stream) "quit")
+(return-from start-server-test4))
+(write-line
+(coerce (make-list 80 :initial-element #\Z) 'string)
+stream)
+(write-line
+(coerce (make-list 80 :initial-element #\A) 'string)
+stream)
+(force-output stream)))))
 (th:create-thread #'start-server-test4)
 
 ;; Use the server with streams.
 (with-client-socket (s :host "localhost" :port 8000)
-	(with-socket-stream (stream s)
-		(write-line "GO" stream)
-		(force-output stream)
-		(format t "~A~%" (read-line stream))
-		(format t "~A~%" (read-line stream))))
+(with-socket-stream (stream s)
+(write-line "GO" stream)
+(force-output stream)
+(format t "~A~%" (read-line stream))
+(format t "~A~%" (read-line stream))))
 
 ;; Close the server.
 (with-client-socket (s :host "localhost" :port 8000)
-	(write-socket-line s "quit"))
+(write-socket-line s "quit"))
 
 |#

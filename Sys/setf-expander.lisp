@@ -44,18 +44,18 @@
   (do ((remaining key-list (cddr remaining)))
       ((endp remaining))
     (when (or
-                (eq keyword (car remaining))
-                (and (is-quoted-key (car remaining))
-                    (eq keyword (cadr (car remaining)))))
+           (eq keyword (car remaining))
+           (and (is-quoted-key (car remaining))
+                (eq keyword (cadr (car remaining)))))
       (return t))))
 
 (defun lookup-keyword (keyword key-list)
   (do ((remaining key-list (cddr remaining)))
       ((endp remaining))
     (when (or
-                (eq keyword (car remaining))
-                (and (is-quoted-key (car remaining))
-                    (eq keyword (cadr (car remaining)))))
+           (eq keyword (car remaining))
+           (and (is-quoted-key (car remaining))
+                (eq keyword (cadr (car remaining)))))
       (return (cadr remaining)))))
 ;;; VERIFY-KEYWORDS -- internal
 ;;;
@@ -74,12 +74,12 @@
 		(not (lookup-keyword :allow-other-keys key-list)))
 	   (values :unknown-keyword (list unknown-keyword valid-keys))
 	   (values nil nil)))
-      (setf key (car remaining))
+    (setf key (car remaining))
 
-      ;; kludge here--if the passed key is (QUOTE X) replace with X.
-      ;; This handles cases where the key name is being quoted.
-      (if (and (consp key) (eq (car key) 'quote))
-          (setf key (cadr key)))
+    ;; kludge here--if the passed key is (QUOTE X) replace with X.
+    ;; This handles cases where the key name is being quoted.
+    (if (and (consp key) (eq (car key) 'quote))
+        (setf key (cadr key)))
     (cond ((not (and (consp remaining) (listp (cdr remaining))))
 	   (return (values :dotted-list key-list)))
 	  ((null (cdr remaining))
@@ -96,28 +96,28 @@
 ;;; parsed body.
 ;;;
 (defun parse-defmacro (lambda-list arg-list-name code name error-kind
-				   &key (annonymousp nil)
-				   (doc-string-allowed t)
-				   ((:environment env-arg-name))
-				   (error-fun 'error))
+		       &key (annonymousp nil)
+			 (doc-string-allowed t)
+			 ((:environment env-arg-name))
+			 (error-fun 'error))
   "Returns as multiple-values a parsed body, any local-declarations that
    should be made where this body is inserted, and a doc-string if there is
    one."
   (multiple-value-bind (body declarations documentation)
-		       (parse-body code nil doc-string-allowed)
+      (parse-body code nil doc-string-allowed)
     (let* ((*arg-tests* ())
 	   (*user-lets* ())
 	   (*system-lets* ())
 	   (*ignorable-vars* ()))
       (multiple-value-bind
-	  (env-arg-used minimum maximum)
+	    (env-arg-used minimum maximum)
 	  (parse-defmacro-lambda-list lambda-list arg-list-name name
 				      error-kind error-fun (not annonymousp)
 				      nil env-arg-name)
 	(values
 	 `(let* ,(nreverse *system-lets*)
-	   ,@(when *ignorable-vars*
-	       `((declare (ignorable ,@*ignorable-vars*))))
+	    ,@(when *ignorable-vars*
+		`((declare (ignorable ,@*ignorable-vars*))))
 	    ,@*arg-tests*
 	    (let* ,(nreverse *user-lets*)
 	      ,@declarations
@@ -130,8 +130,8 @@
 
 
 (defun parse-defmacro-lambda-list
-       (lambda-list arg-list-name name error-kind error-fun
-		    &optional top-level env-illegal env-arg-name)
+    (lambda-list arg-list-name name error-kind error-fun
+     &optional top-level env-illegal env-arg-name)
   (let ((path (if top-level `(cdr ,arg-list-name) arg-list-name))
 	(now-processing :required)
 	(maximum 0)
@@ -147,7 +147,7 @@
 		 (when (eq (car list) '&whole) (return t)))
 	       (not (eq (car lambda-list) '&whole)))
       (cl::signal-program-error "&Whole must appear first in ~S lambda-list."
-                            error-kind))
+				error-kind))
     (do ((rest-of-args lambda-list (cdr rest-of-args)))
 	((atom rest-of-args)
 	 (cond ((null rest-of-args) nil)
@@ -169,12 +169,12 @@
 		      ;; compiler macro or not.
 		      (when (eq error-kind 'define-compiler-macro)
 			(push-let-binding arg-list-name arg-list-name
-			  t
-			  `(progn
-			    (not (and (listp ,arg-list-name)
-				  (eq 'funcall (car ,arg-list-name)))))
-			  `(progn
-			    (setf ,arg-list-name (cdr ,arg-list-name)))))
+					  t
+					  `(progn
+					     (not (and (listp ,arg-list-name)
+						       (eq 'funcall (car ,arg-list-name)))))
+					  `(progn
+					     (setf ,arg-list-name (cdr ,arg-list-name)))))
 		      (push-let-binding (car rest-of-args) arg-list-name nil))
 		     ((and (cdr rest-of-args) (consp (cadr rest-of-args)))
 		      (pop rest-of-args)
@@ -190,7 +190,7 @@
 	      ((eq var '&environment)
 	       (cond (env-illegal
 		      (cl::signal-program-error "&environment not valid with ~S."
-                                            error-kind))
+						error-kind))
 		     ((not top-level)
 		      (cl::signal-program-error
 		       "&environment only valid at top level of lambda-list.")))
@@ -211,28 +211,28 @@
 			    (consp (cadr rest-of-args))
 			    (symbolp (caadr rest-of-args)))
 		 (cl::signal-program-error "Invalid ~a" '&parse-body))
-		(setf rest-of-args (cdr rest-of-args))
-		(setf restp t)
-		(let ((body-name (caar rest-of-args))
-		      (declarations-name (cadar rest-of-args))
-		      (doc-string-name (caddar rest-of-args))
-		      (parse-body-values (gensym)))
-		  (push-let-binding
-		   parse-body-values
-		   `(multiple-value-list
-		     (parse-body ,path ,env-arg-name
-				 ,(not (null doc-string-name))))
-		   t)
-		  (setf env-arg-used t)
-		  (when body-name
-		    (push-let-binding body-name
-				      `(car ,parse-body-values) nil))
-		  (when declarations-name
-		    (push-let-binding declarations-name
-				      `(cadr ,parse-body-values) nil))
-		  (when doc-string-name
-		    (push-let-binding doc-string-name
-				      `(caddr ,parse-body-values) nil))))
+	       (setf rest-of-args (cdr rest-of-args))
+	       (setf restp t)
+	       (let ((body-name (caar rest-of-args))
+		     (declarations-name (cadar rest-of-args))
+		     (doc-string-name (caddar rest-of-args))
+		     (parse-body-values (gensym)))
+		 (push-let-binding
+		  parse-body-values
+		  `(multiple-value-list
+		    (parse-body ,path ,env-arg-name
+				,(not (null doc-string-name))))
+		  t)
+		 (setf env-arg-used t)
+		 (when body-name
+		   (push-let-binding body-name
+				     `(car ,parse-body-values) nil))
+		 (when declarations-name
+		   (push-let-binding declarations-name
+				     `(cadr ,parse-body-values) nil))
+		 (when doc-string-name
+		   (push-let-binding doc-string-name
+				     `(caddr ,parse-body-values) nil))))
 	      ;;
 	      ((member var '(&rest &body))
 	       (cond ((and (cddr rest-of-args)
@@ -248,7 +248,7 @@
 		      (let* ((destructuring-lambda-list (car rest-of-args))
 			     (sub (gensym "REST-SUBLIST")))
 			(push-sub-list-binding sub path destructuring-lambda-list
-			 name error-kind error-fun)
+					       name error-kind error-fun)
 			(parse-defmacro-lambda-list
 			 destructuring-lambda-list sub name error-kind error-fun)))
 		     (t
@@ -328,27 +328,27 @@
     ;; Generate code to check the number of arguments, unless dotted
     ;; in which case length will not work.
     (unless (eq restp :dotted)
-       (push `(unless (<= ,minimum
-			  (length (the list ,(if top-level
-						 `(cdr ,arg-list-name)
-					       arg-list-name)))
-			  ,@(unless restp
-				    (list maximum)))
-		      ,(let ((arg (if top-level
-				      `(cdr ,arg-list-name)
-				    arg-list-name)))
-			 (if (eq error-fun 'error)
-			     `(do-arg-count-error ',error-kind ',name ,arg
-						  ',lambda-list ,minimum
-						  ,(unless restp maximum))
-			   `(,error-fun 'defmacro-ll-arg-count-error
-				 :kind ',error-kind
-				 ,@(when name `(:name ',name))
-				 :argument ,arg
-				 :lambda-list ',lambda-list
-				 :minimum ,minimum
-				 ,@(unless restp `(:maximum ,maximum))))))
-	     *arg-tests*))
+      (push `(unless (<= ,minimum
+			 (length (the list ,(if top-level
+						`(cdr ,arg-list-name)
+						arg-list-name)))
+			 ,@(unless restp
+			     (list maximum)))
+	       ,(let ((arg (if top-level
+			       `(cdr ,arg-list-name)
+			       arg-list-name)))
+		  (if (eq error-fun 'error)
+		      `(do-arg-count-error ',error-kind ',name ,arg
+					   ',lambda-list ,minimum
+					   ,(unless restp maximum))
+		      `(,error-fun 'defmacro-ll-arg-count-error
+				   :kind ',error-kind
+				   ,@(when name `(:name ',name))
+				   :argument ,arg
+				   :lambda-list ',lambda-list
+				   :minimum ,minimum
+				   ,@(unless restp `(:maximum ,maximum))))))
+	    *arg-tests*))
     (when key-seen
       (let ((problem (gensym "KEY-PROBLEM-"))
 	    (info (gensym "INFO-")))
@@ -391,7 +391,7 @@
 	  *system-lets*)))
 
 (defun push-let-binding (variable path systemp &optional condition
-			 (init-form *default-default*))
+						 (init-form *default-default*))
   (let ((let-form (if condition
 		      `(,variable (if ,condition ,path ,init-form))
 		      `(,variable ,path))))
@@ -400,7 +400,7 @@
 	(push let-form *user-lets*))))
 
 (defun append-let-binding (variable path systemp &optional condition
-			 (init-form *default-default*))
+						   (init-form *default-default*))
   (let ((let-form (if condition
 		      `(,variable (if ,condition ,path ,init-form))
 		      `(,variable ,path))))
@@ -409,7 +409,7 @@
 	(setq *user-lets* (nconc *user-lets* (list let-form))))))
 
 (defun push-optional-binding (value-var init-form supplied-var condition path
-					name error-kind error-fun)
+			      name error-kind error-fun)
   (unless supplied-var
     (setf supplied-var (gensym "SUPLIEDP-")))
   (push-let-binding supplied-var condition t)
@@ -424,7 +424,7 @@
 	 (push-let-binding value-var path nil supplied-var init-form))
 	(t
 	 (cl::signal-program-error "Illegal optional variable name: ~S"
-	                       value-var))))
+				   value-var))))
 
 (defun make-keyword (symbol)
   "Takes a non-keyword symbol, symbol, and returns the corresponding keyword."
@@ -432,7 +432,7 @@
 
 (defun defmacro-error (problem kind name)
   (cl::signal-program-error "Illegal or ill-formed ~A argument in ~A~@[ ~S~]."
-                        problem kind name))
+                            problem kind name))
 ;;;; Conditions signaled at runtime by the resultant body.
 
 (define-condition defmacro-lambda-list-bind-error (error)
@@ -454,7 +454,7 @@
 	      (defmacro-lambda-list-bind-error-name condition))))
 
 (define-condition defmacro-bogus-sublist-error
-		  (defmacro-lambda-list-bind-error)
+    (defmacro-lambda-list-bind-error)
   ((object :reader defmacro-bogus-sublist-error-object :initarg :object)
    (lambda-list :reader defmacro-bogus-sublist-error-lambda-list
 		:initarg :lambda-list))
@@ -496,7 +496,7 @@
 
 
 (define-condition defmacro-ll-broken-key-list-error
-		  (defmacro-lambda-list-bind-error)
+    (defmacro-lambda-list-bind-error)
   ((problem :reader defmacro-ll-broken-key-list-error-problem
 	    :initarg :problem)
    (info :reader defmacro-ll-broken-key-list-error-info :initarg :info))
@@ -553,27 +553,27 @@
 ;;; Common Lisp DEFINE-SETF-EXPANDER macro.
 ;;;
 (defmacro define-setf-expander (access-fn lambda-list &body body)
-    "Syntax like DEFMACRO, but creates a Setf-Expansion generator.  The body
+  "Syntax like DEFMACRO, but creates a Setf-Expansion generator.  The body
      must be a form that returns the five magical values."
-    (unless (symbolp access-fn)
-        (cl::signal-program-error "~S -- Access-function name not a symbol in DEFINE-SETF-EXPANDER."
-            access-fn))
-    (let ((whole (gensym "WHOLE-"))
-          (environment (gensym "ENV-"))
-          (name (make-symbol (concatenate 'string "(SETF " (symbol-name access-fn) ")"))))
-        (multiple-value-bind (body local-decs doc)
-            (parse-defmacro lambda-list whole body access-fn
-                'define-setf-expander
-                :environment environment)
-            `(eval-when (:compile-toplevel :load-toplevel :execute)
-                (remprop ',access-fn 'cl::defstruct-writer)
-                (defun ,name (,whole ,environment)
-                    (declare (ignore ,environment))
-                    ,@local-decs
-                    ,body)
-                (cl::register-setf-expander-function ',access-fn ',name)
-                (setf (documentation ',access-fn 'setf) ',doc)
-                ',access-fn))))
+  (unless (symbolp access-fn)
+    (cl::signal-program-error "~S -- Access-function name not a symbol in DEFINE-SETF-EXPANDER."
+			      access-fn))
+  (let ((whole (gensym "WHOLE-"))
+        (environment (gensym "ENV-"))
+        (name (make-symbol (concatenate 'string "(SETF " (symbol-name access-fn) ")"))))
+    (multiple-value-bind (body local-decs doc)
+        (parse-defmacro lambda-list whole body access-fn
+			'define-setf-expander
+			:environment environment)
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
+         (remprop ',access-fn 'cl::defstruct-writer)
+         (defun ,name (,whole ,environment)
+           (declare (ignore ,environment))
+           ,@local-decs
+           ,body)
+         (cl::register-setf-expander-function ',access-fn ',name)
+         (setf (documentation ',access-fn 'setf) ',doc)
+         ',access-fn))))
 
 ;;;; The Collect macro:
 
@@ -586,8 +586,8 @@
 ;;;
 (defun collect-normal-expander (n-value fun forms)
   `(progn
-    ,@(mapcar #'(lambda (form) `(setq ,n-value (,fun ,form ,n-value))) forms)
-    ,n-value))
+     ,@(mapcar #'(lambda (form) `(setq ,n-value (,fun ,form ,n-value))) forms)
+     ,n-value))
 
 ;;; Collect-List-Expander  --  Internal
 ;;;
@@ -597,15 +597,15 @@
 (defun collect-list-expander (n-value n-tail forms)
   (let ((n-res (gensym)))
     `(progn
-      ,@(mapcar #'(lambda (form)
-		    `(let ((,n-res (cons ,form nil)))
-		       (cond (,n-tail
-			      (setf (cdr ,n-tail) ,n-res)
-			      (setq ,n-tail ,n-res))
-			     (t
-			      (setq ,n-tail ,n-res  ,n-value ,n-res)))))
-		forms)
-      ,n-value)))
+       ,@(mapcar #'(lambda (form)
+		     `(let ((,n-res (cons ,form nil)))
+			(cond (,n-tail
+			       (setf (cdr ,n-tail) ,n-res)
+			       (setq ,n-tail ,n-res))
+			      (t
+			       (setq ,n-tail ,n-res  ,n-value ,n-res)))))
+		 forms)
+       ,n-value)))
 
 
 ;;; Collect  --  Public
@@ -656,74 +656,74 @@
     `(macrolet ,macros (let* ,(nreverse binds) ,@body))))
 
 (defun expand-short-defsetf-form (func args)
-    `(eval-when (:load-toplevel :compile-toplevel :execute)
-        (let ()
-            (cl::remove-struct-print ',func)
-            (cl::register-setf-function ',func ',(car args) t)
-            (setf (documentation ',func 'setf)
-                ,(if (and (>= (length args) 2) (stringp (second args)))
-                    (second args)
-                    nil))
-            ',func)))
+  `(eval-when (:load-toplevel :compile-toplevel :execute)
+     (let ()
+       (cl::remove-struct-print ',func)
+       (cl::register-setf-function ',func ',(car args) t)
+       (setf (documentation ',func 'setf)
+             ,(if (and (>= (length args) 2) (stringp (second args)))
+                  (second args)
+                  nil))
+       ',func)))
 
 (defun expand-long-defsetf-form (func set-func-name set-func-def doc)
-    `(eval-when (:load-toplevel :compile-toplevel :execute)
-        (let ()
-            (cl::remove-struct-print ',func)
-            ,set-func-def
-            (cl::register-setf-function ',func ',set-func-name (list t))
-            (setf (documentation ',func 'setf) ,doc)
-            ',func)))
+  `(eval-when (:load-toplevel :compile-toplevel :execute)
+     (let ()
+       (cl::remove-struct-print ',func)
+       ,set-func-def
+       (cl::register-setf-function ',func ',set-func-name (list t))
+       (setf (documentation ',func 'setf) ,doc)
+       ',func)))
 
 (defun %defsetf (orig-access-form num-store-vars expander)
-    (collect ((subforms) (subform-vars) (subform-exprs) (store-vars))
-        (dolist (subform (cdr orig-access-form))
-            (if (constantp subform)
-                (subforms subform)
-                (let ((var (gensym)))
-                    (subforms var)
-                    (subform-vars var)
-                    (subform-exprs subform))))
-        (dotimes (i num-store-vars)
-            (store-vars (gensym)))
-        (values (subform-vars)
-            (subform-exprs)
-            (store-vars)
-            (funcall expander (cons (subforms) (store-vars)))
-            `(,(car orig-access-form) ,@(subforms)))))
+  (collect ((subforms) (subform-vars) (subform-exprs) (store-vars))
+           (dolist (subform (cdr orig-access-form))
+             (if (constantp subform)
+                 (subforms subform)
+                 (let ((var (gensym)))
+                   (subforms var)
+                   (subform-vars var)
+                   (subform-exprs subform))))
+           (dotimes (i num-store-vars)
+             (store-vars (gensym)))
+           (values (subform-vars)
+		   (subform-exprs)
+		   (store-vars)
+		   (funcall expander (cons (subforms) (store-vars)))
+		   `(,(car orig-access-form) ,@(subforms)))))
 
 (defmacro defsetf (access-fn &rest rest)
   "Associates a SETF update function or macro with the specified access
    function or macro.  The format is complex.  See the manual for
    details."
-    (if (not (listp (car rest)))
-        ;; short form
-        (expand-short-defsetf-form access-fn rest)
+  (if (not (listp (car rest)))
+      ;; short form
+      (expand-short-defsetf-form access-fn rest)
 
-        (if (and (cdr rest) (listp (cadr rest)))
-            ;; long form
-            (destructuring-bind
+      (if (and (cdr rest) (listp (cadr rest)))
+          ;; long form
+          (destructuring-bind
                 (lambda-list (&rest store-variables) &body body)
-                rest
-                (let ((arglist-var (gensym "ARGS-"))
-                      (access-form-var (gensym "ACCESS-FORM-"))
-                      (env-var (gensym "ENVIRONMENT-"))
-                      (name (make-symbol (concatenate 'string "(SETF " (symbol-name access-fn) ")"))))
-                    (multiple-value-bind
-                        (body local-decs doc)
-                        (parse-defmacro
-                            `(,lambda-list ,@store-variables)
-                            arglist-var body access-fn 'defsetf
-                            :annonymousp t)
-                        (expand-long-defsetf-form
-                            access-fn
-                            name
-                            `(defun ,name (,access-form-var ,env-var)
-                                (declare (ignore ,env-var))
-                                (%defsetf ,access-form-var ,(length store-variables)
-                                    #'(lambda (,arglist-var) ,@local-decs (block ,access-fn ,body))))
-                            doc))))
-            (error "Ill-formed DEFSETF for ~S." access-fn))))
+              rest
+            (let ((arglist-var (gensym "ARGS-"))
+                  (access-form-var (gensym "ACCESS-FORM-"))
+                  (env-var (gensym "ENVIRONMENT-"))
+                  (name (make-symbol (concatenate 'string "(SETF " (symbol-name access-fn) ")"))))
+              (multiple-value-bind
+                    (body local-decs doc)
+                  (parse-defmacro
+                   `(,lambda-list ,@store-variables)
+                   arglist-var body access-fn 'defsetf
+                   :annonymousp t)
+                (expand-long-defsetf-form
+                 access-fn
+                 name
+                 `(defun ,name (,access-form-var ,env-var)
+                    (declare (ignore ,env-var))
+                    (%defsetf ,access-form-var ,(length store-variables)
+                              #'(lambda (,arglist-var) ,@local-decs (block ,access-fn ,body))))
+                 doc))))
+          (error "Ill-formed DEFSETF for ~S." access-fn))))
 
 ;;;
 ;;; Common Lisp PUSH macro.
@@ -732,31 +732,31 @@
   "Takes an object and a location holding a list.  Conses the object onto
   the list, returning the modified list.  OBJ is evaluated before PLACE."
 
-    (let ((expanded-place (macroexpand place env)))
+  (let ((expanded-place (macroexpand place env)))
 
-        ;; This special case for place being a symbol isn't strictly needed.
-        ;; It's so we can do push (and pushnew) with a kernel.core.
-        (if (and (symbolp place) (eq place expanded-place))
-            `(setq ,place (cons ,obj ,place))
-            (multiple-value-bind (dummies vals newval setter getter)
-                (get-setf-expansion expanded-place env)
-                (cond
-                    ((cdr newval)
-                        ;; Handle multiple values
-                     (let ((g (mapcar #'(lambda (x) (declare (ignore x))(gensym)) (rest obj))))
-                            `(multiple-value-bind ,g ,obj
-                                (let* (,@(mapcar #'list dummies vals))
-                                    (multiple-value-bind ,newval
-                                        (values ,@(mapcar #'(lambda (a b) (list 'cons a b))
-                                                g (rest getter)))
-                                        ,setter)))))
-                    (t
-                        ;; A single value
-                        (let ((g (gensym)))
-                            `(let* ((,g ,obj)
-                                    ,@(mapcar #'list dummies vals)
-                                    (,@newval (cons ,g ,getter)))
-                                ,setter))))))))
+    ;; This special case for place being a symbol isn't strictly needed.
+    ;; It's so we can do push (and pushnew) with a kernel.core.
+    (if (and (symbolp place) (eq place expanded-place))
+        `(setq ,place (cons ,obj ,place))
+        (multiple-value-bind (dummies vals newval setter getter)
+            (get-setf-expansion expanded-place env)
+          (cond
+            ((cdr newval)
+             ;; Handle multiple values
+             (let ((g (mapcar #'(lambda (x) (declare (ignore x))(gensym)) (rest obj))))
+               `(multiple-value-bind ,g ,obj
+                  (let* (,@(mapcar #'list dummies vals))
+                    (multiple-value-bind ,newval
+                        (values ,@(mapcar #'(lambda (a b) (list 'cons a b))
+                                          g (rest getter)))
+                      ,setter)))))
+            (t
+             ;; A single value
+             (let ((g (gensym)))
+               `(let* ((,g ,obj)
+                       ,@(mapcar #'list dummies vals)
+                       (,@newval (cons ,g ,getter)))
+                  ,setter))))))))
 
 ;;;
 ;;;  Common Lisp SUBSEQ function

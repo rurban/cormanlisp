@@ -11,7 +11,7 @@
   "Time interval in seconds over which we measure performance.")
 
 (defun make-double-float-array (size &optional (initial 0.0d0))
-   (make-array size :element-type 'double-float :initial-element initial))
+  (make-array size :element-type 'double-float :initial-element initial))
 
 (defun ddot (x y n)
   (declare (type fixnum n)

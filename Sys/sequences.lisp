@@ -135,32 +135,32 @@
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (defun position (item sequence
-		      &key from-end (test #'eql) test-not (start 0) end key)
-	(%funcall-with-elements-and-indices
-		(if test-not
-			#'(lambda (elt orig-elt index)
-				(declare (ignore orig-elt))
-				(unless (funcall test-not item elt)
-					(return-from position index)))
-			#'(lambda (elt orig-elt index)
-				(declare (ignore orig-elt))
-				(when (funcall test item elt)
-					(return-from position index))))
-		sequence
-		from-end start end key))
+		 &key from-end (test #'eql) test-not (start 0) end key)
+  (%funcall-with-elements-and-indices
+   (if test-not
+       #'(lambda (elt orig-elt index)
+	   (declare (ignore orig-elt))
+	   (unless (funcall test-not item elt)
+	     (return-from position index)))
+       #'(lambda (elt orig-elt index)
+	   (declare (ignore orig-elt))
+	   (when (funcall test item elt)
+	     (return-from position index))))
+   sequence
+   from-end start end key))
 
 (defun position-if (test sequence
-			 &key from-end (start 0) end key)
+		    &key from-end (start 0) end key)
   (%funcall-with-elements-and-indices
    #'(lambda (elt orig-elt index)
-			(declare (ignore orig-elt))
+       (declare (ignore orig-elt))
        (when (funcall test elt)
 	 (return-from position-if index)))
    sequence
    from-end start end key))
 
 (defun position-if-not (test sequence
-			     &key from-end (start 0) end key)
+			&key from-end (start 0) end key)
   (position-if #'(lambda (elt) (not (funcall test elt)))
 	       sequence
 	       :from-end from-end
@@ -176,35 +176,35 @@
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (defun find (item sequence
-		&key from-end (test #'eql) test-not (start 0) end key)
-	(%funcall-with-elements-and-indices
-		(if test-not
-			#'(lambda (elt orig-elt index)
-				(declare (ignore index))
-				(unless (funcall test-not item elt)
-					(return-from find orig-elt)))
-			#'(lambda (elt orig-elt index)
-				(declare (ignore index))
-				(when (funcall test item elt)
-					(return-from find orig-elt))))
-		sequence
-		from-end start end key))
+	     &key from-end (test #'eql) test-not (start 0) end key)
+  (%funcall-with-elements-and-indices
+   (if test-not
+       #'(lambda (elt orig-elt index)
+	   (declare (ignore index))
+	   (unless (funcall test-not item elt)
+	     (return-from find orig-elt)))
+       #'(lambda (elt orig-elt index)
+	   (declare (ignore index))
+	   (when (funcall test item elt)
+	     (return-from find orig-elt))))
+   sequence
+   from-end start end key))
 
 (defun find-if (test sequence
 		&key from-end (start 0) end key)
   (%funcall-with-elements-and-indices
    #'(lambda (elt orig-elt index)
-			(declare (ignore index))
+       (declare (ignore index))
        (when (funcall test elt)
 	 (return-from find-if orig-elt)))
    sequence
    from-end start end key))
 
 (defun find-if-not (test sequence
-		&key from-end (start 0) end key)
+		    &key from-end (start 0) end key)
   (%funcall-with-elements-and-indices
    #'(lambda (elt orig-elt index)
-			(declare (ignore index))
+       (declare (ignore index))
        (unless (funcall test elt)
 	 (return-from find-if-not orig-elt)))
    sequence
@@ -218,16 +218,16 @@
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (defun count (item sequence
-		   &key from-end (test #'eql) test-not (start 0) end key)
+	      &key from-end (test #'eql) test-not (start 0) end key)
   (let ((count 0))
     (%funcall-with-elements-and-indices
      (if test-not
 	 #'(lambda (elt orig-elt index)
-					(declare (ignore orig-elt index))
+	     (declare (ignore orig-elt index))
 	     (unless (funcall test-not item elt)
 	       (incf count)))
 	 #'(lambda (elt orig-elt index)
-					(declare (ignore orig-elt index))
+	     (declare (ignore orig-elt index))
 	     (when (funcall test item elt)
 	       (incf count))))
      sequence
@@ -235,11 +235,11 @@
     count))
 
 (defun count-if (test sequence
-		&key from-end (start 0) end key)
+		 &key from-end (start 0) end key)
   (let ((count 0))
     (%funcall-with-elements-and-indices
      #'(lambda (elt orig-elt index)
-					(declare (ignore orig-elt index))
+	 (declare (ignore orig-elt index))
 	 (when (funcall test elt)
 	   (incf count)))
      sequence
@@ -247,11 +247,11 @@
     count))
 
 (defun count-if-not (test sequence
-		&key from-end (start 0) end key)
+		     &key from-end (start 0) end key)
   (let ((count 0))
     (%funcall-with-elements-and-indices
      #'(lambda (elt orig-elt index)
-				(declare (ignore orig-elt index))
+	 (declare (ignore orig-elt index))
 	 (unless (funcall test elt)
 	   (incf count)))
      sequence
@@ -286,7 +286,7 @@
 (defun replace (sequence1 sequence2 &key (start1 0) end1 (start2 0) end2)
   (let (length1
 	length2)
-		(declare (ignore length1 length2))
+    (declare (ignore length1 length2))
     (multiple-value-setq (length1 length2 end1 end2)
       (validate-2-bounding-indices sequence1 sequence2 start1 end1 start2 end2))
     ;; Care should be taken to properly copy between the same
@@ -311,11 +311,11 @@
 ;;;  :from-end is true.
 
 (defun mismatch (sequence1 sequence2
-			   &key from-end
-			   (test #'eql) test-not
-			   key
-			   (start1 0) (start2 0)
-			   end1 end2)
+		 &key from-end
+		   (test #'eql) test-not
+		   key
+		   (start1 0) (start2 0)
+		   end1 end2)
   (when test-not
     (setq test #'(lambda (x y) (not (funcall test-not x y)))))
   (let (length1
@@ -404,11 +404,11 @@
 
 (defun search (sequence1 sequence2
 	       &key (from-end nil)
-			 (test #'eql)
-			 test-not
-			 key
-			 (start1 0) (start2 0)
-			 end1 end2)
+		 (test #'eql)
+		 test-not
+		 key
+		 (start1 0) (start2 0)
+		 end1 end2)
   (if test-not (setq test #'(lambda (x y) (not (funcall test-not x y)))))
   (let (length1
 	length2
@@ -434,8 +434,8 @@
 		  (return-from try-match nil)))
 	      ;; pattern match loop complete, we've got a match
 	      (return-from search (if from-end
-				    (- end2 (- end1 start1) si)
-				    (+ start2 si))))
+				      (- end2 (- end1 start1) si)
+				      (+ start2 si))))
 	    ;; returned from try-match - no match at SI
 	    (funcall pattern-resetter)
 	    (funcall seq-advancer)))))))
@@ -488,31 +488,31 @@
 	      (nreverse result))))))
 
 (defun remove-if (test sequence
-		       &key (from-end nil)
-		       (start 0)
-		       end
-		       (count nil)
-		       (key nil))
+		  &key (from-end nil)
+		    (start 0)
+		    end
+		    (count nil)
+		    (key nil))
   (%remove-if test sequence start end from-end count key))
 
 (defun remove-if-not (test sequence
-			   &key (from-end nil)
-			   (start 0)
-			   end
-			   (count nil)
-			   (key nil))
+		      &key (from-end nil)
+			(start 0)
+			end
+			(count nil)
+			(key nil))
   (%remove-if #'(lambda (elt) (not (funcall test elt)))
 	      sequence start end
 	      from-end count key))
 
 (defun remove (item sequence
-		    &key (from-end nil)
-		    (test #'eql)
-		    (test-not nil)
-		    (start 0)
-		    (end nil)
-		    (count nil)
-		    (key nil))
+	       &key (from-end nil)
+		 (test #'eql)
+		 (test-not nil)
+		 (start 0)
+		 (end nil)
+		 (count nil)
+		 (key nil))
   (when test-not
     (setq test #'(lambda (a b) (not (funcall test-not a b)))))
   (%remove-if #'(lambda (elt) (funcall test item elt))
@@ -528,7 +528,7 @@
 
 (defun %delete-if (test list start end count key)
   (let (length)
-		(declare (ignore length))
+    (declare (ignore length))
     (multiple-value-setq (length end)
       (validate-bounding-indices list start end))
     (let ((predicate (if key
@@ -569,14 +569,14 @@
 		     count key))))
 
 (defun delete-if (test sequence
-		       &key (start 0) end from-end count key)
+		  &key (start 0) end from-end count key)
   (cond ((or (vectorp sequence) (and from-end count))
 	 (%remove-if test sequence start end from-end count key))
 	(t
 	 (%delete-if test sequence start end count key))))
 
 (defun delete-if-not (test sequence
-			   &key (start 0) end from-end count key)
+		      &key (start 0) end from-end count key)
   (cond ((or (vectorp sequence) (and from-end count))
 	 (%remove-if #'(lambda (elt) (not (funcall test elt)))
 		     sequence start end from-end count key))
@@ -828,38 +828,38 @@
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (pl:defasm nreverse-list (list)
-	{
-		push	ebp
-		mov		ebp, esp
-		push	ebx
-		cmp 	ecx, 1
-		jz 		short :t1
-		callp 	_wrong-number-of-args-error
-	:t1
-		mov		eax, [esi]		;eax = nil
-		mov		ebx, [ebp + ARGS_OFFSET]
-		mov		edx, ebx
-		and		edx, 7
-		cmp		edx, cons-tag
-		jne		short :exit		;if no elements, just return the list
-		mov		ecx, [ebx]		;eax = prev, ebx = curr, ecx = next
-	:loop
-		mov		[ebx], eax		;CDR(curr) = prev
-		mov		edx, ecx		;(if (not (consp next)) (go exit))
-		and		edx, 7
-		cmp		edx, cons-tag
-		jne		short :exit
-		mov		eax, ebx		;prev = curr		;
-		mov		ebx, ecx		;curr = next
-		mov		ecx, [ecx]		;next = CDR(next)
-		jmp		short :loop
-	:exit
-		mov		eax, ebx
-		mov		ecx, 1
-		pop		ebx
-		pop		ebp
-		ret
-	})
+  {
+  push	ebp
+  mov		ebp, esp
+  push	ebx
+  cmp 	ecx, 1
+  jz 		short :t1
+  callp 	_wrong-number-of-args-error
+  :t1
+  mov		eax, [esi]		;eax = nil
+  mov		ebx, [ebp + ARGS_OFFSET]
+  mov		edx, ebx
+  and		edx, 7
+  cmp		edx, cons-tag
+  jne		short :exit		;if no elements, just return the list
+  mov		ecx, [ebx]		;eax = prev, ebx = curr, ecx = next
+  :loop
+  mov		[ebx], eax		;CDR(curr) = prev
+  mov		edx, ecx		;(if (not (consp next)) (go exit))
+  and		edx, 7
+  cmp		edx, cons-tag
+  jne		short :exit
+  mov		eax, ebx		;prev = curr		;
+  mov		ebx, ecx		;curr = next
+  mov		ecx, [ecx]		;next = CDR(next)
+  jmp		short :loop
+  :exit
+  mov		eax, ebx
+  mov		ecx, 1
+  pop		ebx
+  pop		ebp
+  ret
+  })
 
 (defun nreverse (x)
   (cond ((listp x)(cl::nreverse-list x))
@@ -941,8 +941,8 @@
 	      (nreverse result))))))
 
 (defun substitute (newitem olditem sequence
-			   &key (test #'eql) test-not
-			        from-end (start 0) end count key)
+		   &key (test #'eql) test-not
+		     from-end (start 0) end count key)
   (when test-not
     (setq test #'(lambda (x y) (not (funcall test-not x y)))))
   (%substitute-if newitem
@@ -951,11 +951,11 @@
 		  start end from-end count key))
 
 (defun substitute-if (newitem test sequence
-			      &key from-end (start 0) end count key)
+		      &key from-end (start 0) end count key)
   (%substitute-if newitem test sequence start end from-end count key))
 
 (defun substitute-if-not (newitem test sequence
-				  &key from-end (start 0) end count key)
+			  &key from-end (start 0) end count key)
   (%substitute-if newitem
 		  #'(lambda (elt) (not (funcall test elt)))
 		  sequence
@@ -992,9 +992,9 @@
       (%substitute-if newitem test sequence start end from-end count key)
       (let (length
 	    (predicate (if key
-			 #'(lambda (elt) (funcall test (funcall key elt)))
-			 test)))
-			(declare (ignore length))
+			   #'(lambda (elt) (funcall test (funcall key elt)))
+			   test)))
+	(declare (ignore length))
 	(multiple-value-setq (length end)
 	  (validate-bounding-indices sequence start end))
 	(if (vectorp sequence)
@@ -1003,8 +1003,8 @@
 	sequence)))
 
 (defun nsubstitute (newitem olditem sequence
-			   &key (test #'eql) test-not
-			        from-end (start 0) end count key)
+		    &key (test #'eql) test-not
+		      from-end (start 0) end count key)
   (when test-not
     (setq test #'(lambda (x y) (not (funcall test-not x y)))))
   (%nsubstitute-if newitem
@@ -1013,11 +1013,11 @@
 		   start end from-end count key))
 
 (defun nsubstitute-if (newitem test sequence
-			      &key from-end (start 0) end count key)
+		       &key from-end (start 0) end count key)
   (%nsubstitute-if newitem test sequence start end from-end count key))
 
 (defun nsubstitute-if-not (newitem test sequence
-				  &key from-end (start 0) end count key)
+			   &key from-end (start 0) end count key)
   (%nsubstitute-if newitem
 		   #'(lambda (elt) (not (funcall test elt)))
 		   sequence
@@ -1028,55 +1028,55 @@
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (defun reduce (function sequence
-						&key (key #'identity)
-						from-end
-						(start 0)
-						end
-						(initial-value nil initial-value-present-p))
+	       &key (key #'identity)
+		 from-end
+		 (start 0)
+		 end
+		 (initial-value nil initial-value-present-p))
   (let (length)
     (multiple-value-setq (length end)
       (validate-bounding-indices sequence start end))
     (let* ((subseq-length (- end start))
-		   (reduce-steps (if initial-value-present-p
-							 subseq-length
-							 (1- subseq-length)))
-		   (canonical-fun (if from-end
-							  #'(lambda (a b) (funcall function b a))
-							  function)))
+	   (reduce-steps (if initial-value-present-p
+			     subseq-length
+			     (1- subseq-length)))
+	   (canonical-fun (if from-end
+			      #'(lambda (a b) (funcall function b a))
+			      function)))
       (cond ((= 0 subseq-length)
-			 (if initial-value-present-p
-				 initial-value
-				 (funcall function)))
-			((= 1 subseq-length)
-			 (let ((elt (elt sequence start)))
-			   (if initial-value-present-p
-				   (funcall canonical-fun initial-value (funcall key elt))
-				   (funcall key elt))))
-			((listp sequence)
-			 (let* ((sublist (if from-end
-								 (nthcdr (- length end) (reverse sequence))
-								 (nthcdr start sequence)))
-					(value (if initial-value-present-p
-							   initial-value
-							   (funcall key (pop sublist)))))
-			   (dotimes (s reduce-steps value)
-				 (setq value (funcall canonical-fun
-									  value
-									  (funcall key (pop sublist)))))))
-			((vectorp sequence)
-			 (let* ((step (if from-end -1 1))
-					(index (if from-end (1- end) start))
-					(value (if initial-value-present-p
-							   initial-value
-							   (prog1 (funcall key (aref sequence index))
-								 (setq index (+ index step))))))
-			   (dotimes (s reduce-steps value)
-				 (setq value (funcall canonical-fun
-									  value
-									  (funcall key (aref sequence index))))
-				 (setq index (+ index step)))))
-			(t
-			 (error "Not a sequence: ~S" sequence))))))
+	     (if initial-value-present-p
+		 initial-value
+		 (funcall function)))
+	    ((= 1 subseq-length)
+	     (let ((elt (elt sequence start)))
+	       (if initial-value-present-p
+		   (funcall canonical-fun initial-value (funcall key elt))
+		   (funcall key elt))))
+	    ((listp sequence)
+	     (let* ((sublist (if from-end
+				 (nthcdr (- length end) (reverse sequence))
+				 (nthcdr start sequence)))
+		    (value (if initial-value-present-p
+			       initial-value
+			       (funcall key (pop sublist)))))
+	       (dotimes (s reduce-steps value)
+		 (setq value (funcall canonical-fun
+				      value
+				      (funcall key (pop sublist)))))))
+	    ((vectorp sequence)
+	     (let* ((step (if from-end -1 1))
+		    (index (if from-end (1- end) start))
+		    (value (if initial-value-present-p
+			       initial-value
+			       (prog1 (funcall key (aref sequence index))
+				 (setq index (+ index step))))))
+	       (dotimes (s reduce-steps value)
+		 (setq value (funcall canonical-fun
+				      value
+				      (funcall key (aref sequence index))))
+		 (setq index (+ index step)))))
+	    (t
+	     (error "Not a sequence: ~S" sequence))))))
 
 ;;; RGC  Redefining this here, because the earlier loaded version
 ;;; had an error. Not sure why...
@@ -1096,19 +1096,19 @@
 ;;;  Common Lisp (SETF SUBSEQ) function
 ;;;
 (defun (setf subseq) (value sequence start &optional end)
-	(unless (sequencep value)
-		(error "Not a sequence: ~S" value))
-	(let* ((length (length sequence))
-		   (value-length (length value))
-		   (end (min (or end length) (+ value-length start) length))
-		   (elements (- end start)))
-		(unless (<= 0 start end)
-			(error "Invalid START = ~S, END = ~S arguments" start end))
-		(if (vectorp sequence)
-			(dotimes (i elements)
-				(setf (elt sequence (+ i start)) (elt value i)))
-			(let ((x (nthcdr start sequence)))
-				(dotimes (i elements)
-					(setf (car x) (elt value i))
-					(setq x (cdr x))))))
-	  value)
+  (unless (sequencep value)
+    (error "Not a sequence: ~S" value))
+  (let* ((length (length sequence))
+	 (value-length (length value))
+	 (end (min (or end length) (+ value-length start) length))
+	 (elements (- end start)))
+    (unless (<= 0 start end)
+      (error "Invalid START = ~S, END = ~S arguments" start end))
+    (if (vectorp sequence)
+	(dotimes (i elements)
+	  (setf (elt sequence (+ i start)) (elt value i)))
+	(let ((x (nthcdr start sequence)))
+	  (dotimes (i elements)
+	    (setf (car x) (elt value i))
+	    (setq x (cdr x))))))
+  value)

@@ -29,15 +29,15 @@
 ;;;;
 
 (defpackage :SHA (:use :CL)
-  (:export
-   ;; low-level types and functions
-   #:sha1-regs #:initial-sha1-regs #:sha1regs-digest #:expand-block
-   #:update-sha1-block #:fill-block #:fill-block-ub8 #:fill-block-char
-   ;; mid-level types and functions
-   #:sha1-state #:sha1-state-p #:make-sha1-state
-   #:update-sha1-state #:finalize-sha1-state
-   ;; high-level functions
-   #:sha1sum-sequence #:sha1sum-stream #:sha1sum-file))
+	    (:export
+	     ;; low-level types and functions
+	     #:sha1-regs #:initial-sha1-regs #:sha1regs-digest #:expand-block
+	     #:update-sha1-block #:fill-block #:fill-block-ub8 #:fill-block-char
+	     ;; mid-level types and functions
+	     #:sha1-state #:sha1-state-p #:make-sha1-state
+	     #:update-sha1-state #:finalize-sha1-state
+	     ;; high-level functions
+	     #:sha1sum-sequence #:sha1sum-stream #:sha1sum-file))
 
 (in-package :sha)
 (provide :sha)

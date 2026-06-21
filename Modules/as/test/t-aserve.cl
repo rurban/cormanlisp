@@ -42,7 +42,7 @@
 
 (in-package :net.aserve.test)
 
-; set to nil before loading the test to prevent the test from auto-running
+					; set to nil before loading the test to prevent the test from auto-running
 (defvar user::*do-aserve-test* t)
 
 (defun test-aserve ()
@@ -55,23 +55,23 @@
     (let ((port (start-aserve-running)))
       (format t "server started on port ~d~%" port)
       (unwind-protect
-	  (progn
-	    (test-publish-file port)
-	    (test-publish-computed port)
-	    (test-authorization port)
-	    (test-encoding)
-	    (test-forms port)
-	    (test-client port)
-	    )
+	   (progn
+	     (test-publish-file port)
+	     (test-publish-computed port)
+	     (test-authorization port)
+	     (test-encoding)
+	     (test-forms port)
+	     (test-client port)
+	     )
 	(stop-aserve-running))))
   (if* (or (> util.test::*test-errors* 0)
 	   (> util.test::*test-successes* 0)
 	   (> util.test::*test-unexpected-failures* 0))
-     then (format t "~%Test information from other threads:~%")
-	  (format t "Errors:    ~d~%" util.test::*test-errors*)
-	  (format t "Successes: ~d~%~%" util.test::*test-successes*)
-	  (format t "Unexpected failures: ~d~%"
-		  util.test::*test-unexpected-failures*)))
+       then (format t "~%Test information from other threads:~%")
+       (format t "Errors:    ~d~%" util.test::*test-errors*)
+       (format t "Successes: ~d~%~%" util.test::*test-successes*)
+       (format t "Unexpected failures: ~d~%"
+	       util.test::*test-unexpected-failures*)))
 
 
 
@@ -96,7 +96,7 @@
        (declare (ignore ,v1))
        ,v2)))
 
-;-------- publish-file tests
+					;-------- publish-file tests
 
 (defvar *dummy-file-value* nil)
 (defvar *dummy-file-name*  "aservetest.xx")
@@ -110,14 +110,14 @@
     (dotimes (i length)
       (write-char (code-char (+ #.(char-code #\a) (mod i 26))) strp)
       (if* (zerop (mod (1+ i) line-length))
-	 then ; newlines cause a problem due to dos/unix differences.
-	      ; so let's just use space
-	      (write-char #\space strp)))
+	   then ; newlines cause a problem due to dos/unix differences.
+					; so let's just use space
+	   (write-char #\space strp)))
     (setq result (get-output-stream-string strp))
     (if* name
-       then (with-open-file (p name :direction :output
-			     :if-exists :supersede)
-	      (write-sequence result p)))
+	 then (with-open-file (p name :direction :output
+				 :if-exists :supersede)
+		(write-sequence result p)))
 
     result))
 
@@ -158,10 +158,10 @@
 		  (cdr (assoc "content-type" headers :test #'equal))
 		  :test #'equal)
 	    #+ignore (if* (eq protocol :http/1.1)
-			then (test "chunked"
-				   (cdr (assoc "transfer-encoding" headers
-					       :test #'equal))
-				   :test #'equalp))
+			  then (test "chunked"
+				     (cdr (assoc "transfer-encoding" headers
+						 :test #'equal))
+				     :test #'equalp))
 	    (test dummy-1-contents body :test #'equal)))))
 
 
@@ -194,36 +194,36 @@
 		  (cdr (assoc "content-type" headers :test #'equal))
 		  :test #'equal)
 	    #+ignore (if* (eq protocol :http/1.1)
-			then (test "chunked"
-				   (cdr (assoc "transfer-encoding" headers
-					       :test #'equal))
-				   :test #'equalp))
+			  then (test "chunked"
+				     (cdr (assoc "transfer-encoding" headers
+						 :test #'equal))
+				     :test #'equalp))
 	    (test dummy-2-contents body :test #'equal)))))
 
 
     ;;;; remove published file test
     ;;
-    ; verify it's still there
+					; verify it's still there
     (test 200 (values2 (do-http-request (format nil "~a/frob" prefix-local))))
     (test 200 (values2 (do-http-request (format nil "~a/frob" prefix-dns))))
 
-    ; remove it
+					; remove it
     (publish-file :path "/frob" :remove t)
 
-    ; verify that it's not there:
+					; verify that it's not there:
     (test 404 (values2 (do-http-request (format nil "~a/frob" prefix-local))))
     (test 404 (values2 (do-http-request (format nil "~a/frob" prefix-dns))))
 
     ;; likewise for frob2
 
-    ; verify it's still there
+					; verify it's still there
     (test 200 (values2 (do-http-request (format nil "~a/frob2" prefix-local))))
     (test 200 (values2 (do-http-request (format nil "~a/frob2" prefix-dns))))
 
-    ; remove it
+					; remove it
     (publish-file :path "/frob2" :remove t)
 
-    ; verify that it's not there:
+					; verify that it's not there:
     (test 404 (values2 (do-http-request (format nil "~a/frob2" prefix-local))))
     (test 404 (values2 (do-http-request (format nil "~a/frob2" prefix-dns))))
 
@@ -259,20 +259,20 @@
     (publish-file :path "/checkit"
 		  :host "localhost"
 		  :remove t)
-    ; verify it's gone:
+					; verify it's gone:
     (test 404 (values2 (do-http-request (format nil "~a/checkit"
-					       prefix-local))))
-    ; but the the dns one is still there
+						prefix-local))))
+					; but the the dns one is still there
     (test 200 (values2 (do-http-request (format nil "~a/checkit" prefix-dns))))
 
-    ; remove the dns one
+					; remove the dns one
     (publish-file :path "/checkit"
 		  :host (long-site-name)
 		  :remove t)
 
-    ; verify it's gone too
+					; verify it's gone too
     (test 404 (values2 (do-http-request (format nil "~a/checkit"
-					       prefix-dns))))
+						prefix-dns))))
 
 
 
@@ -280,7 +280,7 @@
 
 
 
-    ; cleanup
+					; cleanup
     (delete-file dummy-1-name)
     (delete-file dummy-2-name)
     ))
@@ -331,10 +331,10 @@
 		  (cdr (assoc "content-type" headers :test #'equal))
 		  :test #'equal)
 	    (if* (eq protocol :http/1.1)
-	       then (test "chunked"
-			  (cdr (assoc "transfer-encoding" headers
-				      :test #'equal))
-			  :test #'equalp))
+		 then (test "chunked"
+			    (cdr (assoc "transfer-encoding" headers
+					:test #'equal))
+			    :test #'equalp))
 	    (test (cadr pair) body :test #'equal)))))))
 
 
@@ -352,37 +352,37 @@
 	     #'(lambda (req ent)
 		 (multiple-value-bind (name password) (get-basic-authorization req)
 		   (if* (and (equal name "foo") (equal password "bar"))
-		      then (with-http-response (req ent)
-			     (with-http-body (req ent)
-			       (html (:head (:title "Secret page"))
-				     (:body "You made it to the secret page"))))
-		      else
-			   (with-http-response (req ent :response
-						    *response-unauthorized*)
-			     (set-basic-authorization req
-						      "secretserver")
-			     (with-http-body (req ent)))))))
+			then (with-http-response (req ent)
+			       (with-http-body (req ent)
+				 (html (:head (:title "Secret page"))
+				       (:body "You made it to the secret page"))))
+			else
+			(with-http-response (req ent :response
+						 *response-unauthorized*)
+			  (set-basic-authorization req
+						   "secretserver")
+			  (with-http-body (req ent)))))))
 
-    ; no dice with no password
+					; no dice with no password
     (multiple-value-bind (body code headers)
 	(do-http-request (format nil "~a/secret" prefix-local))
       (declare (ignore body))
       (test 401 code)
-      ; verify that we are asking for the right realm
+					; verify that we are asking for the right realm
       (test "Basic realm=\"secretserver\""
 	    (cdr (assoc "www-authenticate" headers :test #'equal))
 	    :test #'equal))
 
 
-    ; good password
+					; good password
     (test 200
 	  (values2 (do-http-request (format nil "~a/secret" prefix-local)
-		    :basic-authorization '("foo" . "bar"))))
+		     :basic-authorization '("foo" . "bar"))))
 
-    ; bad password
+					; bad password
     (test 401
 	  (values2 (do-http-request (format nil "~a/secret" prefix-local)
-		    :basic-authorization '("xxfoo" . "bar"))))
+		     :basic-authorization '("xxfoo" . "bar"))))
 
 
 
@@ -391,45 +391,45 @@
 
     (publish :path "/local-secret"
 	     ;; this only "works" if we reference via localhost
-	 :content-type "text/html"
-	 :function
-	 #'(lambda (req ent)
-	     (let ((net-address (ash (socket:remote-host
-				      (request-socket req))
-				     -24)))
-	       (if* (equal net-address 127)
-		  then (with-http-response (req ent)
-			 (with-http-body (req ent)
-			   (html (:head (:title "Secret page"))
-				 (:body (:b "Congratulations. ")
-					"You are on the local network"))))
-		  else (failed-request req)))))
+	     :content-type "text/html"
+	     :function
+	     #'(lambda (req ent)
+		 (let ((net-address (ash (socket:remote-host
+					  (request-socket req))
+					 -24)))
+		   (if* (equal net-address 127)
+			then (with-http-response (req ent)
+			       (with-http-body (req ent)
+				 (html (:head (:title "Secret page"))
+				       (:body (:b "Congratulations. ")
+					      "You are on the local network"))))
+			else (failed-request req)))))
 
     (test 200
 	  (values2 (do-http-request (format nil "~a/local-secret"
-					   prefix-local))))
+					    prefix-local))))
 
     (test 404
 	  (values2 (do-http-request (format nil "~a/local-secret"
-					   prefix-dns))))
+					    prefix-dns))))
 
 
     ;;
     ;; password authorizer class
     ;;
     (publish :path "/secret-auth"
-	 :content-type "text/html"
-	 :authorizer (make-instance 'password-authorizer
-		       :allowed '(("foo2" . "bar2")
-				  ("foo3" . "bar3")
-				  )
-		       :realm  "SecretAuth")
-	 :function
-	 #'(lambda (req ent)
-	     (with-http-response (req ent)
-	       (with-http-body (req ent)
-		 (html (:head (:title "Secret page"))
-		       (:body "You made it to the secret page"))))))
+	     :content-type "text/html"
+	     :authorizer (make-instance 'password-authorizer
+					:allowed '(("foo2" . "bar2")
+						   ("foo3" . "bar3")
+						   )
+					:realm  "SecretAuth")
+	     :function
+	     #'(lambda (req ent)
+		 (with-http-response (req ent)
+		   (with-http-body (req ent)
+		     (html (:head (:title "Secret page"))
+			   (:body "You made it to the secret page"))))))
 
     (multiple-value-bind (body ccode headers)
 	(do-http-request (format nil "~a/secret-auth" prefix-local))
@@ -441,15 +441,15 @@
 
     (test 200
 	  (values2 (do-http-request (format nil "~a/secret-auth" prefix-local)
-		    :basic-authorization '("foo2" . "bar2"))))
+		     :basic-authorization '("foo2" . "bar2"))))
 
     (test 200
 	  (values2 (do-http-request (format nil "~a/secret-auth" prefix-local)
-		    :basic-authorization '("foo3" . "bar3"))))
+		     :basic-authorization '("foo3" . "bar3"))))
 
     (test 401
 	  (values2 (do-http-request (format nil "~a/secret-auth" prefix-local)
-		    :basic-authorization '("foo4" . "bar4"))))
+		     :basic-authorization '("foo4" . "bar4"))))
 
 
     ;;
@@ -458,90 +458,90 @@
     (let ((loca (make-instance 'location-authorizer
 			       :patterns nil)))
       (publish :path "/secret-loc-auth"
-	 :content-type "text/html"
-	 :authorizer loca
-	 :function
-	 #'(lambda (req ent)
-	     (with-http-response (req ent)
-	       (with-http-body (req ent)
-		 (html (:head (:title "Secret page"))
-		       (:body "You made it to the secret page"))))))
+	       :content-type "text/html"
+	       :authorizer loca
+	       :function
+	       #'(lambda (req ent)
+		   (with-http-response (req ent)
+		     (with-http-body (req ent)
+		       (html (:head (:title "Secret page"))
+			     (:body "You made it to the secret page"))))))
 
       ;; with a nil pattern list this should accept connections
       ;; from anywhere
 
       (test 200
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-local))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-local))))
       (test 200
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-dns))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-dns))))
 
-      ; now deny all
+					; now deny all
       (setf (location-authorizer-patterns loca) '(:deny))
 
       (test 404
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-local))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-local))))
 
       (test 404
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-dns))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-dns))))
 
 
       ;; accept from localhost only
       (setf (location-authorizer-patterns loca)
-	'((:accept "127.0" 8)
-	  :deny))
+	    '((:accept "127.0" 8)
+	      :deny))
       (test 200
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-local))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-local))))
 
       (test 404
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-dns))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-dns))))
 
       ;; accept from dns name only
 
       (setf (location-authorizer-patterns loca)
-	`((:accept ,(long-site-name))
-	  :deny))
+	    `((:accept ,(long-site-name))
+	      :deny))
 
       (test 404
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-local))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-local))))
 
       (test 200
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-dns))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-dns))))
 
 
       ;; deny dns and accept all others
       (setf (location-authorizer-patterns loca)
-	`((:deny ,(long-site-name))
-	  :accept))
+	    `((:deny ,(long-site-name))
+	      :accept))
 
       (test 200
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-local))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-local))))
 
       (test 404
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-dns))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-dns))))
 
 
       ;; deny localhost and accept all others
       (setf (location-authorizer-patterns loca)
-	'((:deny "127.0" 8)
-	  :accept))
+	    '((:deny "127.0" 8)
+	      :accept))
 
       (test 404
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-local))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-local))))
 
       (test 200
-	  (values2 (do-http-request (format nil "~a/secret-loc-auth"
-					   prefix-dns))))
+	    (values2 (do-http-request (format nil "~a/secret-loc-auth"
+					      prefix-dns))))
 
 
 
@@ -596,9 +596,9 @@
 	     #'(lambda (req ent)
 		 ;; get both uri and post
 		 (if* (eql (request-method req) :post)
-		    then (test "application/x-www-form-urlencoded"
-			       (header-slot-value req "content-type")
-			       :test #'equal))
+		      then (test "application/x-www-form-urlencoded"
+				 (header-slot-value req "content-type")
+				 :test #'equal))
 		 (setq req-query-res (request-query req))
 		 (with-http-response (req ent)
 		   (with-http-body (req ent)
@@ -614,7 +614,7 @@
 			      :test #'equal))
 
 
-    ; - use query arg
+					; - use query arg
     (do-http-request (format nil "~a/form-tester-both" prefix-local)
       :query uri-var-vals)
 
@@ -712,7 +712,7 @@
 
     ;;-------------------------
 
-    ; only check post
+					; only check post
 
     (publish :path "/form-tester-post"
 	     :content-type "text/html"
@@ -756,9 +756,9 @@
 
     (test nil (set-difference post-var-vals req-query-res :test #'equal))
 
-    ;
-    ; test that we can do get-request-body more than once
-    ;
+					;
+					; test that we can do get-request-body more than once
+					;
     (publish :path "/get-request-body-tester"
 	     :content-type "text/plain"
 	     :function
@@ -798,45 +798,45 @@
 			   (with-http-response (req ent
 						    :response *response-found*)
 			     (setf (reply-header-slot-value req "location")
-			       "redir-target")
+				   "redir-target")
 			     (with-http-body (req ent)))))
 
-    ; redirect to itself... danger danger!
+					; redirect to itself... danger danger!
     (publish :path "/redir-inf"
 	     :function #'(lambda (req ent)
 			   (with-http-response (req ent
 						    :response *response-found*)
 			     (setf (reply-header-slot-value req "location")
-			       "redir-inf")
+				   "redir-inf")
 			     (with-http-body (req ent)))))
 
 
-    ; first test target
+					; first test target
     (multiple-value-bind (body code headers)
 	(do-http-request (format nil "~a/redir-target" prefix-local))
       (declare (ignore body headers))
       (test 200 code))
 
-    ; now test through redirect
+					; now test through redirect
     (multiple-value-bind (body code headers)
 	(do-http-request (format nil "~a/redir-to" prefix-local))
       (declare (ignore body headers))
       (test 200 (and :second code)))
 
-    ; now turn off redirect and test
+					; now turn off redirect and test
     (multiple-value-bind (body code headers)
 	(do-http-request (format nil "~a/redir-to" prefix-local) :redirect nil)
       (declare (ignore body headers))
       (test 302 (and :third code)))
 
-    ; turn off with a zero repeat count
+					; turn off with a zero repeat count
     (multiple-value-bind (body code headers)
 	(do-http-request (format nil "~a/redir-to" prefix-local) :redirect 0)
       (declare (ignore body headers))
       (test 302 (and :fourth code)))
 
 
-    ; self redirect, we test that we eventually give up
+					; self redirect, we test that we eventually give up
     (multiple-value-bind (body code headers)
 	(do-http-request (format nil "~a/redir-inf" prefix-local))
       (declare (ignore body headers))

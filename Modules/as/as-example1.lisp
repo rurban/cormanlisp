@@ -36,66 +36,66 @@
 
 (defpackage "AS-EXAMPLE1"
   (:use
-		"COMMON-LISP"
-		"EXCL"
-		"NET.HTML.GENERATOR"
-		"NET.ASERVE"))
+   "COMMON-LISP"
+   "EXCL"
+   "NET.HTML.GENERATOR"
+   "NET.ASERVE"))
 
 (in-package :as-example1)
 
 (setq *wserver*
-	(make-instance 'wserver :enable-chunking nil :enable-keep-alive nil))
+      (make-instance 'wserver :enable-chunking nil :enable-keep-alive nil))
 
 (publish
-	:path "/"
-	:content-type "text/html"
-	:function
-	(let ((count 0))
-		#'(lambda (req ent)
-			(with-http-response (req ent)
-				(with-http-body (req ent)
-					(html
-						(:head (:title "AllegroServe powered by Corman Lisp 1.42"))
-						(:body
-							(:h1 "Welcome to AllegroServe")
-							(:p "This web server is powered by AllegroServe, a web server
+ :path "/"
+ :content-type "text/html"
+ :function
+ (let ((count 0))
+   #'(lambda (req ent)
+       (with-http-response (req ent)
+	 (with-http-body (req ent)
+	   (html
+	    (:head (:title "AllegroServe powered by Corman Lisp 1.42"))
+	    (:body
+	     (:h1 "Welcome to AllegroServe")
+	     (:p "This web server is powered by AllegroServe, a web server
 								written in Common Lisp. The Lisp implementation running this
 								server is Corman Lisp v1.42")
-							(:i "This server's host name is "
-								(:princ-safe (header-slot-value req "host")))
-							:p
-							(:b "Sample pages") :br
-							((:a :href "gc") "Garbage Collector Stats") :br
-							(:p "This page has been accessed "
-								(:princ-safe (incf count))
-								" times."))))))))
+	     (:i "This server's host name is "
+		 (:princ-safe (header-slot-value req "host")))
+	     :p
+	     (:b "Sample pages") :br
+	     ((:a :href "gc") "Garbage Collector Stats") :br
+	     (:p "This page has been accessed "
+		 (:princ-safe (incf count))
+		 " times."))))))))
 
 
 (publish
-	:path "/gc"
-	:content-type "text/html"
-	:function
-	#'(lambda (req ent)
-		(let ((room-output
-					(with-output-to-string (ss)
-						(let ((*standard-output* ss))
-							(room)))))
-			(with-http-response (req ent)
-				(with-http-body (req ent)
-					(html
-						(:head (:title "Garbage Collection Statistics"))
-						(:body
-							(:h1 "Room")
-							(:pre
-								(:princ-safe room-output)))))))))
+ :path "/gc"
+ :content-type "text/html"
+ :function
+ #'(lambda (req ent)
+     (let ((room-output
+	    (with-output-to-string (ss)
+	      (let ((*standard-output* ss))
+		(room)))))
+       (with-http-response (req ent)
+	 (with-http-body (req ent)
+	   (html
+	    (:head (:title "Garbage Collection Statistics"))
+	    (:body
+	     (:h1 "Room")
+	     (:pre
+	      (:princ-safe room-output)))))))))
 
 (defun start-server (&key (port 80))
-	(mp:process-run-function "as-example1"
-		#'(lambda ()
-			(start :server *wserver* :port port :chunking nil))))
+  (mp:process-run-function "as-example1"
+			   #'(lambda ()
+			       (start :server *wserver* :port port :chunking nil))))
 
 (defun start-simple-server (&key (port 80))
-	(start :server *wserver* :port port :chunking nil :listeners 0))
+  (start :server *wserver* :port port :chunking nil :listeners 0))
 
 #|
 (in-package :as-example1)
@@ -111,7 +111,7 @@
 
 (setq cookies (make-instance 'cookie-jar))
 (do-http-request "http://www.double.nz/cl/index.htm"
-	:cookies cookies
-	:protocol :http/1.0)
+:cookies cookies
+:protocol :http/1.0)
 (net.aserve.client::cookie-jar-items cookies)
 |#

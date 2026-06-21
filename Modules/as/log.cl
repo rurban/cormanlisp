@@ -60,21 +60,21 @@
 (defmethod log-request ((req http-request))
   ;; after the request has been processed, write out log line
   (if* *enable-logging*
-     then (let ((ipaddr #+cormanlisp 0 #-cormanlisp (socket:remote-host (request-socket req)))
-		(time   (request-reply-date req))
-		(code   (let ((obj (request-reply-code req)))
-			  (if* obj
-			     then (response-number obj)
-			     else 999)))
-		(length  (request-reply-content-length req))
+       then (let ((ipaddr #+cormanlisp 0 #-cormanlisp (socket:remote-host (request-socket req)))
+		  (time   (request-reply-date req))
+		  (code   (let ((obj (request-reply-code req)))
+			    (if* obj
+				 then (response-number obj)
+				 else 999)))
+		  (length  (request-reply-content-length req))
 
-		(stream (wserver-log-stream
-			 (request-wserver req))))
+		  (stream (wserver-log-stream
+			   (request-wserver req))))
 
-	    (format stream
-		    "~a - - [~a] ~s ~s ~s~%"
-		    #-cormanlisp (socket:ipaddr-to-dotted ipaddr) #+cormanlisp ipaddr
-		    (maybe-universal-time-to-date time)
-		    (request-raw-request req)
-		    code
-		    (or length -1)))))
+	      (format stream
+		      "~a - - [~a] ~s ~s ~s~%"
+		      #-cormanlisp (socket:ipaddr-to-dotted ipaddr) #+cormanlisp ipaddr
+		      (maybe-universal-time-to-date time)
+		      (request-raw-request req)
+		      code
+		      (or length -1)))))

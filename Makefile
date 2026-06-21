@@ -1,4 +1,4 @@
-.PHONY: build build-debug clean test test-debug install
+.PHONY: build build-debug clean test test-debug lint install
 
 CMAKE := cmake
 MAKE  := $(MAKE)
@@ -53,6 +53,10 @@ test-debug: build-debug
 	else \
 		$(MAKE) build-debug && $(MAKE) -s -C build-debug test ARGS="--output-on-failure" || true; \
 	fi
+
+lint:
+	if command -v prek; then prek run -a; \
+        elif command -v pre-commit; then pre-commit run --all-files; fi
 
 install: build
 	@if [ -f build/Makefile ]; then \

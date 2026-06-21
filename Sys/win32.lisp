@@ -81,7 +81,7 @@
 (defwintype LPVOID 	(:void *))
 (defwintype PVOID 	(:void *))
 (defwintype ATOM 	:unsigned-short)  ;; note: previous to Corman Lisp 2.6, this type
-                                      ;; was incorrectly specified as :short
+;; was incorrectly specified as :short
 (defwintype HDC 	handle)
 (defwintype HGDIOBJ (:void *))
 (defwintype LPINT  (:long *))
@@ -100,124 +100,124 @@
 (defun LOWORD (x) (logand x #xffff))
 
 (defun RGB (r g b)
-	(+ (ash (mod b 256) 16) (ash (mod g 256) 8) (mod r 256)))
+  (+ (ash (mod b 256) 16) (ash (mod g 256) 8) (mod r 256)))
 (export 'RGB)
 
 (defwintype COLORREF :unsigned-long)
 
 (defwinstruct POINT
-  ((x               long)
-   (y               long)
-  ))
+    ((x               long)
+     (y               long)
+     ))
 
 (defwinstruct RECT
-  ((left            long)
-   (top             long)
-   (right           long)
-   (bottom          long)
-  ))
+    ((left            long)
+     (top             long)
+     (right           long)
+     (bottom          long)
+     ))
 
 (defwinstruct MSG
-  ((hwnd            HWND)
-   (message         UINT)
-   (wparam          WPARAM)
-   (lparam          LPARAM)
-   (time            DWORD)
-   (pt              POINT)
-  ))
+    ((hwnd            HWND)
+     (message         UINT)
+     (wparam          WPARAM)
+     (lparam          LPARAM)
+     (time            DWORD)
+     (pt              POINT)
+     ))
 
 (defwintype LPMSG (MSG *))
 
 (defwinstruct WNDCLASSEX
-  ((cbSize			UINT)
-   (style           UINT)
-   (lpfnWndProc     WNDPROC)
-   (cbClsExtra      int)
-   (cbWndExtra      int)
-   (hInstance       HANDLE)
-   (hIcon           HICON)
-   (hCursor         HCURSOR)
-   (hbrBackground   HBRUSH)
-   (lpszMenuName    LPCSTR)
-   (lpszClassName   LPCSTR)
-   (hIconSm			HICON)
-  ))
+    ((cbSize			UINT)
+     (style           UINT)
+     (lpfnWndProc     WNDPROC)
+     (cbClsExtra      int)
+     (cbWndExtra      int)
+     (hInstance       HANDLE)
+     (hIcon           HICON)
+     (hCursor         HCURSOR)
+     (hbrBackground   HBRUSH)
+     (lpszMenuName    LPCSTR)
+     (lpszClassName   LPCSTR)
+     (hIconSm			HICON)
+     ))
 (defwintype LPWNDCLASSEX (WNDCLASSEX *))
 
 (defwinstruct PAINTSTRUCT
-  ((hdc             HDC)
-   (ferase          BOOL)
-   (rcpaint         RECT)
-   (frestore        BOOL)
-   (fincupdate      BOOL)
-   (rgbreserved     (BYTE 32))
-  ))
+    ((hdc             HDC)
+     (ferase          BOOL)
+     (rcpaint         RECT)
+     (frestore        BOOL)
+     (fincupdate      BOOL)
+     (rgbreserved     (BYTE 32))
+     ))
 (defwintype LPPAINTSTRUCT (PAINTSTRUCT *))
 
 (defwinstruct WINDOWPLACEMENT
-  ((length 				UINT)
-   (flags				UINT)
-   (showCmd				UINT)
-   (ptMinPosition		POINT)
-   (ptMaxPosition		POINT)
-   (rcNormalPosition	RECT)
-  ))
+    ((length 				UINT)
+     (flags				UINT)
+     (showCmd				UINT)
+     (ptMinPosition		POINT)
+     (ptMaxPosition		POINT)
+     (rcNormalPosition	RECT)
+     ))
 (defwintype LPWINDOWPLACEMENT (WINDOWPLACEMENT *))
 
 (defwinstruct FILETIME
-	((dwLowDateTime  DWORD)
-	 (dwHighDateTime DWORD)
-	))
+    ((dwLowDateTime  DWORD)
+     (dwHighDateTime DWORD)
+     ))
 (defwintype LPFILETIME (FILETIME *))
 
 (defwinstruct SYSTEMTIME
-	((wYear  		WORD)
-	 (wMonth 		WORD)
-	 (wDayOfWeek 	WORD)
-	 (wDay 			WORD)
-	 (wHour 		WORD)
-	 (wMinute 		WORD)
-	 (wSecond 		WORD)
-	 (wMilliseconds WORD)
-	))
+    ((wYear  		WORD)
+     (wMonth 		WORD)
+     (wDayOfWeek 	WORD)
+     (wDay 			WORD)
+     (wHour 		WORD)
+     (wMinute 		WORD)
+     (wSecond 		WORD)
+     (wMilliseconds WORD)
+     ))
 (defwintype LPSYSTEMTIME (SYSTEMTIME *))
 
 (defwinstruct COORD
-	((X SHORT)
+    ((X SHORT)
      (Y SHORT)
-	))
+     ))
 (defwintype PCOORD (COORD *))
 
 (defwinstruct CREATESTRUCT
-  ((lpCreateParams	LPVOID)
-   (hInstance       HINSTANCE)
-   (hMenu		    HMENU)
-   (hwndParent      HWND)
-   (cy      		int)
-   (cx 				int)
-   (y 				int)
-   (x				int)
-   (style 			LONG)
-   (lpszName 		LPCSTR)
-   (lpszClass 		LPCSTR)
-   (dwExStyle		DWORD)
-  ))
+    ((lpCreateParams	LPVOID)
+     (hInstance       HINSTANCE)
+     (hMenu		    HMENU)
+     (hwndParent      HWND)
+     (cy      		int)
+     (cx 				int)
+     (y 				int)
+     (x				int)
+     (style 			LONG)
+     (lpszName 		LPCSTR)
+     (lpszClass 		LPCSTR)
+     (dwExStyle		DWORD)
+     ))
 
 (defwinstruct CLIENTCREATESTRUCT
-	((hWindowMenu	HANDLE)
-	 (idFirstChild	UINT)))
+    ((hWindowMenu	HANDLE)
+     (idFirstChild	UINT)))
 (defwintype LPCLIENTCREATESTRUCT (CLIENTCREATESTRUCT *))
 
 (defwinstruct MDICREATESTRUCT
-	((szClass		LPCSTR)
-	 (szTitle		LPCSTR)
-	 (hOwner		HANDLE)
-	 (x				int)
-	 (y				int)
-	 (cx			int)
-	 (cy			int)
-	 (style			DWORD)
-	 (lParam		LPARAM)))		;; app-defined stuff
+    ((szClass		LPCSTR)
+     (szTitle		LPCSTR)
+     (hOwner		HANDLE)
+     (x				int)
+     (y				int)
+     (cx			int)
+     (cy			int)
+     (style			DWORD)
+     (lParam		LPARAM)))		;; app-defined stuff
 (defwintype LPMDICREATESTRUCT (MDICREATESTRUCT *))
 
 (defwinconstant LF_FACESIZE 32)
@@ -245,39 +245,39 @@
 (defwinconstant CFE_AUTOCOLOR	#x40000000)
 
 (defwinstruct CHARFORMAT
-   ((cbSize         UINT)
-    (dwMask         DWORD)
-    (dwEffects      DWORD)
-    (yHeight        LONG)
-    (yOffset        LONG)
-    (crTextColor    COLORREF)
-    (bCharSet       BYTE)
-    (bPitchAndFamily BYTE)
-    (pad1           BYTE)
-    (pad2           BYTE)
-    (szFaceName     (:char LF_FACESIZE))))
+    ((cbSize         UINT)
+     (dwMask         DWORD)
+     (dwEffects      DWORD)
+     (yHeight        LONG)
+     (yOffset        LONG)
+     (crTextColor    COLORREF)
+     (bCharSet       BYTE)
+     (bPitchAndFamily BYTE)
+     (pad1           BYTE)
+     (pad2           BYTE)
+     (szFaceName     (:char LF_FACESIZE))))
 
 (defwinconstant SCF_SELECTION		#x0001)
 (defwinconstant SCF_WORD			#x0002)
 (defwinconstant SCF_DEFAULT			#x0000)		;; Set default charformat or paraformat
 (defwinconstant SCF_ALL				#x0004)		;; Not valid with SCF_SELECTION or SCF_WORD
 (defwinconstant SCF_USEUIRULES		#x0008)		;; Modifier for SCF_SELECTION; says that
-										        ;;  format came from a toolbar, etc., and
-										        ;;  hence UI formatting rules should be
-										        ;;  used instead of literal formatting
+;;  format came from a toolbar, etc., and
+;;  hence UI formatting rules should be
+;;  used instead of literal formatting
 (defwinconstant SCF_ASSOCIATEFONT	#x0010)		;; Associate fontname with bCharSet (one
-										        ;;  possible for each of Western, ME, FE, Thai)
+;;  possible for each of Western, ME, FE, Thai)
 (defwinconstant SCF_NOKBUPDATE		#x0020)		;; Do not update the KB layput for this change
-        									    ;; even if autokeyboard is on.
+;; even if autokeyboard is on.
 
 (defwinstruct TIME_ZONE_INFORMATION
-	((Bias LONG)
-	 (StandardName (WCHAR 32))
-	 (StandardDate SYSTEMTIME)
-	 (StandardBias LONG)
-	 (DaylightName (WCHAR 32))
-	 (DaylightDate SYSTEMTIME)
-	 (DaylightBias LONG)))
+    ((Bias LONG)
+     (StandardName (WCHAR 32))
+     (StandardDate SYSTEMTIME)
+     (StandardBias LONG)
+     (DaylightName (WCHAR 32))
+     (DaylightDate SYSTEMTIME)
+     (DaylightBias LONG)))
 (defwintype LPTIME_ZONE_INFORMATION (TIME_ZONE_INFORMATION *))
 
 (defwinconstant TIME_ZONE_ID_INVALID  	#xFFFFFFFF)
@@ -644,19 +644,19 @@
 ;; Common Window Styles
 ;;
 (defwinconstant WS_OVERLAPPEDWINDOW
-				(logior
-					WS_OVERLAPPED
-                    WS_CAPTION
-                    WS_SYSMENU
-                    WS_THICKFRAME
-                    WS_MINIMIZEBOX
-                    WS_MAXIMIZEBOX))
+    (logior
+     WS_OVERLAPPED
+     WS_CAPTION
+     WS_SYSMENU
+     WS_THICKFRAME
+     WS_MINIMIZEBOX
+     WS_MAXIMIZEBOX))
 (defwinconstant WS_TILEDWINDOW      WS_OVERLAPPEDWINDOW)
 
 (defwinconstant WS_POPUPWINDOW
-				(logior WS_POPUP
-                        WS_BORDER
-                        WS_SYSMENU))
+    (logior WS_POPUP
+            WS_BORDER
+            WS_SYSMENU))
 
 (defwinconstant WS_CHILDWINDOW WS_CHILD)
 
@@ -869,82 +869,82 @@
 (defwinconstant VK_SCROLL          #x91)
 
 (defwinapi CreateWindowEx (
-	(dwExStyle dword)
-	(lpClassName LPCSTR)
-	(lpWindowName LPCSTR)
-	(dwStyle DWORD)
-	(x int)
-	(y int)
-	(nWidth int)
-	(nHeight int)
-	(hWndParent HWND)
-	(hMenu HMENU)
-	(hInstance HANDLE)
-	(lpParam LPVOID))
-	:return-type HWND
-	:library-name "User32.dll"
-	:entry-name "CreateWindowExA"
-	:linkage-type :pascal)
+			   (dwExStyle dword)
+			   (lpClassName LPCSTR)
+			   (lpWindowName LPCSTR)
+			   (dwStyle DWORD)
+			   (x int)
+			   (y int)
+			   (nWidth int)
+			   (nHeight int)
+			   (hWndParent HWND)
+			   (hMenu HMENU)
+			   (hInstance HANDLE)
+			   (lpParam LPVOID))
+  :return-type HWND
+  :library-name "User32.dll"
+  :entry-name "CreateWindowExA"
+  :linkage-type :pascal)
 
 (defwinapi CreateWindow (
-	(lpClassName LPCSTR)
-	(lpWindowName LPCSTR)
-	(dwStyle DWORD)
-	(x int)
-	(y int)
-	(nWidth int)
-	(nHeight int)
-	(hWndParent HWND)
-	(hMenu HMENU)
-	(hInstance HANDLE)
-	(lpParam LPVOID))
-	:return-type HWND
-	:library-name "User32.dll"
-	:entry-name "CreateWindowA"
-	:linkage-type :pascal)
+			 (lpClassName LPCSTR)
+			 (lpWindowName LPCSTR)
+			 (dwStyle DWORD)
+			 (x int)
+			 (y int)
+			 (nWidth int)
+			 (nHeight int)
+			 (hWndParent HWND)
+			 (hMenu HMENU)
+			 (hInstance HANDLE)
+			 (lpParam LPVOID))
+  :return-type HWND
+  :library-name "User32.dll"
+  :entry-name "CreateWindowA"
+  :linkage-type :pascal)
 
 (defwinapi CreateMDIWindow (
-	(lpClassName LPCSTR)
-	(lpWindowName LPCSTR)
-	(dwStyle DWORD)
-	(x int)
-	(y int)
-	(nWidth int)
-	(nHeight int)
-	(hWndParent HWND)
-	(hMenu HMENU)
-	(hInstance HANDLE)
-	(lpParam LPVOID))
-	:return-type HWND
-	:library-name "User32.dll"
-	:entry-name "CreateMDIWindowA"
-	:linkage-type :pascal)
+			    (lpClassName LPCSTR)
+			    (lpWindowName LPCSTR)
+			    (dwStyle DWORD)
+			    (x int)
+			    (y int)
+			    (nWidth int)
+			    (nHeight int)
+			    (hWndParent HWND)
+			    (hMenu HMENU)
+			    (hInstance HANDLE)
+			    (lpParam LPVOID))
+  :return-type HWND
+  :library-name "User32.dll"
+  :entry-name "CreateMDIWindowA"
+  :linkage-type :pascal)
 
 (defwinapi GetWindowLong ((hWnd HWND) (index int))
-	:return-type LONG
-	:library-name "user32.dll"
-	:entry-name "GetWindowLongA"
-	:linkage-type :pascal)
+  :return-type LONG
+  :library-name "user32.dll"
+  :entry-name "GetWindowLongA"
+  :linkage-type :pascal)
 
 (defwinapi SetWindowLong ((hWnd HWND) (index int) (value LONG))
-	:return-type LONG
-	:library-name "user32.dll"
-	:entry-name "SetWindowLongA"
-	:linkage-type :pascal)
+  :return-type LONG
+  :library-name "user32.dll"
+  :entry-name "SetWindowLongA"
+  :linkage-type :pascal)
 
 (defwinapi CallWindowProc ((wndproc WNDPROC) (hWnd HWND )
-		(Msg UINT) (wParam WPARAM) (lParam LPARAM))
-	:return-type LRESULT
-	:library-name "user32.dll"
-	:entry-name "CallWindowProcA"
-	:linkage-type :pascal)
+			   (Msg UINT) (wParam WPARAM) (lParam LPARAM))
+  :return-type LRESULT
+  :library-name "user32.dll"
+  :entry-name "CallWindowProcA"
+  :linkage-type :pascal)
 
 (defwinapi GetClassInfoEx ((hinstance HINSTANCE) (lpclassname LPCTSTR )
-		(lpwndclass LPWNDCLASSEX))
-	:return-type BOOL
-	:library-name "user32.dll"
-	:entry-name "GetClassInfoExA"
-	:linkage-type :pascal)
+			   (lpwndclass LPWNDCLASSEX))
+  :return-type BOOL
+  :library-name "user32.dll"
+  :entry-name "GetClassInfoExA"
+  :linkage-type :pascal)
 
 #! (:library "User32" :ignore "WINUSERAPI" :export t :pascal "WINAPI")
 WINUSERAPI BOOL WINAPI DestroyWindow(HWND hWnd);
@@ -1007,9 +1007,9 @@ WINUSERAPI int  WINAPI GetSystemMetrics(int nIndex);
 WINUSERAPI BOOL WINAPI LockWindowUpdate(HWND hWndLock);
 WINUSERAPI BOOL WINAPI ScrollWindow(HWND hWnd, int XAmount, int YAmount, LPRECT lpRect, LPRECT lpClipRect);
 WINUSERAPI BOOL WINAPI ScrollDC(HDC hDC, int dx, int dy, LPRECT lprcScroll,
-							LPRECT lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate);
+				    LPRECT lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate);
 WINUSERAPI int  WINAPI ScrollWindowEx(HWND hWnd, int dx, int dy, LPRECT prcScroll, LPRECT prcClip,
-							HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags);
+					   HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags);
 WINUSERAPI BOOL WINAPI MessageBeep(UINT uType);
 WINUSERAPI int  WINAPI FillRect(HDC hDC, CONST LPRECT lprc, HBRUSH hbr);
 WINUSERAPI UINT WINAPI SetTimer(HWND hWnd, UINT nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc);
@@ -1024,98 +1024,98 @@ WINUSERAPI HGDIOBJ WINAPI SelectObject(HDC hdc, HGDIOBJ hgdiobj);
 
 ;; int DrawText(HDC hDC, LPCTSTR lpString, int nCount, LPRECT lpRect, UINT uFormat);
 (defwinapi DrawText
-	((hDC HDC)
-	 (lpString LPCTSTR)
-	 (nCount int)
-	 (lpRect LPRECT)
-	 (uFormat UINT))
-	:return-type int
-	:library-name "User32.dll"
-	:entry-name "DrawTextA"
-	:linkage-type :pascal)
+    ((hDC HDC)
+     (lpString LPCTSTR)
+     (nCount int)
+     (lpRect LPRECT)
+     (uFormat UINT))
+  :return-type int
+  :library-name "User32.dll"
+  :entry-name "DrawTextA"
+  :linkage-type :pascal)
 
 ;; ATOM RegisterClassEx(CONST WNDCLASSEX *lpwcx);
 (defwinapi RegisterClassEx
-	((lpwcx WNDCLASSEX))
-	:return-type DWORD #| ATOM |# ;; it appears we are really getting back a 32-bit value
-	:library-name "User32.dll"
-	:entry-name "RegisterClassExA"
-	:linkage-type :pascal)
+    ((lpwcx WNDCLASSEX))
+  :return-type DWORD #| ATOM |# ;; it appears we are really getting back a 32-bit value
+  :library-name "User32.dll"
+  :entry-name "RegisterClassExA"
+  :linkage-type :pascal)
 
 ;; BOOL GetMessage(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
 (defwinapi GetMessage
-	((lpMsg LPMSG)
-	 (hWnd HWND)
-	 (wMsgFilterMin UINT)
-	 (wMsgFilterMax UINT))
-	:return-type BOOL
-	:library-name "User32.dll"
-	:entry-name "GetMessageA"
-	:linkage-type :pascal)
+    ((lpMsg LPMSG)
+     (hWnd HWND)
+     (wMsgFilterMin UINT)
+     (wMsgFilterMax UINT))
+  :return-type BOOL
+  :library-name "User32.dll"
+  :entry-name "GetMessageA"
+  :linkage-type :pascal)
 
 ;; BOOL TranslateMessage(CONST MSG* lpMsg);
 (defwinapi TranslateMessage
-	((lpMsg MSG))
-	:return-type BOOL
-	:library-name "User32.dll"
-	:entry-name "TranslateMessage"
-	:linkage-type :pascal)
+    ((lpMsg MSG))
+  :return-type BOOL
+  :library-name "User32.dll"
+  :entry-name "TranslateMessage"
+  :linkage-type :pascal)
 
 ;; BOOL PostMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 (defwinapi PostMessage
-	((hWnd HWND)
+    ((hWnd HWND)
      (Msg UINT)
      (wParam WPARAM)
      (lParam LPARAM))
-	:return-type BOOL
-	:library-name "User32.dll"
-	:entry-name "PostMessageA"
-	:linkage-type :pascal)
+  :return-type BOOL
+  :library-name "User32.dll"
+  :entry-name "PostMessageA"
+  :linkage-type :pascal)
 
 ;; LRESULT SendMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 (defwinapi SendMessage
-	((hWnd HWND)
+    ((hWnd HWND)
      (Msg UINT)
      (wParam WPARAM)
      (lParam LPARAM))
-	:return-type LRESULT
-	:library-name "User32.dll"
-	:entry-name "SendMessageA"
-	:linkage-type :pascal)
+  :return-type LRESULT
+  :library-name "User32.dll"
+  :entry-name "SendMessageA"
+  :linkage-type :pascal)
 
 ;; LONG DispatchMessage(CONST MSG* lpMsg);
 (defwinapi DispatchMessage
-	((lpMsg MSG))
-	:return-type LONG
-	:library-name "User32.dll"
-	:entry-name "DispatchMessageA"
-	:linkage-type :pascal)
+    ((lpMsg MSG))
+  :return-type LONG
+  :library-name "User32.dll"
+  :entry-name "DispatchMessageA"
+  :linkage-type :pascal)
 
 ;; HICON LoadIcon(HINSTANCE hInstance, LPCTSTR lpIconName);
 (defwinapi LoadIcon
-	((hInstance HINSTANCE)
-	 (lpIconName LPCTSTR))
-	:return-type HICON
-	:library-name "User32.dll"
-	:entry-name "LoadIconA"
-	:linkage-type :pascal)
+    ((hInstance HINSTANCE)
+     (lpIconName LPCTSTR))
+  :return-type HICON
+  :library-name "User32.dll"
+  :entry-name "LoadIconA"
+  :linkage-type :pascal)
 
 ;; HCURSOR LoadCursor(HINSTANCE hInstance, LPCTSTR lpCursorName);
 (defwinapi LoadCursor
-	((hInstance HINSTANCE)
-	 (lpIconName LPCTSTR))
-	:return-type HCURSOR
-	:library-name "User32.dll"
-	:entry-name "LoadCursorA"
-	:linkage-type :pascal)
+    ((hInstance HINSTANCE)
+     (lpIconName LPCTSTR))
+  :return-type HCURSOR
+  :library-name "User32.dll"
+  :entry-name "LoadCursorA"
+  :linkage-type :pascal)
 
 ;; HGDIOBJ GetStockObject(int fnObject);
 (defwinapi GetStockObject
-	((fnObject int))
-	:return-type HGDIOBJ
-	:library-name "gdi32.dll"
-	:entry-name "GetStockObject"
-	:linkage-type :pascal)
+    ((fnObject int))
+  :return-type HGDIOBJ
+  :library-name "gdi32.dll"
+  :entry-name "GetStockObject"
+  :linkage-type :pascal)
 
 ;;; constants for use with GetStdHandle
 (defwinconstant STD_INPUT_HANDLE  #xfffffff6) ;; Standard input handle
@@ -1166,46 +1166,46 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 ;;;	HANDLE GetCurrentProcess()
 ;;;
 (defwinapi GetCurrentProcess ()
-   :return-type HANDLE
-   :library-name "kernel32.dll"
-   :entry-name "GetCurrentProcess"
-   :linkage-type :pascal)
+  :return-type HANDLE
+  :library-name "kernel32.dll"
+  :entry-name "GetCurrentProcess"
+  :linkage-type :pascal)
 
 ;;;
 ;;;	DWORD GetCurrentProcessId()
 ;;;
 (defwinapi GetCurrentProcessId ()
-   :return-type DWORD
-   :library-name "kernel32.dll"
-   :entry-name "GetCurrentProcessId"
-   :linkage-type :pascal)
+  :return-type DWORD
+  :library-name "kernel32.dll"
+  :entry-name "GetCurrentProcessId"
+  :linkage-type :pascal)
 
 ;;;
 ;;;	HANDLE GetCurrentThread()
 ;;;
 (defwinapi GetCurrentThread ()
-   :return-type HANDLE
-   :library-name "kernel32.dll"
-   :entry-name "GetCurrentThread"
-   :linkage-type :pascal)
+  :return-type HANDLE
+  :library-name "kernel32.dll"
+  :entry-name "GetCurrentThread"
+  :linkage-type :pascal)
 
 ;;;
 ;;;	DWORD GetCurrentThreadId()
 ;;;
 (defwinapi GetCurrentThreadId ()
-   :return-type DWORD
-   :library-name "kernel32.dll"
-   :entry-name "GetCurrentThreadId"
-   :linkage-type :pascal)
+  :return-type DWORD
+  :library-name "kernel32.dll"
+  :entry-name "GetCurrentThreadId"
+  :linkage-type :pascal)
 
 ;;;
 ;;; VOID WINAPI Sleep(DWORD dwMilliseconds);
 ;;;
 (defwinapi %Sleep ((milliseconds DWORD))
-   :return-type :void
-   :library-name "kernel32.dll"
-   :entry-name "Sleep"
-   :linkage-type :pascal)
+  :return-type :void
+  :library-name "kernel32.dll"
+  :entry-name "Sleep"
+  :linkage-type :pascal)
 
 ;;
 ;; MessageBox() Flags
@@ -1259,53 +1259,53 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 ;; int MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType);
 (defwinapi MessageBox
-	((hWnd HWND)
-	 (lpText LPCTSTR)
-	 (lpCaption LPCTSTR)
-	 (uType UINT))
-   :return-type int
-   :library-name "user32.dll"
-   :entry-name "MessageBoxA"
-   :linkage-type :pascal)
+    ((hWnd HWND)
+     (lpText LPCTSTR)
+     (lpCaption LPCTSTR)
+     (uType UINT))
+  :return-type int
+  :library-name "user32.dll"
+  :entry-name "MessageBoxA"
+  :linkage-type :pascal)
 
 (defun dialog-id-name (id)
-	(cond ((= id win:IDOK) 		'win:IDOK)
-		((= id win:IDCANCEL) 	'win:IDCANCEL)
-		((= id win:IDABORT) 	'win:IDABORT)
-		((= id win:IDRETRY) 	'win:IDRETRY)
-		((= id win:IDIGNORE) 	'win:IDIGNORE)
-		((= id win:IDYES) 		'win:IDYES)
-		((= id win:IDNO) 		'win:IDNO)
-		((= id win:IDCLOSE) 	'win:IDCLOSE)
-		((= id win:IDHELP) 		'win:IDHELP)))
+  (cond ((= id win:IDOK) 		'win:IDOK)
+	((= id win:IDCANCEL) 	'win:IDCANCEL)
+	((= id win:IDABORT) 	'win:IDABORT)
+	((= id win:IDRETRY) 	'win:IDRETRY)
+	((= id win:IDIGNORE) 	'win:IDIGNORE)
+	((= id win:IDYES) 		'win:IDYES)
+	((= id win:IDNO) 		'win:IDNO)
+	((= id win:IDCLOSE) 	'win:IDCLOSE)
+	((= id win:IDHELP) 		'win:IDHELP)))
 
 (defun message-box-ok (message &optional caption)
-	(dialog-id-name
-		(messagebox (cl::get-application-main-window)
-			(ct:create-c-string	message)
-			(if caption (ct:create-c-string caption) cl::c_null)
-			MB_OK)))
+  (dialog-id-name
+   (messagebox (cl::get-application-main-window)
+	       (ct:create-c-string	message)
+	       (if caption (ct:create-c-string caption) cl::c_null)
+	       MB_OK)))
 
 (defun message-box-ok-cancel (message &optional caption)
-	(dialog-id-name
-		(messagebox (cl::get-application-main-window)
-			(ct:create-c-string	message)
-			(if caption (ct:create-c-string caption) cl::c_null)
-			MB_OKCANCEL)))
+  (dialog-id-name
+   (messagebox (cl::get-application-main-window)
+	       (ct:create-c-string	message)
+	       (if caption (ct:create-c-string caption) cl::c_null)
+	       MB_OKCANCEL)))
 
 (defun message-box-yes-no (message &optional caption)
-	(dialog-id-name
-		(messagebox (cl::get-application-main-window)
-			(ct:create-c-string	message)
-			(if caption (ct:create-c-string caption) cl::c_null)
-			MB_YESNO)))
+  (dialog-id-name
+   (messagebox (cl::get-application-main-window)
+	       (ct:create-c-string	message)
+	       (if caption (ct:create-c-string caption) cl::c_null)
+	       MB_YESNO)))
 
 (defun message-box-yes-no-cancel (message &optional caption)
-	(dialog-id-name
-		(messagebox (cl::get-application-main-window)
-			(ct:create-c-string	message)
-			(if caption (ct:create-c-string caption) cl::c_null)
-			MB_YESNOCANCEL)))
+  (dialog-id-name
+   (messagebox (cl::get-application-main-window)
+	       (ct:create-c-string	message)
+	       (if caption (ct:create-c-string caption) cl::c_null)
+	       MB_YESNOCANCEL)))
 
 ;;
 ;; GetWindow() Constants
@@ -1321,81 +1321,81 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 ;; this is actually a synonym for GetWindow() in Win32
 ;; HWND GetNextWindow(HWND hWnd, UINT wCmd);
 (defwinapi GetNextWindow
-	((hWnd HWND)
-	 (wCmd UINT))
-   :return-type HWND
-   :library-name "user32.dll"
-   :entry-name "GetWindow"
-   :linkage-type :pascal)
+    ((hWnd HWND)
+     (wCmd UINT))
+  :return-type HWND
+  :library-name "user32.dll"
+  :entry-name "GetWindow"
+  :linkage-type :pascal)
 
 ;; BOOL TextOut(HDC hdc, int nXStart, int nYStart, LPCTSTR lpString, int cbString);
 (defwinapi TextOut
-	((hdc HDC)
-	 (nXStart int)
-	 (nYStart int)
-	 (lpString LPCTSTR)
-	 (cbString int))
-   :return-type BOOL
-   :library-name "gdi32.dll"
-   :entry-name "TextOutA"
-   :linkage-type :pascal)
+    ((hdc HDC)
+     (nXStart int)
+     (nYStart int)
+     (lpString LPCTSTR)
+     (cbString int))
+  :return-type BOOL
+  :library-name "gdi32.dll"
+  :entry-name "TextOutA"
+  :linkage-type :pascal)
 
 
 (defstruct rect left top right bottom)
 (defun get-window-rect (hwnd)
-	(let ((crect (ct:malloc (sizeof 'RECT)))
-		  (rect (make-rect)))
-		(if (GetWindowRect hwnd crect)
-			(progn
-				(setf (rect-left rect)(cref RECT crect left))
-				(setf (rect-top rect)(cref RECT crect top))
-				(setf (rect-right rect)(cref RECT crect right))
-				(setf (rect-bottom rect)(cref RECT crect bottom))
-				rect))))
+  (let ((crect (ct:malloc (sizeof 'RECT)))
+	(rect (make-rect)))
+    (if (GetWindowRect hwnd crect)
+	(progn
+	  (setf (rect-left rect)(cref RECT crect left))
+	  (setf (rect-top rect)(cref RECT crect top))
+	  (setf (rect-right rect)(cref RECT crect right))
+	  (setf (rect-bottom rect)(cref RECT crect bottom))
+	  rect))))
 
 ;; int GetWindowText(HWND hWnd, LPTSTR lpString, int nMaxCount);
 (defwinapi GetWindowText
-	((hWnd HWND)
-	 (lpString LPTSTR)
-	 (nMaxCount int))
-   :return-type int
-   :library-name "user32.dll"
-   :entry-name "GetWindowTextA"
-   :linkage-type :pascal)
+    ((hWnd HWND)
+     (lpString LPTSTR)
+     (nMaxCount int))
+  :return-type int
+  :library-name "user32.dll"
+  :entry-name "GetWindowTextA"
+  :linkage-type :pascal)
 
 (defun get-window-text (hwnd &optional (max-length 256))
-	(let ((cstr (ct:malloc max-length)))
-		(unless (zerop (GetWindowText hwnd cstr max-length))
-			(ct:c-string-to-lisp-string cstr))))
+  (let ((cstr (ct:malloc max-length)))
+    (unless (zerop (GetWindowText hwnd cstr max-length))
+      (ct:c-string-to-lisp-string cstr))))
 
 ;; HWND FindWindow(LPCTSTR lpClassName, LPCTSTR lpWindowName);
 (defwinapi FindWindow
-	((lpClassName LPCTSTR )
-	 (lpWindowName LPCTSTR))
-   :return-type HWND
-   :library-name "user32.dll"
-   :entry-name "FindWindowA"
-   :linkage-type :pascal)
+    ((lpClassName LPCTSTR )
+     (lpWindowName LPCTSTR))
+  :return-type HWND
+  :library-name "user32.dll"
+  :entry-name "FindWindowA"
+  :linkage-type :pascal)
 
 ;; HWND FindWindowEx(HWND hwndParent, HWND hwndChildAfter, LPCTSTR lpszClass,
 ;;		LPCTSTR lpszWindow);
 (defwinapi FindWindowEx
-	((hwndParent HWND)
-	 (hwndChildAfter HWND)
-	 (lpClassName LPCTSTR)
-	 (lpWindowName LPCTSTR))
-   :return-type HWND
-   :library-name "user32.dll"
-   :entry-name "FindWindowExA"
-   :linkage-type :pascal)
+    ((hwndParent HWND)
+     (hwndChildAfter HWND)
+     (lpClassName LPCTSTR)
+     (lpWindowName LPCTSTR))
+  :return-type HWND
+  :library-name "user32.dll"
+  :entry-name "FindWindowExA"
+  :linkage-type :pascal)
 
 ;;	DWORD GetLastError();
 (defwinapi GetLastError
-	()
-   :return-type DWORD
-   :library-name "kernel32.dll"
-   :entry-name "GetLastError"
-   :linkage-type :pascal)
+    ()
+  :return-type DWORD
+  :library-name "kernel32.dll"
+  :entry-name "GetLastError"
+  :linkage-type :pascal)
 
 (defwinconstant SND_SYNC            #x0000)  	;; play synchronously (default)
 (defwinconstant SND_ASYNC           #x0001)  	;; play asynchronously
@@ -1413,29 +1413,29 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 ;; BOOL PlaySound(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
 (defwinapi PlaySound
-	((pszSound LPCSTR)(hmod HMODULE)(fdwSound DWORD))
-	:return-type BOOL
-	:library-name "winmm.dll"
-	:entry-name "PlaySoundA"
-	:linkage-type :pascal)
+    ((pszSound LPCSTR)(hmod HMODULE)(fdwSound DWORD))
+  :return-type BOOL
+  :library-name "winmm.dll"
+  :entry-name "PlaySoundA"
+  :linkage-type :pascal)
 
 ;; typedef BOOL (CALLBACK* WNDENUMPROC)(HWND, LPARAM);
 (defvar *wnd-enum-proc* nil)
 
 (ct:defun-callback WndEnumProc ((hwnd HWND)(lParam LPARAM))
-	(funcall *wnd-enum-proc* hwnd lParam)
-	t)
+  (funcall *wnd-enum-proc* hwnd lParam)
+  t)
 
 ;; LRESULT SendMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 (defwinapi SendMessage
-	((hWnd HWND )
-	 (Msg UINT)
-	 (wParam WPARAM)
-	 (lParam LPARAM))
-   :return-type LRESULT
-   :library-name "user32.dll"
-   :entry-name "SendMessageA"
-   :linkage-type :pascal)
+    ((hWnd HWND )
+     (Msg UINT)
+     (wParam WPARAM)
+     (lParam LPARAM))
+  :return-type LRESULT
+  :library-name "user32.dll"
+  :entry-name "SendMessageA"
+  :linkage-type :pascal)
 
 (defwinconstant WM_USER                 #x0400)
 
@@ -1564,7 +1564,7 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 (defwinconstant IMF_AUTOKEYBOARD		#x0001)
 (defwinconstant IMF_AUTOFONT			#x0002)
 (defwinconstant IMF_IMECANCELCOMPLETE	#x0004)	;; high completes the comp string when aborting,
-												;;low cancels.
+;;low cancels.
 (defwinconstant IMF_IMEALWAYSSENDNOTIFY #x0008)
 
 ;; Values for EM_GETIMECOMPMODE
@@ -1575,67 +1575,67 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 (defwinconstant ICM_LEVEL2_SUI			#x0004)
 
 (defwinstruct CHARRANGE
-  ((cpMin             LONG)
-   (cpMax             LONG)))
+    ((cpMin             LONG)
+     (cpMax             LONG)))
 
 ;; BOOL GetTextMetrics(HDC hdc, LPTEXTMETRIC lptm);
 (defwinapi GetTextMetrics ((hWnd HWND)(hDC HDC))
-   :return-type BOOL
-   :library-name "gdi32.dll"
-   :entry-name "GetTextMetricsA"
-   :linkage-type :pascal)
+  :return-type BOOL
+  :library-name "gdi32.dll"
+  :entry-name "GetTextMetricsA"
+  :linkage-type :pascal)
 
 ;; UINT SetTextAlign(HDC hdc, UINT fMode);
 (defwinapi SetTextAlign ((hdc HDC)(fMode UINT))
-   :return-type UINT
-   :library-name "gdi32.dll"
-   :entry-name "SetTextAlign"
-   :linkage-type :pascal)
+  :return-type UINT
+  :library-name "gdi32.dll"
+  :entry-name "SetTextAlign"
+  :linkage-type :pascal)
 
 ;; BOOL TextOut(HDC hdc, int nXStart, int nYStart, LPCTSTR lpString, int cbString);
 (defwinapi TextOut
-	((hdc HDC)
-	 (nXStart int)
-	 (nYStart int)
-	 (lpString LPCTSTR)
-	 (cbString int))
-   :return-type BOOL
-   :library-name "gdi32.dll"
-   :entry-name "TextOutA"
-   :linkage-type :pascal)
+    ((hdc HDC)
+     (nXStart int)
+     (nYStart int)
+     (lpString LPCTSTR)
+     (cbString int))
+  :return-type BOOL
+  :library-name "gdi32.dll"
+  :entry-name "TextOutA"
+  :linkage-type :pascal)
 
 ;; int GetDeviceCaps(HDC hdc, int nIndex);
 (defwinapi GetDeviceCaps
-	((hdc HDC)
-	 (nIndex int))
-   :return-type int
-   :library-name "gdi32.dll"
-   :entry-name "GetDeviceCaps"
-   :linkage-type :pascal)
+    ((hdc HDC)
+     (nIndex int))
+  :return-type int
+  :library-name "gdi32.dll"
+  :entry-name "GetDeviceCaps"
+  :linkage-type :pascal)
 
 (defwinstruct TEXTMETRIC
-  (
-	(tmHeight			LONG)
-	(tmAscent           LONG)
-	(tmDescent          LONG)
-	(tmInternalLeading  LONG)
-	(tmExternalLeading  LONG)
-	(tmAveCharWidth     LONG)
-	(tmMaxCharWidth     LONG)
-	(tmWeight           LONG)
-	(tmOverhang         LONG)
-	(tmDigitizedAspectX LONG)
-	(tmDigitizedAspectY LONG)
- 	(tmFirstChar        BYTE)
-	(tmLastChar         BYTE)
-	(tmDefaultChar      BYTE)
- 	(tmBreakChar        BYTE)
-	(tmItalic           BYTE)
-	(tmUnderlined       BYTE)
-	(tmStruckOut        BYTE)
-	(tmPitchAndFamily   BYTE)
-	(tmCharSet          BYTE)
-))
+    (
+     (tmHeight			LONG)
+     (tmAscent           LONG)
+     (tmDescent          LONG)
+     (tmInternalLeading  LONG)
+     (tmExternalLeading  LONG)
+     (tmAveCharWidth     LONG)
+     (tmMaxCharWidth     LONG)
+     (tmWeight           LONG)
+     (tmOverhang         LONG)
+     (tmDigitizedAspectX LONG)
+     (tmDigitizedAspectY LONG)
+     (tmFirstChar        BYTE)
+     (tmLastChar         BYTE)
+     (tmDefaultChar      BYTE)
+     (tmBreakChar        BYTE)
+     (tmItalic           BYTE)
+     (tmUnderlined       BYTE)
+     (tmStruckOut        BYTE)
+     (tmPitchAndFamily   BYTE)
+     (tmCharSet          BYTE)
+     ))
 
 ;; Device Parameters for GetDeviceCaps()
 (defwinconstant DRIVERVERSION 	0)     ;; Device driver version
@@ -1692,7 +1692,7 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 ;; Display driver specific
 
 (defwinconstant VREFRESH        116)  ;; Current vertical refresh rate of the
-                             		  ;; display device (for displays only) in Hz
+;; display device (for displays only) in Hz
 (defwinconstant DESKTOPVERTRES  117)  ;; Horizontal width of entire desktop in pixels
 (defwinconstant DESKTOPHORZRES  118)  ;; Vertical height of entire desktop in pixels
 (defwinconstant BLTALIGNMENT    119) ;; Preferred blt alignment
@@ -1812,31 +1812,31 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 ;; BOOL Rectangle(HDC hdc, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 (defwinapi Rectangle
-	((hDC HDC)
-	 (nLeftRect int)
-	 (nTopRect int)
-	 (nRightRect int)
-	 (nBottomRect int))
-   :return-type BOOL
-   :library-name "gdi32.dll"
-   :entry-name "Rectangle"
-   :linkage-type :pascal)
+    ((hDC HDC)
+     (nLeftRect int)
+     (nTopRect int)
+     (nRightRect int)
+     (nBottomRect int))
+  :return-type BOOL
+  :library-name "gdi32.dll"
+  :entry-name "Rectangle"
+  :linkage-type :pascal)
 
 ;; HBRUSH CreateSolidBrush(COLORREF crColor);
 (defwinapi CreateSolidBrush
-	((crColor COLORREF))
-   :return-type HBRUSH
-   :library-name "gdi32.dll"
-   :entry-name "CreateSolidBrush"
-   :linkage-type :pascal)
+    ((crColor COLORREF))
+  :return-type HBRUSH
+  :library-name "gdi32.dll"
+  :entry-name "CreateSolidBrush"
+  :linkage-type :pascal)
 
 ;; BOOL DeleteObject(HGDIOBJ hObject);
 (defwinapi DeleteObject
-	((hObject HGDIOBJ))
-   :return-type BOOL
-   :library-name "gdi32.dll"
-   :entry-name "DeleteObject"
-   :linkage-type :pascal)
+    ((hObject HGDIOBJ))
+  :return-type BOOL
+  :library-name "gdi32.dll"
+  :entry-name "DeleteObject"
+  :linkage-type :pascal)
 
 ;;; Windows Registry API
 
@@ -1876,41 +1876,41 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 (defwinconstant SYNCHRONIZE 			 #x00100000)
 
 (defwinconstant KEY_READ (logand
-						(logior
-							STANDARD_RIGHTS_READ
-                            KEY_QUERY_VALUE
-                            KEY_ENUMERATE_SUB_KEYS
-                            KEY_NOTIFY)
-                        (lognot SYNCHRONIZE)))
+			  (logior
+			   STANDARD_RIGHTS_READ
+                           KEY_QUERY_VALUE
+                           KEY_ENUMERATE_SUB_KEYS
+                           KEY_NOTIFY)
+                          (lognot SYNCHRONIZE)))
 
 
 (defwinconstant KEY_WRITE (logand
-							(logior
-								STANDARD_RIGHTS_WRITE
-                                KEY_SET_VALUE
-                                KEY_CREATE_SUB_KEY)
-                        	(lognot SYNCHRONIZE)))
+			   (logior
+			    STANDARD_RIGHTS_WRITE
+                            KEY_SET_VALUE
+                            KEY_CREATE_SUB_KEY)
+                           (lognot SYNCHRONIZE)))
 
 (defwinconstant KEY_EXECUTE	(logand
-             					KEY_READ
-                        		(lognot SYNCHRONIZE)))
+             			 KEY_READ
+                        	 (lognot SYNCHRONIZE)))
 
 (defwinconstant KEY_ALL_ACCESS  (logand
-								(logior
-       								STANDARD_RIGHTS_ALL
-                                  	KEY_QUERY_VALUE
-                                  	KEY_SET_VALUE
-                                  	KEY_CREATE_SUB_KEY
-                                  	KEY_ENUMERATE_SUB_KEYS
-                                  	KEY_NOTIFY
-                                  	KEY_CREATE_LINK)
+				 (logior
+       				  STANDARD_RIGHTS_ALL
+                                  KEY_QUERY_VALUE
+                                  KEY_SET_VALUE
+                                  KEY_CREATE_SUB_KEY
+                                  KEY_ENUMERATE_SUB_KEYS
+                                  KEY_NOTIFY
+                                  KEY_CREATE_LINK)
                                  (lognot SYNCHRONIZE)))
 
 #! (:library "advapi32" :export t :pascal "WINAPI")
 #define REG_NONE                    ( 0 )   // No value type
 #define REG_SZ                      ( 1 )   // Unicode nul terminated string
 #define REG_EXPAND_SZ               ( 2 )   // Unicode nul terminated string
-                                            // (with environment variable references)
+// (with environment variable references)
 #define REG_BINARY                  ( 3 )   // Free form binary
 #define REG_DWORD                   ( 4 )   // 32-bit number
 #define REG_DWORD_LITTLE_ENDIAN     ( 4 )   // 32-bit number (same as REG_DWORD)
@@ -1927,69 +1927,69 @@ LRESULT WINAPI DefMDIChildProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 (defwintype REGSAM ACCESS_MASK)
 
 (defwinapi RegEnumKeyEx
-	((hKey HKEY)
-	 (dwIndex DWORD)
-	 (lpName LPSTR)
-	 (lpcbName LPDWORD)
-	 (lpReserved LPDWORD)
-	 (lpClass LPSTR)
-	 (lpcbClass LPDWORD)
-	 (lpftLastWriteTime PFILETIME))
-   :return-type LONG
-   :library-name "advapi32.dll"
-   :entry-name "RegEnumKeyExA"
-   :linkage-type :pascal)
+    ((hKey HKEY)
+     (dwIndex DWORD)
+     (lpName LPSTR)
+     (lpcbName LPDWORD)
+     (lpReserved LPDWORD)
+     (lpClass LPSTR)
+     (lpcbClass LPDWORD)
+     (lpftLastWriteTime PFILETIME))
+  :return-type LONG
+  :library-name "advapi32.dll"
+  :entry-name "RegEnumKeyExA"
+  :linkage-type :pascal)
 
 (defwinapi RegOpenKeyEx
-	((hKey HKEY)
+    ((hKey HKEY)
      (lpSubKey LPCSTR)
      (ulOptions DWORD)
      (samDesired REGSAM)
      (phkResult PHKEY))
-   :return-type LONG
-   :library-name "advapi32.dll"
-   :entry-name "RegOpenKeyExA"
-   :linkage-type :pascal)
+  :return-type LONG
+  :library-name "advapi32.dll"
+  :entry-name "RegOpenKeyExA"
+  :linkage-type :pascal)
 
 (defwinapi RegQueryValueEx
-	((hKey HKEY)
-	 (lpValueName LPCSTR)
-	 (lpReserved LPDWORD)
-	 (lpType LPDWORD)
-	 (lpData LPBYTE)
-	 (lpcbData LPDWORD))
-   :return-type LONG
-   :library-name "advapi32.dll"
-   :entry-name "RegQueryValueExA"
-   :linkage-type :pascal)
+    ((hKey HKEY)
+     (lpValueName LPCSTR)
+     (lpReserved LPDWORD)
+     (lpType LPDWORD)
+     (lpData LPBYTE)
+     (lpcbData LPDWORD))
+  :return-type LONG
+  :library-name "advapi32.dll"
+  :entry-name "RegQueryValueExA"
+  :linkage-type :pascal)
 
 (defwinapi RegSetValueEx
-	((hKey HKEY)
-	 (lpValueName LPCSTR)
-	 (Reserved DWORD)
-	 (dwType DWORD)
-	 (lpData LPBYTE)
-	 (cbData DWORD))
-   :return-type LONG
-   :library-name "advapi32.dll"
-   :entry-name "RegSetValueExA"
-   :linkage-type :pascal)
+    ((hKey HKEY)
+     (lpValueName LPCSTR)
+     (Reserved DWORD)
+     (dwType DWORD)
+     (lpData LPBYTE)
+     (cbData DWORD))
+  :return-type LONG
+  :library-name "advapi32.dll"
+  :entry-name "RegSetValueExA"
+  :linkage-type :pascal)
 
 (defwinapi OutputDebugString
-	((lpOutputString LPCTSTR))
-   :return-type VOID
-   :library-name "kernel32.dll"
-   :entry-name "OutputDebugStringA"
-   :linkage-type :pascal)
+    ((lpOutputString LPCTSTR))
+  :return-type VOID
+  :library-name "kernel32.dll"
+  :entry-name "OutputDebugStringA"
+  :linkage-type :pascal)
 
 (defwinapi CopyFile
-	((lpExistingFileName LPCSTR)
-	 (lpNewFileName LPCSTR)
-	 (bFailIfExists BOOL))
-   :return-type BOOL
-   :library-name "kernel32.dll"
-   :entry-name "CopyFileA"
-   :linkage-type :pascal)
+    ((lpExistingFileName LPCSTR)
+     (lpNewFileName LPCSTR)
+     (bFailIfExists BOOL))
+  :return-type BOOL
+  :library-name "kernel32.dll"
+  :entry-name "CopyFileA"
+  :linkage-type :pascal)
 
 #! (:library "advapi32" :export t :pascal "WINAPI")
 LONG WINAPI RegCloseKey(HKEY hKey);
@@ -2007,59 +2007,59 @@ VOID WINAPI DebugBreak();
 (defconstant max-user-name-length UNLEN)
 (defconstant max-computer-name-length MAX_COMPUTERNAME_LENGTH)
 (defun get-user-name ()
-	(let* ((buf (ct:malloc (+ max-user-name-length 1)))
-		   (num (ct:malloc (ct:sizeof 'DWORD)))
-		   ret)
-		(setf (ct:cref (DWORD *) num 0) (+ max-user-name-length 1))
-		(setf ret (GetUserName buf num))
-		(if ret (ct:c-string-to-lisp-string buf))))
+  (let* ((buf (ct:malloc (+ max-user-name-length 1)))
+	 (num (ct:malloc (ct:sizeof 'DWORD)))
+	 ret)
+    (setf (ct:cref (DWORD *) num 0) (+ max-user-name-length 1))
+    (setf ret (GetUserName buf num))
+    (if ret (ct:c-string-to-lisp-string buf))))
 
 (defun get-computer-name ()
-	(let* ((buf (ct:malloc (+ max-computer-name-length 1)))
-		   (num (ct:malloc (ct:sizeof 'DWORD)))
-		   ret)
-		(setf (ct:cref (DWORD *) num 0) (+ max-computer-name-length 1))
-		(setf ret (GetComputerName buf num))
-		(if ret (ct:c-string-to-lisp-string buf))))
+  (let* ((buf (ct:malloc (+ max-computer-name-length 1)))
+	 (num (ct:malloc (ct:sizeof 'DWORD)))
+	 ret)
+    (setf (ct:cref (DWORD *) num 0) (+ max-computer-name-length 1))
+    (setf ret (GetComputerName buf num))
+    (if ret (ct:c-string-to-lisp-string buf))))
 
 #|
 (setf *wnd-enum-proc* #'(lambda (hwnd param)
-	(format t "window = ~A, param = ~A~%"
-		(get-window-text hwnd)
-		 param)))
+(format t "window = ~A, param = ~A~%"
+(get-window-text hwnd)
+param)))
 (EnumWindows (get-callback-procinst 'WndEnumProc) 0)
 (get-window-text (GetForegroundWindow))
 |#
 
 (defwinapi CreateFile ((file-name (:unsigned-char *))
-							(access :long)
-							(mode :long)
-							(security (:void *))
-							(creation :long)
-							(attributes :long)
-							(template (:void *)))
-	:return-type HANDLE
-	:library-name "kernel32.dll"
-	:entry-name "CreateFileA"
-	:linkage-type :pascal)
+		       (access :long)
+		       (mode :long)
+		       (security (:void *))
+		       (creation :long)
+		       (attributes :long)
+		       (template (:void *)))
+  :return-type HANDLE
+  :library-name "kernel32.dll"
+  :entry-name "CreateFileA"
+  :linkage-type :pascal)
 
 (defwinapi SetFilePointer ((handle :long)
-							(distanceToMove :long)
-							(distanceToMoveHigh (:void *))
-							(MoveMethod :long))
-	:return-type :long
-	:library-name "kernel32.dll"
-	:entry-name "SetFilePointer"
-	:linkage-type :pascal)
+			   (distanceToMove :long)
+			   (distanceToMoveHigh (:void *))
+			   (MoveMethod :long))
+  :return-type :long
+  :library-name "kernel32.dll"
+  :entry-name "SetFilePointer"
+  :linkage-type :pascal)
 
 (ct:defun-dll system ((command-line (:char *)))
-   :return-type :long
-   :library-name "msvcrt.dll"
-   :entry-name "system"
-   :linkage-type :c)
+  :return-type :long
+  :library-name "msvcrt.dll"
+  :entry-name "system"
+  :linkage-type :c)
 
 (defun shell (command-string)
-	(system (ct:lisp-string-to-c-string command-string)))
+  (system (ct:lisp-string-to-c-string command-string)))
 
 (defun get-command-line () (ct:c-string-to-lisp-string (GetCommandLine)))
 
@@ -2072,35 +2072,35 @@ VOID WINAPI DebugBreak();
      (lpParameters LPCSTR)
      (lpDirectory LPCSTR)
      (nShowCmd :long))
-    :return-type HINSTANCE
-    :library-name "Shell32"
-    :entry-name "ShellExecuteA"
-    :linkage-type :pascal)
+  :return-type HINSTANCE
+  :library-name "Shell32"
+  :entry-name "ShellExecuteA"
+  :linkage-type :pascal)
 
 (defun shell-execute (command params &optional (show t))
-    (win:ShellExecute
-        0 ;(cl::get-application-main-window)
-        (ct:lisp-string-to-c-string "open")
-        (ct:lisp-string-to-c-string command)
-        (ct:lisp-string-to-c-string params)
-        (ct:lisp-string-to-c-string "")
-        (logior
-            (if show win:SW_SHOWNORMAL win:SW_HIDE))))
+  (win:ShellExecute
+   0 ;(cl::get-application-main-window)
+   (ct:lisp-string-to-c-string "open")
+   (ct:lisp-string-to-c-string command)
+   (ct:lisp-string-to-c-string params)
+   (ct:lisp-string-to-c-string "")
+   (logior
+    (if show win:SW_SHOWNORMAL win:SW_HIDE))))
 
 (defwinapi RemoveDirectory
-	((lpPathName LPCSTR))
-   :return-type BOOL
-   :library-name "Kernel32"
-   :entry-name "RemoveDirectoryA"
-   :linkage-type :pascal)
+    ((lpPathName LPCSTR))
+  :return-type BOOL
+  :library-name "Kernel32"
+  :entry-name "RemoveDirectoryA"
+  :linkage-type :pascal)
 
 (defun namestring (x) x)        ;; redefined later
 (defun pathname (x) x)          ;; redefined later
 (defun delete-directory (path)
-    "Deletes an empty directory.
+  "Deletes an empty directory.
      Returns true if successful, false otherwise."
-    (win:RemoveDirectory
-        (ct:lisp-string-to-c-string (namestring (pathname path)))))
+  (win:RemoveDirectory
+   (ct:lisp-string-to-c-string (namestring (pathname path)))))
 
 (defun MAKELANGID (p s) (logior (ash s 10) p))
 (defun PRIMARYLANGID (lgid) (logand lgid #x3ff))
@@ -2120,76 +2120,76 @@ VOID WINAPI DebugBreak();
 (defwinconstant FORMAT_MESSAGE_MAX_WIDTH_MASK  #x000000FF)
 
 (defwinstruct GUID
-	((Data1  DWORD)
-	 (Data2  WORD)
+    ((Data1  DWORD)
+     (Data2  WORD)
      (Data3  WORD)
      (Data4  (BYTE 4))
-	))
+     ))
 (defwintype LPGUID (GUID *))
 
 #! (:library "Kernel32" :ignore "WINUSERAPI" :export t :pascal "WINAPI")
 DWORD WINAPI FormatMessageA(DWORD dwFlags,LPCVOID lpSource,DWORD dwMessageId,DWORD dwLanguageId,
-			LPSTR lpBuffer, DWORD nSize,void *Arguments);
+				  LPSTR lpBuffer, DWORD nSize,void *Arguments);
 HLOCAL WINAPI LocalFree(HLOCAL hMem);
 !#
 
 (defun system-error-text (error-id)
-	(let* ((ptr (ct:malloc (ct:sizeof '(LPSTR *))))
-		   (length
-			(FormatMessage
-				(logior FORMAT_MESSAGE_ALLOCATE_BUFFER
-						FORMAT_MESSAGE_IGNORE_INSERTS FORMAT_MESSAGE_FROM_SYSTEM)
-				ct:null
-				error-id
-				LANG_USER_DEFAULT
-				ptr
-				0
-				ct:null))
-			message)
-		(if (> length 0)
-			(setf message (ct:c-string-to-lisp-string (ct:cref (LPSTR *) ptr 0)))
-			(LocalFree (ct:cref (LPSTR *) ptr 0)))
-		message))
+  (let* ((ptr (ct:malloc (ct:sizeof '(LPSTR *))))
+	 (length
+	  (FormatMessage
+	   (logior FORMAT_MESSAGE_ALLOCATE_BUFFER
+		   FORMAT_MESSAGE_IGNORE_INSERTS FORMAT_MESSAGE_FROM_SYSTEM)
+	   ct:null
+	   error-id
+	   LANG_USER_DEFAULT
+	   ptr
+	   0
+	   ct:null))
+	 message)
+    (if (> length 0)
+	(setf message (ct:c-string-to-lisp-string (ct:cref (LPSTR *) ptr 0)))
+	(LocalFree (ct:cref (LPSTR *) ptr 0)))
+    message))
 
 (export '(shell get-command-line system))
 (export '(message-box-ok message-box-ok-cancel message-box-yes-no message-box-yes-no-cancel))
 (export '(get-computer-name get-user-name system-error-text delete-directory))
 
 (defun cl::get-dll-proc-addressx (proc-name module)
-    (let* ((dll-handle (ct::int-to-foreign-ptr module))
-           (name (ct:lisp-string-to-c-string proc-name))
-           (proc (win:GetProcAddress dll-handle name)))
-        (if (ct:cpointer-null proc)
-		  (error "Could not find the procedure ~A, error code = ~D" proc-name (win:GetLastError)))
-        proc))
+  (let* ((dll-handle (ct::int-to-foreign-ptr module))
+         (name (ct:lisp-string-to-c-string proc-name))
+         (proc (win:GetProcAddress dll-handle name)))
+    (if (ct:cpointer-null proc)
+	(error "Could not find the procedure ~A, error code = ~D" proc-name (win:GetLastError)))
+    proc))
 
 #|
 LispFunction(Get_DLL_Proc_Address)
 {
-	LISP_FUNC_BEGIN(2);
-	LispObj procname = LISP_ARG(0);
-	LispObj dll_handle = LISP_ARG(1);
-	HMODULE module = 0;
-	FARPROC proc = 0;
-	LispObj fp = 0;
-	fp = foreignNode();
-	checkString(procname);
-	checkLispInteger(dll_handle);
-	if (isBignum(dll_handle))
-	{
-		module = (HMODULE)UVECTOR(dll_handle)[BIGNUM_FIRST_CELL];
-		if (bignumNegative(dll_handle))
-			module = (HMODULE)-((long)module);
-	}
-	else
-		module = (HMODULE)integer(dll_handle);
+LISP_FUNC_BEGIN(2);
+LispObj procname = LISP_ARG(0);
+LispObj dll_handle = LISP_ARG(1);
+HMODULE module = 0;
+FARPROC proc = 0;
+LispObj fp = 0;
+fp = foreignNode();
+checkString(procname);
+checkLispInteger(dll_handle);
+if (isBignum(dll_handle))
+{
+module = (HMODULE)UVECTOR(dll_handle)[BIGNUM_FIRST_CELL];
+if (bignumNegative(dll_handle))
+module = (HMODULE)-((long)module);
+}
+else
+module = (HMODULE)integer(dll_handle);
 
-	proc = GetProcAddress(module, (char*)byteArrayStart(nullTerminate(procname)));
-	if (!proc)
-		Error("Could not find the procedure ~A, error code = ~A", procname,
-			createLispInteger(GetLastError()));
-	UVECTOR(fp)[FOREIGN_PTR] = (LispObj)proc;
-	ret = fp;
-	LISP_FUNC_RETURN(ret);
+proc = GetProcAddress(module, (char*)byteArrayStart(nullTerminate(procname)));
+if (!proc)
+Error("Could not find the procedure ~A, error code = ~A", procname,
+createLispInteger(GetLastError()));
+UVECTOR(fp)[FOREIGN_PTR] = (LispObj)proc;
+ret = fp;
+LISP_FUNC_RETURN(ret);
 }
 |#

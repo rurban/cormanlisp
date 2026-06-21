@@ -7,63 +7,63 @@
 
 #! (:library "USER32" :ignore "WINUSERAPI" :export t :pascal "WINAPI")
 /*
- * Resource Loading Routines
- */
+* Resource Loading Routines
+*/
 
 WINUSERAPI
 HBITMAP
 WINAPI
 LoadBitmapA(
-    HINSTANCE hInstance,
-    LPCSTR lpBitmapName);
+	    HINSTANCE hInstance,
+	    LPCSTR lpBitmapName);
 WINUSERAPI
 HBITMAP
 WINAPI
 LoadBitmapW(
-    HINSTANCE hInstance,
-    LPCWSTR lpBitmapName);
+	    HINSTANCE hInstance,
+	    LPCWSTR lpBitmapName);
 
 WINUSERAPI
 HCURSOR
 WINAPI
 LoadCursorA(
-    HINSTANCE hInstance,
-    LPCSTR lpCursorName);
+	    HINSTANCE hInstance,
+	    LPCSTR lpCursorName);
 WINUSERAPI
 HCURSOR
 WINAPI
 LoadCursorW(
-    HINSTANCE hInstance,
-    LPCWSTR lpCursorName);
+	    HINSTANCE hInstance,
+	    LPCWSTR lpCursorName);
 
 WINUSERAPI
 HCURSOR
 WINAPI
 LoadCursorFromFileA(
-    LPCSTR    lpFileName);
+		    LPCSTR    lpFileName);
 WINUSERAPI
 HCURSOR
 WINAPI
 LoadCursorFromFileW(
-    LPCWSTR    lpFileName);
+		    LPCWSTR    lpFileName);
 
 WINUSERAPI
 HCURSOR
 WINAPI
 CreateCursor(
-    HINSTANCE hInst,
-    int xHotSpot,
-    int yHotSpot,
-    int nWidth,
-    int nHeight,
-    CONST VOID *pvANDPlane,
-    CONST VOID *pvXORPlane);
+	     HINSTANCE hInst,
+	     int xHotSpot,
+	     int yHotSpot,
+	     int nWidth,
+	     int nHeight,
+	     CONST VOID *pvANDPlane,
+	     CONST VOID *pvXORPlane);
 
 WINUSERAPI
 BOOL
 WINAPI
 DestroyCursor(
-    HCURSOR hCursor);
+	      HCURSOR hCursor);
 
 !#
 

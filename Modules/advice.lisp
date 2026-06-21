@@ -74,9 +74,9 @@
 #| EXAMPLE OF USE:
 
 (defun bad-factorial (n)
-  (if (zerop n)
-      'BOGUS
-      (* n (bad-factorial (1- n)))))
+(if (zerop n)
+'BOGUS
+(* n (bad-factorial (1- n)))))
 
 ;; Following is an example of an advisor.  It is like an :around method in
 ;; CLOS: it is called instead of the original function. The original
@@ -89,12 +89,12 @@
 ;; is already being advised discards the old advisor.
 
 (advise bad-factorial (n)
-  (let ((value (call-advised-function)))
-    (cond ((numberp value)
-	   value)
-	  (t
-	   (format t "A call to ~S with argument = ~S returns ~S; returning 1 instead.~%"
-		   advised-function n value)
-	   1))))
+(let ((value (call-advised-function)))
+(cond ((numberp value)
+value)
+(t
+(format t "A call to ~S with argument = ~S returns ~S; returning 1 instead.~%"
+advised-function n value)
+1))))
 
 |#

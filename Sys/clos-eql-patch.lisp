@@ -69,34 +69,34 @@
 (defconstant *old-class-of* #'class-of)
 
 (defun get-singleton (object)
-	"Return a CLOS class representing a type that is specific
+  "Return a CLOS class representing a type that is specific
 	for the object. Used in method dispatch to implement EQL
 	specialisers."
-	(or
-		(gethash object *singletons*)
-		(setf (gethash object *singletons*)
-			(ensure-class (gensym)
-				:direct-superclasses (list (class-of object))
-				:direct-slots (list)))))
+  (or
+   (gethash object *singletons*)
+   (setf (gethash object *singletons*)
+	 (ensure-class (gensym)
+		       :direct-superclasses (list (class-of object))
+		       :direct-slots (list)))))
 
 (defun find-class (symbol &optional (errorp t))
-	(if (and *support-eql-specializers* (listp symbol) (eq (car symbol) 'eql))
-		(let ((specialiser (car (cdr symbol))))
-			(get-singleton
-				(if (and (consp specialiser)
-						(eq (car specialiser) 'quote))
-					(car (cdr specialiser))
-					(if (symbolp specialiser)
-						(symbol-value specialiser)
-						specialiser))))
-		(funcall *old-findclass* symbol errorp)))
+  (if (and *support-eql-specializers* (listp symbol) (eq (car symbol) 'eql))
+      (let ((specialiser (car (cdr symbol))))
+	(get-singleton
+	 (if (and (consp specialiser)
+		  (eq (car specialiser) 'quote))
+	     (car (cdr specialiser))
+	     (if (symbolp specialiser)
+		 (symbol-value specialiser)
+		 specialiser))))
+      (funcall *old-findclass* symbol errorp)))
 
 (defun class-of (object)
-	(if *support-eql-specializers*
-		(or
-			(gethash object *singletons*)
-			(funcall *old-class-of* object))
-		(funcall *old-class-of* object)))
+  (if *support-eql-specializers*
+      (or
+       (gethash object *singletons*)
+       (funcall *old-class-of* object))
+      (funcall *old-class-of* object)))
 
 #|
 (in-package :common-lisp-user)
@@ -125,9 +125,9 @@
 ;; Would not work in patch version 1.2 but does in version 1.3
 (defconstant junk 25)
 (defmethod doit ((x (eql junk)))
-	25)
+25)
 (defmethod doit ((x (eql 'junk)))
-	'junk-symbol)
+'junk-symbol)
 
 (doit 25)
 (doit junk)
@@ -140,17 +140,17 @@
 (defclass derived1 (base1))
 (defgeneric do-it (x))
 (defmethod do-it ((x base1))
-	x)
+x)
 (defmethod do-it ((x derived1))
-	(call-next-method)
-	x)
+(call-next-method)
+x)
 
 (time
-	(let ((a (make-instance 'base1))
-			(b (make-instance 'derived1)))
-		(dotimes (count 100000)
-			(do-it a)
-			(do-it b))))
+(let ((a (make-instance 'base1))
+(b (make-instance 'derived1)))
+(dotimes (count 100000)
+(do-it a)
+(do-it b))))
 
 ;;; In Corman Lisp 1.4:
 ;;; Before this patch is applied, on a P2 333Mhz, 128MB ram the above

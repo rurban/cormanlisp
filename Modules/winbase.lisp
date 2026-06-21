@@ -513,110 +513,110 @@
 #define INVALID_FILE_SIZE 0xFFFFFFFF
 
 typedef struct _FILETIME {
-	DWORD dwLowDateTime;
-	DWORD dwHighDateTime;
+DWORD dwLowDateTime;
+DWORD dwHighDateTime;
 } FILETIME,*PFILETIME,*LPFILETIME;
 typedef struct _BY_HANDLE_FILE_INFORMATION {
-	DWORD	dwFileAttributes;
-	FILETIME	ftCreationTime;
-	FILETIME	ftLastAccessTime;
-	FILETIME	ftLastWriteTime;
-	DWORD	dwVolumeSerialNumber;
-	DWORD	nFileSizeHigh;
-	DWORD	nFileSizeLow;
-	DWORD	nNumberOfLinks;
-	DWORD	nFileIndexHigh;
-	DWORD	nFileIndexLow;
+DWORD	dwFileAttributes;
+FILETIME	ftCreationTime;
+FILETIME	ftLastAccessTime;
+FILETIME	ftLastWriteTime;
+DWORD	dwVolumeSerialNumber;
+DWORD	nFileSizeHigh;
+DWORD	nFileSizeLow;
+DWORD	nNumberOfLinks;
+DWORD	nFileIndexHigh;
+DWORD	nFileIndexLow;
 } BY_HANDLE_FILE_INFORMATION,*LPBY_HANDLE_FILE_INFORMATION;
 !#
 #! (:export t :library "KERNEL32")
 
 typedef struct _DCB {
-	DWORD DCBlength;
-	DWORD BaudRate;
+DWORD DCBlength;
+DWORD BaudRate;
 /*
-	DWORD fBinary:1;
-	DWORD fParity:1;
-	DWORD fOutxCtsFlow:1;
-	DWORD fOutxDsrFlow:1;
-	DWORD fDtrControl:2;
-	DWORD fDsrSensitivity:1;
-	DWORD fTXContinueOnXoff:1;
-	DWORD fOutX:1;
-	DWORD fInX:1;
-	DWORD fErrorChar:1;
-	DWORD fNull:1;
-	DWORD fRtsControl:2;
-	DWORD fAbortOnError:1;
-	DWORD fDummy2:17;
+DWORD fBinary:1;
+DWORD fParity:1;
+DWORD fOutxCtsFlow:1;
+DWORD fOutxDsrFlow:1;
+DWORD fDtrControl:2;
+DWORD fDsrSensitivity:1;
+DWORD fTXContinueOnXoff:1;
+DWORD fOutX:1;
+DWORD fInX:1;
+DWORD fErrorChar:1;
+DWORD fNull:1;
+DWORD fRtsControl:2;
+DWORD fAbortOnError:1;
+DWORD fDummy2:17;
 */
-	DWORD fFlags;
-	WORD wReserved;
-	WORD XonLim;
-	WORD XoffLim;
-	BYTE ByteSize;
-	BYTE Parity;
-	BYTE StopBits;
-	char XonChar;
-	char XoffChar;
-	char ErrorChar;
-	char EofChar;
-	char EvtChar;
-	WORD wReserved1;
+DWORD fFlags;
+WORD wReserved;
+WORD XonLim;
+WORD XoffLim;
+BYTE ByteSize;
+BYTE Parity;
+BYTE StopBits;
+char XonChar;
+char XoffChar;
+char ErrorChar;
+char EofChar;
+char EvtChar;
+WORD wReserved1;
 } DCB,*LPDCB;
 
 
 typedef struct _COMM_CONFIG {
-	DWORD dwSize;
-	WORD  wVersion;
-	WORD  wReserved;
-	DCB   dcb;
-	DWORD dwProviderSubType;
-	DWORD dwProviderOffset;
-	DWORD dwProviderSize;
-	WCHAR wcProviderData[1];
+DWORD dwSize;
+WORD  wVersion;
+WORD  wReserved;
+DCB   dcb;
+DWORD dwProviderSubType;
+DWORD dwProviderOffset;
+DWORD dwProviderSize;
+WCHAR wcProviderData[1];
 } COMMCONFIG,*LPCOMMCONFIG;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _COMMPROP {
-	WORD	wPacketLength;
-	WORD	wPacketVersion;
-	DWORD	dwServiceMask;
-	DWORD	dwReserved1;
-	DWORD	dwMaxTxQueue;
-	DWORD	dwMaxRxQueue;
-	DWORD	dwMaxBaud;
-	DWORD	dwProvSubType;
-	DWORD	dwProvCapabilities;
-	DWORD	dwSettableParams;
-	DWORD	dwSettableBaud;
-	WORD	wSettableData;
-	WORD	wSettableStopParity;
-	DWORD	dwCurrentTxQueue;
-	DWORD	dwCurrentRxQueue;
-	DWORD	dwProvSpec1;
-	DWORD	dwProvSpec2;
-	WCHAR	wcProvChar[1];
+WORD	wPacketLength;
+WORD	wPacketVersion;
+DWORD	dwServiceMask;
+DWORD	dwReserved1;
+DWORD	dwMaxTxQueue;
+DWORD	dwMaxRxQueue;
+DWORD	dwMaxBaud;
+DWORD	dwProvSubType;
+DWORD	dwProvCapabilities;
+DWORD	dwSettableParams;
+DWORD	dwSettableBaud;
+WORD	wSettableData;
+WORD	wSettableStopParity;
+DWORD	dwCurrentTxQueue;
+DWORD	dwCurrentRxQueue;
+DWORD	dwProvSpec1;
+DWORD	dwProvSpec2;
+WCHAR	wcProvChar[1];
 } COMMPROP,*LPCOMMPROP;
 typedef struct _COMMTIMEOUTS {
-	DWORD ReadIntervalTimeout;
-	DWORD ReadTotalTimeoutMultiplier;
-	DWORD ReadTotalTimeoutConstant;
-	DWORD WriteTotalTimeoutMultiplier;
-	DWORD WriteTotalTimeoutConstant;
+DWORD ReadIntervalTimeout;
+DWORD ReadTotalTimeoutMultiplier;
+DWORD ReadTotalTimeoutConstant;
+DWORD WriteTotalTimeoutMultiplier;
+DWORD WriteTotalTimeoutConstant;
 } COMMTIMEOUTS,*LPCOMMTIMEOUTS;
 /*
 typedef struct _COMSTAT {
-	DWORD fCtsHold:1;
-	DWORD fDsrHold:1;
-	DWORD fRlsdHold:1;
-	DWORD fXoffHold:1;
-	DWORD fXoffSent:1;
-	DWORD fEof:1;
-	DWORD fTxim:1;
-	DWORD fReserved:25;
-	DWORD cbInQue;
-	DWORD cbOutQue;
+DWORD fCtsHold:1;
+DWORD fDsrHold:1;
+DWORD fRlsdHold:1;
+DWORD fXoffHold:1;
+DWORD fXoffSent:1;
+DWORD fEof:1;
+DWORD fTxim:1;
+DWORD fReserved:25;
+DWORD cbInQue;
+DWORD cbOutQue;
 } COMSTAT,*LPCOMSTAT;
 */
 !#
@@ -626,53 +626,53 @@ typedef struct _COMSTAT {
 typedef VOID *LPTHREAD_START_ROUTINE;
 
 typedef struct _CREATE_PROCESS_DEBUG_INFO {
-	HANDLE hFile;
-	HANDLE hProcess;
-	HANDLE hThread;
-	LPVOID lpBaseOfImage;
-	DWORD dwDebugInfoFileOffset;
-	DWORD nDebugInfoSize;
-	LPVOID lpThreadLocalBase;
-	LPTHREAD_START_ROUTINE lpStartAddress;
-	LPVOID lpImageName;
-	WORD fUnicode;
+HANDLE hFile;
+HANDLE hProcess;
+HANDLE hThread;
+LPVOID lpBaseOfImage;
+DWORD dwDebugInfoFileOffset;
+DWORD nDebugInfoSize;
+LPVOID lpThreadLocalBase;
+LPTHREAD_START_ROUTINE lpStartAddress;
+LPVOID lpImageName;
+WORD fUnicode;
 } CREATE_PROCESS_DEBUG_INFO,*LPCREATE_PROCESS_DEBUG_INFO;
 typedef struct _CREATE_THREAD_DEBUG_INFO {
-	HANDLE hThread;
-	LPVOID lpThreadLocalBase;
-	LPTHREAD_START_ROUTINE lpStartAddress;
+HANDLE hThread;
+LPVOID lpThreadLocalBase;
+LPTHREAD_START_ROUTINE lpStartAddress;
 } CREATE_THREAD_DEBUG_INFO,*LPCREATE_THREAD_DEBUG_INFO;
 typedef struct _EXCEPTION_DEBUG_INFO {
-	EXCEPTION_RECORD ExceptionRecord;
-	DWORD dwFirstChance;
+EXCEPTION_RECORD ExceptionRecord;
+DWORD dwFirstChance;
 } EXCEPTION_DEBUG_INFO,*LPEXCEPTION_DEBUG_INFO;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _EXIT_THREAD_DEBUG_INFO {
-	DWORD dwExitCode;
+DWORD dwExitCode;
 } EXIT_THREAD_DEBUG_INFO,*LPEXIT_THREAD_DEBUG_INFO;
 typedef struct _EXIT_PROCESS_DEBUG_INFO {
-	DWORD dwExitCode;
+DWORD dwExitCode;
 } EXIT_PROCESS_DEBUG_INFO,*LPEXIT_PROCESS_DEBUG_INFO;
 typedef struct _LOAD_DLL_DEBUG_INFO {
-	HANDLE hFile;
-	LPVOID lpBaseOfDll;
-	DWORD dwDebugInfoFileOffset;
-	DWORD nDebugInfoSize;
-	LPVOID lpImageName;
-	WORD fUnicode;
+HANDLE hFile;
+LPVOID lpBaseOfDll;
+DWORD dwDebugInfoFileOffset;
+DWORD nDebugInfoSize;
+LPVOID lpImageName;
+WORD fUnicode;
 } LOAD_DLL_DEBUG_INFO,*LPLOAD_DLL_DEBUG_INFO;
 typedef struct _UNLOAD_DLL_DEBUG_INFO {
-	LPVOID lpBaseOfDll;
+LPVOID lpBaseOfDll;
 } UNLOAD_DLL_DEBUG_INFO,*LPUNLOAD_DLL_DEBUG_INFO;
 typedef struct _OUTPUT_DEBUG_STRING_INFO {
-	LPSTR lpDebugStringData;
-	WORD fUnicode;
-	WORD nDebugStringLength;
+LPSTR lpDebugStringData;
+WORD fUnicode;
+WORD nDebugStringLength;
 } OUTPUT_DEBUG_STRING_INFO,*LPOUTPUT_DEBUG_STRING_INFO;
 typedef struct _RIP_INFO {
-	DWORD dwError;
-	DWORD dwType;
+DWORD dwError;
+DWORD dwType;
 } RIP_INFO,*LPRIP_INFO;
 
 !#
@@ -681,12 +681,12 @@ typedef struct _RIP_INFO {
 
 // The C parser doesn't support unions yet  -RGC
 typedef struct _DEBUG_EVENT {
-	DWORD dwDebugEventCode;
-	DWORD dwProcessId;
-	DWORD dwThreadId;
+DWORD dwDebugEventCode;
+DWORD dwProcessId;
+DWORD dwThreadId;
 
 //	union {
-		EXCEPTION_DEBUG_INFO Exception;
+EXCEPTION_DEBUG_INFO Exception;
 //		CREATE_THREAD_DEBUG_INFO CreateThread;
 //		CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
 //		EXIT_THREAD_DEBUG_INFO ExitThread;
@@ -702,151 +702,151 @@ typedef struct _DEBUG_EVENT {
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _OVERLAPPED {
-	DWORD Internal;
-	DWORD InternalHigh;
-	DWORD Offset;
-	DWORD OffsetHigh;
-	HANDLE hEvent;
+DWORD Internal;
+DWORD InternalHigh;
+DWORD Offset;
+DWORD OffsetHigh;
+HANDLE hEvent;
 } OVERLAPPED,*POVERLAPPED,*LPOVERLAPPED;
 typedef struct _STARTUPINFOA {
-	DWORD	cb;
-	LPSTR	lpReserved;
-	LPSTR	lpDesktop;
-	LPSTR	lpTitle;
-	DWORD	dwX;
-	DWORD	dwY;
-	DWORD	dwXSize;
-	DWORD	dwYSize;
-	DWORD	dwXCountChars;
-	DWORD	dwYCountChars;
-	DWORD	dwFillAttribute;
-	DWORD	dwFlags;
-	WORD	wShowWindow;
-	WORD	cbReserved2;
-	PBYTE	lpReserved2;
-	HANDLE	hStdInput;
-	HANDLE	hStdOutput;
-	HANDLE	hStdError;
+DWORD	cb;
+LPSTR	lpReserved;
+LPSTR	lpDesktop;
+LPSTR	lpTitle;
+DWORD	dwX;
+DWORD	dwY;
+DWORD	dwXSize;
+DWORD	dwYSize;
+DWORD	dwXCountChars;
+DWORD	dwYCountChars;
+DWORD	dwFillAttribute;
+DWORD	dwFlags;
+WORD	wShowWindow;
+WORD	cbReserved2;
+PBYTE	lpReserved2;
+HANDLE	hStdInput;
+HANDLE	hStdOutput;
+HANDLE	hStdError;
 } STARTUPINFOA,*LPSTARTUPINFOA;
 typedef struct _STARTUPINFOW {
-	DWORD	cb;
-	LPWSTR	lpReserved;
-	LPWSTR	lpDesktop;
-	LPWSTR	lpTitle;
-	DWORD	dwX;
-	DWORD	dwY;
-	DWORD	dwXSize;
-	DWORD	dwYSize;
-	DWORD	dwXCountChars;
-	DWORD	dwYCountChars;
-	DWORD	dwFillAttribute;
-	DWORD	dwFlags;
-	WORD	wShowWindow;
-	WORD	cbReserved2;
-	PBYTE	lpReserved2;
-	HANDLE	hStdInput;
-	HANDLE	hStdOutput;
-	HANDLE	hStdError;
+DWORD	cb;
+LPWSTR	lpReserved;
+LPWSTR	lpDesktop;
+LPWSTR	lpTitle;
+DWORD	dwX;
+DWORD	dwY;
+DWORD	dwXSize;
+DWORD	dwYSize;
+DWORD	dwXCountChars;
+DWORD	dwYCountChars;
+DWORD	dwFillAttribute;
+DWORD	dwFlags;
+WORD	wShowWindow;
+WORD	cbReserved2;
+PBYTE	lpReserved2;
+HANDLE	hStdInput;
+HANDLE	hStdOutput;
+HANDLE	hStdError;
 } STARTUPINFOW,*LPSTARTUPINFOW;
 typedef struct _PROCESS_INFORMATION {
-	HANDLE hProcess;
-	HANDLE hThread;
-	DWORD dwProcessId;
-	DWORD dwThreadId;
+HANDLE hProcess;
+HANDLE hThread;
+DWORD dwProcessId;
+DWORD dwThreadId;
 } PROCESS_INFORMATION,*LPPROCESS_INFORMATION;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _CRITICAL_SECTION_DEBUG {
-	WORD Type;
-	WORD CreatorBackTraceIndex;
-	VOID /*struct _CRITICAL_SECTION*/ *CriticalSection;
-	LIST_ENTRY ProcessLocksList;
-	DWORD EntryCount;
-	DWORD ContentionCount;
-	DWORD Depth;
-	PVOID OwnerBackTrace[5];
+WORD Type;
+WORD CreatorBackTraceIndex;
+VOID /*struct _CRITICAL_SECTION*/ *CriticalSection;
+LIST_ENTRY ProcessLocksList;
+DWORD EntryCount;
+DWORD ContentionCount;
+DWORD Depth;
+PVOID OwnerBackTrace[5];
 } CRITICAL_SECTION_DEBUG,*PCRITICAL_SECTION_DEBUG;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _CRITICAL_SECTION {
-	PCRITICAL_SECTION_DEBUG DebugInfo;
-	LONG LockCount;
-	LONG RecursionCount;
-	HANDLE OwningThread;
-	HANDLE LockSemaphore;
-	DWORD Reserved;
+PCRITICAL_SECTION_DEBUG DebugInfo;
+LONG LockCount;
+LONG RecursionCount;
+HANDLE OwningThread;
+HANDLE LockSemaphore;
+DWORD Reserved;
 } CRITICAL_SECTION,*PCRITICAL_SECTION,*LPCRITICAL_SECTION;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _SYSTEMTIME {
-	WORD wYear;
-	WORD wMonth;
-	WORD wDayOfWeek;
-	WORD wDay;
-	WORD wHour;
-	WORD wMinute;
-	WORD wSecond;
-	WORD wMilliseconds;
+WORD wYear;
+WORD wMonth;
+WORD wDayOfWeek;
+WORD wDay;
+WORD wHour;
+WORD wMinute;
+WORD wSecond;
+WORD wMilliseconds;
 } SYSTEMTIME,*LPSYSTEMTIME;
 typedef struct _WIN32_FILE_ATTRIBUTE_DATA {
-	DWORD	dwFileAttributes;
-	FILETIME	ftCreationTime;
-	FILETIME	ftLastAccessTime;
-	FILETIME	ftLastWriteTime;
-	DWORD	nFileSizeHigh;
-	DWORD	nFileSizeLow;
+DWORD	dwFileAttributes;
+FILETIME	ftCreationTime;
+FILETIME	ftLastAccessTime;
+FILETIME	ftLastWriteTime;
+DWORD	nFileSizeHigh;
+DWORD	nFileSizeLow;
 } WIN32_FILE_ATTRIBUTE_DATA,*LPWIN32_FILE_ATTRIBUTE_DATA;
 typedef struct _WIN32_FIND_DATAA {
-	DWORD dwFileAttributes;
-	FILETIME ftCreationTime;
-	FILETIME ftLastAccessTime;
-	FILETIME ftLastWriteTime;
-	DWORD nFileSizeHigh;
-	DWORD nFileSizeLow;
-	DWORD dwReserved0;
-	DWORD dwReserved1;
-	CHAR cFileName[MAX_PATH];
-	CHAR cAlternateFileName[14];
-	WORD dummy;
+DWORD dwFileAttributes;
+FILETIME ftCreationTime;
+FILETIME ftLastAccessTime;
+FILETIME ftLastWriteTime;
+DWORD nFileSizeHigh;
+DWORD nFileSizeLow;
+DWORD dwReserved0;
+DWORD dwReserved1;
+CHAR cFileName[MAX_PATH];
+CHAR cAlternateFileName[14];
+WORD dummy;
 } WIN32_FIND_DATAA,*LPWIN32_FIND_DATAA;
 typedef struct _WIN32_FIND_DATAW {
-	DWORD dwFileAttributes;
-	FILETIME ftCreationTime;
-	FILETIME ftLastAccessTime;
-	FILETIME ftLastWriteTime;
-	DWORD nFileSizeHigh;
-	DWORD nFileSizeLow;
-	DWORD dwReserved0;
-	DWORD dwReserved1;
-	WCHAR cFileName[MAX_PATH];
-	WCHAR cAlternateFileName[14];
-	WORD dummy;
+DWORD dwFileAttributes;
+FILETIME ftCreationTime;
+FILETIME ftLastAccessTime;
+FILETIME ftLastWriteTime;
+DWORD nFileSizeHigh;
+DWORD nFileSizeLow;
+DWORD dwReserved0;
+DWORD dwReserved1;
+WCHAR cFileName[MAX_PATH];
+WCHAR cAlternateFileName[14];
+WORD dummy;
 } WIN32_FIND_DATAW,*LPWIN32_FIND_DATAW;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _WIN32_STREAM_ID {
-	DWORD dwStreamId;
-	DWORD dwStreamAttributes;
-	LARGE_INTEGER Size;
-	DWORD dwStreamNameSize;
-	WCHAR cStreamName[ANYSIZE_ARRAY];
+DWORD dwStreamId;
+DWORD dwStreamAttributes;
+LARGE_INTEGER Size;
+DWORD dwStreamNameSize;
+WCHAR cStreamName[ANYSIZE_ARRAY];
 } WIN32_STREAM_ID;
 !#
 #! (:export t :library "KERNEL32")
 /*
 typedef enum _FINDEX_INFO_LEVELS {
-	FindExInfoStandard,
-	FindExInfoMaxInfoLevel
+FindExInfoStandard,
+FindExInfoMaxInfoLevel
 } FINDEX_INFO_LEVELS;
 typedef enum _FINDEX_SEARCH_OPS {
-	FindExSearchNameMatch,
-	FindExSearchLimitToDirectories,
-	FindExSearchLimitToDevices,
-	FindExSearchMaxSearchOp
+FindExSearchNameMatch,
+FindExSearchLimitToDirectories,
+FindExSearchLimitToDevices,
+FindExSearchMaxSearchOp
 } FINDEX_SEARCH_OPS;
 typedef enum _ACL_INFORMATION_CLASS {
-	AclRevisionInformation=1,
-	AclSizeInformation
+AclRevisionInformation=1,
+AclSizeInformation
 } ACL_INFORMATION_CLASS;
 */
 typedef int FINDEX_INFO_LEVELS;
@@ -854,124 +854,124 @@ typedef int FINDEX_SEARCH_OPS;
 typedef int ACL_INFORMATION_CLASS;
 
 typedef struct tagHW_PROFILE_INFOA {
-	DWORD dwDockInfo;
-	CHAR szHwProfileGuid[HW_PROFILE_GUIDLEN];
-	CHAR szHwProfileName[MAX_PROFILE_LEN];
+DWORD dwDockInfo;
+CHAR szHwProfileGuid[HW_PROFILE_GUIDLEN];
+CHAR szHwProfileName[MAX_PROFILE_LEN];
 } HW_PROFILE_INFOA,*LPHW_PROFILE_INFOA;
 typedef struct tagHW_PROFILE_INFOW {
-	DWORD dwDockInfo;
-	WCHAR szHwProfileGuid[HW_PROFILE_GUIDLEN];
-	WCHAR szHwProfileName[MAX_PROFILE_LEN];
+DWORD dwDockInfo;
+WCHAR szHwProfileGuid[HW_PROFILE_GUIDLEN];
+WCHAR szHwProfileName[MAX_PROFILE_LEN];
 } HW_PROFILE_INFOW,*LPHW_PROFILE_INFOW;
 /*
 typedef enum _GET_FILEEX_INFO_LEVELS {
-	GetFileExInfoStandard,
-	GetFileExMaxInfoLevel
+GetFileExInfoStandard,
+GetFileExMaxInfoLevel
 } GET_FILEEX_INFO_LEVELS;
 */
 typedef int GET_FILEEX_INFO_LEVELS;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _SYSTEM_INFO {
-	WORD wProcessorArchitecture;
-	WORD wReserved;
-	DWORD dwPageSize;
-	PVOID lpMinimumApplicationAddress;
-	PVOID lpMaximumApplicationAddress;
-	DWORD dwActiveProcessorMask;
-	DWORD dwNumberOfProcessors;
-	DWORD dwProcessorType;
-	DWORD dwAllocationGranularity;
-	WORD wProcessorLevel;
-	WORD wProcessorRevision;
+WORD wProcessorArchitecture;
+WORD wReserved;
+DWORD dwPageSize;
+PVOID lpMinimumApplicationAddress;
+PVOID lpMaximumApplicationAddress;
+DWORD dwActiveProcessorMask;
+DWORD dwNumberOfProcessors;
+DWORD dwProcessorType;
+DWORD dwAllocationGranularity;
+WORD wProcessorLevel;
+WORD wProcessorRevision;
 } SYSTEM_INFO,*LPSYSTEM_INFO;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _SYSTEM_POWER_STATUS {
-	BYTE ACLineStatus;
-	BYTE BatteryFlag;
-	BYTE BatteryLifePercent;
-	BYTE Reserved1;
-	DWORD BatteryLifeTime;
-	DWORD BatteryFullLifeTime;
+BYTE ACLineStatus;
+BYTE BatteryFlag;
+BYTE BatteryLifePercent;
+BYTE Reserved1;
+DWORD BatteryLifeTime;
+DWORD BatteryFullLifeTime;
 } SYSTEM_POWER_STATUS,*LPSYSTEM_POWER_STATUS;
 typedef struct _TIME_ZONE_INFORMATION {
-	LONG Bias;
-	WCHAR StandardName[32];
-	SYSTEMTIME StandardDate;
-	LONG StandardBias;
-	WCHAR DaylightName[32];
-	SYSTEMTIME DaylightDate;
-	LONG DaylightBias;
+LONG Bias;
+WCHAR StandardName[32];
+SYSTEMTIME StandardDate;
+LONG StandardBias;
+WCHAR DaylightName[32];
+SYSTEMTIME DaylightDate;
+LONG DaylightBias;
 } TIME_ZONE_INFORMATION,*LPTIME_ZONE_INFORMATION;
 typedef struct _OSVERSIONINFOA {
-	DWORD dwOSVersionInfoSize;
-	DWORD dwMajorVersion;
-	DWORD dwMinorVersion;
-	DWORD dwBuildNumber;
-	DWORD dwPlatformId;
-	CHAR szCSDVersion[128];
+DWORD dwOSVersionInfoSize;
+DWORD dwMajorVersion;
+DWORD dwMinorVersion;
+DWORD dwBuildNumber;
+DWORD dwPlatformId;
+CHAR szCSDVersion[128];
 } OSVERSIONINFOA,*POSVERSIONINFOA,*LPOSVERSIONINFOA;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _OSVERSIONINFOW {
-	DWORD dwOSVersionInfoSize;
-	DWORD dwMajorVersion;
-	DWORD dwMinorVersion;
-	DWORD dwBuildNumber;
-	DWORD dwPlatformId;
-	WCHAR szCSDVersion[128];
+DWORD dwOSVersionInfoSize;
+DWORD dwMajorVersion;
+DWORD dwMinorVersion;
+DWORD dwBuildNumber;
+DWORD dwPlatformId;
+WCHAR szCSDVersion[128];
 } OSVERSIONINFOW,*POSVERSIONINFOW,*LPOSVERSIONINFOW;
 typedef struct _MEMORYSTATUS {
-	DWORD dwLength;
-	DWORD dwMemoryLoad;
-	DWORD dwTotalPhys;
-	DWORD dwAvailPhys;
-	DWORD dwTotalPageFile;
-	DWORD dwAvailPageFile;
-	DWORD dwTotalVirtual;
-	DWORD dwAvailVirtual;
+DWORD dwLength;
+DWORD dwMemoryLoad;
+DWORD dwTotalPhys;
+DWORD dwAvailPhys;
+DWORD dwTotalPageFile;
+DWORD dwAvailPageFile;
+DWORD dwTotalVirtual;
+DWORD dwAvailVirtual;
 } MEMORYSTATUS,*LPMEMORYSTATUS;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _LDT_ENTRY {
-	WORD LimitLow;
-	WORD BaseLow;
-	BYTE BaseMid;
-	BYTE Flags1;
-	BYTE Flags2;
-	BYTE BaseHi;
+WORD LimitLow;
+WORD BaseLow;
+BYTE BaseMid;
+BYTE Flags1;
+BYTE Flags2;
+BYTE BaseHi;
 } LDT_ENTRY,*PLDT_ENTRY,*LPLDT_ENTRY;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _PROCESS_HEAP_ENTRY {
-	PVOID lpData;
-	DWORD cbData;
-	BYTE cbOverhead;
-	BYTE iRegionIndex;
-	WORD wFlags;
+PVOID lpData;
+DWORD cbData;
+BYTE cbOverhead;
+BYTE iRegionIndex;
+WORD wFlags;
 //	union {
 //		struct {
 //			HANDLE hMem;
 //			DWORD dwReserved[3];
 //		} Block;
 //		struct {
-			DWORD dwCommittedSize;
-			DWORD dwUnCommittedSize;
-			LPVOID lpFirstBlock;
-			LPVOID lpLastBlock;
+DWORD dwCommittedSize;
+DWORD dwUnCommittedSize;
+LPVOID lpFirstBlock;
+LPVOID lpLastBlock;
 //		} Region;
 //	} DUMMYUNIONNAME;
 } PROCESS_HEAP_ENTRY,*LPPROCESS_HEAP_ENTRY;
 !#
 #! (:export t :library "KERNEL32")
 typedef struct _OFSTRUCT {
-	BYTE cBytes;
-	BYTE fFixedDisk;
-	WORD nErrCode;
-	WORD Reserved1;
-	WORD Reserved2;
-	CHAR szPathName[OFS_MAXPATHNAME];
+BYTE cBytes;
+BYTE fFixedDisk;
+WORD nErrCode;
+WORD Reserved1;
+WORD Reserved2;
+CHAR szPathName[OFS_MAXPATHNAME];
 } OFSTRUCT,*LPOFSTRUCT,*POFSTRUCT;
 !#
 #! (:export t :library "KERNEL32")

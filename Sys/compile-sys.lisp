@@ -6,11 +6,11 @@
 
 ;; change current directory to the Corman Lisp directory
 (progn
-    (terpri)
-    (write "Changing current directory to ")
-    (write (%change-directory (%cormanlisp-directory-namestring)))
-    (terpri)
-    (values))
+  (terpri)
+  (write "Changing current directory to ")
+  (write (%change-directory (%cormanlisp-directory-namestring)))
+  (terpri)
+  (values))
 
 (progn (load "Sys/load-sys.lisp")(values))
 (top-level)
@@ -20,4 +20,4 @@
 (progn (in-package :user)(values))
 (progn (save-image "CormanLisp.img")(values))
 (progn (format *terminal-io* "~%The file CormanLisp.img was created successfully.~%~%")
-	(values))
+       (values))

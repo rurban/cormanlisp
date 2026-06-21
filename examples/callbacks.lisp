@@ -15,7 +15,7 @@ long testfunc2(long x, CALLBACKTYPE func);
 !#
 
 (ct:defun-c-callback test-func ((x :long))
-	(format t "x = ~A~%" x))
+  (format t "x = ~A~%" x))
 
-;(testfunc1 10 20 30)
-;(testfunc2 5 (ct:get-callback-procinst 'test-func))
+					;(testfunc1 10 20 30)
+					;(testfunc2 5 (ct:get-callback-procinst 'test-func))

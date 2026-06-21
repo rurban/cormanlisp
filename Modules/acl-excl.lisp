@@ -54,113 +54,113 @@
 (require 'nregex)
 
 (defpackage :excl
-	(:use :common-lisp :nregex)
-	(:export
-		"IF*"
-		"*INITIAL-TERMINAL-IO*"
-		"*CL-DEFAULT-SPECIAL-BINDINGS*"
-		"FILESYS-SIZE"
-		"FILESYS-WRITE-DATE"
-		"STREAM-INPUT-FN"
-		"MATCH-REGEXP"
-		"*CURRENT-CASE-MODE*"
-		"INTERN*"
-		"FILESYS-TYPE"
-		"ERRORSET"
-		))
+  (:use :common-lisp :nregex)
+  (:export
+   "IF*"
+   "*INITIAL-TERMINAL-IO*"
+   "*CL-DEFAULT-SPECIAL-BINDINGS*"
+   "FILESYS-SIZE"
+   "FILESYS-WRITE-DATE"
+   "STREAM-INPUT-FN"
+   "MATCH-REGEXP"
+   "*CURRENT-CASE-MODE*"
+   "INTERN*"
+   "FILESYS-TYPE"
+   "ERRORSET"
+   ))
 
 (in-package :excl)
 
 (defvar if*-keyword-list '("then" "thenret" "else" "elseif"))
 
 (defmacro if* (&rest args)
-   (do ((xx (reverse args) (cdr xx))
-	(state :init)
-	(elseseen nil)
-	(totalcol nil)
-	(lookat nil nil)
-	(col nil))
-       ((null xx)
-	(cond ((eq state :compl)
-	       `(cond ,@totalcol))
-	      (t (error "if*: illegal form ~s" args))))
-       (cond ((and (symbolp (car xx))
-		   (member (symbol-name (car xx))
-			   if*-keyword-list
-			   :test #'string-equal))
-	      (setq lookat (symbol-name (car xx)))))
+  (do ((xx (reverse args) (cdr xx))
+       (state :init)
+       (elseseen nil)
+       (totalcol nil)
+       (lookat nil nil)
+       (col nil))
+      ((null xx)
+       (cond ((eq state :compl)
+	      `(cond ,@totalcol))
+	     (t (error "if*: illegal form ~s" args))))
+    (cond ((and (symbolp (car xx))
+		(member (symbol-name (car xx))
+			if*-keyword-list
+			:test #'string-equal))
+	   (setq lookat (symbol-name (car xx)))))
 
-       (cond ((eq state :init)
-	      (cond (lookat (cond ((string-equal lookat "thenret")
-				   (setq col nil
-					 state :then))
-				  (t (error
-				      "if*: bad keyword ~a" lookat))))
-		    (t (setq state :col
-			     col nil)
-		       (push (car xx) col))))
-	     ((eq state :col)
-	      (cond (lookat
-		     (cond ((string-equal lookat "else")
-			    (cond (elseseen
-				   (error
-				    "if*: multiples elses")))
-			    (setq elseseen t)
-			    (setq state :init)
-			    (push `(t ,@col) totalcol))
-			   ((string-equal lookat "then")
-			    (setq state :then))
-			   (t (error "if*: bad keyword ~s"
-					      lookat))))
-		    (t (push (car xx) col))))
-	     ((eq state :then)
-	      (cond (lookat
-		     (error
-		      "if*: keyword ~s at the wrong place " (car xx)))
-		    (t (setq state :compl)
-		       (push `(,(car xx) ,@col) totalcol))))
-	     ((eq state :compl)
-	      (cond ((not (string-equal lookat "elseif"))
-		     (error "if*: missing elseif clause ")))
-	      (setq state :init)))))
+    (cond ((eq state :init)
+	   (cond (lookat (cond ((string-equal lookat "thenret")
+				(setq col nil
+				      state :then))
+			       (t (error
+				   "if*: bad keyword ~a" lookat))))
+		 (t (setq state :col
+			  col nil)
+		    (push (car xx) col))))
+	  ((eq state :col)
+	   (cond (lookat
+		  (cond ((string-equal lookat "else")
+			 (cond (elseseen
+				(error
+				 "if*: multiples elses")))
+			 (setq elseseen t)
+			 (setq state :init)
+			 (push `(t ,@col) totalcol))
+			((string-equal lookat "then")
+			 (setq state :then))
+			(t (error "if*: bad keyword ~s"
+				  lookat))))
+		 (t (push (car xx) col))))
+	  ((eq state :then)
+	   (cond (lookat
+		  (error
+		   "if*: keyword ~s at the wrong place " (car xx)))
+		 (t (setq state :compl)
+		    (push `(,(car xx) ,@col) totalcol))))
+	  ((eq state :compl)
+	   (cond ((not (string-equal lookat "elseif"))
+		  (error "if*: missing elseif clause ")))
+	   (setq state :init)))))
 
 (defvar *initial-terminal-io* *terminal-io*)
 (defvar *cl-default-special-bindings* nil)
 
 (defun filesys-size (stream)
-	(file-length stream))
+  (file-length stream))
 
 (defun filesys-write-date (stream)
-	(file-write-date stream))
+  (file-write-date stream))
 
 (defun stream-input-fn (stream)
-	stream)
+  stream)
 
 (defun match-regexp (pattern string)
-	(regex pattern string))
+  (regex pattern string))
 
 (defvar *current-case-mode* :case-insensitive-upper)
 
 (defun intern* (s len package)
-	(intern (string-upcase (subseq s 0 len)) package))
+  (intern (string-upcase (subseq s 0 len)) package))
 
 (defun filesys-type (file-or-directory-name)
-	(if (ccl::directory-p file-or-directory-name)
-		:directory
-		(if (probe-file file-or-directory-name)
-			:file
-			nil)))
+  (if (ccl::directory-p file-or-directory-name)
+      :directory
+      (if (probe-file file-or-directory-name)
+	  :file
+	  nil)))
 
 (defmacro errorset (&body form)
-	`(let* ((ok nil)
-			(results
-				(ignore-errors
-					(prog1
-						(multiple-value-list
-							,@form)
-						(setq ok t)))))
-		(if ok
-			(apply #'values t results)
-			nil)))
+  `(let* ((ok nil)
+	  (results
+	   (ignore-errors
+	     (prog1
+		 (multiple-value-list
+		  ,@form)
+	       (setq ok t)))))
+     (if ok
+	 (apply #'values t results)
+	 nil)))
 
 (provide 'acl-excl)

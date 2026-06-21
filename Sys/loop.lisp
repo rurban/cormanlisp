@@ -60,23 +60,23 @@
 
 #+cormanlisp
 (eval-when (:load-toplevel :compile-toplevel :execute)
-    (make-package :loop)
-	(provide :loop)
-	(in-package :loop))
+  (make-package :loop)
+  (provide :loop)
+  (in-package :loop))
 
 ;;#+cormanlisp
 (shadow '(loop loop-finish))
 
 #+cormanlisp
 (export '(loop loop-finish loop-tequal loop-tassoc loop-tmember
-		named-variable loop-lookup-keyword loop-store-table-data))
+	       named-variable loop-lookup-keyword loop-store-table-data))
 
 #+cormanlisp
 (setq cl::*COMPILER-WARN-ON-UNDEFINED-FUNCTION* nil)
 
 #+cormanlisp
 (defun revappend (list tail)
-	(nconc (reverse list) tail))
+  (nconc (reverse list) tail))
 
 #+allegro
 (in-package :excl)
@@ -164,7 +164,7 @@
 
 
 (defvar *loop-gentemp*
-	nil)
+  nil)
 
 (defun loop-gentemp (&optional (pref 'loopvar-))
   (if *loop-gentemp*
@@ -246,10 +246,10 @@
   #+LISPM (let ((head-place (or user-head-var head-var)))
 	    `(let* ((,head-place nil)
 		    (,tail-var
-		      ,(hide-variable-reference
-			 user-head-var user-head-var
-			 `(progn #+Genera (scl:locf ,head-place)
-				 #-Genera (system:variable-location ,head-place)))))
+		     ,(hide-variable-reference
+		       user-head-var user-head-var
+		       `(progn #+Genera (scl:locf ,head-place)
+			       #-Genera (system:variable-location ,head-place)))))
 	       ,@body))
   #-LISPM (let ((l (and user-head-var (list (list user-head-var nil)))))
 	    #+CLOE `(sys::with-stack-list* (,head-var nil nil)
@@ -261,8 +261,8 @@
 
 (defmacro loop-collect-rplacd ((head-var tail-var &optional user-head-var) form &aux env) ;; &environment
   (declare
-    #+LISPM (ignore head-var user-head-var)	;use locatives, unconditionally update through the tail.
-    )
+   #+LISPM (ignore head-var user-head-var)	;use locatives, unconditionally update through the tail.
+   )
   (setq form (macroexpand form env))
   (flet ((cdr-wrap (form n)
 	   #-cormanlisp (declare (fixnum n))
@@ -271,7 +271,7 @@
 					    (2 'cddr)
 					    (3 'cdddr)
 					    (4 'cddddr))
-					 ,form)))
+					  ,form)))
 	     (setq form `(cddddr ,form) n (- n 4)))))
     (let ((tail-form form) (ncdrs nil))
       ;;Determine if the form being constructed is a list of known length.
@@ -287,18 +287,18 @@
 	       (when (and (cddr form) (member (car (last form)) '(nil 'nil)))
 		 (setq ncdrs (- (length (cdr form)) 2))))))
       (let ((answer
-	      (cond ((null ncdrs)
-		     `(when (setf (cdr ,tail-var) ,tail-form)
-			(setq ,tail-var (last (cdr ,tail-var)))))
-		    ((< ncdrs 0) (return-from loop-collect-rplacd nil))
-		    ((= ncdrs 0)
-		     ;;@@@@ Here we have a choice of two idioms:
-		     ;; (rplacd tail (setq tail tail-form))
-		     ;; (setq tail (setf (cdr tail) tail-form)).
-		     ;;Genera and most others I have seen do better with the former.
-		     `(rplacd ,tail-var (setq ,tail-var ,tail-form)))
-		    (t `(setq ,tail-var ,(cdr-wrap `(setf (cdr ,tail-var) ,tail-form)
-						   ncdrs))))))
+	     (cond ((null ncdrs)
+		    `(when (setf (cdr ,tail-var) ,tail-form)
+		       (setq ,tail-var (last (cdr ,tail-var)))))
+		   ((< ncdrs 0) (return-from loop-collect-rplacd nil))
+		   ((= ncdrs 0)
+		    ;;@@@@ Here we have a choice of two idioms:
+		    ;; (rplacd tail (setq tail tail-form))
+		    ;; (setq tail (setf (cdr tail) tail-form)).
+		    ;;Genera and most others I have seen do better with the former.
+		    `(rplacd ,tail-var (setq ,tail-var ,tail-form)))
+		   (t `(setq ,tail-var ,(cdr-wrap `(setf (cdr ,tail-var) ,tail-form)
+						  ncdrs))))))
 	;;If not using locatives or something similar to update the user's
 	;; head variable, we've got to set it...  It's harmless to repeatedly set it
 	;; unconditionally, and probably faster than checking.
@@ -336,9 +336,9 @@ constructed.
 
 
 (defstruct (loop-minimax
-	     (:constructor make-loop-minimax-internal)
-	     (:copier nil)
-	     (:predicate nil))
+	    (:constructor make-loop-minimax-internal)
+	    (:copier nil)
+	    (:predicate nil))
   answer-variable
   type
   temp-variable
@@ -348,43 +348,43 @@ constructed.
 
 
 (defvar *loop-minimax-type-infinities-alist*
-	;;@@@@ This is the sort of value this should take on for a Lisp that has
-	;; "eminently usable" infinities.  n.b. there are neither constants nor
-	;; printed representations for infinities defined by CL.
-	;;@@@@ This grotesque read-from-string below is to help implementations
-	;; which croak on the infinity character when it appears in a token, even
-	;; conditionalized out.
-	#+Genera
-	  '#.(read-from-string
-	      "((fixnum 	most-positive-fixnum	 most-negative-fixnum)
+  ;;@@@@ This is the sort of value this should take on for a Lisp that has
+  ;; "eminently usable" infinities.  n.b. there are neither constants nor
+  ;; printed representations for infinities defined by CL.
+  ;;@@@@ This grotesque read-from-string below is to help implementations
+  ;; which croak on the infinity character when it appears in a token, even
+  ;; conditionalized out.
+  #+Genera
+  '#.(read-from-string
+      "((fixnum 	most-positive-fixnum	 most-negative-fixnum)
 		(short-float 	+1s			 -1s)
 		(single-float	+1f			 -1f)
 		(double-float	+1d			 -1d)
 		(long-float	+1l			 -1l))")
-	;;This is how the alist should look for a lisp that has no infinities.  In
-	;; that case, MOST-POSITIVE-x-FLOAT really IS the most positive.
-	#+(or CLOE-Runtime Minima)
-	  '((fixnum   		most-positive-fixnum		most-negative-fixnum)
-	    (short-float	most-positive-short-float	most-negative-short-float)
-	    (single-float	most-positive-single-float	most-negative-single-float)
-	    (double-float	most-positive-double-float	most-negative-double-float)
-	    (long-float		most-positive-long-float	most-negative-long-float))
-	;;If we don't know, then we cannot provide "infinite" initial values for any of the
-	;; types but FIXNUM:
-	#-(or Genera CLOE-Runtime Minima)
-	  '((fixnum   		most-positive-fixnum		most-negative-fixnum))
-	  )
+  ;;This is how the alist should look for a lisp that has no infinities.  In
+  ;; that case, MOST-POSITIVE-x-FLOAT really IS the most positive.
+  #+(or CLOE-Runtime Minima)
+  '((fixnum   		most-positive-fixnum		most-negative-fixnum)
+    (short-float	most-positive-short-float	most-negative-short-float)
+    (single-float	most-positive-single-float	most-negative-single-float)
+    (double-float	most-positive-double-float	most-negative-double-float)
+    (long-float		most-positive-long-float	most-negative-long-float))
+  ;;If we don't know, then we cannot provide "infinite" initial values for any of the
+  ;; types but FIXNUM:
+  #-(or Genera CLOE-Runtime Minima)
+  '((fixnum   		most-positive-fixnum		most-negative-fixnum))
+  )
 
 
 (defun make-loop-minimax (answer-variable type)
   (let ((infinity-data (cdr (assoc type *loop-minimax-type-infinities-alist* :test #'subtypep))))
     (make-loop-minimax-internal
-      :answer-variable answer-variable
-      :type type
-      :temp-variable (loop-gentemp 'loop-maxmin-temp-)
-      :flag-variable (and (not infinity-data) (loop-gentemp 'loop-maxmin-flag-))
-      :operations nil
-      :infinity-data infinity-data)))
+     :answer-variable answer-variable
+     :type type
+     :temp-variable (loop-gentemp 'loop-maxmin-temp-)
+     :flag-variable (and (not infinity-data) (loop-gentemp 'loop-maxmin-flag-))
+     :operations nil
+     :infinity-data infinity-data)))
 
 
 (defun loop-note-minimax-operation (operation minimax)
@@ -418,12 +418,12 @@ constructed.
 	 (temp-var (loop-minimax-temp-variable lm))
 	 (flag-var (loop-minimax-flag-variable lm))
 	 (test
-	   (hide-variable-reference
-	     t (loop-minimax-answer-variable lm)
-	     `(,(ecase operation
-		  (min '<)
-		  (max '>))
-	       ,temp-var ,answer-var))))
+	  (hide-variable-reference
+	   t (loop-minimax-answer-variable lm)
+	   `(,(ecase operation
+		(min '<)
+		(max '>))
+	      ,temp-var ,answer-var))))
     `(progn
        (setq ,temp-var ,form)
        (when ,(if flag-var `(or (not ,flag-var) ,test) test)
@@ -475,9 +475,9 @@ code to be loaded.
 
 
 (defstruct (loop-universe
-	     (:print-function print-loop-universe)
-	     (:copier nil)
-	     (:predicate nil))
+	    (:print-function print-loop-universe)
+	    (:copier nil)
+	    (:predicate nil))
   keywords					;hash table, value = (fn-name . extra-data).
   iteration-keywords				;hash table, value = (fn-name . extra-data).
   for-keywords					;hash table, value = (fn-name . extra-data).
@@ -513,7 +513,7 @@ code to be loaded.
 
 
 (defun make-standard-loop-universe (&key keywords for-keywords iteration-keywords path-keywords
-				    type-keywords type-symbols ansi)
+				      type-keywords type-symbols ansi)
   #-(and CLOE Source-Bootstrap) (check-type ansi (member nil t :extended))
   (flet ((maketable (entries)
 	   (let* ((size (length entries))
@@ -521,25 +521,25 @@ code to be loaded.
 	     (dolist (x entries) (setf (gethash (symbol-name (car x)) ht) (cadr x)))
 	     ht)))
     (make-loop-universe
-      :keywords (maketable keywords)
-      :for-keywords (maketable for-keywords)
-      :iteration-keywords (maketable iteration-keywords)
-      :path-keywords (maketable path-keywords)
-      :ansi ansi
-      :implicit-for-required (not (null ansi))
-      :type-keywords (maketable type-keywords)
-      :type-symbols (let* ((size (length type-symbols))
-			   (ht (make-hash-table :size (if (< size 10) 10 size) :test #'eq)))
-		      (dolist (x type-symbols)
-			(if (atom x) (setf (gethash x ht) x) (setf (gethash (car x) ht) (cadr x))))
-		      ht))))
+     :keywords (maketable keywords)
+     :for-keywords (maketable for-keywords)
+     :iteration-keywords (maketable iteration-keywords)
+     :path-keywords (maketable path-keywords)
+     :ansi ansi
+     :implicit-for-required (not (null ansi))
+     :type-keywords (maketable type-keywords)
+     :type-symbols (let* ((size (length type-symbols))
+			  (ht (make-hash-table :size (if (< size 10) 10 size) :test #'eq)))
+		     (dolist (x type-symbols)
+		       (if (atom x) (setf (gethash x ht) x) (setf (gethash (car x) ht) (cadr x))))
+		     ht))))
 
 
 ;;;; Setq Hackery
 
 
 (defvar *loop-destructuring-hooks*
-	nil
+  nil
   "If not NIL, this must be a list of two things:
 a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.")
 
@@ -547,10 +547,10 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 (defun loop-make-psetq (frobs)
   (and frobs
        (loop-make-desetq
-	 (list (car frobs)
-	       (if (null (cddr frobs)) (cadr frobs)
-		   `(prog1 ,(cadr frobs)
-			   ,(loop-make-psetq (cddr frobs))))))))
+	(list (car frobs)
+	      (if (null (cddr frobs)) (cadr frobs)
+		  `(prog1 ,(cadr frobs)
+		     ,(loop-make-psetq (cddr frobs))))))))
 
 
 (defun loop-make-desetq (var-val-pairs)
@@ -563,7 +563,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defvar *loop-desetq-temporary*
-	(make-symbol "LOOP-DESETQ-TEMP"))
+  (make-symbol "LOOP-DESETQ-TEMP"))
 
 
 (defmacro loop-really-desetq (&rest var-val-pairs &aux env ) ;; &environment
@@ -573,57 +573,57 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 	     (do ((tail var)) ((not (consp tail)) tail)
 	       (when (find-non-null (pop tail)) (return t))))
 	   (loop-desetq-internal (var val &optional temp)
-	     ;; returns a list of actions to be performed
-	     (typecase var
-	       (null
-		 (when (consp val)
-		   ;; don't lose possible side-effects
-		   (if (eq (car val) 'prog1)
-		       ;; these can come from psetq or desetq below.
-		       ;; throw away the value, keep the side-effects.
-		       ;;Special case is for handling an expanded POP.
-		       (mapcan #'(lambda (x)
-				   (and (consp x)
-					(or (not (eq (car x) 'car))
-					    (not (symbolp (cadr x)))
-					    (not (symbolp (setq x (macroexpand x env)))))
-					(cons x nil)))
-			       (cdr val))
-		       `(,val))))
-	       (cons
-		 (let* ((car (car var))
-			(cdr (cdr var))
-			(car-non-null (find-non-null car))
-			(cdr-non-null (find-non-null cdr)))
-		   (when (or car-non-null cdr-non-null)
-		     (if cdr-non-null
-			 (let* ((temp-p temp)
-				(temp (or temp *loop-desetq-temporary*))
-				(body #+LOOP-Prefer-POP `(,@(loop-desetq-internal
-							      car
-							      `(prog1 (car ,temp)
-								      (setq ,temp (cdr ,temp))))
+	    ;; returns a list of actions to be performed
+	    (typecase var
+	      (null
+	       (when (consp val)
+		 ;; don't lose possible side-effects
+		 (if (eq (car val) 'prog1)
+		     ;; these can come from psetq or desetq below.
+		     ;; throw away the value, keep the side-effects.
+		     ;;Special case is for handling an expanded POP.
+		     (mapcan #'(lambda (x)
+				 (and (consp x)
+				      (or (not (eq (car x) 'car))
+					  (not (symbolp (cadr x)))
+					  (not (symbolp (setq x (macroexpand x env)))))
+				      (cons x nil)))
+			     (cdr val))
+		     `(,val))))
+	      (cons
+	       (let* ((car (car var))
+		      (cdr (cdr var))
+		      (car-non-null (find-non-null car))
+		      (cdr-non-null (find-non-null cdr)))
+		 (when (or car-non-null cdr-non-null)
+		   (if cdr-non-null
+		       (let* ((temp-p temp)
+			      (temp (or temp *loop-desetq-temporary*))
+			      (body #+LOOP-Prefer-POP `(,@(loop-desetq-internal
+								car
+								`(prog1 (car ,temp)
+								   (setq ,temp (cdr ,temp))))
 							  ,@(loop-desetq-internal cdr temp temp))
-				      #-LOOP-Prefer-POP `(,@(loop-desetq-internal car `(car ,temp))
+				    #-LOOP-Prefer-POP `(,@(loop-desetq-internal car `(car ,temp))
 							  (setq ,temp (cdr ,temp))
 							  ,@(loop-desetq-internal cdr temp temp))))
-			   (if temp-p
-			       `(,@(unless (eq temp val)
-				     `((setq ,temp ,val)))
+			 (if temp-p
+			     `(,@(unless (eq temp val)
+				   `((setq ,temp ,val)))
 				 ,@body)
-			       `((let ((,temp ,val))
-				   ,@body))))
-			 ;; no cdring to do
-			 (loop-desetq-internal car `(car ,val) temp)))))
-	       (t
-		 (unless (eq var val)
-		   `((setq ,var ,val)))))))
+			     `((let ((,temp ,val))
+				 ,@body))))
+		       ;; no cdring to do
+		       (loop-desetq-internal car `(car ,val) temp)))))
+	      (t
+	       (unless (eq var val)
+		 `((setq ,var ,val)))))))
     (do ((actions))
 	((null var-val-pairs)
 	 (if (null (cdr actions)) (car actions) `(progn ,@(nreverse actions))))
       (setq actions (revappend
-		      (loop-desetq-internal (pop var-val-pairs) (pop var-val-pairs))
-		      actions)))))
+		     (loop-desetq-internal (pop var-val-pairs) (pop var-val-pairs))
+		     actions)))))
 
 
 ;;;; LOOP-local variables
@@ -759,7 +759,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
     (when (and constantp expected-type)
       (unless (typep constant-value expected-type)
 	(loop-warn "The form ~S evaluated to ~S, which was not of the anticipated type ~S."
-		   form constant-value expected-type)
+	 form constant-value expected-type)
 	(setq constantp nil constant-value nil)))
     (values new-form constantp constant-value)))
 
@@ -772,11 +772,11 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 ;;;; LOOP Iteration Optimization
 
 (defvar *loop-duplicate-code*
-	nil)
+  nil)
 
 
 (defvar *loop-iteration-flag-variable*
-	(make-symbol "LOOP-NOT-FIRST-TIME"))
+  (make-symbol "LOOP-NOT-FIRST-TIME"))
 
 
 (defun loop-code-duplication-threshold (env)
@@ -806,11 +806,11 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 	   (pify (l) (if (null (cdr l)) (car l) `(progn ,@l)))
 	   (makebody ()
 	     (let ((form `(tagbody
-			    ,@(psimp (append prologue (nreverse rbefore)))
-			 next-loop
-			    ,@(psimp (append main-body (nreconc rafter `((go next-loop)))))
-			 end-loop
-			    ,@(psimp epilogue))))
+			     ,@(psimp (append prologue (nreverse rbefore)))
+			   next-loop
+			     ,@(psimp (append main-body (nreconc rafter `((go next-loop)))))
+			   end-loop
+			     ,@(psimp epilogue))))
 	       (if flagvar `(let ((,flagvar nil)) ,form) form))))
     (when (or *loop-duplicate-code* (not rbefore))
       (return-from loop-body (makebody)))
@@ -874,28 +874,28 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defvar *special-code-sizes*
-	'((return 0) (progn 0)
-	  (null 1) (not 1) (eq 1) (car 1) (cdr 1)
-	  (when 1) (unless 1) (if 1)
-	  (caar 2) (cadr 2) (cdar 2) (cddr 2)
-	  (caaar 3) (caadr 3) (cadar 3) (caddr 3) (cdaar 3) (cdadr 3) (cddar 3) (cdddr 3)
-	  (caaaar 4) (caaadr 4) (caadar 4) (caaddr 4)
-	  (cadaar 4) (cadadr 4) (caddar 4) (cadddr 4)
-	  (cdaaar 4) (cdaadr 4) (cdadar 4) (cdaddr 4)
-	  (cddaar 4) (cddadr 4) (cdddar 4) (cddddr 4)))
+  '((return 0) (progn 0)
+    (null 1) (not 1) (eq 1) (car 1) (cdr 1)
+    (when 1) (unless 1) (if 1)
+    (caar 2) (cadr 2) (cdar 2) (cddr 2)
+    (caaar 3) (caadr 3) (cadar 3) (caddr 3) (cdaar 3) (cdadr 3) (cddar 3) (cdddr 3)
+    (caaaar 4) (caaadr 4) (caadar 4) (caaddr 4)
+    (cadaar 4) (cadadr 4) (caddar 4) (cadddr 4)
+    (cdaaar 4) (cdaadr 4) (cdadar 4) (cdaddr 4)
+    (cddaar 4) (cddadr 4) (cdddar 4) (cddddr 4)))
 
 
 (defvar *estimate-code-size-punt*
-	'(block
-	   do do* dolist
-	   flet
-	   labels lambda let let* locally
-	   macrolet multiple-value-bind
-	   prog prog*
-	   symbol-macrolet
-	   tagbody
-	   unwind-protect
-	   with-open-file))
+  '(block
+    do do* dolist
+    flet
+    labels lambda let let* locally
+    macrolet multiple-value-bind
+    prog prog*
+    symbol-macrolet
+    tagbody
+    unwind-protect
+    with-open-file))
 
 
 (defun destructuring-size (x)
@@ -982,10 +982,10 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
       (multiple-value-bind (a b) (subtypep specified-type required-type)
 	(cond ((not b)
 	       (loop-warn "LOOP couldn't verify that ~S is a subtype of the required type ~S."
-			  specified-type required-type))
+		specified-type required-type))
 	      ((not a)
 	       (loop-error "Specified data type ~S is not a subtype of ~S."
-			   specified-type required-type)))
+		specified-type required-type)))
 	specified-type)))
 
 
@@ -1027,11 +1027,11 @@ collected result will be returned as the value of the LOOP."
     (loop-iteration-driver)
     (loop-bind-block)
     (let ((answer `(loop-body
-		     ,(nreverse *loop-prologue*)
-		     ,(nreverse *loop-before-loop*)
-		     ,(nreverse *loop-body*)
-		     ,(nreverse *loop-after-body*)
-		     ,(nreconc *loop-epilogue* (nreverse *loop-after-epilogue*)))))
+		    ,(nreverse *loop-prologue*)
+		    ,(nreverse *loop-before-loop*)
+		    ,(nreverse *loop-body*)
+		    ,(nreverse *loop-after-body*)
+		    ,(nreconc *loop-epilogue* (nreverse *loop-after-epilogue*)))))
       (do () (nil)
 	(setq answer `(block ,(pop *loop-names*) ,answer))
 	(unless *loop-names* (return nil)))
@@ -1049,11 +1049,11 @@ collected result will be returned as the value of the LOOP."
 	      (setq answer `(,(cond ((not vars) 'locally)
 				    (*loop-destructuring-hooks* (first *loop-destructuring-hooks*))
 				    (t 'let))
-			     ,vars
-			     ,@(if crocks
-				   `((destructuring-bind ,@crocks
-					 ,@forms))
-				 forms)))))))
+			      ,vars
+			      ,@(if crocks
+				    `((destructuring-bind ,@crocks
+					  ,@forms))
+				    forms)))))))
       answer)))
 
 
@@ -1072,7 +1072,7 @@ collected result will be returned as the value of the LOOP."
 		     ((loop-tmember keyword '(and else))
 		      ;; Alternative is to ignore it, ie let it go around to the next keyword...
 		      (loop-error "Secondary clause misplaced at top level in LOOP macro: ~S ~S ~S ..."
-				  keyword (car *loop-source-code*) (cadr *loop-source-code*)))
+		       keyword (car *loop-source-code*) (cadr *loop-source-code*)))
 		     (t (loop-error "~S is an unknown keyword in LOOP macro." keyword))))))))
 
 
@@ -1113,7 +1113,7 @@ collected result will be returned as the value of the LOOP."
   (when *loop-final-value-culprit*
     (loop-warn "LOOP clause is providing a value for the iteration,~@
 	        however one was already established by a ~S clause."
-	       *loop-final-value-culprit*))
+     *loop-final-value-culprit*))
   (setq *loop-final-value-culprit* (car *loop-source-context*)))
 
 
@@ -1159,25 +1159,25 @@ collected result will be returned as the value of the LOOP."
 		;; into a fully-specified pattern of real type specifiers here.
 		(if (consp variable)
 		    (unless (consp z)
-		     (loop-error
-			"~S found where a LOOP keyword, LOOP type keyword, or LOOP type pattern expected."
-			z))
+		      (loop-error
+		       "~S found where a LOOP keyword, LOOP type keyword, or LOOP type pattern expected."
+		       z))
 		    (loop-error "~S found where a LOOP keyword or LOOP type keyword expected." z))
 		(loop-pop-source)
 		(labels ((translate (k v)
 			   (cond ((null k) nil)
 				 ((atom k)
 				  (replicate
-				    (or (gethash k (loop-universe-type-symbols *loop-universe*))
-					(gethash (symbol-name k) (loop-universe-type-keywords *loop-universe*))
-					(loop-error
-					  "Destructuring type pattern ~S contains unrecognized type keyword ~S."
-					  z k))
-				    v))
+				   (or (gethash k (loop-universe-type-symbols *loop-universe*))
+				       (gethash (symbol-name k) (loop-universe-type-keywords *loop-universe*))
+				       (loop-error
+					"Destructuring type pattern ~S contains unrecognized type keyword ~S."
+					z k))
+				   v))
 				 ((atom v)
 				  (loop-error
-				    "Destructuring type pattern ~S doesn't match variable pattern ~S."
-				    z variable))
+				   "Destructuring type pattern ~S doesn't match variable pattern ~S."
+				   z variable))
 				 (t (cons (translate (car k) (car v)) (translate (cdr k) (cdr v))))))
 			 (replicate (typ v)
 			   (if (atom v) typ (cons (replicate typ (car v)) (replicate typ (cdr v))))))
@@ -1227,7 +1227,7 @@ collected result will be returned as the value of the LOOP."
 		    (push (list newvar initialization) *loop-variables*)
 		    ;; *LOOP-DESETQ-CROCKS* gathered in reverse order.
 		    (setq *loop-desetq-crocks*
-		      (list* name newvar *loop-desetq-crocks*))
+			  (list* name newvar *loop-desetq-crocks*))
 		    #+ignore
 		    (loop-make-variable name nil dtype iteration-variable-p)))))
 	(t (let ((tcar nil) (tcdr nil))
@@ -1270,8 +1270,8 @@ collected result will be returned as the value of the LOOP."
 	       (let ((key (car *loop-source-code*)) (*loop-body* nil) data)
 		 (cond ((not (symbolp key))
 			(loop-error
-			  "~S found where keyword expected getting LOOP clause after ~S."
-			  key for))
+			 "~S found where keyword expected getting LOOP clause after ~S."
+			 key for))
 		       (t (setq *loop-source-context* *loop-source-code*)
 			  (loop-pop-source)
 			  (when (loop-tequal (car *loop-source-code*) 'it)
@@ -1279,12 +1279,12 @@ collected result will be returned as the value of the LOOP."
 				  (cons (or it-p (setq it-p (loop-when-it-variable)))
 					(cdr *loop-source-code*))))
 			  (cond ((or (not (setq data (loop-lookup-keyword
-						       key (loop-universe-keywords *loop-universe*))))
+							   key (loop-universe-keywords *loop-universe*))))
 				     (progn (apply (symbol-function (car data)) (cdr data))
 					    (null *loop-body*)))
 				 (loop-error
-				   "~S does not introduce a LOOP clause that can follow ~S."
-				   key for))
+				  "~S does not introduce a LOOP clause that can follow ~S."
+				  key for))
 				(t (setq body (nreconc *loop-body* body)))))))
 	       (if (loop-tequal (car *loop-source-code*) :and)
 		   (loop-pop-source)
@@ -1297,9 +1297,9 @@ collected result will be returned as the value of the LOOP."
 	  (loop-pop-source))
 	(when it-p (setq form `(setq ,it-p ,form)))
 	(loop-pseudo-body
-	  `(if ,(if negatep `(not ,form) form)
-	       ,then
-	       ,@else))))))
+	 `(if ,(if negatep `(not ,form) form)
+	      ,then
+	      ,@else))))))
 
 
 (defun loop-do-initially ()
@@ -1321,7 +1321,7 @@ collected result will be returned as the value of the LOOP."
       (loop-error "The NAMED ~S clause occurs too late." name))
     (when *loop-names*
       (loop-error "You may only use one NAMED clause in your loop: NAMED ~S ... NAMED ~S."
-		  (car *loop-names*) name))
+       (car *loop-names*) name))
     (setq *loop-names* (list name nil))))
 
 (defun loop-do-return ()
@@ -1332,8 +1332,8 @@ collected result will be returned as the value of the LOOP."
 
 
 (defstruct (loop-collector
-	     (:copier nil)
-	     (:predicate nil))
+	    (:copier nil)
+	    (:predicate nil))
   name
   class
   (history nil)
@@ -1356,19 +1356,19 @@ collected result will be returned as the value of the LOOP."
 		       :key #'loop-collector-name)))
       (cond ((not cruft)
 	     (push (setq cruft (make-loop-collector
-				 :name name :class class
-				 :history (list collector) :dtype dtype))
+				:name name :class class
+				:history (list collector) :dtype dtype))
 		   *loop-collection-cruft*))
 	    (t (unless (eq (loop-collector-class cruft) class)
 		 (loop-error
-		   "Incompatible kinds of LOOP value accumulation specified for collecting~@
+		  "Incompatible kinds of LOOP value accumulation specified for collecting~@
 		    ~:[as the value of the LOOP~;~:*INTO ~S~]: ~S and ~S."
-		   name (car (loop-collector-history cruft)) collector))
+		  name (car (loop-collector-history cruft)) collector))
 	       (unless (equal dtype (loop-collector-dtype cruft))
 		 (loop-warn
-		   "Unequal datatypes specified in different LOOP value accumulations~@
+		  "Unequal datatypes specified in different LOOP value accumulations~@
 		   into ~S: ~S and ~S."
-		   name dtype (loop-collector-dtype cruft))
+		  name dtype (loop-collector-dtype cruft))
 		 (when (eq (loop-collector-dtype cruft) t)
 		   (setf (loop-collector-dtype cruft) dtype)))
 	       (push collector (loop-collector-history cruft))))
@@ -1407,19 +1407,19 @@ collected result will be returned as the value of the LOOP."
       (unless tempvars
 	(setf (loop-collector-tempvars lc)
 	      (setq tempvars (list (loop-make-variable
-				     (or (loop-collector-name lc)
-					 (loop-gentemp 'loop-sum-))
-				     nil (loop-collector-dtype lc)))))
+				    (or (loop-collector-name lc)
+					(loop-gentemp 'loop-sum-))
+				    nil (loop-collector-dtype lc)))))
 	(unless (loop-collector-name lc)
 	  (loop-emit-final-value (car (loop-collector-tempvars lc)))))
       (loop-emit-body
-	(if (eq specifically 'count)
-	    `(when ,form
-	       (setq ,(car tempvars)
-		     ,(hide-variable-reference t (car tempvars) `(1+ ,(car tempvars)))))
-	    `(setq ,(car tempvars)
-		   (+ ,(hide-variable-reference t (car tempvars) (car tempvars))
-		      ,form)))))))
+       (if (eq specifically 'count)
+	   `(when ,form
+	      (setq ,(car tempvars)
+		    ,(hide-variable-reference t (car tempvars) `(1+ ,(car tempvars)))))
+	   `(setq ,(car tempvars)
+		  (+ ,(hide-variable-reference t (car tempvars) (car tempvars))
+		     ,form)))))))
 
 
 
@@ -1431,8 +1431,8 @@ collected result will be returned as the value of the LOOP."
       (unless data
 	(setf (loop-collector-data lc)
 	      (setq data (make-loop-minimax
-			   (or (loop-collector-name lc) (loop-gentemp 'loop-maxmin-))
-			   (loop-collector-dtype lc))))
+			  (or (loop-collector-name lc) (loop-gentemp 'loop-maxmin-))
+			  (loop-collector-dtype lc))))
 	(unless (loop-collector-name lc)
 	  (loop-emit-final-value (loop-minimax-answer-variable data))))
       (loop-note-minimax-operation specifically data)
@@ -1449,7 +1449,7 @@ collected result will be returned as the value of the LOOP."
   (let ((form (loop-get-form)))
     (when restrictive (loop-disallow-conditional))
     (loop-emit-body `(,(if negate 'when 'unless) ,form
-		      ,(loop-construct-return nil)))
+		       ,(loop-construct-return nil)))
     (loop-emit-final-value t)))
 
 
@@ -1533,8 +1533,8 @@ collected result will be returned as the value of the LOOP."
       (loop-pop-source)				; flush the "AND"
       (when (and (not (loop-universe-implicit-for-required *loop-universe*))
 		 (setq tem (loop-lookup-keyword
-			     (car *loop-source-code*)
-			     (loop-universe-iteration-keywords *loop-universe*))))
+			    (car *loop-source-code*)
+			    (loop-universe-iteration-keywords *loop-universe*))))
 	;;Latest ANSI clarification is that the FOR/AS after the AND must NOT be supplied.
 	(loop-pop-source)
 	(setq entry tem)))))
@@ -1543,7 +1543,7 @@ collected result will be returned as the value of the LOOP."
 ;;;; Main Iteration Drivers
 
 
-;FOR variable keyword ..args..
+					;FOR variable keyword ..args..
 (defun loop-do-for ()
   (let* ((var (loop-pop-source))
 	 (data-type (loop-optional-type var))
@@ -1553,8 +1553,8 @@ collected result will be returned as the value of the LOOP."
     (setq first-arg (loop-get-form))
     (unless (and (symbolp keyword)
 		 (setq tem (loop-lookup-keyword
-			     keyword
-			     (loop-universe-for-keywords *loop-universe*))))
+				 keyword
+				 (loop-universe-for-keywords *loop-universe*))))
       (loop-error "~S is an unknown keyword in FOR or AS clause in LOOP." keyword))
     (apply (car tem) var first-arg data-type (cdr tem))))
 
@@ -1605,10 +1605,10 @@ collected result will be returned as the value of the LOOP."
     (multiple-value-bind (vector-form constantp vector-value)
 	(loop-constant-fold-if-possible val 'vector)
       (loop-make-variable
-	vector-var vector-form
-	(if (and (consp vector-form) (eq (car vector-form) 'the))
-	    (cadr vector-form)
-	    'vector))
+	    vector-var vector-form
+	    (if (and (consp vector-form) (eq (car vector-form) 'the))
+		(cadr vector-form)
+		'vector))
       #+Genera (push `(system:array-register ,vector-var) *loop-declarations*)
       (loop-make-variable index-var 0 'fixnum)
       (let* ((length 0)
@@ -1627,7 +1627,7 @@ collected result will be returned as the value of the LOOP."
 	  (when (<= length 1)
 	    (setq other-test t)))
 	`(,other-test ,step () ,pstep
-	  ,@(and (not (eq first-test other-test)) `(,first-test ,step () ,pstep)))))))
+		      ,@(and (not (eq first-test other-test)) `(,first-test ,step () ,pstep)))))))
 
 
 
@@ -1688,8 +1688,8 @@ collected result will be returned as the value of the LOOP."
 		   `(,other-endtest () () ,step ,first-endtest () () ,step)))
 		(t (let ((step `(,var ,listvar)) (pseudo `(,listvar ,list-step)))
 		     `(,other-endtest ,step () ,pseudo
-		       ,@(and (not (eq first-endtest other-endtest))
-			      `(,first-endtest ,step () ,pseudo)))))))))))
+				      ,@(and (not (eq first-endtest other-endtest))
+					     `(,first-endtest ,step () ,pseudo)))))))))))
 
 
 (defun loop-for-in (var val data-type)
@@ -1708,16 +1708,16 @@ collected result will be returned as the value of the LOOP."
 	  #+LOOP-Prefer-POP (when (eq step-function 'cdr)
 			      (setq step `(,var (pop ,listvar)) pseudo-step nil))
 	  `(,other-endtest ,step () ,pseudo-step
-	    ,@(and (not (eq first-endtest other-endtest))
-		   `(,first-endtest ,step () ,pseudo-step))))))))
+			   ,@(and (not (eq first-endtest other-endtest))
+				  `(,first-endtest ,step () ,pseudo-step))))))))
 
 
 ;;;; Iteration Paths
 
 
 (defstruct (loop-path
-	     (:copier nil)
-	     (:predicate nil))
+	    (:copier nil)
+	    (:predicate nil))
   names
   preposition-groups
   inclusive-permitted
@@ -1731,11 +1731,11 @@ collected result will be returned as the value of the LOOP."
   #-(or Genera (and CLOE Source-Bootstrap)) (check-type universe loop-universe)
   (let ((ht (loop-universe-path-keywords universe))
 	(lp (make-loop-path
-	      :names (mapcar #'symbol-name names)
-	      :function function
-	      :user-data user-data
-	      :preposition-groups (mapcar #'(lambda (x) (if (listp x) x (list x))) preposition-groups)
-	      :inclusive-permitted inclusive-permitted)))
+	     :names (mapcar #'symbol-name names)
+	     :function function
+	     :user-data user-data
+	     :preposition-groups (mapcar #'(lambda (x) (if (listp x) x (list x))) preposition-groups)
+	     :inclusive-permitted inclusive-permitted)))
     (dolist (name names) (setf (gethash (symbol-name name) ht) lp))
     lp))
 
@@ -1756,7 +1756,7 @@ collected result will be returned as the value of the LOOP."
 	   (setq inclusive t)
 	   (unless (loop-tmember (car *loop-source-code*) '(:its :each :his :her))
 	     (loop-error "~S found where ITS or EACH expected in LOOP iteration path syntax."
-			 (car *loop-source-code*)))
+	      (car *loop-source-code*)))
 	   (loop-pop-source)
 	   (setq path (loop-pop-source))
 	   (setq initial-prepositions `((:in ,val))))
@@ -1781,7 +1781,7 @@ collected result will be returned as the value of the LOOP."
     ;; and the user from himself.
     (unless (member (length stuff) '(6 10))
       (loop-error "Value passed back by LOOP iteration path function for path ~S has invalid length."
-		  path))
+       path))
     (do ((l (car stuff) (cdr l)) (x)) ((null l))
       (if (atom (setq x (car l)))
 	  (loop-make-iteration-variable x nil nil)
@@ -1808,10 +1808,10 @@ collected result will be returned as the value of the LOOP."
 	 (this-group nil nil)
 	 (this-prep nil nil)
 	 (disallowed-prepositions
-	   (mapcan #'(lambda (x)
-		       (loop-copylist*
-			 (find (car x) preposition-groups :test #'in-group-p)))
-		   initial-phrases))
+	  (mapcan #'(lambda (x)
+		      (loop-copylist*
+		       (find (car x) preposition-groups :test #'in-group-p)))
+		  initial-phrases))
 	 (used-prepositions (mapcar #'car initial-phrases)))
 	((null *loop-source-code*) (nreverse prepositional-phrases))
       (declare (symbol this-prep))
@@ -1822,10 +1822,10 @@ collected result will be returned as the value of the LOOP."
       (cond (this-group
 	     (when (member this-prep disallowed-prepositions)
 	       (loop-error
-		 (if (member this-prep used-prepositions)
-		     "A ~S prepositional phrase occurs multiply for some LOOP clause."
-		     "Preposition ~S used when some other preposition has subsumed it.")
-		 token))
+		(if (member this-prep used-prepositions)
+		    "A ~S prepositional phrase occurs multiply for some LOOP clause."
+		    "Preposition ~S used when some other preposition has subsumed it.")
+		token))
 	     (setq used-prepositions (if (listp this-group)
 					 (append this-group used-prepositions)
 					 (cons this-group used-prepositions)))
@@ -1843,9 +1843,9 @@ collected result will be returned as the value of the LOOP."
 	       (when (cadr z)
 		 (if (setq tem (loop-tassoc (car z) *loop-named-variables*))
 		     (loop-error
-		       "The variable substitution for ~S occurs twice in a USING phrase,~@
+		      "The variable substitution for ~S occurs twice in a USING phrase,~@
 		        with ~S and ~S."
-		       (car z) (cadr z) (cadr tem))
+		      (car z) (cadr z) (cadr tem))
 		     (push (cons (car z) (cadr z)) *loop-named-variables*)))
 	       (when (or (null *loop-source-code*) (symbolp (car *loop-source-code*)))
 		 (return nil))))
@@ -1856,98 +1856,98 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-sequencer (indexv indexv-type indexv-user-specified-p
-			  variable variable-type
-			  sequence-variable sequence-type
-			  step-hack default-top
-			  prep-phrases)
-   (let ((endform nil)				;Form (constant or variable) with limit value.
-	 (sequencep nil)			;T if sequence arg has been provided.
-	 (testfn nil)				;endtest function
-	 (test nil)				;endtest form.
-	 (stepby (1+ (or (loop-typed-init indexv-type) 0)))	;Our increment.
-	 (stepby-constantp t)
-	 (step nil)				;step form.
-	 (dir nil)				;Direction of stepping: NIL, :UP, :DOWN.
-	 (inclusive-iteration nil)		;T if include last index.
-	 (start-given nil)			;T when prep phrase has specified start
-	 (start-value nil)
-	 (start-constantp nil)
-	 (limit-given nil)			;T when prep phrase has specified end
-	 (limit-constantp nil)
-	 (limit-value nil)
-	 )
-     (when variable (loop-make-iteration-variable variable nil variable-type))
-     (do ((l prep-phrases (cdr l)) (prep) (form) (odir)) ((null l))
-       (setq prep (caar l) form (cadar l))
-       (case prep
-	 ((:of :in)
-	  (setq sequencep t)
-	  (loop-make-variable sequence-variable form sequence-type))
-	 ((:from :downfrom :upfrom)
-	  (setq start-given t)
-	  (cond ((eq prep :downfrom) (setq dir ':down))
-		((eq prep :upfrom) (setq dir ':up)))
-	  (multiple-value-setq (form start-constantp start-value)
-	    (loop-constant-fold-if-possible form indexv-type))
-	  (loop-make-iteration-variable indexv form indexv-type))
-	 ((:upto :to :downto :above :below)
-	  (cond ((loop-tequal prep :upto) (setq inclusive-iteration (setq dir ':up)))
-		((loop-tequal prep :to) (setq inclusive-iteration t))
-		((loop-tequal prep :downto) (setq inclusive-iteration (setq dir ':down)))
-		((loop-tequal prep :above) (setq dir ':down))
-		((loop-tequal prep :below) (setq dir ':up)))
-	  (setq limit-given t)
-	  (multiple-value-setq (form limit-constantp limit-value)
-	    (loop-constant-fold-if-possible form indexv-type))
-	  (setq endform (if limit-constantp
-			    `',limit-value
-			    (loop-make-variable
-			      (loop-gentemp 'loop-limit-) form indexv-type))))
-	 (:by
-	   (multiple-value-setq (form stepby-constantp stepby)
-	     (loop-constant-fold-if-possible form indexv-type))
-	   (unless stepby-constantp
-	     (loop-make-variable (setq stepby (loop-gentemp 'loop-step-by-)) form indexv-type)))
-	 (t (loop-error
-	      "~S invalid preposition in sequencing or sequence path.~@
+		       variable variable-type
+		       sequence-variable sequence-type
+		       step-hack default-top
+		       prep-phrases)
+  (let ((endform nil)				;Form (constant or variable) with limit value.
+	(sequencep nil)			;T if sequence arg has been provided.
+	(testfn nil)				;endtest function
+	(test nil)				;endtest form.
+	(stepby (1+ (or (loop-typed-init indexv-type) 0)))	;Our increment.
+	(stepby-constantp t)
+	(step nil)				;step form.
+	(dir nil)				;Direction of stepping: NIL, :UP, :DOWN.
+	(inclusive-iteration nil)		;T if include last index.
+	(start-given nil)			;T when prep phrase has specified start
+	(start-value nil)
+	(start-constantp nil)
+	(limit-given nil)			;T when prep phrase has specified end
+	(limit-constantp nil)
+	(limit-value nil)
+	)
+    (when variable (loop-make-iteration-variable variable nil variable-type))
+    (do ((l prep-phrases (cdr l)) (prep) (form) (odir)) ((null l))
+      (setq prep (caar l) form (cadar l))
+      (case prep
+	((:of :in)
+	 (setq sequencep t)
+	 (loop-make-variable sequence-variable form sequence-type))
+	((:from :downfrom :upfrom)
+	 (setq start-given t)
+	 (cond ((eq prep :downfrom) (setq dir ':down))
+	       ((eq prep :upfrom) (setq dir ':up)))
+	 (multiple-value-setq (form start-constantp start-value)
+	   (loop-constant-fold-if-possible form indexv-type))
+	 (loop-make-iteration-variable indexv form indexv-type))
+	((:upto :to :downto :above :below)
+	 (cond ((loop-tequal prep :upto) (setq inclusive-iteration (setq dir ':up)))
+	       ((loop-tequal prep :to) (setq inclusive-iteration t))
+	       ((loop-tequal prep :downto) (setq inclusive-iteration (setq dir ':down)))
+	       ((loop-tequal prep :above) (setq dir ':down))
+	       ((loop-tequal prep :below) (setq dir ':up)))
+	 (setq limit-given t)
+	 (multiple-value-setq (form limit-constantp limit-value)
+	   (loop-constant-fold-if-possible form indexv-type))
+	 (setq endform (if limit-constantp
+			   `',limit-value
+			   (loop-make-variable
+			    (loop-gentemp 'loop-limit-) form indexv-type))))
+	(:by
+	 (multiple-value-setq (form stepby-constantp stepby)
+	   (loop-constant-fold-if-possible form indexv-type))
+	 (unless stepby-constantp
+	   (loop-make-variable (setq stepby (loop-gentemp 'loop-step-by-)) form indexv-type)))
+	(t (loop-error
+	    "~S invalid preposition in sequencing or sequence path.~@
 	       Invalid prepositions specified in iteration path descriptor or something?"
-	      prep)))
-       (when (and odir dir (not (eq dir odir)))
-	 (loop-error "Conflicting stepping directions in LOOP sequencing path"))
-       (setq odir dir))
-     (when (and sequence-variable (not sequencep))
-       (loop-error "Missing OF or IN phrase in sequence path"))
-     ;; Now fill in the defaults.
-     (unless start-given
-       (loop-make-iteration-variable
-	 indexv
-	 (setq start-constantp t start-value (or (loop-typed-init indexv-type) 0))
-	 indexv-type))
-     (cond ((member dir '(nil :up))
-	    (when (or limit-given default-top)
-	      (unless limit-given
-		(loop-make-variable (setq endform (loop-gentemp 'loop-seq-limit-))
-				    nil indexv-type)
-		(push `(setq ,endform ,default-top) *loop-prologue*))
-	      (setq testfn (if inclusive-iteration '> '>=)))
-	    (setq step (if (eql stepby 1) `(1+ ,indexv) `(+ ,indexv ,stepby))))
-	   (t (unless start-given
-		(unless default-top
-		  (loop-error "Don't know where to start stepping."))
-		(push `(setq ,indexv (1- ,default-top)) *loop-prologue*))
-	      (when (and default-top (not endform))
-		(setq endform (loop-typed-init indexv-type) inclusive-iteration t))
-	      (when endform (setq testfn (if inclusive-iteration  '< '<=)))
-	      (setq step (if (eql stepby 1) `(1- ,indexv) `(- ,indexv ,stepby)))))
-     (when testfn (setq test (hide-variable-reference t indexv `(,testfn ,indexv ,endform))))
-     (when step-hack
-       (setq step-hack `(,variable ,(hide-variable-reference indexv-user-specified-p indexv step-hack))))
-     (let ((first-test test) (remaining-tests test))
-       (when (and stepby-constantp start-constantp limit-constantp)
-	 (when (setq first-test (funcall (symbol-function testfn) start-value limit-value))
-	   (setq remaining-tests t)))
-       `(() (,indexv ,(hide-variable-reference t indexv step)) ,remaining-tests ,step-hack
-	 () () ,first-test ,step-hack))))
+	    prep)))
+      (when (and odir dir (not (eq dir odir)))
+	(loop-error "Conflicting stepping directions in LOOP sequencing path"))
+      (setq odir dir))
+    (when (and sequence-variable (not sequencep))
+      (loop-error "Missing OF or IN phrase in sequence path"))
+    ;; Now fill in the defaults.
+    (unless start-given
+      (loop-make-iteration-variable
+	    indexv
+	    (setq start-constantp t start-value (or (loop-typed-init indexv-type) 0))
+	    indexv-type))
+    (cond ((member dir '(nil :up))
+	   (when (or limit-given default-top)
+	     (unless limit-given
+	       (loop-make-variable (setq endform (loop-gentemp 'loop-seq-limit-))
+		nil indexv-type)
+	       (push `(setq ,endform ,default-top) *loop-prologue*))
+	     (setq testfn (if inclusive-iteration '> '>=)))
+	   (setq step (if (eql stepby 1) `(1+ ,indexv) `(+ ,indexv ,stepby))))
+	  (t (unless start-given
+	       (unless default-top
+		 (loop-error "Don't know where to start stepping."))
+	       (push `(setq ,indexv (1- ,default-top)) *loop-prologue*))
+	     (when (and default-top (not endform))
+	       (setq endform (loop-typed-init indexv-type) inclusive-iteration t))
+	     (when endform (setq testfn (if inclusive-iteration  '< '<=)))
+	     (setq step (if (eql stepby 1) `(1- ,indexv) `(- ,indexv ,stepby)))))
+    (when testfn (setq test (hide-variable-reference t indexv `(,testfn ,indexv ,endform))))
+    (when step-hack
+      (setq step-hack `(,variable ,(hide-variable-reference indexv-user-specified-p indexv step-hack))))
+    (let ((first-test test) (remaining-tests test))
+      (when (and stepby-constantp start-constantp limit-constantp)
+	(when (setq first-test (funcall (symbol-function testfn) start-value limit-value))
+	  (setq remaining-tests t)))
+      `(() (,indexv ,(hide-variable-reference t indexv step)) ,remaining-tests ,step-hack
+	() () ,first-test ,step-hack))))
 
 
 ;;;; Interfaces to the Master Sequencer
@@ -1956,11 +1956,11 @@ collected result will be returned as the value of the LOOP."
 
 (defun loop-for-arithmetic (var val data-type kwd)
   (loop-sequencer
-    var (loop-check-data-type data-type *loop-real-data-type*) t
-    nil nil nil nil nil nil
-    (loop-collect-prepositional-phrases
-      '((:from :upfrom :downfrom) (:to :upto :downto :above :below) (:by))
-      nil (list (list kwd val)))))
+	var (loop-check-data-type data-type *loop-real-data-type*) t
+	nil nil nil nil nil nil
+	(loop-collect-prepositional-phrases
+	 '((:from :upfrom :downfrom) (:to :upto :downto :above :below) (:by))
+	 nil (list (list kwd val)))))
 
 
 (defun loop-sequence-elements-path (variable data-type prep-phrases
@@ -1975,11 +1975,11 @@ collected result will be returned as the value of the LOOP."
 		 (push `(sys:array-register ,sequencev) *loop-declarations*))
       (list* nil nil				; dummy bindings and prologue
 	     (loop-sequencer
-	       indexv 'fixnum indexv-user-specified-p
-	       variable (or data-type element-type)
-	       sequencev sequence-type
-	       `(,fetch-function ,sequencev ,indexv) `(,size-function ,sequencev)
-	       prep-phrases)))))
+		   indexv 'fixnum indexv-user-specified-p
+		   variable (or data-type element-type)
+		   sequencev sequence-type
+		   `(,fetch-function ,sequencev ,indexv) `(,size-function ,sequencev)
+		   prep-phrases)))))
 
 
 ;;;; Builtin LOOP Iteration Paths
@@ -2021,11 +2021,11 @@ collected result will be returned as the value of the LOOP."
 	(push `(with-hash-table-iterator (,next-fn ,ht-var)) *loop-wrappers*)
 	(when (consp key-var)
 	  (setq post-steps `(,key-var ,(setq key-var (loop-gentemp 'loop-hash-key-temp-))
-			     ,@post-steps))
+				      ,@post-steps))
 	  (push `(,key-var nil) bindings))
 	(when (consp val-var)
 	  (setq post-steps `(,val-var ,(setq val-var (loop-gentemp 'loop-hash-val-temp-))
-			     ,@post-steps))
+				      ,@post-steps))
 	  (push `(,val-var nil) bindings))
 	`(,bindings				;bindings
 	  ()					;prologue
@@ -2053,7 +2053,7 @@ collected result will be returned as the value of the LOOP."
 				    ;; using a variable here, so much the better.
 				    #+Genera NIL
 				    #-Genera (loop-when-it-variable))
-				 ,variable)
+				  ,variable)
 	     (,next-fn)))
       ())))
 
@@ -2061,60 +2061,60 @@ collected result will be returned as the value of the LOOP."
 
 (defun make-ansi-loop-universe (extended-p)
   (let ((w (make-standard-loop-universe
-	     :keywords `((named (loop-do-named))
-			 (initially (loop-do-initially))
-			 (finally (loop-do-finally))
-			 (do (loop-do-do))
-			 (doing (loop-do-do))
-			 (return (loop-do-return))
-			 (collect (loop-list-collection list))
-			 (collecting (loop-list-collection list))
-			 (append (loop-list-collection append))
-			 (appending (loop-list-collection append))
-			 (nconc (loop-list-collection nconc))
-			 (nconcing (loop-list-collection nconc))
-			 (count (loop-sum-collection count ,*loop-real-data-type* fixnum))
-			 (counting (loop-sum-collection count ,*loop-real-data-type* fixnum))
-			 (sum (loop-sum-collection sum number number))
-			 (summing (loop-sum-collection sum number number))
-			 (maximize (loop-maxmin-collection max))
-			 (minimize (loop-maxmin-collection min))
-			 (maximizing (loop-maxmin-collection max))
-			 (minimizing (loop-maxmin-collection min))
-			 (always (loop-do-always t nil))	; Normal, do always
-			 (never (loop-do-always t t))	; Negate the test on always.
-			 (thereis (loop-do-thereis t))
-			 (while (loop-do-while nil :while))	; Normal, do while
-			 (until (loop-do-while t :until))	; Negate the test on while
-			 (when (loop-do-if when nil))	; Normal, do when
-			 (if (loop-do-if if nil))	; synonymous
-			 (unless (loop-do-if unless t))	; Negate the test on when
-			 (with (loop-do-with)))
-	     :for-keywords '((= (loop-ansi-for-equals))
-			     (across (loop-for-across))
-			     (in (loop-for-in))
-			     (on (loop-for-on))
-			     (from (loop-for-arithmetic :from))
-			     (downfrom (loop-for-arithmetic :downfrom))
-			     (upfrom (loop-for-arithmetic :upfrom))
-			     (below (loop-for-arithmetic :below))
-			     (to (loop-for-arithmetic :to))
-			     (upto (loop-for-arithmetic :upto))
-			     (being (loop-for-being)))
-	     :iteration-keywords '((for (loop-do-for))
-				   (as (loop-do-for))
-				   (repeat (loop-do-repeat)))
-	     :type-symbols '(array atom bignum bit bit-vector character #| common |# compiled-function
-				   complex cons double-float fixnum float
-				   function hash-table integer keyword list long-float
-				   nil null number package pathname random-state
-				   ratio rational readtable sequence short-float
-				   simple-array simple-bit-vector simple-string
-				   simple-vector single-float standard-char
-				   stream string string-char
-				   symbol t vector)
-	     :type-keywords nil
-	     :ansi (if extended-p :extended t))))
+	    :keywords `((named (loop-do-named))
+			(initially (loop-do-initially))
+			(finally (loop-do-finally))
+			(do (loop-do-do))
+			(doing (loop-do-do))
+			(return (loop-do-return))
+			(collect (loop-list-collection list))
+			(collecting (loop-list-collection list))
+			(append (loop-list-collection append))
+			(appending (loop-list-collection append))
+			(nconc (loop-list-collection nconc))
+			(nconcing (loop-list-collection nconc))
+			(count (loop-sum-collection count ,*loop-real-data-type* fixnum))
+			(counting (loop-sum-collection count ,*loop-real-data-type* fixnum))
+			(sum (loop-sum-collection sum number number))
+			(summing (loop-sum-collection sum number number))
+			(maximize (loop-maxmin-collection max))
+			(minimize (loop-maxmin-collection min))
+			(maximizing (loop-maxmin-collection max))
+			(minimizing (loop-maxmin-collection min))
+			(always (loop-do-always t nil))	; Normal, do always
+			(never (loop-do-always t t))	; Negate the test on always.
+			(thereis (loop-do-thereis t))
+			(while (loop-do-while nil :while))	; Normal, do while
+			(until (loop-do-while t :until))	; Negate the test on while
+			(when (loop-do-if when nil))	; Normal, do when
+			(if (loop-do-if if nil))	; synonymous
+			(unless (loop-do-if unless t))	; Negate the test on when
+			(with (loop-do-with)))
+	    :for-keywords '((= (loop-ansi-for-equals))
+			    (across (loop-for-across))
+			    (in (loop-for-in))
+			    (on (loop-for-on))
+			    (from (loop-for-arithmetic :from))
+			    (downfrom (loop-for-arithmetic :downfrom))
+			    (upfrom (loop-for-arithmetic :upfrom))
+			    (below (loop-for-arithmetic :below))
+			    (to (loop-for-arithmetic :to))
+			    (upto (loop-for-arithmetic :upto))
+			    (being (loop-for-being)))
+	    :iteration-keywords '((for (loop-do-for))
+				  (as (loop-do-for))
+				  (repeat (loop-do-repeat)))
+	    :type-symbols '(array atom bignum bit bit-vector character #| common |# compiled-function
+			    complex cons double-float fixnum float
+			    function hash-table integer keyword list long-float
+			    nil null number package pathname random-state
+			    ratio rational readtable sequence short-float
+			    simple-array simple-bit-vector simple-string
+			    simple-vector single-float standard-char
+			    stream string string-char
+			    symbol t vector)
+	    :type-keywords nil
+	    :ansi (if extended-p :extended t))))
     (add-loop-path '(hash-key hash-keys) 'loop-hash-table-iteration-path w
 		   :preposition-groups '((:of :in))
 		   :inclusive-permitted nil
@@ -2139,7 +2139,7 @@ collected result will be returned as the value of the LOOP."
 
 
 (defparameter *loop-ansi-universe*
-	      (make-ansi-loop-universe nil))
+  (make-ansi-loop-universe nil))
 
 
 (defun loop-standard-expansion (keywords-and-forms environment universe)

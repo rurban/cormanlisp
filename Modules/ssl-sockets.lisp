@@ -75,25 +75,25 @@
 (require 'SOCKETS)
 
 (defpackage "SSL-SOCKETS"
-	(:use
-		:COMMON-LISP
-		:WIN
-		:C-TYPES
-		:SOCKETS)
-	(:export
-		"START-SSL-SOCKETS"
-		"SSL-SOCKET-MIXIN"
-		"CLIENT-SSL-SOCKET"
-		"PROXY-CLIENT-SSL-SOCKET"
-		"SSL-SOCKET-METHOD"
-		"SSL-SOCKET-CTX"
-		"SSL-SOCKET-HANDLE"
-		"MAKE-CLIENT-SSL-SOCKET"
-		"WITH-CLIENT-SSL-SOCKET"))
+  (:use
+   :COMMON-LISP
+   :WIN
+   :C-TYPES
+   :SOCKETS)
+  (:export
+   "START-SSL-SOCKETS"
+   "SSL-SOCKET-MIXIN"
+   "CLIENT-SSL-SOCKET"
+   "PROXY-CLIENT-SSL-SOCKET"
+   "SSL-SOCKET-METHOD"
+   "SSL-SOCKET-CTX"
+   "SSL-SOCKET-HANDLE"
+   "MAKE-CLIENT-SSL-SOCKET"
+   "WITH-CLIENT-SSL-SOCKET"))
 
 (in-package :ssl-sockets)
 
-; /* old name: ssleay32 */
+					; /* old name: ssleay32 */
 #! (:export t :library "libssl-1_1")
 //void SSL_load_error_strings();
 //int SSL_library_init();
@@ -114,76 +114,76 @@ void SSL_CTX_free(void * ctx);
 !#
 
 (defun start-ssl-sockets () ;; a mock function
-	"Initialize the SSL libraries."
-    t)
+  "Initialize the SSL libraries."
+  t)
 
 (defclass ssl-socket-mixin (base-socket)
-	((ssl-method :initform nil :accessor ssl-socket-method)
-		(ssl-ctx :initform nil :accessor ssl-socket-ctx)
-		(ssl-handle :initform nil :accessor ssl-socket-handle))
-	(:documentation
-		"Mixin class used for adding SSL support to a socket."))
+  ((ssl-method :initform nil :accessor ssl-socket-method)
+   (ssl-ctx :initform nil :accessor ssl-socket-ctx)
+   (ssl-handle :initform nil :accessor ssl-socket-handle))
+  (:documentation
+   "Mixin class used for adding SSL support to a socket."))
 
 (defclass client-ssl-socket (client-socket ssl-socket-mixin)
-	()
-	(:documentation
-		"SSL Socket used for client programming."))
+  ()
+  (:documentation
+   "SSL Socket used for client programming."))
 
 (defclass proxy-client-ssl-socket (client-socket ssl-socket-mixin proxy-socket-mixin)
-	()
-	(:documentation
-		"SSL socket that tunnels through a proxy server."))
+  ()
+  (:documentation
+   "SSL socket that tunnels through a proxy server."))
 
 (defmethod initialize-instance :after ((s ssl-socket-mixin) &key host port &allow-other-keys)
-    (declare (ignore host port))
-    (let* ((method (TLS_client_method))
-           (ctx (ssl_ctx_new method))
-		(handle (ssl_new ctx)))
-		(ssl_set_fd handle (socket-descriptor s))
-		(ssl_connect handle)
-		(setf (ssl-socket-method s) method)
-		(setf (ssl-socket-ctx s) ctx)
-		(setf (ssl-socket-handle s) handle)))
+  (declare (ignore host port))
+  (let* ((method (TLS_client_method))
+         (ctx (ssl_ctx_new method))
+	 (handle (ssl_new ctx)))
+    (ssl_set_fd handle (socket-descriptor s))
+    (ssl_connect handle)
+    (setf (ssl-socket-method s) method)
+    (setf (ssl-socket-ctx s) ctx)
+    (setf (ssl-socket-handle s) handle)))
 
 ;; Note that call-next-method must not be called
 (defmethod do-ffi-write-socket ((s ssl-socket-mixin) buffer length)
-	(ssl_write (ssl-socket-handle s) buffer length))
+  (ssl_write (ssl-socket-handle s) buffer length))
 
 ;; Note that call-next-method must not be called
 (defmethod do-ffi-read-socket ((s ssl-socket-mixin) buffer length)
-	(ssl_read (ssl-socket-handle s) buffer length))
+  (ssl_read (ssl-socket-handle s) buffer length))
 
 (defmethod close-socket :before ((s ssl-socket-mixin))
-	(when (ssl-socket-handle s)
-		(ssl_shutdown (ssl-socket-handle s))))
+  (when (ssl-socket-handle s)
+    (ssl_shutdown (ssl-socket-handle s))))
 
 (defmethod close-socket :after ((s ssl-socket-mixin))
-	(when (ssl-socket-handle s)
-		(ssl_free (ssl-socket-handle s))
-		(ssl_ctx_free (ssl-socket-ctx s))
-		(setf (ssl-socket-handle s) nil)
-		(setf (ssl-socket-ctx s) nil)))
+  (when (ssl-socket-handle s)
+    (ssl_free (ssl-socket-handle s))
+    (ssl_ctx_free (ssl-socket-ctx s))
+    (setf (ssl-socket-handle s) nil)
+    (setf (ssl-socket-ctx s) nil)))
 
 (defun make-client-ssl-socket (&key host port (proxy *default-proxy-server*))
   "Create and return an ssl client socket attached to the HOST and PORT."
   (if proxy
-    (make-instance 'proxy-client-ssl-socket
-                   :host (proxy-server-host proxy)
-                   :port (proxy-server-port proxy)
-                   :real-host host :real-port port
-                   :proxy proxy)
-    (make-instance 'client-ssl-socket :host host :port port)))
+      (make-instance 'proxy-client-ssl-socket
+                     :host (proxy-server-host proxy)
+                     :port (proxy-server-port proxy)
+                     :real-host host :real-port port
+                     :proxy proxy)
+      (make-instance 'client-ssl-socket :host host :port port)))
 
 (defmacro with-client-ssl-socket ((socket &key host port proxy) &body body)
-	"Ensures that the SOCKET is closed when scope of WITH-SSL-CLIENT-SOCKET
+  "Ensures that the SOCKET is closed when scope of WITH-SSL-CLIENT-SOCKET
 	has ended."
-	(let ((p-name (gensym)))
-		`(let* ((,p-name (if ,proxy ,proxy *default-proxy-server*))
-				(,socket (make-client-ssl-socket :host ,host :port ,port :proxy ,p-name)))
-			(unwind-protect
-				(progn
-					,@body)
-				(close-socket ,socket)))))
+  (let ((p-name (gensym)))
+    `(let* ((,p-name (if ,proxy ,proxy *default-proxy-server*))
+	    (,socket (make-client-ssl-socket :host ,host :port ,port :proxy ,p-name)))
+       (unwind-protect
+	    (progn
+	      ,@body)
+	 (close-socket ,socket)))))
 
 (provide 'SSL-SOCKETS)
 
@@ -196,186 +196,186 @@ void SSL_CTX_free(void * ctx);
 ;;
 ;; Slow way
 (with-client-ssl-socket (s :host "wikipedia.org" :port 443)
-	(write-socket-line s "GET / HTTP/1.1")
-	(write-socket-line s "")
-	(loop as line = (read-socket-line s nil :eof)
-		until (eq line :eof)
-		do (format t "~A~%" line) (force-output)))
+(write-socket-line s "GET / HTTP/1.1")
+(write-socket-line s "")
+(loop as line = (read-socket-line s nil :eof)
+until (eq line :eof)
+do (format t "~A~%" line) (force-output)))
 
 ;; Faster way
 (with-client-ssl-socket (s :host "wikipedia.org" :port 443)
-	(write-socket-line s "GET / HTTP/1.1")
-	(write-socket-line s "")
-	(let ((content-length 0))
-		(loop as line = (read-socket-line s)
-			while (and line (> (length line) 0))
-			do
-			(when (equal
-					(string-upcase (subseq line 0 (search ":" line)))
-					"CONTENT-LENGTH")
-				(setq content-length
-					(parse-integer line :start (+ (search ":" line) 1)))))
-		;; Read contents
-		(read-socket s content-length)))
+(write-socket-line s "GET / HTTP/1.1")
+(write-socket-line s "")
+(let ((content-length 0))
+(loop as line = (read-socket-line s)
+while (and line (> (length line) 0))
+do
+(when (equal
+(string-upcase (subseq line 0 (search ":" line)))
+"CONTENT-LENGTH")
+(setq content-length
+(parse-integer line :start (+ (search ":" line) 1)))))
+;; Read contents
+(read-socket s content-length)))
 
 ;; Streams faster way
 (with-client-ssl-socket (s :host "wikipedia.org" :port 443)
-	(with-socket-stream (stream s)
-		(write-line "GET / HTTP/1.0" stream)
-		(write-line "" stream)
-		(force-output stream)
-		(let ((content-length 0))
-			(loop as line = (read-line stream nil :eof)
-				while (and (not (eq line :eof)) (> (length line) 0))
-				do
-			(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
-					(setq content-length
-						(parse-integer line :start (+ (search ":" line) 1)))))
-			(format t "Total: ~A~%" content-length)
-			;; Read contents
-			(let ((contents (make-string content-length)))
-				(read-sequence contents stream)
-				contents))))
+(with-socket-stream (stream s)
+(write-line "GET / HTTP/1.0" stream)
+(write-line "" stream)
+(force-output stream)
+(let ((content-length 0))
+(loop as line = (read-line stream nil :eof)
+while (and (not (eq line :eof)) (> (length line) 0))
+do
+(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
+(setq content-length
+(parse-integer line :start (+ (search ":" line) 1)))))
+(format t "Total: ~A~%" content-length)
+;; Read contents
+(let ((contents (make-string content-length)))
+(read-sequence contents stream)
+contents))))
 
 ;; Using Proxy
 (let ((*default-proxy-server*
-			(make-instance 'generic-proxy-server :host "proxy.myserver.com" :port 8080)))
-	(with-client-ssl-socket (s :host "wikipedia.org" :port 443)
-		(with-socket-stream (stream s)
-			(write-line "GET / HTTP/1.0" stream)
-			(write-line "" stream)
-			(force-output stream)
-			(let ((content-length 0))
-				(loop as line = (read-line stream nil :eof)
-					while (and (not (eq line :eof)) (> (length line) 0))
-					do
-				(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
-						(setq content-length
-							(parse-integer line :start (+ (search ":" line) 1)))))
-				(format t "Total: ~A~%" content-length)
-				;; Read contents
-				(let ((contents (make-string content-length)))
-					(read-sequence contents stream)
-					contents)))))
+(make-instance 'generic-proxy-server :host "proxy.myserver.com" :port 8080)))
+(with-client-ssl-socket (s :host "wikipedia.org" :port 443)
+(with-socket-stream (stream s)
+(write-line "GET / HTTP/1.0" stream)
+(write-line "" stream)
+(force-output stream)
+(let ((content-length 0))
+(loop as line = (read-line stream nil :eof)
+while (and (not (eq line :eof)) (> (length line) 0))
+do
+(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
+(setq content-length
+(parse-integer line :start (+ (search ":" line) 1)))))
+(format t "Total: ~A~%" content-length)
+;; Read contents
+(let ((contents (make-string content-length)))
+(read-sequence contents stream)
+contents)))))
 
 ;; I need some SSL website examples!
 |#
 
 #|
-  OpenSSL License
-  ---------------
+OpenSSL License
+---------------
 
 /* ====================================================================
- * Copyright (c) 1998-1999 The OpenSSL Project.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * 3. All advertising materials mentioning features or use of this
- *    software must display the following acknowledgment:
- *    "This product includes software developed by the OpenSSL Project
- *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
- *
- * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. For written permission, please contact
- *    openssl-core@openssl.org.
- *
- * 5. Products derived from this software may not be called "OpenSSL"
- *    nor may "OpenSSL" appear in their names without prior written
- *    permission of the OpenSSL Project.
- *
- * 6. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by the OpenSSL Project
- *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
- *
- * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
- * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- * ====================================================================
- *
- * This product includes cryptographic software written by Eric Young
- * (eay@cryptsoft.com).  This product includes software written by Tim
- * Hudson (tjh@cryptsoft.com).
- *
- */
+* Copyright (c) 1998-1999 The OpenSSL Project.  All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in
+*    the documentation and/or other materials provided with the
+*    distribution.
+*
+* 3. All advertising materials mentioning features or use of this
+*    software must display the following acknowledgment:
+*    "This product includes software developed by the OpenSSL Project
+*    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+*
+* 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
+*    endorse or promote products derived from this software without
+*    prior written permission. For written permission, please contact
+*    openssl-core@openssl.org.
+*
+* 5. Products derived from this software may not be called "OpenSSL"
+*    nor may "OpenSSL" appear in their names without prior written
+*    permission of the OpenSSL Project.
+*
+* 6. Redistributions of any form whatsoever must retain the following
+*    acknowledgment:
+*    "This product includes software developed by the OpenSSL Project
+*    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+*
+* THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
+* EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+* PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
+* ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+* NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+* OF THE POSSIBILITY OF SUCH DAMAGE.
+* ====================================================================
+*
+* This product includes cryptographic software written by Eric Young
+* (eay@cryptsoft.com).  This product includes software written by Tim
+* Hudson (tjh@cryptsoft.com).
+*
+*/
 
- Original SSLeay License
- -----------------------
+Original SSLeay License
+-----------------------
 
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
- * All rights reserved.
- *
- * This package is an SSL implementation written
- * by Eric Young (eay@cryptsoft.com).
- * The implementation was written so as to conform with Netscapes SSL.
- *
- * This library is free for commercial and non-commercial use as long as
- * the following conditions are aheared to.  The following conditions
- * apply to all code found in this distribution, be it the RC4, RSA,
- * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
- * included with this distribution is covered by the same copyright terms
- * except that the holder is Tim Hudson (tjh@cryptsoft.com).
- *
- * Copyright remains Eric Young's, and as such any Copyright notices in
- * the code are not to be removed.
- * If this package is used in a product, Eric Young should be given attribution
- * as the author of the parts of the library used.
- * This can be in the form of a textual message at program startup or
- * in documentation (online or textual) provided with the package.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    "This product includes cryptographic software written by
- *     Eric Young (eay@cryptsoft.com)"
- *    The word 'cryptographic' can be left out if the rouines from the library
- *    being used are not cryptographic related :-).
- * 4. If you include any Windows specific code (or a derivative thereof) from
- *    the apps directory (application code) you must include an acknowledgement:
- *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
- *
- * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * The licence and distribution terms for any publically available version or
- * derivative of this code cannot be changed.  i.e. this code cannot simply be
- * copied and put under another distribution licence
- * [including the GNU Public Licence.]
- */
+* All rights reserved.
+*
+* This package is an SSL implementation written
+* by Eric Young (eay@cryptsoft.com).
+* The implementation was written so as to conform with Netscapes SSL.
+*
+* This library is free for commercial and non-commercial use as long as
+* the following conditions are aheared to.  The following conditions
+* apply to all code found in this distribution, be it the RC4, RSA,
+* lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+* included with this distribution is covered by the same copyright terms
+* except that the holder is Tim Hudson (tjh@cryptsoft.com).
+*
+* Copyright remains Eric Young's, and as such any Copyright notices in
+* the code are not to be removed.
+* If this package is used in a product, Eric Young should be given attribution
+* as the author of the parts of the library used.
+* This can be in the form of a textual message at program startup or
+* in documentation (online or textual) provided with the package.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+* 1. Redistributions of source code must retain the copyright
+*    notice, this list of conditions and the following disclaimer.
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+* 3. All advertising materials mentioning features or use of this software
+*    must display the following acknowledgement:
+*    "This product includes cryptographic software written by
+*     Eric Young (eay@cryptsoft.com)"
+*    The word 'cryptographic' can be left out if the rouines from the library
+*    being used are not cryptographic related :-).
+* 4. If you include any Windows specific code (or a derivative thereof) from
+*    the apps directory (application code) you must include an acknowledgement:
+*    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+*
+* THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+* OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+* SUCH DAMAGE.
+*
+* The licence and distribution terms for any publically available version or
+* derivative of this code cannot be changed.  i.e. this code cannot simply be
+* copied and put under another distribution licence
+* [including the GNU Public Licence.]
+*/
 |#

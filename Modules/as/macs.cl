@@ -34,7 +34,7 @@
 ;;-
 
 (eval-when (compile load eval)
- (require :uri))
+  (require :uri))
 
 ;; macros used by iserve
 
@@ -60,7 +60,7 @@
     `(do ((,pos ,start (1+ ,pos)))
 	 ((>= ,pos ,end))
        (if* (eq (schar ,buff ,pos) ,ch)
-	  then (return ,pos)))))
+	    then (return ,pos)))))
 
 (defmacro find-it-rev (ch buff start end)
   ;; return position of ch in buff from [start end}
@@ -70,7 +70,7 @@
     `(do ((,pos (1- ,end) (1- ,pos)))
 	 ((< ,pos ,start))
        (if* (eq (schar ,buff ,pos) ,ch)
-	  then (return ,pos)))))
+	    then (return ,pos)))))
 
 (defmacro buffer-substr (buff start end)
   ;; return a string holding the chars in buff from [start end }
@@ -96,7 +96,7 @@
 	  (,len (length ,str)))
 	 ((>= ,i ,len) t)
        (if* (not (eq (schar ,buff ,pos) (schar ,str ,i)))
-	  then (return nil)))))
+	    then (return nil)))))
 
 (defmacro buffer-match-ci (buff start str)
   ;; return t if the buffer buff contains the same string as str
@@ -113,7 +113,7 @@
        (let ((,xchar (schar ,buff ,pos)))
 	 (if* (not (or (eq ,xchar (schar ,str ,i))
 		       (eq ,xchar (schar ,str (1+ ,i)))))
-	    then (return nil))))))
+	      then (return nil))))))
 
 
 

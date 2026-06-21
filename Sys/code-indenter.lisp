@@ -22,7 +22,7 @@
                 (*standard-output* out))
             (indent-lines))
           out))
-    str))
+      str))
 
 (defun %indent-last-line (str)
   "Accepts block of a Lips code as string, returns last indented line. Intended for formatting code during typing inside IDE."
@@ -42,7 +42,7 @@
             (progn
               (vector-push-extend #\Return result)
               (vector-push-extend #\Newline result))
-          (vector-push-extend c result))))
+            (vector-push-extend c result))))
     result))
 
 #! (:export nil :library "msvcrt")
@@ -53,15 +53,15 @@ char *strcpy (char *destination, const char *source );
 (ct::defun-direct-c-callback %indent-next-line ((context (:char *)))
   (if (not (ct::cpointer-null context))
       (flet ((heap-strdup (str)
-                          (let* ((len (strlen str))
-                                 (copy (ct::heap-alloc (ct::get-process-heap) 0 (1+ len))))
-                            (if (ct::cpointer-null copy)
-                                ct::null
-                              (strcpy copy str)))))
+               (let* ((len (strlen str))
+                      (copy (ct::heap-alloc (ct::get-process-heap) 0 (1+ len))))
+                 (if (ct::cpointer-null copy)
+                     ct::null
+                     (strcpy copy str)))))
         (heap-strdup ; do not forget to call HeapFree(GetProcessHeap()...) in C code
-          (ct::lisp-string-to-c-string
-            (%indent-last-line (concatenate 'string
-                                            (%prepare-string-for-indention
-                                                         (ct::c-string-to-lisp-string context))
-                                            (format nil "~%"))))))
-    ct:null))
+         (ct::lisp-string-to-c-string
+          (%indent-last-line (concatenate 'string
+                                          (%prepare-string-for-indention
+                                           (ct::c-string-to-lisp-string context))
+                                          (format nil "~%"))))))
+      ct:null))

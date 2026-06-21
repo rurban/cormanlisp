@@ -106,19 +106,19 @@
 ;;; Characters
 
 (defmethod describe-object ((x character) s)
-	(format s "CHARACTER:~%~?~?~?"
-		*dfs-a* (list "subclass" 		'base-char)
-		*dfs-s* (list "value" 			x)
-		*dfs-a* (list "character code" (char-int x))))
+  (format s "CHARACTER:~%~?~?~?"
+	  *dfs-a* (list "subclass" 		'base-char)
+	  *dfs-s* (list "value" 			x)
+	  *dfs-a* (list "character code" (char-int x))))
 
 ;;; Cons cells
 
 (defmethod describe-object ((x cons) s)
-	(format s "CONS:~%~?~?~?~?"
-		*dfs-s* (list "car" 		(car x))
-		*dfs-s* (list "cdr" 		(cdr x))
-		*dfs-s* (list "value" 		x)
-		*dfs-hex* (list "heap address" (- (lisp-object-id x) x86::cons-tag))))
+  (format s "CONS:~%~?~?~?~?"
+	  *dfs-s* (list "car" 		(car x))
+	  *dfs-s* (list "cdr" 		(cdr x))
+	  *dfs-s* (list "value" 		x)
+	  *dfs-hex* (list "heap address" (- (lisp-object-id x) x86::cons-tag))))
 
 ;;; Function objects (all function objects are compiled)
 
@@ -175,15 +175,15 @@
 
 (defmethod describe-object ((x vector) s)
   (cond
-     ((simple-vector-p x)(describe-simple-vector x s))
-     ((simple-char-vector-p x)(describe-simple-char-vector x s))
-     ((simple-byte-vector-p x)(describe-simple-byte-vector x s))
-     ((simple-bit-vector-p x)(describe-simple-bit-vector x s))
-     ((simple-short-vector-p x)(describe-simple-short-vector x s))
-     ((simple-double-float-vector-p x)
-      (describe-simple-double-float-vector x s))
-     (t (call-next-method x s))
-     ))
+    ((simple-vector-p x)(describe-simple-vector x s))
+    ((simple-char-vector-p x)(describe-simple-char-vector x s))
+    ((simple-byte-vector-p x)(describe-simple-byte-vector x s))
+    ((simple-bit-vector-p x)(describe-simple-bit-vector x s))
+    ((simple-short-vector-p x)(describe-simple-short-vector x s))
+    ((simple-double-float-vector-p x)
+     (describe-simple-double-float-vector x s))
+    (t (call-next-method x s))
+    ))
 
 
 (defun describe-generic-simple-vector (x s name)
@@ -224,7 +224,7 @@
      *dfs-a* (list "dimensions" (array-dimensions x))
      *dfs-a* (list "fill pointer"
 		   (if (< (uref x adjustable-array-fill-pointer-offset) 0) nil
-		     (uref x adjustable-array-fill-pointer-offset)))
+		       (uref x adjustable-array-fill-pointer-offset)))
      *dfs-a* (list "number of cells" (array-num-cells x))
      *dfs-a* (list "vector" (uref x adjustable-array-vector-offset))
      *dfs-a* (list "displaced index" (uref x adjustable-array-displaced-offset))
@@ -269,7 +269,7 @@
 	 (shadowing-syms (package-shadowing-symbols x))
 	 (external-syms
 	  (let ((elist nil)) (do-external-symbols (e x) (push e elist)) elist)
-	  ))
+	   ))
 
     (format
      s "PACKAGE:~%~?~?~?~?~?~?~?~?~?~?~?~?"
@@ -328,22 +328,22 @@
 (defmethod describe-object ((object t) stream)
   (let ((*print-length* 6))
     (cond
-     ((structurep object)(describe-structure object stream))
-     ((foreignp object)	(describe-foreign object stream))
-     ((compiled-code-p object) (describe-compiled-code object stream))
-     ((foreign-heap-p object) (describe-foreign-heap object stream))
-     ((weak-pointer-p object) (describe-weak-pointer object stream))
-     (t (format t "Sorry, no description available for ~A" object))
-     )))
+      ((structurep object)(describe-structure object stream))
+      ((foreignp object)	(describe-foreign object stream))
+      ((compiled-code-p object) (describe-compiled-code object stream))
+      ((foreign-heap-p object) (describe-foreign-heap object stream))
+      ((weak-pointer-p object) (describe-weak-pointer object stream))
+      (t (format t "Sorry, no description available for ~A" object))
+      )))
 
 (defun get-template (struct)
-	(let ((template (uref struct 1)))
-		(if (symbolp template) ; construct a template
-		    (let ((num-slots (1- (uvector-num-slots struct))))
-                       (setq template (list template nil nil nil 0 num-slots))
-                       (dotimes (i num-slots template)
-			    (nconc template (list (intern (format nil "SLOT~A" (+ i 1)) keyword-package) nil t nil nil))))
-                    template)))
+  (let ((template (uref struct 1)))
+    (if (symbolp template) ; construct a template
+	(let ((num-slots (1- (uvector-num-slots struct))))
+          (setq template (list template nil nil nil 0 num-slots))
+          (dotimes (i num-slots template)
+	    (nconc template (list (intern (format nil "SLOT~A" (+ i 1)) keyword-package) nil t nil nil))))
+        template)))
 
 (defun describe-structure (x s)
 
@@ -368,53 +368,53 @@
 	    *dfs-hex* (list "heap address" (%uvector-address x)))
 
     (dotimes (i num-slots)
-	(format s *dfs-s*
-		(elt template (+ 6 (* i 5)))
-		(uref x (+ 2 i))))))
+      (format s *dfs-s*
+	      (elt template (+ 6 (* i 5)))
+	      (uref x (+ 2 i))))))
 
 (defun describe-foreign (x s)
-	(format s "FOREIGN POINTER:~%~?~?"
-		*dfs-hex* (list "address" 		(foreign-ptr-to-int x))
-		*dfs-hex* (list "heap address" (%uvector-address x))))
+  (format s "FOREIGN POINTER:~%~?~?"
+	  *dfs-hex* (list "address" 		(foreign-ptr-to-int x))
+	  *dfs-hex* (list "heap address" (%uvector-address x))))
 
 ;; (defconstant compiled-code-code-offset 4)
 
 (defun describe-compiled-code (x s)
-	(let* ((references (uref x compiled-code-references-offset))
-		   (properties (uref x compiled-code-info-offset))
-		   (name (getf properties 'function-name))
-		   (lambda-list (getf properties 'lambda-list))
-		   (lambda (getf properties 'lambda))
-		   (source-file (getf properties 'pl:*source-file*))
-		   (source-line (getf properties 'pl:*source-line*)))
-		(if (null name)
-			(setq name "#< UNKNOWN >"))
-		(if (null lambda-list)
-			(setq lambda-list "#< UNKNOWN >"))
-		(if (null lambda)
-			(setq lambda "#< UNKNOWN >"))
+  (let* ((references (uref x compiled-code-references-offset))
+	 (properties (uref x compiled-code-info-offset))
+	 (name (getf properties 'function-name))
+	 (lambda-list (getf properties 'lambda-list))
+	 (lambda (getf properties 'lambda))
+	 (source-file (getf properties 'pl:*source-file*))
+	 (source-line (getf properties 'pl:*source-line*)))
+    (if (null name)
+	(setq name "#< UNKNOWN >"))
+    (if (null lambda-list)
+	(setq lambda-list "#< UNKNOWN >"))
+    (if (null lambda)
+	(setq lambda "#< UNKNOWN >"))
 
-		(format s "COMPILED-CODE:~%~?~?~?~?~?~?~?~?"
-			*dfs-hex* (list "code address"
-					(+ (%uvector-address x) (* compiled-code-code-offset 4)))
-			*dfs-a* (list "references" references)
-			*dfs-s* (list "name" 		name)
-			*dfs-a* (list "lambda-list" lambda-list)
-			*dfs-a* (list "lambda" 	lambda)
-			*dfs-s* (list "source file" source-file)
-			*dfs-a* (list "source line" source-line)
-			*dfs-hex* (list "heap address" (%uvector-address x)))))
+    (format s "COMPILED-CODE:~%~?~?~?~?~?~?~?~?"
+	    *dfs-hex* (list "code address"
+			    (+ (%uvector-address x) (* compiled-code-code-offset 4)))
+	    *dfs-a* (list "references" references)
+	    *dfs-s* (list "name" 		name)
+	    *dfs-a* (list "lambda-list" lambda-list)
+	    *dfs-a* (list "lambda" 	lambda)
+	    *dfs-s* (list "source file" source-file)
+	    *dfs-a* (list "source line" source-line)
+	    *dfs-hex* (list "heap address" (%uvector-address x)))))
 
 (defun describe-foreign-heap (x s)
-	(format s "FOREIGN HEAP POINTER:~%~?~?~?"
-		*dfs-hex* (list "address" 		(foreign-ptr-to-int x))
-		*dfs-a*   (list "no. bytes" 	(uref x 2))
-		*dfs-hex* (list "heap address" (%uvector-address x))))
+  (format s "FOREIGN HEAP POINTER:~%~?~?~?"
+	  *dfs-hex* (list "address" 		(foreign-ptr-to-int x))
+	  *dfs-a*   (list "no. bytes" 	(uref x 2))
+	  *dfs-hex* (list "heap address" (%uvector-address x))))
 
 (defun describe-weak-pointer (x s)
-	(format s "WEAK POINTER:~%~?~?"
-		*dfs-a* (list "object" 		(uref x 1))
-		*dfs-hex* (list "heap address" (%uvector-address x))))
+  (format s "WEAK POINTER:~%~?~?"
+	  *dfs-a* (list "object" 		(uref x 1))
+	  *dfs-hex* (list "heap address" (%uvector-address x))))
 
 
 ;;; The DESCRIBE function
@@ -422,11 +422,11 @@
 
 (defun describe (object &optional (s *standard-output*))
   (cond
-   ((eq s t) (setq s *terminal-io*))
-   ((eq s nil) (setq s *standard-output*))
-   ((null (streamp s))
-    (error "Stream argument to DESCRIBE is not a stream designator"))
-   )
+    ((eq s t) (setq s *terminal-io*))
+    ((eq s nil) (setq s *standard-output*))
+    ((null (streamp s))
+     (error "Stream argument to DESCRIBE is not a stream designator"))
+    )
   (describe-object object s)
   (values)
   )

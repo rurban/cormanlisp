@@ -173,3 +173,16 @@ add_test(NAME test-all
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_tests_properties(test-all PROPERTIES
     PASS_REGULAR_EXPRESSION "ALL TESTS PASSED")
+
+# ---- Linting ----
+find_program(PRE_COMMIT pre-commit)
+if(PRE_COMMIT)
+    add_custom_target(lint
+        COMMAND ${PRE_COMMIT} run --all-files
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running pre-commit lint on all files")
+else()
+    add_custom_target(lint
+        COMMAND ${CMAKE_COMMAND} -E echo "pre-commit not found. Install: pip install pre-commit"
+        VERBATIM)
+endif()

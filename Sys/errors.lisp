@@ -23,11 +23,11 @@
 (defmacro ecase (keyform &rest clauses)
   (%nwrap-otherwise-keys clauses)
   `(case ,keyform
-    ,@clauses
-    (t (error "No ECASE clause matching the key"))))
+     ,@clauses
+     (t (error "No ECASE clause matching the key"))))
 
 (defmacro etypecase (keyform &rest clauses)
   (%nwrap-otherwise-keys clauses)
   `(typecase ,keyform
-    ,@clauses
-    (t (error "No ETYPECASE clause matching the key"))))
+     ,@clauses
+     (t (error "No ETYPECASE clause matching the key"))))

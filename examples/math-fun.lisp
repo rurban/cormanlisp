@@ -14,10 +14,10 @@
 ;;; That definition takes *forever* to run on numbers over 20 or so.
 ;;;
 (defun fibonacci (x)
-	(if (= x 0)
-		1
-		(let ((result 1)
-			  (prev 1))
-			(dotimes (i (1- x))
-				(psetq result (+ result prev) prev result))
-			result)))
+  (if (= x 0)
+      1
+      (let ((result 1)
+	    (prev 1))
+	(dotimes (i (1- x))
+	  (psetq result (+ result prev) prev result))
+	result)))

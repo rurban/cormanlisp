@@ -9,15 +9,15 @@
 	 (let ((ref2 (list '())))
 	   (push (progn (princ "1") 'ref-1)
 	         (car (progn (princ "2") ref2))))
-	;;>>  12
-	=>  (REF-1)
+	 ;;>>  12
+	 =>  (REF-1)
 
 	 (let (x)
-	    (push (setq x (list 'a))
-	          (car (setq x (list 'b))))
-	     x)
-	=>  (((A) . B))
-)
+	   (push (setq x (list 'a))
+	         (car (setq x (list 'b))))
+	   x)
+	 =>  (((A) . B))
+	 )
 
 (dotests PLACES
 	 (setq integer #x69) =>  #x69
@@ -29,7 +29,7 @@
 	       (progn (setq r nil) 6)) =>  6
 	 r =>  NIL
 	 s =>  ((A 1 B 6 C 3))
-)
+	 )
 
 (dotests APPLY
 	 (setq f '+) =>  +
@@ -45,26 +45,26 @@
 	 (apply #'strange-test *some-list*) =>  implementation-dependent
 
 	 (defun bad-boy (&rest x) (rplacd x 'y)) => BAD-BOY
-	 ;(bad-boy 'a 'b 'c) has undefined consequences.
-	 ;(apply #'bad-boy *some-list*) has undefined consequences.
+					;(bad-boy 'a 'b 'c) has undefined consequences.
+					;(apply #'bad-boy *some-list*) has undefined consequences.
 
 
 	 (defun foo (size &rest keys &key double &allow-other-keys)
 	   (let ((v (apply #'make-array size :allow-other-keys t keys)))
 	     (if double (concatenate (type-of v) v v) v))) => FOO
 	 (foo 4 :initial-contents '(a b c d) :double t)
-	    =>  #(A B C D A B C D)
-)
+	 =>  #(A B C D A B C D)
+	 )
 
 (dotests DEFUN
 	 (defun recur (x)
-	  (when (> x 0)
-	    (recur (1- x)))) =>  RECUR
+	   (when (> x 0)
+	     (recur (1- x)))) =>  RECUR
 	 (defun ex (a b &optional c (d 66) &rest keys &key test (start 0))
-	    (list a b c d keys test start)) =>  EX
+	   (list a b c d keys test start)) =>  EX
 	 (ex 1 2) =>  (1 2 NIL 66 NIL NIL 0)
 	 (ex 1 2 3 4 :test 'equal :start 50)
-	=>  (1 2 3 4 (:TEST EQUAL :START 50) EQUAL 50)
+	 =>  (1 2 3 4 (:TEST EQUAL :START 50) EQUAL 50)
 	 (ex :test 1 :start 2) =>  (:TEST 1 :START 2 NIL NIL 0)
 
 	 ;; This function assumes its callers have checked the types of the
@@ -85,11 +85,11 @@
 	   (locally (declare (number a b c))
 	     (- (* b b) (* 4 a c)))) =>  CAREFUL-DISCRIMINANT
 	 (careful-discriminant 1 2/3 -2) =>  76/9
-)
+	 )
 
 (dotests FDEFINITION
-	;; no examples
-)
+	 ;; no examples
+	 )
 
 (dotests FBOUNDP
 	 (fboundp 'car) =>  true
@@ -102,7 +102,7 @@
 	   (unwind-protect (progn (fmakunbound 'my-function)
 	                          (fboundp 'my-function))
 	     (setf (symbol-function 'my-function) saved-definition)))
-	=>  false
+	 =>  false
 	 (fboundp 'my-function) =>  true
 	 (defmacro my-macro (x) `',x) =>  MY-MACRO
 	 (fboundp 'my-macro) =>  true
@@ -110,33 +110,33 @@
 	 (fboundp 'my-function) =>  false
 	 (flet ((my-function (x) x))
 	   (fboundp 'my-function)) =>  false
-)
+	 )
 
 (dotests FMAKUNBOUND
-	(defun add-some (x) (+ x 19)) =>  ADD-SOME
+	 (defun add-some (x) (+ x 19)) =>  ADD-SOME
 	 (fboundp 'add-some) =>  true
 	 (flet ((add-some (x) (+ x 37)))
-	    (fmakunbound 'add-some)
-	    (add-some 1)) =>  38
+	   (fmakunbound 'add-some)
+	   (add-some 1)) =>  38
 	 (fboundp 'add-some) =>  false
-)
+	 )
 
 ;;; RGC: LABELS: need to check handling of declarations
 (dotests FLET/LABELS/MACROLET
 	 (flet ((flet1 (n) (+ n n)))
-	    (flet ((flet1 (n) (+ 2 (flet1 n))))
-	      (flet1 2))) =>  6
+	   (flet ((flet1 (n) (+ 2 (flet1 n))))
+	     (flet1 2))) =>  6
 
 	 (defun dummy-function () 'top-level) =>  DUMMY-FUNCTION
 	 (funcall #'dummy-function) =>  TOP-LEVEL
 	 (flet ((dummy-function () 'shadow))
-	      (funcall #'dummy-function)) =>  SHADOW
+	   (funcall #'dummy-function)) =>  SHADOW
 	 (eq (funcall #'dummy-function) (funcall 'dummy-function))
-	=>  true
+	 =>  true
 	 (flet ((dummy-function () 'shadow))
 	   (eq (funcall #'dummy-function)
 	       (funcall 'dummy-function)))
-	=>  false
+	 =>  false
 
 	 (defun recursive-times (k n)
 	   (labels ((temp (n)
@@ -145,15 +145,15 @@
 	 (recursive-times 2 3) =>  6
 
 	 (defmacro mlets (x &environment env)
-	    (let ((form `(babbit ,x)))
-	      (macroexpand form env))) =>  MLETS
+	   (let ((form `(babbit ,x)))
+	     (macroexpand form env))) =>  MLETS
 	 (macrolet ((babbit (z) `(+ ,z ,z))) (mlets 5)) =>  10
 
 
 	 (flet ((safesqrt (x) (sqrt (abs x))))
-	  ;; The safesqrt function is used in two places.
+	   ;; The safesqrt function is used in two places.
 	   (safesqrt (apply #'+ (map 'list #'safesqrt '(1 2 3 4 5 6)))))
-	=>  3.291173
+	 =>  3.291173
 
 	 (defun integer-power (n k)
 	   (declare (integer n))
@@ -167,7 +167,7 @@
 	              (declare (integer x a) (type (integer 0 *) k))
 	              (cond ((evenp k) (expt1 (* x x) (floor k 2) a))
 	                    (t (expt0 (* x x) (floor k 2) (* x a))))))
-	    (expt0 n k 1))) =>  INTEGER-POWER
+	     (expt0 n k 1))) =>  INTEGER-POWER
 
 	 (defun example (y l)
 	   (flet ((attach (x)
@@ -180,8 +180,8 @@
 
 	 (example '((a apple apricot) (b banana) (c cherry) (d) (e))
 	          '((1) (2) (3) (4 2) (5) (6 3 2)))
-	=>  ((1) (2) (3) (4 2) (5) (6 3 2) (A APPLE APRICOT) (B BANANA) (C CHERRY))
-)
+	 =>  ((1) (2) (3) (4 2) (5) (6 3 2) (A APPLE APRICOT) (B BANANA) (C CHERRY))
+	 )
 
 (dotests FUNCALL
 	 (funcall #'+ 1 2 3) =>  6
@@ -193,27 +193,27 @@
 	     (funcall #'cons
 	              (funcall 'cons 1 2)
 	              (funcall cons 1 2))))
-	=>  (KONS (1 . 2) 3)
-)
+	 =>  (KONS (1 . 2) 3)
+	 )
 
 (dotests FUNCTION
 	 (defun adder (x) (function (lambda (y) (+ x y)))) => ADDER
 	 (setq add3 (adder 3)) => true ;; had to put something here -RGC
 	 (funcall add3 5) =>  8
-)
+	 )
 
 (dotests FUNCTION-LAMBDA-EXPRESSION
-	(function-lambda-expression #'(lambda (x) x)) => implementation-dependent
-	(function-lambda-expression (funcall #'(lambda () #'(lambda (x) x)))) => implementation-dependent
-	(function-lambda-expression (funcall #'(lambda (x) #'(lambda () x)) nil)) => implementation-dependent
-	(flet ((foo (x) x))
-		(setf (symbol-function 'bar) #'foo)
-		(function-lambda-expression #'bar)) => implementation-dependent
-	(defun foo ()
-		(flet ((bar (x) x))
-			#'bar)) => FOO
-	(function-lambda-expression (foo)) => implementation-dependent
-)
+	 (function-lambda-expression #'(lambda (x) x)) => implementation-dependent
+	 (function-lambda-expression (funcall #'(lambda () #'(lambda (x) x)))) => implementation-dependent
+	 (function-lambda-expression (funcall #'(lambda (x) #'(lambda () x)) nil)) => implementation-dependent
+	 (flet ((foo (x) x))
+	   (setf (symbol-function 'bar) #'foo)
+	   (function-lambda-expression #'bar)) => implementation-dependent
+	 (defun foo ()
+	   (flet ((bar (x) x))
+	     #'bar)) => FOO
+	 (function-lambda-expression (foo)) => implementation-dependent
+	 )
 
 (dotests FUNCTIONP
 	 (functionp 'append) =>  false
@@ -225,7 +225,7 @@
 	 (functionp 12) =>  false
 	 (functionp '(lambda (x) (* x x))) =>  false
 	 (functionp #'(lambda (x) (* x x))) =>  true
-)
+	 )
 
 (dotests COMPILED-FUNCTIONP
 	 (defun f (x) x) =>  F
@@ -237,22 +237,22 @@
 	 (compiled-function-p (compile nil '(lambda (x) x))) =>  true
 	 (compiled-function-p #'(lambda (x) x)) =>  implementation-dependent
 	 (compiled-function-p '(lambda (x) x)) =>  false
-)
+	 )
 
 (dotests CALL-ARGUMENTS-LIMIT
-	call-arguments-limit  =>  implementation-dependent
-)
+	 call-arguments-limit  =>  implementation-dependent
+	 )
 
 (dotests LAMBDA-PARAMETERS-LIMIT
-	lambda-parameters-limit  =>  implementation-dependent
-)
+	 lambda-parameters-limit  =>  implementation-dependent
+	 )
 
 (dotests DEFCONSTANT
 	 (defconstant this-is-a-constant 'never-changing "for a test") =>  THIS-IS-A-CONSTANT
 	 this-is-a-constant =>  NEVER-CHANGING
 	 (documentation 'this-is-a-constant 'variable) =>  "for a test"
 	 (constantp 'this-is-a-constant) =>  true
-)
+	 )
 
 (dotests DEFPARAMETER/DEFVAR
 	 (defparameter *p* 1) =>  *P*
@@ -274,38 +274,38 @@
 	     (bar))) =>  FOO
 	 (defun bar () (list *p* *v*)) =>  BAR
 	 (foo) =>  (P V)
-)
+	 )
 
 (dotests DESTRUCTURING-BIND
 	 (defun iota (n) (loop for i from 1 to n collect i)) => IOTA       ;helper
 	 (destructuring-bind ((a &optional (b 'bee)) one two three)
 	     `((alpha) ,@(iota 3))
 	   (list a b three two one)) =>  (ALPHA BEE 3 2 1)
-)
+	 )
 
 (dotests LET/LET*
 	 (setq a 'top) =>  TOP
 	 (defun dummy-function () a) =>  DUMMY-FUNCTION
 	 (let ((a 'inside) (b a))
-	    (format nil "~S ~S ~S" a b (dummy-function))) =>  "INSIDE TOP TOP"
+	   (format nil "~S ~S ~S" a b (dummy-function))) =>  "INSIDE TOP TOP"
 	 (let* ((a 'inside) (b a))
-	    (format nil "~S ~S ~S" a b (dummy-function))) =>  "INSIDE INSIDE TOP"
+	   (format nil "~S ~S ~S" a b (dummy-function))) =>  "INSIDE INSIDE TOP"
 	 (let ((a 'inside) (b a))
-	    (declare (special a))
-	    (format nil "~S ~S ~S" a b (dummy-function))) =>  "INSIDE TOP INSIDE"
-)
+	   (declare (special a))
+	   (format nil "~S ~S ~S" a b (dummy-function))) =>  "INSIDE TOP INSIDE"
+	 )
 
 (dotests PROGV
 	 (setq *x* 1) =>  1
 	 (progv '(*x*) '(2) *x*) =>  2
 	 *x* =>  1
 
-	;;Assuming *x* is not globally special,
+	 ;;Assuming *x* is not globally special,
 
 	 (let ((*x* 3))
-	    (progv '(*x*) '(4)
-	      (list *x* (symbol-value '*x*)))) =>  (3 4)
-)
+	   (progv '(*x*) '(4)
+	     (list *x* (symbol-value '*x*)))) =>  (3 4)
+	 )
 
 (dotests SETQ
 	 ;; A simple use of SETQ to establish values for variables.
@@ -325,8 +325,8 @@
 	   (symbol-macrolet ((y (car x)) (z (cadr x)))
 	     (setq y (1+ z) z (1+ y))
 	     (list x y z)))
-	=>  ((21 22 30) 21 22)
-)
+	 =>  ((21 22 30) 21 22)
+	 )
 
 (dotests PSETQ
 	 ;; A simple use of PSETQ to establish values for variables.
@@ -350,14 +350,14 @@
 	   (symbol-macrolet ((y (car x)) (z (cadr x)))
 	     (psetq y (1+ z) z (1+ y))
 	     (list x y z)))
-	=>  ((21 11 30) 21 11)
+	 =>  ((21 11 30) 21 11)
 
 	 ;; Use of parallel assignment to swap values of A and B.
 	 (let ((a 1) (b 2))
 	   (psetq a b  b a)
 	   (values a b))
-	=>  (values 2 1)
-)
+	 =>  (values 2 1)
+	 )
 
 (dotests BLOCK
 	 (block empty) =>  NIL
@@ -373,7 +373,7 @@
 	   (flet ((b1 () (return-from b 1)))
 	     (block b (b1) (print 'unreachable))
 	     2)) =>  1
-)
+	 )
 
 (dotests CATCH
 	 (catch 'dummy-tag 1 2 (throw 'dummy-tag 3) 4) =>  3
@@ -386,27 +386,27 @@
 	   (flet ((c1 () (throw 'c 1)))
 	     (catch 'c (c1) (print 'unreachable))
 	     2)) =>  2
-)
+	 )
 
 (dotests GO
 	 (tagbody
-	   (setq val 2)
-	   (go lp)
-	   (incf val 3)
-	   lp (incf val 4)) =>  NIL
+	    (setq val 2)
+	    (go lp)
+	    (incf val 3)
+	  lp (incf val 4)) =>  NIL
 	 val =>  6
-)
+	 )
 
 (dotests RETURN-FROM
 	 (block alpha (return-from alpha) 1) =>  NIL
 	 (block alpha (return-from alpha 1) 2) =>  1
 	 (block alpha (return-from alpha (values 1 2)) 3) =>  (values 1 2)
 	 (let ((a 0))
-	    (dotimes (i 10) (incf a) (when (oddp i) (return)))
-	    a) =>  2
+	   (dotimes (i 10) (incf a) (when (oddp i) (return)))
+	   a) =>  2
 	 (defun temp (x)
-	    (if x (return-from temp 'dummy))
-	    44) =>  TEMP
+	   (if x (return-from temp 'dummy))
+	   44) =>  TEMP
 	 (temp nil) =>  44
 	 (temp t) =>  DUMMY
 	 (block out
@@ -416,7 +416,7 @@
 	 (block nil
 	   (unwind-protect (return-from nil 1)
 	     (return-from nil 2)))
-	=>  2
+	 =>  2
 	 (dolist (flag '(nil t))
 	   (block nil
 	     (let ((x 5))
@@ -424,25 +424,25 @@
 	       (unwind-protect (return-from nil)
 	         (print x))))
 	   (print 'here))
-	;;>>  5
-	;;>>  HERE
-	;;>>  5
-	;;>>  HERE
-	=>  NIL
+	 ;;>>  5
+	 ;;>>  HERE
+	 ;;>>  5
+	 ;;>>  HERE
+	 =>  NIL
 	 (dolist (flag '(nil t))
 	   (block nil
 	     (let ((x 5))
 	       (declare (special x))
 	       (unwind-protect
-	           (if flag (return-from nil))
+	            (if flag (return-from nil))
 	         (print x))))
 	   (print 'here))
-	;;>>  5
-	;;>>  HERE
-	;;>>  5
-	;;>>  HERE
-	=>  NIL
-)
+	 ;;>>  5
+	 ;;>>  HERE
+	 ;;>>  5
+	 ;;>>  HERE
+	 =>  NIL
+	 )
 
 (dotests RETURN
 	 (block nil (return) 1) =>  NIL
@@ -451,73 +451,73 @@
 	 (block nil (block alpha (return 1) 2)) =>  1
 	 (block alpha (block nil (return 1)) 2) =>  2
 	 (block nil (block nil (return 1) 2)) =>  1
-)
+	 )
 
 (dotests TAGBODY
 	 (let (val)
-	    (tagbody
+	   (tagbody
 	      (setq val 1)
 	      (go point-a)
 	      (incf val 16)
-	     point-c
+	    point-c
 	      (incf val 04)
 	      (go point-b)
 	      (incf val 32)
-	     point-a
+	    point-a
 	      (incf val 02)
 	      (go point-c)
 	      (incf val 64)
-	     point-b
+	    point-b
 	      (incf val 08))
-	    val)
-	=>  15
+	   val)
+	 =>  15
 	 (defun f1 (flag)
 	   (let ((n 1))
 	     (tagbody
-	       (setq n (f2 flag #'(lambda () (go out))))
+		(setq n (f2 flag #'(lambda () (go out))))
 	      out
-	       (prin1 n))))
-	=>  F1
+		(prin1 n))))
+	 =>  F1
 	 (defun f2 (flag escape)
 	   (if flag (funcall escape) 2))
-	=>  F2
+	 =>  F2
 	 (f1 nil)
-	;;>>  2
-	=>  NIL
+	 ;;>>  2
+	 =>  NIL
 	 (f1 t)
-	;;>>  1
-	=>  NIL
-)
+	 ;;>>  1
+	 =>  NIL
+	 )
 
 (dotests THROW
 	 (catch 'result
-	    (setq i 0 j 0)
-	    (loop (incf j 3) (incf i)
-	          (if (= i 3) (throw 'result (values i j))))) =>  (values 3 9)
+	   (setq i 0 j 0)
+	   (loop (incf j 3) (incf i)
+	    (if (= i 3) (throw 'result (values i j))))) =>  (values 3 9)
 	 (catch nil
 	   (unwind-protect (throw nil 1)
 	     (throw nil 2))) =>  2
 	 (catch 'foo
-	         (format t "The inner catch returns ~s.~%"
-	                 (catch 'foo
-	                     (unwind-protect (throw 'foo :first-throw)
-	                         (throw 'foo :second-throw))))
-	         :outer-catch)
-	;;>>  The inner catch returns :SECOND-THROW
-	=>  :OUTER-CATCH
-)
+	   (format t "The inner catch returns ~s.~%"
+	           (catch 'foo
+	             (unwind-protect (throw 'foo :first-throw)
+	               (throw 'foo :second-throw))))
+	   :outer-catch)
+	 ;;>>  The inner catch returns :SECOND-THROW
+	 =>  :OUTER-CATCH
+	 )
 
 (dotests UNWIND-PROTECT
 	 (defun dummy-function (x)
-	    (setq state 'running)
-	    (unless (numberp x) (throw 'abort 'not-a-number))
-	    (setq state (1+ x))) =>  DUMMY-FUNCTION
+	   (setq state 'running)
+	   (unless (numberp x) (throw 'abort 'not-a-number))
+	   (setq state (1+ x))) =>  DUMMY-FUNCTION
 	 (catch 'abort (dummy-function 1)) =>  2
 	 state =>  2
 	 (catch 'abort (dummy-function 'trash)) =>  NOT-A-NUMBER
 	 state =>  RUNNING
 	 (catch 'abort (unwind-protect (dummy-function 'trash)
-	                  (setq state 'aborted))) =>  NOT-A-NUMBER
+	                 (setq state 'aborted))) =>  NOT-A-NUMBER
 	 state =>  ABORTED
 
 	;;; The following returns 2.
@@ -548,11 +548,11 @@
 	;;; The following prints "The inner catch returns :SECOND-THROW"
 	;;; and then returns :OUTER-CATCH.
 	 (catch 'foo
-	         (format t "The inner catch returns ~s.~%"
-	                 (catch 'foo
-	                     (unwind-protect (throw 'foo :first-throw)
-	                         (throw 'foo :second-throw))))
-	         :outer-catch) => :OUTER-CATCH
+	   (format t "The inner catch returns ~s.~%"
+	           (catch 'foo
+	             (unwind-protect (throw 'foo :first-throw)
+	               (throw 'foo :second-throw))))
+	   :outer-catch) => :OUTER-CATCH
 
 
 	;;; The following returns 10. The inner CATCH of A is passed over, but
@@ -569,9 +569,9 @@
 	;;; commences.
 	 (catch 'foo
 	   (catch 'bar
-	       (unwind-protect (throw 'foo 3)
-	         (throw 'bar 4)
-	         (print 'xxx)))) => implementation-dependent
+	     (unwind-protect (throw 'foo 3)
+	       (throw 'bar 4)
+	       (print 'xxx)))) => implementation-dependent
 
 
 	;;; The following returns 4; XXX is not printed.
@@ -579,9 +579,9 @@
 	;;; catch tag or the extent of the (CATCH 'BAR ...) exit.
 	 (catch 'bar
 	   (catch 'foo
-	       (unwind-protect (throw 'foo 3)
-	         (throw 'bar 4)
-	         (print 'xxx)))) => 4
+	     (unwind-protect (throw 'foo 3)
+	       (throw 'bar 4)
+	       (print 'xxx)))) => 4
 
 
 	;;; The following prints 5.
@@ -590,11 +590,11 @@
 	     (declare (special x))
 	     (unwind-protect (return)
 	       (print x)))) => NIL ;; RGC
-)
+	 )
 
 (dotests NIL
-	nil =>  NIL
-)
+	 nil =>  NIL
+	 )
 
 (dotests NOT
 	 (not nil) =>  T
@@ -603,7 +603,7 @@
 	 (not (integerp 1)) =>  NIL
 	 (not 3.7) =>  NIL
 	 (not 'apple) =>  NIL
-)
+	 )
 
 (dotests T
 	 t =>  T
@@ -612,9 +612,9 @@
 	 (case 'a (a 1) (t 2)) =>  1
 	 (case 'b (a 1) (t 2)) =>  2
 	 (prin1 'hello t)
-	;;>>  HELLO
-	=>  HELLO
-)
+	 ;;>>  HELLO
+	 =>  HELLO
+	 )
 
 (dotests EQ
 	 (eq 'a 'b) =>  false
@@ -636,7 +636,7 @@
 	 (eq "FOO" "foo") =>  false
 	 (eq "string-seq" (copy-seq "string-seq")) =>  false
 	 (let ((x 5)) (eq x x)) =>  implementation-dependent
-)
+	 )
 
 (dotests EQL
 	 (eql 'a 'b) =>  false
@@ -655,7 +655,7 @@
 	 (eql "Foo" "Foo") =>  implementation-dependent
 	 (eql "Foo" (copy-seq "Foo")) =>  false
 	 (eql "FOO" "foo") =>  false
-)
+	 )
 
 (dotests EQUAL
 	 (equal 'a 'b) =>  false
@@ -674,7 +674,7 @@
 	 (equal "FOO" "foo") =>  false
 	 (equal "This-string" "This-string") =>  true
 	 (equal "This-string" "this-string") =>  false
-)
+	 )
 
 (dotests EQUALP
 	 (equalp 'a 'b) =>  false
@@ -693,44 +693,44 @@
 	 (equalp "FOO" "foo") =>  true
 
 	 (setq array1 (make-array 6 :element-type 'integer
-	                            :initial-contents '(1 1 1 3 5 7)))
-	=>  #(1 1 1 3 5 7)
+	                          :initial-contents '(1 1 1 3 5 7)))
+	 =>  #(1 1 1 3 5 7)
 	 (setq array2 (make-array 8 :element-type 'integer
-	                            :initial-contents '(1 1 1 3 5 7 2 6)
-	                            :fill-pointer 6))
-	=>  #(1 1 1 3 5 7)
+	                          :initial-contents '(1 1 1 3 5 7 2 6)
+	                          :fill-pointer 6))
+	 =>  #(1 1 1 3 5 7)
 	 (equalp array1 array2) =>  true
 	 (setq vector1 (vector 1 1 1 3 5 7)) =>  #(1 1 1 3 5 7)
 	 (equalp array1 vector1) =>  true
-)
+	 )
 
 (dotests IDENTITY
 	 (identity 101) =>  101
 	 (mapcan #'identity (list (list 1 2 3) '(4 5 6))) =>  (1 2 3 4 5 6)
-)
+	 )
 
 (dotests COMPLEMENT
 	 (funcall (complement #'zerop) 1) =>  true
 	 (funcall (complement #'characterp) #\A) =>  false
 	 (funcall (complement #'member) 'a '(a b c)) =>  false
 	 (funcall (complement #'member) 'd '(a b c)) =>  true
-)
+	 )
 
 (dotests CONSTANTLY
 	 (mapcar (constantly 3) '(a b c d)) =>  (3 3 3 3)
 	 (defmacro with-vars (vars &body forms)
 	   `((lambda ,vars ,@forms) ,@(mapcar (constantly nil) vars)))
-	=>  WITH-VARS
+	 =>  WITH-VARS
 	 (macroexpand '(with-vars (a b) (setq a 3 b (* a a)) (list a b)))
-	=>  (values ((LAMBDA (A B) (SETQ A 3 B (* A A)) (LIST A B)) NIL NIL) true)
-)
+	 =>  (values ((LAMBDA (A B) (SETQ A 3 B (* A A)) (LIST A B)) NIL NIL) true)
+	 )
 
 (dotests EVERY/SOME/NOTEVERY/NOTANY
 	 (every #'characterp "abc") =>  true
 	 (some #'= '(1 2 3 4 5) '(5 4 3 2 1)) =>  true
 	 (notevery #'< '(1 2 3 4) '(5 6 7 8) '(9 10 11 12)) =>  false
 	 (notany #'> '(1 2 3 4) '(5 6 7 8) '(9 10 11 12)) =>  true
-)
+	 )
 
 (dotests AND
 	 (setq temp1 1 temp2 1 temp3 1) =>  1
@@ -740,7 +740,7 @@
 	 (and (decf temp1) (decf temp2) (eq temp3 'nil) (decf temp3)) =>  NIL
 	 (and (eql temp1 temp2) (eql temp2 temp3)) =>  true
 	 (and) =>  T
-)
+	 )
 
 (dotests COND
 	 (defun select-options ()
@@ -756,7 +756,7 @@
 	 (select-options) =>  1
 	 (setq a 5) =>  5
 	 (select-options) =>  (values 1 2)
-)
+	 )
 
 (dotests IF
 	 (if t 1) =>  1
@@ -766,12 +766,12 @@
 	     (if truth-value (print 'true) (print 'false))
 	     (prin1 truth-value))) =>  TEST
 	 (test)
-	;;>>  TRUE T
-	;;>>  FALSE NIL
-	;;>>  TRUE 1
-	;;>>  TRUE (A B C)
-	=>  NIL
-)
+	 ;;>>  TRUE T
+	 ;;>>  FALSE NIL
+	 ;;>>  TRUE 1
+	 ;;>>  TRUE (A B C)
+	 =>  NIL
+	 )
 
 (dotests OR
 	 (or) =>  NIL
@@ -786,7 +786,7 @@
 	 (or (values temp1 temp2) temp3) =>  11
 	 (or temp0 (values temp1 temp2)) =>  (values 11 20)
 	 (or (values temp0 temp1) (values temp2 temp3)) =>  (values 20 30)
-)
+	 )
 
 (dotests WHEN/UNLESS
 	 (when t 'hello) =>  HELLO
@@ -796,13 +796,13 @@
 	 (when t) =>  NIL
 	 (unless nil) =>  NIL
 	 (when t (prin1 1) (prin1 2) (prin1 3))
-	;;>>  123
-	=>  3
+	 ;;>>  123
+	 =>  3
 	 (unless t (prin1 1) (prin1 2) (prin1 3)) =>  NIL
 	 (when nil (prin1 1) (prin1 2) (prin1 3)) =>  NIL
 	 (unless nil (prin1 1) (prin1 2) (prin1 3))
-	;;>>  123
-	=>  3
+	 ;;>>  123
+	 =>  3
 	 (let ((x 3))
 	   (list (when (oddp x) (incf x) (list x))
 	         (when (oddp x) (incf x) (list x))
@@ -812,40 +812,40 @@
 	         (if (oddp x) (incf x) (list x))
 	         (if (not (oddp x)) (incf x) (list x))
 	         (if (not (oddp x)) (incf x) (list x))))
-	=>  ((4) NIL (5) NIL 6 (6) 7 (7))
-)
+	 =>  ((4) NIL (5) NIL 6 (6) 7 (7))
+	 )
 
 (dotests CASE/CCASE/ECASE
 	 (dolist (k '(1 2 3 :four #\v () t 'other))
-	    (format t "~S "
-	       (case k ((1 2) 'clause1)
-	               (3 'clause2)
-	               (nil 'no-keys-so-never-seen)
-	               ((nil) 'nilslot)
-	               ((:four #\v) 'clause4)
-	               ((t) 'tslot)
-	               (otherwise 'others))))
-	;;>>  CLAUSE1 CLAUSE1 CLAUSE2 CLAUSE4 CLAUSE4 NILSLOT TSLOT OTHERS
-	=>  NIL
+	   (format t "~S "
+		   (case k ((1 2) 'clause1)
+			 (3 'clause2)
+			 (nil 'no-keys-so-never-seen)
+			 ((nil) 'nilslot)
+			 ((:four #\v) 'clause4)
+			 ((t) 'tslot)
+			 (otherwise 'others))))
+	 ;;>>  CLAUSE1 CLAUSE1 CLAUSE2 CLAUSE4 CLAUSE4 NILSLOT TSLOT OTHERS
+	 =>  NIL
 	 (defun add-em (x) (apply #'+ (mapcar #'decode x)))
-	=>  ADD-EM
+	 =>  ADD-EM
 	 (defun decode (x)
 	   (ccase x
 	     ((i uno) 1)
 	     ((ii dos) 2)
 	     ((iii tres) 3)
 	     ((iv cuatro) 4)))
-	=>  DECODE
+	 =>  DECODE
 	 (add-em '(uno iii)) =>  4
 	 (add-em '(uno iiii))
-	;;>>  Error: The value of X, IIII, is not I, UNO, II, DOS, III,
-	;;>>         TRES, IV, or CUATRO.
-	;;>>   1: Supply a value to use instead.
-	;;>>   2: Return to Lisp Toplevel.
-	;;>>  Debug> :CONTINUE 1
-	;;>>  Value to evaluate and use for X: 'IV
-	=>  5
-)
+	 ;;>>  Error: The value of X, IIII, is not I, UNO, II, DOS, III,
+	 ;;>>         TRES, IV, or CUATRO.
+	 ;;>>   1: Supply a value to use instead.
+	 ;;>>   2: Return to Lisp Toplevel.
+	 ;;>>  Debug> :CONTINUE 1
+	 ;;>>  Value to evaluate and use for X: 'IV
+	 =>  5
+	 )
 
 (dotests TYPECASE/CTYPECASE/ETYPECASE
 	;;; (Note that the parts of this example which use TYPE-OF
@@ -857,61 +857,61 @@
 	               (null "a symbol, boolean false, or the empty list")
 	               (list "a list")
 	               (t (format nil "a(n) ~(~A~)" (type-of x))))))
-	=>  WHAT-IS-IT
+	 =>  WHAT-IS-IT
 	 (map 'nil #'what-is-it '(nil (a b) 7.0 7 box))
-	;;>>  NIL is a symbol, boolean false, or the empty list.
-	;;>>  (A B) is a list.
-	;;>>  7.0 is a float.
-	;;>>  7 is a(n) integer.
-	;;>>  BOX is a(n) symbol.
-	=>  NIL
+	 ;;>>  NIL is a symbol, boolean false, or the empty list.
+	 ;;>>  (A B) is a list.
+	 ;;>>  7.0 is a float.
+	 ;;>>  7 is a(n) integer.
+	 ;;>>  BOX is a(n) symbol.
+	 =>  NIL
 	 (setq x 1/3)
-	=>  1/3
+	 =>  1/3
 	 (ctypecase x
-	     (integer (* x 4))
-	     (symbol  (symbol-value x)))
-	;;>>  Error: The value of X, 1/3, is neither an integer nor a symbol.
-	;;>>  To continue, type :CONTINUE followed by an option number:
-	;;>>   1: Specify a value to use instead.
-	;;>>   2: Return to Lisp Toplevel.
-	;;>>  Debug> :CONTINUE 1
-	;;>>  Use value: 3.7
-	;;>>  Error: The value of X, 3.7, is neither an integer nor a symbol.
-	;;>>  To continue, type :CONTINUE followed by an option number:
-	;;>>   1: Specify a value to use instead.
-	;;>>   2: Return to Lisp Toplevel.
-	;;>>  Debug> :CONTINUE 1
-	;;>>  Use value: 12
-	=>  48
+	   (integer (* x 4))
+	   (symbol  (symbol-value x)))
+	 ;;>>  Error: The value of X, 1/3, is neither an integer nor a symbol.
+	 ;;>>  To continue, type :CONTINUE followed by an option number:
+	 ;;>>   1: Specify a value to use instead.
+	 ;;>>   2: Return to Lisp Toplevel.
+	 ;;>>  Debug> :CONTINUE 1
+	 ;;>>  Use value: 3.7
+	 ;;>>  Error: The value of X, 3.7, is neither an integer nor a symbol.
+	 ;;>>  To continue, type :CONTINUE followed by an option number:
+	 ;;>>   1: Specify a value to use instead.
+	 ;;>>   2: Return to Lisp Toplevel.
+	 ;;>>  Debug> :CONTINUE 1
+	 ;;>>  Use value: 12
+	 =>  48
 	 x =>  12
-)
+	 )
 
 (dotests MULTIPLE-VALUE-BIND
 	 (multiple-value-bind (f r)
 	     (floor 130 11)
 	   (list f r)) =>  (11 9)
-)
+	 )
 
 (dotests MULTIPLE-VALUE-CALL
 	 (multiple-value-call #'list 1 '/ (values 2 3) '/ (values) '/ (floor 2.5))
-	=>  (1 / 2 3 / / 2 0.5)
+	 =>  (1 / 2 3 / / 2 0.5)
 	 (+ (floor 5 3) (floor 19 4))
-	=>  5
+	 =>  5
 	 (multiple-value-call #'+ (floor 5 3) (floor 19 4)) ==  (+ 1 2 4 3)
-	=>  10
-)
+	 =>  10
+	 )
 
 (dotests MULTIPLE-VALUE-LIST
-	(multiple-value-list (floor -3 4)) =>  (-1 1)
-)
+	 (multiple-value-list (floor -3 4)) =>  (-1 1)
+	 )
 
 (dotests MULTIPLE-VALUE-PROG1
 	 (setq temp '(1 2 3)) =>  (1 2 3)
 	 (multiple-value-prog1
-	    (values-list temp)
-	    (setq temp nil)
-	    (values-list temp)) =>  (values 1 2 3)
-)
+	     (values-list temp)
+	   (setq temp nil)
+	   (values-list temp)) =>  (values 1 2 3)
+	 )
 
 (dotests MULTIPLE-VALUE-SETQ
 	 (multiple-value-setq (quotient remainder) (truncate 3.2 2)) =>  1
@@ -924,7 +924,7 @@
 	 (multiple-value-setq (a b) (values 4 5 6)) =>  4
 	 a =>  4
 	 b =>  5
-)
+	 )
 
 (dotests VALUES
 	 (values) =>  NIL ;RGC <no values>
@@ -936,19 +936,19 @@
 	   (values (sqrt (+ (* x x) (* y y))) (atan y x))) =>  POLAR
 	 (multiple-value-bind (r theta) (polar 3.0 4.0)
 	   (vector r theta))
-	=>  #(5.0 0.927295)
-)
+	 =>  #(5.0 0.927295)
+	 )
 
 (dotests VALUES-LIST
 	 (values-list nil) =>  NIL ;RGC <no values>
 	 (values-list '(1)) =>  1
 	 (values-list '(1 2)) =>  (values 1 2)
 	 (values-list '(1 2 3)) =>  (values 1 2 3)
-)
+	 )
 
 (dotests MULTIPLE-VALUES-LIMIT
-	multiple-values-limit => implementation-dependent
-)
+	 multiple-values-limit => implementation-dependent
+	 )
 
 (dotests NTH-VALUE
 	 (nth-value 0 (values 'a 'b)) =>  A
@@ -959,8 +959,8 @@
 	        (a (nth-value 1 (floor x y)))
 	        (b (mod x y)))
 	   (values a b (= a b)))
-	=>  (values 3332987528 3332987528 true)
-)
+	 =>  (values 3332987528 3332987528 true)
+	 )
 
 (dotests PROG/PROG*
 	 (setq a 1) =>  1
@@ -972,19 +972,19 @@
 	   "Take a cons of two lists and make a list of conses.
 	    Think of this function as being like a zipper."
 	   (prog (x y z)          ;Initialize x, y, z to NIL
-	        (setq y (car w) z (cdr w))
+	      (setq y (car w) z (cdr w))
 	    loop
-	        (cond ((null y) (return x))
-	              ((null z) (go err)))
+	      (cond ((null y) (return x))
+	            ((null z) (go err)))
 	    rejoin
-	        (setq x (cons (cons (car y) (car z)) x))
-	        (setq y (cdr y) z (cdr z))
-	        (go loop)
+	      (setq x (cons (cons (car y) (car z)) x))
+	      (setq y (cdr y) z (cdr z))
+	      (go loop)
 	    err
-	        (cerror "Will self-pair extraneous items"
-	                "Mismatch - gleep!  ~S" y)
-	        (setq z y)
-	        (go rejoin))) =>  KING-OF-CONFUSION
+	      (cerror "Will self-pair extraneous items"
+	              "Mismatch - gleep!  ~S" y)
+	      (setq z y)
+	      (go rejoin))) =>  KING-OF-CONFUSION
 
 	 (defun prince-of-clarity (w)
 	   "Take a cons of two lists and make a list of conses.
@@ -995,16 +995,16 @@
 	       ((null y) x)
 	     (when (null z)
 	       (cerror "Will self-pair extraneous items"
-	              "Mismatch - gleep!  ~S" y)
+	               "Mismatch - gleep!  ~S" y)
 	       (setq z y)))) =>  PRINCE-OF-CLARITY
-)
+	 )
 
 (dotests PROG1/PROG2
 	 (setq temp 1) =>  1
 	 (prog1 temp (print temp) (incf temp) (print temp))
-	;;>>  1
-	;;>>  2
-	=>  1
+	 ;;>>  1
+	 ;;>>  2
+	 =>  1
 	 (prog1 temp (setq temp nil)) =>  2
 	 temp =>  NIL
 	 (prog1 (values 1 2 3) 4) =>  1
@@ -1014,17 +1014,17 @@
 	 (flet ((swap-symbol-values (x y)
 	          (setf (symbol-value x)
 	                (prog1 (symbol-value y)
-	                       (setf (symbol-value y) (symbol-value x))))))
+	                  (setf (symbol-value y) (symbol-value x))))))
 	   (let ((*foo* 1) (*bar* 2))
 	     (declare (special *foo* *bar*))
 	     (swap-symbol-values '*foo* '*bar*)
 	     (values *foo* *bar*)))
-	=>  (values 2 1)
+	 =>  (values 2 1)
 	 (setq temp 1) =>  1
 	 (prog2 (incf temp) (incf temp) (incf temp)) =>  3
 	 temp =>  4
 	 (prog2 1 (values 2 3 4) 5) =>  2
-)
+	 )
 
 (dotests PROGN
 	 (progn) =>  NIL
@@ -1032,28 +1032,28 @@
 	 (progn (values 1 2 3)) =>  (values 1 2 3)
 	 (setq a 1) =>  1
 	 (if a
-	      (progn (setq a nil) 'here)
-	      (progn (setq a t) 'there)) =>  HERE
+	     (progn (setq a nil) 'here)
+	     (progn (setq a t) 'there)) =>  HERE
 	 a =>  NIL
-)
+	 )
 
 (dotests DEFINE-MODIFY-MACRO
 	 (define-modify-macro appendf (&rest args)
-	    append "Append onto list") =>  APPENDF
+	   append "Append onto list") =>  APPENDF
 	 (setq x '(a b c) y x) =>  (A B C)
 	 (appendf x '(d e f) '(1 2 3)) =>  (A B C D E F 1 2 3)
 	 x =>  (A B C D E F 1 2 3)
 	 y =>  (A B C)
 	 (define-modify-macro new-incf (&optional (delta 1)) +) => NEW-INCF
 	 (define-modify-macro unionf (other-set &rest keywords) union) => UNIONF
-)
+	 )
 
 (dotests DEFSETF
 	 (defun middleguy (x) (nth (truncate (1- (list-length x)) 2) x)) =>  MIDDLEGUY
 	 (defun set-middleguy (x v)
-	    (unless (null x)
-	      (rplaca (nthcdr (truncate (1- (list-length x)) 2) x) v))
-	    v) =>  SET-MIDDLEGUY
+	   (unless (null x)
+	     (rplaca (nthcdr (truncate (1- (list-length x)) 2) x) v))
+	   v) =>  SET-MIDDLEGUY
 	 (defsetf middleguy set-middleguy) =>  MIDDLEGUY
 	 (setq a (list 'a 'b 'c 'd)
 	       b (list 'x)
@@ -1065,7 +1065,7 @@
 	 b =>  (7)
 	 c =>  (1 2 3 (4 MIDDLEGUY-SYMBOL 6) 7 8 9)
 
-	;;An example of the use of the long form of defsetf:
+	 ;;An example of the use of the long form of defsetf:
 	 (defsetf subseq (sequence start &optional end) (new-sequence)
 	   `(progn (replace ,sequence ,new-sequence
 	                    :start1 ,start :end1 ,end)
@@ -1078,26 +1078,26 @@
 	   (setf (aref *xy* x y) new-value)) =>  SET-XY
 	 (defsetf xy (&key ((x x) 0) ((y y) 0)) (store)
 	   `(set-xy ,store 'x ,x 'y ,y)) =>  XY
-	#|
+	 #|
 	 (get-setf-expansion '(xy a b))
-	=>  (#:t0 #:t1),
-	   (a b),
-	   (#:store),
-	   ((lambda (&key ((x #:x)) ((y #:y)))
-	      (set-xy #:store 'x #:x 'y #:y))
-	    #:t0 #:t1),
-	   (xy #:t0 #:t1)
-	|#
+	 =>  (#:t0 #:t1),
+	 (a b),
+	 (#:store),
+	 ((lambda (&key ((x #:x)) ((y #:y)))
+	 (set-xy #:store 'x #:x 'y #:y))
+	 #:t0 #:t1),
+	 (xy #:t0 #:t1)
+	 |#
 	 (xy 'x 1) =>  NIL
 	 (setf (xy 'x 1) 1) =>  1
 	 (xy 'x 1) =>  1
 	 (let ((a 'x) (b 'y))
 	   (setf (xy a 1 b 2) 3)
 	   (setf (xy b 5 a 9) 14))
-	=>  14
+	 =>  14
 	 (xy 'y 0 'x 1) =>  1
 	 (xy 'x 1 'y 2) =>  3
-)
+	 )
 
 (dotests DEFINE-SETF-EXPANDER
 	 (defun lastguy (x) (car (last x))) =>  LASTGUY
@@ -1120,12 +1120,12 @@
 	 a =>  (A B C 3)
 	 b =>  (7)
 	 c =>  (1 2 3 (4 5 LASTGUY-SYMBOL))
-)
+	 )
 
 (dotests GET-SETF-EXPANSION
 	 (get-setf-expansion 'x)
-	=>  (values NIL NIL true true X) ;; RGC (#:G0001), (SETQ X #:G0001), X
-)
+	 =>  (values NIL NIL true true X) ;; RGC (#:G0001), (SETQ X #:G0001), X
+	 )
 
 (dotests SETF/PSETF
 	 (setq x (cons 'a 'b) y (list 1 2 3)) =>  (1 2 3)
@@ -1136,7 +1136,7 @@
 	 (psetf (car x) 'x (cadr y) (car x) (cdr x) y) =>  NIL
 	 x =>  (X 1 A 3)
 	 y =>  (1 A 3)
-)
+	 )
 
 (dotests SHIFTF
 	 (setq x (list 1 2 3) y 'trash) =>  TRASH
@@ -1153,13 +1153,13 @@
 	 (setq x (list 'a 'b 'c 'd)) =>  (A B C D)
 	 (shiftf (nth (setq n (+ n 1)) x) 'z) =>  B
 	 x =>  (A Z C D)
-)
+	 )
 
 (dotests ROTATEF
 	 (let ((n 0)
-	        (x (list 'a 'b 'c 'd 'e 'f 'g)))
-	    (rotatef (nth (incf n) x)
-	             (nth (incf n) x)
-	             (nth (incf n) x))
-	    x) =>  (A C D B E F G)
-)
+	       (x (list 'a 'b 'c 'd 'e 'f 'g)))
+	   (rotatef (nth (incf n) x)
+	            (nth (incf n) x)
+	            (nth (incf n) x))
+	   x) =>  (A C D B E F G)
+	 )

@@ -49,7 +49,7 @@
 
 (define-test-suite test-replace ()
   (replace "abcdefghij" "0123456789" :start1 4 :end1 7 :start2 4)
-    => "abcd456hij"
+  => "abcd456hij"
   (setq lst "012345678") => "012345678"
   (replace lst lst :start1 2 :start2 0) => "010123456"
   lst => "010123456")
@@ -183,49 +183,49 @@
   )
 
 (define-test-suite test-sort ()
-   (setq tester (copy-seq "lkjashd")) =>  "lkjashd"
-   (sort tester #'char-lessp) =>  "adhjkls"
-   (setq tester (list '(1 2 3) '(4 5 6) '(7 8 9)))
-   (sort tester #'> :key #'car)  =>  ((7 8 9) (4 5 6) (1 2 3))
-   (setq tester (list 1 2 3 4 5 6 7 8 9 0))
-   (stable-sort tester #'(lambda (x y) (and (oddp x) (evenp y))))
-   => (1 3 5 7 9 2 4 6 8 0)
-   (sort (setq committee-data
-             (vector (list (list "JonL" "White") "Iteration")
-                     (list (list "Dick" "Waters") "Iteration")
-                     (list (list "Dick" "Gabriel") "Objects")
-                     (list (list "Kent" "Pitman") "Conditions")
-                     (list (list "Gregor" "Kiczales") "Objects")
-                     (list (list "David" "Moon") "Objects")
-                     (list (list "Kathy" "Chapman") "Editorial")
-                     (list (list "Larry" "Masinter") "Cleanup")
-                     (list (list "Sandra" "Loosemore") "Compiler")))
-       #'string< :key #'cadar)
-   => (lambda (result)
-	(vector= result
-		 #((("Kathy" "Chapman") "Editorial")
-		   (("Dick" "Gabriel") "Objects")
-		   (("Gregor" "Kiczales") "Objects")
-		   (("Sandra" "Loosemore") "Compiler")
-		   (("Larry" "Masinter") "Cleanup")
-		   (("David" "Moon") "Objects")
-		   (("Kent" "Pitman") "Conditions")
-		   (("Dick" "Waters") "Iteration")
-		   (("JonL" "White") "Iteration"))))
-   (setq committee-data
-       (stable-sort committee-data #'string< :key #'cadr))
-   => (lambda (result)
-	(vector= result
-		 #((("Larry" "Masinter") "Cleanup")
-		   (("Sandra" "Loosemore") "Compiler")
-		   (("Kent" "Pitman") "Conditions")
-		   (("Kathy" "Chapman") "Editorial")
-		   (("Dick" "Waters") "Iteration")
-		   (("JonL" "White") "Iteration")
-		   (("Dick" "Gabriel") "Objects")
-		   (("Gregor" "Kiczales") "Objects")
-		   (("David" "Moon") "Objects"))))
-   )
+  (setq tester (copy-seq "lkjashd")) =>  "lkjashd"
+  (sort tester #'char-lessp) =>  "adhjkls"
+  (setq tester (list '(1 2 3) '(4 5 6) '(7 8 9)))
+  (sort tester #'> :key #'car)  =>  ((7 8 9) (4 5 6) (1 2 3))
+  (setq tester (list 1 2 3 4 5 6 7 8 9 0))
+  (stable-sort tester #'(lambda (x y) (and (oddp x) (evenp y))))
+  => (1 3 5 7 9 2 4 6 8 0)
+  (sort (setq committee-data
+              (vector (list (list "JonL" "White") "Iteration")
+                      (list (list "Dick" "Waters") "Iteration")
+                      (list (list "Dick" "Gabriel") "Objects")
+                      (list (list "Kent" "Pitman") "Conditions")
+                      (list (list "Gregor" "Kiczales") "Objects")
+                      (list (list "David" "Moon") "Objects")
+                      (list (list "Kathy" "Chapman") "Editorial")
+                      (list (list "Larry" "Masinter") "Cleanup")
+                      (list (list "Sandra" "Loosemore") "Compiler")))
+	#'string< :key #'cadar)
+  => (lambda (result)
+       (vector= result
+		#((("Kathy" "Chapman") "Editorial")
+		  (("Dick" "Gabriel") "Objects")
+		  (("Gregor" "Kiczales") "Objects")
+		  (("Sandra" "Loosemore") "Compiler")
+		  (("Larry" "Masinter") "Cleanup")
+		  (("David" "Moon") "Objects")
+		  (("Kent" "Pitman") "Conditions")
+		  (("Dick" "Waters") "Iteration")
+		  (("JonL" "White") "Iteration"))))
+  (setq committee-data
+	(stable-sort committee-data #'string< :key #'cadr))
+  => (lambda (result)
+       (vector= result
+		#((("Larry" "Masinter") "Cleanup")
+		  (("Sandra" "Loosemore") "Compiler")
+		  (("Kent" "Pitman") "Conditions")
+		  (("Kathy" "Chapman") "Editorial")
+		  (("Dick" "Waters") "Iteration")
+		  (("JonL" "White") "Iteration")
+		  (("Dick" "Gabriel") "Objects")
+		  (("Gregor" "Kiczales") "Objects")
+		  (("David" "Moon") "Objects"))))
+  )
 
 (define-test-suite test-substitute ()
   (substitute #\. #\SPACE "0 2 4 6") =>  "0.2.4.6"
@@ -270,19 +270,19 @@
 
 (defun test-sequences-module ()
   (apply #'+
-   (list
-    (test-count)
-    (test-position)
-    (test-fill)
-    (test-replace)
-    (test-mismatch)
-    (test-search)
-    (test-remove)
-    (test-delete)
-    (test-remove-duplicates)
-    (test-merge)
-    (test-sort)
-    (test-reverse)
-    (test-substitute)
-    (test-nsubstitute)
-    (test-reduce))))
+	 (list
+	  (test-count)
+	  (test-position)
+	  (test-fill)
+	  (test-replace)
+	  (test-mismatch)
+	  (test-search)
+	  (test-remove)
+	  (test-delete)
+	  (test-remove-duplicates)
+	  (test-merge)
+	  (test-sort)
+	  (test-reverse)
+	  (test-substitute)
+	  (test-nsubstitute)
+	  (test-reduce))))

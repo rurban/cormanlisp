@@ -51,20 +51,20 @@ FUNCTION:
 This appears to be because the CLOS implementation included with Corman Lisp doesn't now about Ratio's. This can be fixed by doing the
 following:
 
-  (in-package :common-lisp)
-  (defclass ratio (number) ())
+(in-package :common-lisp)
+(defclass ratio (number) ())
 
 Now look in the file sys/fast-class-of.lisp. See the variable %*magic- class-table*? In the table you'll see:
 
-  (find-class t) ;01101 - ratio
+(find-class t) ;01101 - ratio
 
 Change this to:
 
-  (find-class 'ratio) ;01101 - ratio
+(find-class 'ratio) ;01101 - ratio
 
 Pop back to common-lisp-user:
 
-  (in-package :cl-user)
+(in-package :cl-user)
 
 Now your test method example will work. Hope this helps.
 
@@ -72,7 +72,7 @@ Chris.
 
 -----------------------------------------------
 In article <81c7ch$fg2$1@nnrp1.deja.com>,
-  dauclair@hotmail.com wrote:
+dauclair@hotmail.com wrote:
 > Hi, I'm using CormanLisp 1.3 IDE and when I evaluate (describe 1/2) I
 > get:
 >
@@ -81,9 +81,9 @@ In article <81c7ch$fg2$1@nnrp1.deja.com>,
 
 There is a bug in the describe-ratio function in the file
 sys/describe.lisp. Look in this file at the function 'describe-ratio'. See the line:
-  (format s "RATIO:~%~?~?~?"~?
+(format s "RATIO:~%~?~?~?"~?
 
-The " character should be after the last ~?. The line should read:   (format s "RATIO:~%~?~?~?~?"
+	The " character should be after the last ~?. The line should read:   (format s "RATIO:~%~?~?~?~?"
 
 Also, the line containing (%uvector-address pathname) should be changed so it is (%uvector-address x). ie. Change the 'pathname' to an 'x'. To patch your existing system you can:
 

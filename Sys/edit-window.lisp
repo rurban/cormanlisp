@@ -19,41 +19,41 @@
 
 (defpackage "IDE"
   (:export
-        "CURRENT-EDIT-FRAME-WINDOW-HANDLE"
-		"CURRENT-EDIT-WINDOW-HANDLE"
-		"SET-SELECTION"
-		"GET-CURRENT-SELECTION-TEXT"
-        "GET-SELECTION-TEXT"
-        "GET-CURRENT-SELECTION"
-        "SET-CURRENT-SELECTION"
-        "SHOW-SELECTION"
-        "HIDE-SELECTION"
-        "GET-RICHEDIT-EVENT-MASK"
-        "SET-RICHEDIT-EVENT-MASK"
-        "GET-SCROLL-INFO"
-        "SET-SCROLL-INFO"
-        "DISABLE-EDITOR-REDRAW"
-        "ENABLE-EDITOR-REDRAW"
-        "GET-FIRST-VISIBLE-LINE"
-        "SCROLL-LINES"
-        "ON-COLORIZE"
-        "COLORIZE-CURRENT-WINDOW"
-        "MAKE-TEXT-FORMAT"
-        "BLACK"
-        "DARK-GREEN"
-        "DARK-MAROON"
-        "BLUE"
-        "COMMENT-FORMAT"
-        "KEYWORD-FORMAT"
-        "STRING-FORMAT"
-        "LISP-SYMBOL-FORMAT"
-        "NORMAL-FORMAT"
-        "SET-CURRENT-WINDOW-ZOOM"
-        "ADD-LISP-DISPLAY-VARIABLE"
-        "REMOVE-LISP-DISPLAY-VARIABLE"
-        "ON-INIT-MENU-POPUP"
-        "ADD-SYMBOL-MENU-TO-MENUBAR"
-        "ADD-COMMAND-HISTORY-MENU-TO-MENUBAR"))
+   "CURRENT-EDIT-FRAME-WINDOW-HANDLE"
+   "CURRENT-EDIT-WINDOW-HANDLE"
+   "SET-SELECTION"
+   "GET-CURRENT-SELECTION-TEXT"
+   "GET-SELECTION-TEXT"
+   "GET-CURRENT-SELECTION"
+   "SET-CURRENT-SELECTION"
+   "SHOW-SELECTION"
+   "HIDE-SELECTION"
+   "GET-RICHEDIT-EVENT-MASK"
+   "SET-RICHEDIT-EVENT-MASK"
+   "GET-SCROLL-INFO"
+   "SET-SCROLL-INFO"
+   "DISABLE-EDITOR-REDRAW"
+   "ENABLE-EDITOR-REDRAW"
+   "GET-FIRST-VISIBLE-LINE"
+   "SCROLL-LINES"
+   "ON-COLORIZE"
+   "COLORIZE-CURRENT-WINDOW"
+   "MAKE-TEXT-FORMAT"
+   "BLACK"
+   "DARK-GREEN"
+   "DARK-MAROON"
+   "BLUE"
+   "COMMENT-FORMAT"
+   "KEYWORD-FORMAT"
+   "STRING-FORMAT"
+   "LISP-SYMBOL-FORMAT"
+   "NORMAL-FORMAT"
+   "SET-CURRENT-WINDOW-ZOOM"
+   "ADD-LISP-DISPLAY-VARIABLE"
+   "REMOVE-LISP-DISPLAY-VARIABLE"
+   "ON-INIT-MENU-POPUP"
+   "ADD-SYMBOL-MENU-TO-MENUBAR"
+   "ADD-COMMAND-HISTORY-MENU-TO-MENUBAR"))
 
 (in-package :ide)
 
@@ -80,9 +80,9 @@
 /* EM_GETTEXTLENGTHEX info; this struct is passed in the wparam of the msg */
 typedef struct _gettextlengthex
 {
-	DWORD	flags;			/* flags (see GTL_XXX defines)				*/
-	UINT	codepage;		/* code page for translation (CP_ACP for default,
-							   1200 for Unicode)					    */
+DWORD	flags;			/* flags (see GTL_XXX defines)				*/
+UINT	codepage;		/* code page for translation (CP_ACP for default,
+1200 for Unicode)					    */
 } GETTEXTLENGTHEX;
 
 /* Flags for the GETEXTEX data structure */
@@ -95,12 +95,12 @@ typedef BOOL* LPBOOL;
 /* EM_GETTEXTEX info; this struct is passed in the wparam of the message */
 typedef struct _gettextex
 {
-	DWORD	cb;				/* count of bytes in the string				*/
-	DWORD	flags;			/* flags (see the GT_XXX defines)			*/
-	UINT	codepage;		/* code page for translation (CP_ACP for sys default,
-						       1200 for Unicode, -1 for control default)*/
-	LPCSTR	lpDefaultChar;	/* replacement for unmappable chars			*/
-	LPBOOL	lpUsedDefChar;	/* pointer to flag set when def char used	*/
+DWORD	cb;				/* count of bytes in the string				*/
+DWORD	flags;			/* flags (see the GT_XXX defines)			*/
+UINT	codepage;		/* code page for translation (CP_ACP for sys default,
+1200 for Unicode, -1 for control default)*/
+LPCSTR	lpDefaultChar;	/* replacement for unmappable chars			*/
+LPBOOL	lpUsedDefChar;	/* pointer to flag set when def char used	*/
 } GETTEXTEX;
 
 /* Event notification masks */
@@ -879,41 +879,41 @@ interface ITextPara : IDispatch
 
 #| threaded method--doesn't seem to be much faster
 
-(defun colorize-window (hwnd)
-   	(let* ((text (get-editor-buffer-contents hwnd))
-           (in (make-string-input-stream text)))
-        (let ((IRichEdit (get-richedit-ole-interface hwnd)))
-            (th:create-thread
-                (lambda ()
-                    (ignore-errors
-                        (let ((*local-interface-ptr* (ct:malloc (ct:sizeof '(win:interface *))))
-                              (long-ptr (ct:malloc (ct:sizeof 'win:long))))
-                            (unwind-protect
-                                (win:with-com-interface (ITextDocument *local-interface-ptr*)
-                                    (win:IUNKNOWN-QUERYINTERFACE IRichEdit win::IID_ITextDocument ITextDocument)
-                                    (suspend-undo ITextDocument)
-                                    (ITextDocument-Freeze ITextDocument long-ptr)
-                                    (colorize-buffer ITextDocument in)
-                                    (ITextDocument-Unfreeze ITextDocument long-ptr)
-                                    (resume-undo ITextDocument)
-                                    nil)
-                                (win:IUnknown-Release IRichEdit)))))
-                nil))))
-|#
+					    (defun colorize-window (hwnd)
+   					      (let* ((text (get-editor-buffer-contents hwnd))
+						     (in (make-string-input-stream text)))
+						(let ((IRichEdit (get-richedit-ole-interface hwnd)))
+						  (th:create-thread
+						   (lambda ()
+						     (ignore-errors
+						       (let ((*local-interface-ptr* (ct:malloc (ct:sizeof '(win:interface *))))
+							     (long-ptr (ct:malloc (ct:sizeof 'win:long))))
+							 (unwind-protect
+							      (win:with-com-interface (ITextDocument *local-interface-ptr*)
+								(win:IUNKNOWN-QUERYINTERFACE IRichEdit win::IID_ITextDocument ITextDocument)
+								(suspend-undo ITextDocument)
+								(ITextDocument-Freeze ITextDocument long-ptr)
+								(colorize-buffer ITextDocument in)
+								(ITextDocument-Unfreeze ITextDocument long-ptr)
+								(resume-undo ITextDocument)
+								nil)
+							   (win:IUnknown-Release IRichEdit)))))
+						   nil))))
+					    |#
 
 
 #|
 ;;; this always seems to return NIL, finding that the document never
 ;;; has a name, so is not too useful
-(defun get-document-name (ITextDocument)
-    (win:ITextDocument-GetName ITextDocument *local-BSTR-ptr*)
-    (let ((bstr nil))
-        (unwind-protect
-            (progn
-                (setf bstr (ct:cref (win:BSTR *) *local-BSTR-ptr* 0))
-                (unless (ct:cpointer-null bstr) (win:bstr-to-lisp-string bstr)))
-             (if nil (win:SysFreeString bstr)))))
-|#
+					    (defun get-document-name (ITextDocument)
+					      (win:ITextDocument-GetName ITextDocument *local-BSTR-ptr*)
+					      (let ((bstr nil))
+						(unwind-protect
+						     (progn
+						       (setf bstr (ct:cref (win:BSTR *) *local-BSTR-ptr* 0))
+						       (unless (ct:cpointer-null bstr) (win:bstr-to-lisp-string bstr)))
+						  (if nil (win:SysFreeString bstr)))))
+					    |#
 
 (defun colorize-window (hwnd start end)
     (setq *editor-buffer-length* (get-editor-buffer-length hwnd))

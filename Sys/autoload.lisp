@@ -72,16 +72,16 @@
   (let ((dsym (gensym))
 	(fsym (gensym)))
     `(LET ((,dsym ,desc-form))
-      (FLET ((,fsym (,var) ,@forms))
-	(MAPC #',fsym (AUTOLOAD-DESCRIPTOR-FUNCTIONS ,dsym))
-	(MAPC #',fsym (AUTOLOAD-DESCRIPTOR-MACROS ,dsym))))))
+       (FLET ((,fsym (,var) ,@forms))
+	 (MAPC #',fsym (AUTOLOAD-DESCRIPTOR-FUNCTIONS ,dsym))
+	 (MAPC #',fsym (AUTOLOAD-DESCRIPTOR-MACROS ,dsym))))))
 
 (defun make-dead-autoload-thunk (symbol descriptor)
-	#'(lambda (&rest args)
-		(declare (ignore args))
-		(error "The function ~S is not defined.  It was declared as ~
+  #'(lambda (&rest args)
+      (declare (ignore args))
+      (error "The function ~S is not defined.  It was declared as ~
               autoloadable, but not defined while autoloading ~S."
-			symbol descriptor)))
+	     symbol descriptor)))
 
 ;; Make sure that all of the symbols about to be autoloaded using the
 ;; DESCRIPTOR are OK, whatever that means.  Return a list of the original
@@ -99,14 +99,14 @@
 ;;
 (defun verify-autoload (orig-functions descriptor)
   (autoload-descriptor-symbols-do (sym descriptor)
-    (when (eq (car orig-functions) (symbol-function sym))
-      ;; Replace with a continuable error when exceptions are in place
-      (format t "~&;;; Warning: The function of symbol ~S has not been ~
+				  (when (eq (car orig-functions) (symbol-function sym))
+				    ;; Replace with a continuable error when exceptions are in place
+				    (format t "~&;;; Warning: The function of symbol ~S has not been ~
                  defined by autoloading ~S.~%"
-	      sym descriptor)
-      (setf (symbol-function sym)
-	    (make-dead-autoload-thunk sym descriptor)))
-    (pop orig-functions)))
+					    sym descriptor)
+				    (setf (symbol-function sym)
+					  (make-dead-autoload-thunk sym descriptor)))
+				  (pop orig-functions)))
 
 (defun module-filename (prefix filename)
   (cond ((not prefix)
@@ -122,28 +122,28 @@
 (defconstant lisp-binary-extension "fasl")
 
 (defun binary-equivalent (path)
-	(let ((len (length path)))
-		(if (and (> len (length lisp-src-extension))
-				(string-equal
-					(subseq path (- len (length lisp-src-extension)) len)
-					lisp-src-extension))
-			(concatenate 'string (subseq path 0 (- len (length lisp-src-extension)))
-				lisp-binary-extension))))
+  (let ((len (length path)))
+    (if (and (> len (length lisp-src-extension))
+	     (string-equal
+	      (subseq path (- len (length lisp-src-extension)) len)
+	      lisp-src-extension))
+	(concatenate 'string (subseq path 0 (- len (length lisp-src-extension)))
+		     lisp-binary-extension))))
 
 (defun load-autoload-module (descriptor)
-	(let ((*package* *package*)
-		  (path (module-filename (symbol-value
+  (let ((*package* *package*)
+	(path (module-filename (symbol-value
 				(autoload-descriptor-root-symbol descriptor))
 			       (autoload-descriptor-file-name descriptor))))
-		(let ((binary-path (binary-equivalent path)))
-			(if (probe-file binary-path)
-				(setf path binary-path)))
-		(unless *quiet-autoload* (format t "~&;;; Autoloading ~A ...~%" path))
-		(load path)))
+    (let ((binary-path (binary-equivalent path)))
+      (if (probe-file binary-path)
+	  (setf path binary-path)))
+    (unless *quiet-autoload* (format t "~&;;; Autoloading ~A ...~%" path))
+    (load path)))
 
 (defun cleanup-autoload (descriptor)
   (autoload-descriptor-symbols-do (sym descriptor)
-    (remprop sym 'autoload)))
+				  (remprop sym 'autoload)))
 
 (defun make-autoload-thunk (symbol descriptor)
   (let ((old-descriptor (get symbol 'autoload)))
@@ -215,27 +215,27 @@
 			   ',root-sym
 			   ',functions
 			   ',macros)))
-	,@(mapcar
-	   #'(lambda (sym)
-	       `(SETF (SYMBOL-FUNCTION ',sym)
-		      (MAKE-AUTOLOAD-THUNK ',sym ,descriptor)))
-	   functions)
-	,@(mapcar
-	   #'(lambda (sym)
-	       `(CL::SET-SYMBOL-MACRO
-		 (MAKE-AUTOLOAD-THUNK ',sym ,descriptor)
-		 ',sym))
-	   macros)
-	(AUTOLOAD-DESCRIPTOR-SYMBOLS-DO (SYM ,descriptor)
-	 (SETF (GET SYM 'AUTOLOAD) ,descriptor))
-	,file-name))))
+	 ,@(mapcar
+	    #'(lambda (sym)
+		`(SETF (SYMBOL-FUNCTION ',sym)
+		       (MAKE-AUTOLOAD-THUNK ',sym ,descriptor)))
+	    functions)
+	 ,@(mapcar
+	    #'(lambda (sym)
+		`(CL::SET-SYMBOL-MACRO
+		  (MAKE-AUTOLOAD-THUNK ',sym ,descriptor)
+		  ',sym))
+	    macros)
+	 (AUTOLOAD-DESCRIPTOR-SYMBOLS-DO (SYM ,descriptor)
+					 (SETF (GET SYM 'AUTOLOAD) ,descriptor))
+	 ,file-name))))
 
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ;;; Function: QUASILOAD
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (defun quasiload-file (stream)
-	(declare (ignore stream))
+  (declare (ignore stream))
   ;; => (VALUES function-symbols macro-symbols)
   (let ((eof (cons nil nil))
 	(functions nil)
@@ -243,13 +243,13 @@
     (labels ((quasiload-form (form)
 	       (case (car form)
 		 (DEFUN
-		  (let ((function-name (second form)))
-		    (cond ((symbolp function-name)
-			   (push function-name functions)))))
+		     (let ((function-name (second form)))
+		       (cond ((symbolp function-name)
+			      (push function-name functions)))))
 		 (DEFMACRO
-		  (let ((macro-name (second form)))
-		    (cond ((symbolp macro-name)
-			   (push macro-name macros)))))
+		     (let ((macro-name (second form)))
+		       (cond ((symbolp macro-name)
+			      (push macro-name macros)))))
 		 (IN-PACKAGE
 		  (setq *package* (second form)))
 		 (EXPORT
@@ -287,5 +287,5 @@
 	    (cl::set-symbol-macro (make-autoload-thunk sym descriptor)
 				  sym))
 	  (autoload-descriptor-symbols-do (sym descriptor)
-	    (setf (get sym 'autoload) descriptor))
+					  (setf (get sym 'autoload) descriptor))
 	  descriptor)))))

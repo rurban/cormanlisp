@@ -12,7 +12,7 @@
 (setq *compiler-save-table-references* nil)
 (setq *append-refs-to-code* t)
 (editor-set-message "Loading BOOTSTRAP.LISP")	(load "Sys/bootstrap.lisp")
-;(setq *COMPILE-VERBOSE* t)
+					;(setq *COMPILE-VERBOSE* t)
 (editor-set-message "Loading EXPAND.LISP")		(load "Sys/expand.lisp")
 (editor-set-message "Loading UVECTOR.LISP")		(load "Sys/uvector.lisp")
 (editor-set-message "Loading READ.LISP")		(load "Sys/read.lisp")
@@ -27,10 +27,10 @@
 (editor-set-message "Loading FORMAT.LISP")		(load "Sys/format.lisp")
 
 (defun load-file (filename)
-    (if (eq (cormanlisp-client-type) 2)
-        (editor-set-message (format nil "Compiling ~a" filename))
-        (progn (format t "Compiling ~a~%" filename)(force-output)))
-    (load filename))
+  (if (eq (cormanlisp-client-type) 2)
+      (editor-set-message (format nil "Compiling ~a" filename))
+      (progn (format t "Compiling ~a~%" filename)(force-output)))
+  (load filename))
 
 (setf *compiler-warn-on-unused-variable* t)
 (load-file "Sys/types.lisp")

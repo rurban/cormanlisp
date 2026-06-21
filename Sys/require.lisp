@@ -15,11 +15,11 @@
 (in-package :common-lisp)
 
 (export '(require))
-	  ;; PROVIDE is already exported, though we redefine it here
+;; PROVIDE is already exported, though we redefine it here
 
 (export '(ccl::register-module-source
-		  ccl::push-module-directory)
-		(find-package "CORMANLISP"))
+	  ccl::push-module-directory)
+	(find-package "CORMANLISP"))
 
 (defun %absolute-pathname-p (pathname)
   (or (and (< 0 (length pathname))
@@ -31,8 +31,8 @@
   (if (%absolute-pathname-p pathname)
       pathname
       (concatenate 'string
-			(cormanlisp-directory)
-			pathname)))
+		   (cormanlisp-directory)
+		   pathname)))
 
 ;;; PROVIDE is already defined (misc.lisp).
 
@@ -66,19 +66,19 @@
 	 (mapc #'load pathnames))))
 
 (defun %load-from-default (module-name)
-	(let ((filename-src (concatenate 'string module-name ".lisp"))
-		  (filename-binary (concatenate 'string module-name ".fasl"))
-		  fullname)
-		(dolist (dir *module-default-directories*)
-			(setq fullname (concatenate 'string dir filename-binary))
-			(when (probe-file fullname)
-				(load fullname)
-				(return-from %load-from-default t))
-			(setq fullname (concatenate 'string dir filename-src))
-			(when (probe-file fullname)
-				(load fullname)
-				(return-from %load-from-default t)))
-		nil))
+  (let ((filename-src (concatenate 'string module-name ".lisp"))
+	(filename-binary (concatenate 'string module-name ".fasl"))
+	fullname)
+    (dolist (dir *module-default-directories*)
+      (setq fullname (concatenate 'string dir filename-binary))
+      (when (probe-file fullname)
+	(load fullname)
+	(return-from %load-from-default t))
+      (setq fullname (concatenate 'string dir filename-src))
+      (when (probe-file fullname)
+	(load fullname)
+	(return-from %load-from-default t)))
+    nil))
 
 (defun require (module-name &optional pathname-list)
   (when (symbolp module-name)
@@ -103,19 +103,19 @@
 ;;;	Define threads package and create stub loader.
 ;;;
 (defpackage "THREADS"
-	(:export
-		"CREATE-THREAD"
-		"EXIT-THREAD"
-	)
-	(:nicknames "TH"))
+  (:export
+   "CREATE-THREAD"
+   "EXIT-THREAD"
+   )
+  (:nicknames "TH"))
 
 (in-package :threads)
 (defun create-thread (&rest args)
-	(require "THREADS")
-	(apply 'create-thread args))
+  (require "THREADS")
+  (apply 'create-thread args))
 
 (defun exit-thread (&rest args)
-	(require "THREADS")
-	(apply 'exit-thread args))
+  (require "THREADS")
+  (apply 'exit-thread args))
 
 (defvar exit-thread-tag	'cl::%exit_thread_tag)

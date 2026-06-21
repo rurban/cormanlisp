@@ -81,9 +81,9 @@
 		(min-length (apply #'min (mapcar #'length sequences))))
 	   (dotimes (index min-length)
 	     (when (setf retval (apply predicate
-			  (funcall #'mapcar
-				   #'(lambda (vector) (elt vector index))
-				   sequences)))
+				       (funcall #'mapcar
+						#'(lambda (vector) (elt vector index))
+						sequences)))
 	       (return-from some retval))))
 	 nil)
 	((listp sequence)
@@ -129,61 +129,61 @@
 ;;;  ****************  MAKE-SEQUENCE  ****************
 
 (defun make-sequence (result-type length &key initial-element)
-	(cond ((or (eq result-type 'list)(eq result-type 'cons)(eq result-type 'null))
-			(make-list length :initial-element initial-element))
-		((or (eq result-type 'vector) (eq result-type 'simple-vector))
-			(make-array length :initial-element initial-element))
-		((or (eq result-type 'string)(eq result-type 'simple-string)
-			 (eq result-type 'base-string)(eq result-type 'simple-base-string))
-			(make-array length
-				:element-type 'character
-				:initial-element (or initial-element #\NUL)))
-		((or (eq result-type 'bit-vector)(eq result-type 'simple-bit-vector))
-			(make-array length
-				:element-type 'bit
-				:initial-element (or initial-element 0)))
-		((consp result-type)
-		 (let ((sym (first result-type))
-			   (arg1 (second result-type)))
-			(cond
-				((eq sym 'vector)
-				 (let ((type (if (or (not (cdr result-type))(eq arg1 '*)) t arg1))
-					   (size (third result-type)))
-				  	(if (and (null initial-element) (not (eq type t)))
-								(setf initial-element
-									(if (member type '(character base-char extended-char))
-										#\NUL
-										0)))
-					(if (and size (integerp size) (/= size length))
-						(error "~A elements cannot fit into a vector of size ~A" length size))
-					(make-array length
-						:element-type (if (or (not (cdr result-type))(eq arg1 '*)) t arg1)
-						:initial-element initial-element)))
-				((eq sym 'simple-vector)
-				 (if (and arg1 (integerp arg1) (/= arg1 length))
-					(error "~A elements cannot fit into a simple-vector of size ~A" length arg1))
-			 	 (make-array length
-					:element-type t
-					:initial-element initial-element))
-				((or (eq sym 'bit-vector) (eq sym 'simple-bit-vector))
-				 (if (and arg1 (integerp arg1) (/= arg1 length))
-					(error "~A elements cannot fit into a bit-vector of size ~A" length arg1))
-			 	 (make-array length
-					:element-type 'bit
-					:initial-element (or initial-element 0)))
-				((eq sym 'array)
-		 		 (make-array length
-					:element-type (if (or (not (cdr result-type))(eq arg1 '*)) t arg1)
-					:initial-element initial-element))
-				((or (eq sym 'string)(eq sym 'simple-string)
-					(eq sym 'base-string)(eq sym 'simple-base-string))
-				 (if (and arg1 (integerp arg1) (/= arg1 length))
-					(error "~A elements cannot fit into a string of size ~A" length arg1))
-				 (make-array length
-					:element-type 'character
-					:initial-element (or initial-element #\NUL)))
-				(t (error "Cannot create a sequence of type ~A" result-type)))))
-		(t (error "Cannot create a sequence of type ~A" result-type))))
+  (cond ((or (eq result-type 'list)(eq result-type 'cons)(eq result-type 'null))
+	 (make-list length :initial-element initial-element))
+	((or (eq result-type 'vector) (eq result-type 'simple-vector))
+	 (make-array length :initial-element initial-element))
+	((or (eq result-type 'string)(eq result-type 'simple-string)
+	     (eq result-type 'base-string)(eq result-type 'simple-base-string))
+	 (make-array length
+		     :element-type 'character
+		     :initial-element (or initial-element #\NUL)))
+	((or (eq result-type 'bit-vector)(eq result-type 'simple-bit-vector))
+	 (make-array length
+		     :element-type 'bit
+		     :initial-element (or initial-element 0)))
+	((consp result-type)
+	 (let ((sym (first result-type))
+	       (arg1 (second result-type)))
+	   (cond
+	     ((eq sym 'vector)
+	      (let ((type (if (or (not (cdr result-type))(eq arg1 '*)) t arg1))
+		    (size (third result-type)))
+		(if (and (null initial-element) (not (eq type t)))
+		    (setf initial-element
+			  (if (member type '(character base-char extended-char))
+			      #\NUL
+			      0)))
+		(if (and size (integerp size) (/= size length))
+		    (error "~A elements cannot fit into a vector of size ~A" length size))
+		(make-array length
+			    :element-type (if (or (not (cdr result-type))(eq arg1 '*)) t arg1)
+			    :initial-element initial-element)))
+	     ((eq sym 'simple-vector)
+	      (if (and arg1 (integerp arg1) (/= arg1 length))
+		  (error "~A elements cannot fit into a simple-vector of size ~A" length arg1))
+	      (make-array length
+			  :element-type t
+			  :initial-element initial-element))
+	     ((or (eq sym 'bit-vector) (eq sym 'simple-bit-vector))
+	      (if (and arg1 (integerp arg1) (/= arg1 length))
+		  (error "~A elements cannot fit into a bit-vector of size ~A" length arg1))
+	      (make-array length
+			  :element-type 'bit
+			  :initial-element (or initial-element 0)))
+	     ((eq sym 'array)
+	      (make-array length
+			  :element-type (if (or (not (cdr result-type))(eq arg1 '*)) t arg1)
+			  :initial-element initial-element))
+	     ((or (eq sym 'string)(eq sym 'simple-string)
+		  (eq sym 'base-string)(eq sym 'simple-base-string))
+	      (if (and arg1 (integerp arg1) (/= arg1 length))
+		  (error "~A elements cannot fit into a string of size ~A" length arg1))
+	      (make-array length
+			  :element-type 'character
+			  :initial-element (or initial-element #\NUL)))
+	     (t (error "Cannot create a sequence of type ~A" result-type)))))
+	(t (error "Cannot create a sequence of type ~A" result-type))))
 
 (defun create-sequence-type (type length)
   (if (null type)
@@ -236,18 +236,18 @@
 ;;;    Common Lisp MAP-INTO function
 ;;;
 (defun map-into (result-sequence function &rest sequences)
-	(when (null result-sequence) (return-from map-into nil))
-	(let* ((length (min (apply #'min (length result-sequence)
-							(mapcar #'length sequences))))
-			(arg-getters (mapcar #'%make-getter-iterator sequences))
-			(result-setter (%make-setter-iterator result-sequence)))
-		(dotimes (i length)
-			(funcall result-setter
-				(apply function (mapcar #'funcall arg-getters))))
-		(when (and (vectorp result-sequence)
-				(array-has-fill-pointer-p result-sequence))
-			(setf (fill-pointer result-sequence) length))
-		result-sequence))
+  (when (null result-sequence) (return-from map-into nil))
+  (let* ((length (min (apply #'min (length result-sequence)
+			     (mapcar #'length sequences))))
+	 (arg-getters (mapcar #'%make-getter-iterator sequences))
+	 (result-setter (%make-setter-iterator result-sequence)))
+    (dotimes (i length)
+      (funcall result-setter
+	       (apply function (mapcar #'funcall arg-getters))))
+    (when (and (vectorp result-sequence)
+	       (array-has-fill-pointer-p result-sequence))
+      (setf (fill-pointer result-sequence) length))
+    result-sequence))
 
 
 ;;;    Common Lisp MAP function

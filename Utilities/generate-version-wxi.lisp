@@ -8,13 +8,13 @@
 
 (defun write-version-wxi (pathname)
   (with-open-file (out pathname :direction :output :external-format :ascii
-            :if-exists :supersede)
-        (format out "<?xml version=\"1.0\" encoding=\"utf-8\"?>~%<Include>~%")
-        (multiple-value-bind (major minor patch-level)
-            (cormanlisp-version)
-            (format out "  <?define MajorVersion=\"~A\" ?>~%" major)
-            (format out "  <?define MinorVersion=\"~A\" ?>~%" minor)
-            (format out "  <?define BuildVersion=\"~A\" ?>~%" patch-level)
-        (format out "</Include>~%"))))
+		       :if-exists :supersede)
+    (format out "<?xml version=\"1.0\" encoding=\"utf-8\"?>~%<Include>~%")
+    (multiple-value-bind (major minor patch-level)
+        (cormanlisp-version)
+      (format out "  <?define MajorVersion=\"~A\" ?>~%" major)
+      (format out "  <?define MinorVersion=\"~A\" ?>~%" minor)
+      (format out "  <?define BuildVersion=\"~A\" ?>~%" patch-level)
+      (format out "</Include>~%"))))
 
 (write-version-wxi "installer\\Version.wxi")

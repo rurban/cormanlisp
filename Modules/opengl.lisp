@@ -41,32 +41,32 @@ WINGDIAPI void APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei hei
 /* Pixel format descriptor */
 typedef struct tagPIXELFORMATDESCRIPTOR
 {
-    WORD  nSize;
-    WORD  nVersion;
-    DWORD dwFlags;
-    BYTE  iPixelType;
-    BYTE  cColorBits;
-    BYTE  cRedBits;
-    BYTE  cRedShift;
-    BYTE  cGreenBits;
-    BYTE  cGreenShift;
-    BYTE  cBlueBits;
-    BYTE  cBlueShift;
-    BYTE  cAlphaBits;
-    BYTE  cAlphaShift;
-    BYTE  cAccumBits;
-    BYTE  cAccumRedBits;
-    BYTE  cAccumGreenBits;
-    BYTE  cAccumBlueBits;
-    BYTE  cAccumAlphaBits;
-    BYTE  cDepthBits;
-    BYTE  cStencilBits;
-    BYTE  cAuxBuffers;
-    BYTE  iLayerType;
-    BYTE  bReserved;
-    DWORD dwLayerMask;
-    DWORD dwVisibleMask;
-    DWORD dwDamageMask;
+WORD  nSize;
+WORD  nVersion;
+DWORD dwFlags;
+BYTE  iPixelType;
+BYTE  cColorBits;
+BYTE  cRedBits;
+BYTE  cRedShift;
+BYTE  cGreenBits;
+BYTE  cGreenShift;
+BYTE  cBlueBits;
+BYTE  cBlueShift;
+BYTE  cAlphaBits;
+BYTE  cAlphaShift;
+BYTE  cAccumBits;
+BYTE  cAccumRedBits;
+BYTE  cAccumGreenBits;
+BYTE  cAccumBlueBits;
+BYTE  cAccumAlphaBits;
+BYTE  cDepthBits;
+BYTE  cStencilBits;
+BYTE  cAuxBuffers;
+BYTE  iLayerType;
+BYTE  bReserved;
+DWORD dwLayerMask;
+DWORD dwVisibleMask;
+DWORD dwDamageMask;
 } PIXELFORMATDESCRIPTOR, *PPIXELFORMATDESCRIPTOR, FAR *LPPIXELFORMATDESCRIPTOR;
 
 WINGDIAPI void APIENTRY glEnable (GLenum cap);

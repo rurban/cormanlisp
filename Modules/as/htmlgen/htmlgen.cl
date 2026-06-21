@@ -38,10 +38,10 @@
 (defpackage :net.html.generator
   (:use :common-lisp :excl)
   (:export "HTML"
-		"HTML-PRINT"
-		"HTML-PRINT-LIST"
-		"HTML-STREAM"
-		"*HTML-STREAM*"
+	   "HTML-PRINT"
+	   "HTML-PRINT-LIST"
+	   "HTML-STREAM"
+	   "*HTML-STREAM*"
 
 
 	   ;; should export with with-html-xxx things too I suppose
@@ -66,7 +66,7 @@
 
 
 (defparameter *html-process-table*
-    (make-hash-table :test #'equal) ; #'eq is accurate but want to avoid rehashes
+  (make-hash-table :test #'equal) ; #'eq is accurate but want to avoid rehashes
   )
 
 (defvar *html-stream* nil) ; where the output goes
@@ -79,8 +79,8 @@
   ;; ensure that a real stream is passed to this function
   `(let ((.str. ,stream))
      (if* (not (streamp .str.))
-	then (error "html-stream must be passed a stream object, not ~s"
-		    .str.))
+	  then (error "html-stream must be passed a stream object, not ~s"
+		      .str.))
      .str.))
 
 
@@ -103,72 +103,72 @@
 	     ;;
 	     (let (spec)
 	       (if* (setq spec (html-process-special ent))
-		  then ; do something different
-		       (push (funcall spec ent args argsp body) res)
-		elseif (null argsp)
-		  then ; singleton tag, just do the set
-		       (push `(,(html-process-macro ent) :set) res)
-		       nil
-		  else (if* (equal args '(:unset))
-			  then ; ((:tag :unset)) is a special case.
-			       ; that allows us to close off singleton tags
-			       ; printed earlier.
-			       (push `(,(html-process-macro ent) :unset) res)
-			       nil
-			  else ; some args
-			       (push `(,(html-process-macro ent) ,args
-								 ,(process-html-forms body))
-				     res)
-			       nil)))))
+		    then ; do something different
+		    (push (funcall spec ent args argsp body) res)
+		    elseif (null argsp)
+		    then ; singleton tag, just do the set
+		    (push `(,(html-process-macro ent) :set) res)
+		    nil
+		    else (if* (equal args '(:unset))
+			      then ; ((:tag :unset)) is a special case.
+					; that allows us to close off singleton tags
+					; printed earlier.
+			      (push `(,(html-process-macro ent) :unset) res)
+			      nil
+			      else ; some args
+			      (push `(,(html-process-macro ent) ,args
+				       ,(process-html-forms body))
+				    res)
+			      nil)))))
 
 
 
       (do* ((xforms forms (cdr xforms))
 	    (form (car xforms) (car xforms)))
-	  ((null xforms))
+	   ((null xforms))
 
 	(if* (atom form)
-	   then (if* (keywordp form)
-		   then (let ((ent (gethash form *html-process-table*)))
-			  (if* (null ent)
-			     then (error "unknown html keyword ~s"
-					 form)
-			     else (do-ent ent nil nil nil)))
-		 elseif (stringp form)
-		   then ; turn into a print of it
-			(push `(write-string ,form *html-stream*) res)
-		   else (push form res))
-	   else (let ((first (car form)))
-		  (if* (keywordp first)
-		     then ; (:xxx . body) form
-			  (let ((ent (gethash first
-					    *html-process-table*)))
-			    (if* (null ent)
-			       then (error "unknown html keyword ~s"
-					   form)
-			       else (do-ent ent nil t (cdr form))))
-		   elseif (and (consp first) (keywordp (car first)))
-		     then ; ((:xxx args ) . body)
-			  (let ((ent (gethash (car first)
-					    *html-process-table*)))
-			    (if* (null ent)
-			       then (error "unknown html keyword ~s"
-					   form)
-			       else (do-ent ent (cdr first) t (cdr form))))
-		     else (push form res))))))
+	     then (if* (keywordp form)
+		       then (let ((ent (gethash form *html-process-table*)))
+			      (if* (null ent)
+				   then (error "unknown html keyword ~s"
+					       form)
+				   else (do-ent ent nil nil nil)))
+		       elseif (stringp form)
+		       then ; turn into a print of it
+		       (push `(write-string ,form *html-stream*) res)
+		       else (push form res))
+	     else (let ((first (car form)))
+		    (if* (keywordp first)
+			 then ; (:xxx . body) form
+			 (let ((ent (gethash first
+					     *html-process-table*)))
+			   (if* (null ent)
+				then (error "unknown html keyword ~s"
+					    form)
+				else (do-ent ent nil t (cdr form))))
+			 elseif (and (consp first) (keywordp (car first)))
+			 then ; ((:xxx args ) . body)
+			 (let ((ent (gethash (car first)
+					     *html-process-table*)))
+			   (if* (null ent)
+				then (error "unknown html keyword ~s"
+					    form)
+				else (do-ent ent (cdr first) t (cdr form))))
+			 else (push form res))))))
     `(progn ,@(nreverse res))))
 
 
 (defun html-atom-check (args open close body)
   (if* (and args (atom args))
-     then (let ((ans (case args
-		       (:set `(write-string  ,open *html-stream*))
-		       (:unset `(write-string  ,close *html-stream*))
-		       (t (error "illegal arg ~s to ~s" args open)))))
-	    (if* (and ans body)
-	       then (error "can't have a body form with this arg: ~s"
-			   args)
-	       else ans))))
+       then (let ((ans (case args
+			 (:set `(write-string  ,open *html-stream*))
+			 (:unset `(write-string  ,close *html-stream*))
+			 (t (error "illegal arg ~s to ~s" args open)))))
+	      (if* (and ans body)
+		   then (error "can't have a body form with this arg: ~s"
+			       args)
+		   else ans))))
 
 (defun html-body-form (open close body)
   ;; used when args don't matter
@@ -181,56 +181,56 @@
   ;; do what's needed to handle given keywords in the args
   ;; then do the body
   (if* (and args (atom args))
-     then ; single arg
-	  (return-from html-body-key-form
-	    (case args
-	      (:set `(write-string  ,(format nil "<~a>" string-code)
-				    *html-stream*))
-	      (:unset (if* has-inv
-			 then `(write-string  ,(format nil "</~a>" string-code)
-					      *html-stream*)))
-	      (t (error "illegal arg ~s to ~s" args string-code)))))
+       then ; single arg
+       (return-from html-body-key-form
+	 (case args
+	   (:set `(write-string  ,(format nil "<~a>" string-code)
+				 *html-stream*))
+	   (:unset (if* has-inv
+			then `(write-string  ,(format nil "</~a>" string-code)
+					     *html-stream*)))
+	   (t (error "illegal arg ~s to ~s" args string-code)))))
 
   (if* (not (evenp (length args)))
-     then (warn "arg list ~s isn't even" args))
+       then (warn "arg list ~s isn't even" args))
 
 
   (if* args
-     then `(progn (write-string ,(format nil "<~a" string-code)
-				*html-stream*)
-		  ,@(do ((xx args (cddr xx))
-			 (res))
-			((null xx)
-			 (nreverse res))
-		      (if* (eq :if* (car xx))
-			 then ; insert following conditionally
-			      (push `(if* ,(cadr xx)
-					then (write-string
-					      ,(format nil " ~a=" (caddr xx))
-					      *html-stream*)
-					     (prin1-safe-http-string ,(cadddr xx)))
-				    res)
-			      (pop xx) (pop xx)
-			 else
+       then `(progn (write-string ,(format nil "<~a" string-code)
+				  *html-stream*)
+		    ,@(do ((xx args (cddr xx))
+			   (res))
+			  ((null xx)
+			   (nreverse res))
+			(if* (eq :if* (car xx))
+			     then ; insert following conditionally
+			     (push `(if* ,(cadr xx)
+					 then (write-string
+					       ,(format nil " ~a=" (caddr xx))
+					       *html-stream*)
+					 (prin1-safe-http-string ,(cadddr xx)))
+				   res)
+			     (pop xx) (pop xx)
+			     else
 
-			      (push `(write-string
-				      ,(format nil " ~a=" (car xx))
-				      *html-stream*)
-				    res)
-			      (push `(prin1-safe-http-string ,(cadr xx)) res)))
+			     (push `(write-string
+				     ,(format nil " ~a=" (car xx))
+				     *html-stream*)
+				   res)
+			     (push `(prin1-safe-http-string ,(cadr xx)) res)))
 
 
-		  (write-string ">" *html-stream*)
-		  ,@body
-		  ,(if* (and body has-inv)
-		      then `(write-string ,(format nil "</~a>" string-code)
-					  *html-stream*)))
-     else `(progn (write-string ,(format nil "<~a>" string-code)
-				*html-stream*)
-		  ,@body
-		  ,(if* (and body has-inv)
-		      then `(write-string ,(format nil "</~a>" string-code)
-					  *html-stream*)))))
+		    (write-string ">" *html-stream*)
+		    ,@body
+		    ,(if* (and body has-inv)
+			  then `(write-string ,(format nil "</~a>" string-code)
+					      *html-stream*)))
+       else `(progn (write-string ,(format nil "<~a>" string-code)
+				  *html-stream*)
+		    ,@body
+		    ,(if* (and body has-inv)
+			  then `(write-string ,(format nil "</~a>" string-code)
+					      *html-stream*)))))
 
 
 
@@ -257,10 +257,10 @@
   (if* (or (stringp val)
 	   (and (symbolp val)
 		(setq val (symbol-name val))))
-     then (write-char #\" *html-stream*)
-	  (emit-safe *html-stream* val)
-	  (write-char #\" *html-stream*)
-     else (prin1-safe-http val)))
+       then (write-char #\" *html-stream*)
+       (emit-safe *html-stream* val)
+       (write-char #\" *html-stream*)
+       else (prin1-safe-http val)))
 
 
 
@@ -270,35 +270,35 @@
   (do* ((i 0 (1+ i))
 	(start i)
 	(end (length string)))
-      ((>= i end)
-       (if* (< start i)
-	  then  (write-sequence string
-				stream
-				:start start
-				:end i)))
+       ((>= i end)
+	(if* (< start i)
+	     then  (write-sequence string
+				   stream
+				   :start start
+				   :end i)))
 
 
     (let ((ch (schar string i))
 	  (cvt ))
       (if* (eql ch #\<)
-	 then (setq cvt "&lt;")
-       elseif (eq ch #\>)
-	 then (setq cvt "&gt;")
-       elseif (eq ch #\&)
-	 then (setq cvt "&amp;")
-       elseif (eq ch #\")
-	 then (setq cvt "&quot;"))
+	   then (setq cvt "&lt;")
+	   elseif (eq ch #\>)
+	   then (setq cvt "&gt;")
+	   elseif (eq ch #\&)
+	   then (setq cvt "&amp;")
+	   elseif (eq ch #\")
+	   then (setq cvt "&quot;"))
       (if* cvt
-	 then ; must do a conversion, emit previous chars first
+	   then ; must do a conversion, emit previous chars first
 
-	      (if* (< start i)
-		 then  (write-sequence string
-				       stream
-				       :start start
-				       :end i))
-	      (write-string cvt stream)
+	   (if* (< start i)
+		then  (write-sequence string
+				      stream
+				      :start start
+				      :end i))
+	   (write-string cvt stream)
 
-	      (setq start (1+ i))))))
+	   (setq start (1+ i))))))
 
 
 
@@ -311,32 +311,32 @@
   ;; Print the given lhtml form to the given stream
   (assert (streamp stream))
   (let ((possible-kwd (if* (atom form)
-			 then form
-		       elseif (consp (car form))
-			 then (caar form)
-			 else (car form)))
+			   then form
+			   elseif (consp (car form))
+			   then (caar form)
+			   else (car form)))
 	print-handler
 	ent)
     (if* (keywordp possible-kwd)
-       then (if* (null (setq ent (gethash possible-kwd *html-process-table*)))
-	       then (error "unknown html tag: ~s" possible-kwd)
-	       else (setq print-handler
-		      (html-process-print ent))))
+	 then (if* (null (setq ent (gethash possible-kwd *html-process-table*)))
+		   then (error "unknown html tag: ~s" possible-kwd)
+		   else (setq print-handler
+			      (html-process-print ent))))
     (if* (atom form)
-       then (if* (keywordp form)
-	       then (funcall print-handler ent :set nil nil stream)
-	     elseif (stringp form)
-	       then (write-string form stream)
-	       else (error "bad form: ~s" form))
-     elseif ent
-       then (funcall print-handler
-		     ent
-		     :full
-		     (if* (consp (car form))
-			then (cdr (car form)))
-		     form
-		     stream)
-       else (error "Illegal form: ~s" form))))
+	 then (if* (keywordp form)
+		   then (funcall print-handler ent :set nil nil stream)
+		   elseif (stringp form)
+		   then (write-string form stream)
+		   else (error "bad form: ~s" form))
+	 elseif ent
+	 then (funcall print-handler
+		       ent
+		       :full
+		       (if* (consp (car form))
+			    then (cdr (car form)))
+		       form
+		       stream)
+	 else (error "Illegal form: ~s" form))))
 
 (defun html-standard-print (ent cmd args form stream)
   ;; the print handler for the normal html operators
@@ -345,19 +345,19 @@
      (format stream "<~a>" (html-process-key ent)))
     (:full ; set, do body and then unset
      (if* args
-	then (format stream "<~a" (html-process-key ent))
-	     (do ((xx args (cddr xx)))
-		 ((null xx))
-	       ; assume that the arg is already escaped since we read it
-	       ; from the parser
-	       (format stream " ~a=\"~a\"" (car xx) (cadr xx)))
-	     (format stream ">")
-	else (format stream "<~a>" (html-process-key ent)))
+	  then (format stream "<~a" (html-process-key ent))
+	  (do ((xx args (cddr xx)))
+	      ((null xx))
+					; assume that the arg is already escaped since we read it
+					; from the parser
+	    (format stream " ~a=\"~a\"" (car xx) (cadr xx)))
+	  (format stream ">")
+	  else (format stream "<~a>" (html-process-key ent)))
      (dolist (ff (cdr form))
        (html-print ff stream))
      (if* (html-process-has-inverse ent)
-	then ; end the form
-	     (format stream "</~a>" (html-process-key ent))))))
+	  then ; end the form
+	  (format stream "</~a>" (html-process-key ent))))))
 
 
 
@@ -372,22 +372,22 @@
 
 (defmacro def-special-html (kwd fcn print-fcn)
   `(setf (gethash ,kwd *html-process-table*)
-     (make-html-process ,kwd nil nil ,fcn ,print-fcn)))
+	 (make-html-process ,kwd nil nil ,fcn ,print-fcn)))
 
 
 (def-special-html :newline
     #'(lambda (ent args argsp body)
 	(declare (ignore ent args argsp))
 	(if* body
-	   then (error "can't have a body with :newline -- body is ~s" body))
+	     then (error "can't have a body with :newline -- body is ~s" body))
 
 	`(terpri *html-stream*))
 
   #'(lambda (ent cmd args form stream)
       (declare (ignore args ent))
       (if* (eq cmd :set)
-	 then (terpri stream)
-	 else (error ":newline in an illegal place: ~s" form)))
+	   then (terpri stream)
+	   else (error ":newline in an illegal place: ~s" form)))
   )
 
 
@@ -402,8 +402,8 @@
       (declare (ignore args ent))
       (assert (eql 2 (length form)))
       (if* (eq cmd :full)
-	 then (format stream "~a" (cadr form))
-	 else (error ":princ must be given an argument")))
+	   then (format stream "~a" (cadr form))
+	   else (error ":princ must be given an argument")))
   )
 
 (def-special-html :princ-safe
@@ -416,8 +416,8 @@
       (declare (ignore args ent))
       (assert (eql 2 (length form)))
       (if* (eq cmd :full)
-	 then (emit-safe stream (format nil "~a" (cadr form)))
-	 else (error ":princ-safe must be given an argument"))))
+	   then (emit-safe stream (format nil "~a" (cadr form)))
+	   else (error ":princ-safe must be given an argument"))))
 
 (def-special-html :prin1
     #'(lambda (ent args argsp body)
@@ -429,8 +429,8 @@
       (declare (ignore ent args))
       (assert (eql 2 (length form)))
       (if* (eq cmd :full)
-	 then (format stream "~s" (cadr form))
-	 else (error ":prin1 must be given an argument")))
+	   then (format stream "~s" (cadr form))
+	   else (error ":prin1 must be given an argument")))
 
   )
 
@@ -445,19 +445,19 @@
       (declare (ignore args ent))
       (assert (eql 2 (length form)))
       (if* (eq cmd :full)
-	 then (emit-safe stream (format nil "~s" (cadr form)))
-	 else (error ":prin1-safe must be given an argument"))
+	   then (emit-safe stream (format nil "~s" (cadr form)))
+	   else (error ":prin1-safe must be given an argument"))
       )
   )
 
 
 (def-special-html :comment
-  #'(lambda (ent args argsp body)
-      ;; must use <!--   --> syntax
-      (declare (ignore ent args argsp))
-      `(progn (write-string "<!--" *html-stream*)
-	      ,@body
-	      (write-string "-->" *html-stream*)))
+    #'(lambda (ent args argsp body)
+	;; must use <!--   --> syntax
+	(declare (ignore ent args argsp))
+	`(progn (write-string "<!--" *html-stream*)
+		,@body
+		(write-string "-->" *html-stream*)))
 
   #'(lambda (ent cmd args form stream)
       (declare (ignore ent cmd args))
@@ -470,7 +470,7 @@
   (let ((mac-name (intern (format nil "~a-~a" :with-html kwd)))
 	(string-code (string-downcase (string kwd))))
     `(progn (setf (gethash ,kwd *html-process-table*)
-	      (make-html-process ,kwd ,has-inverse
+		  (make-html-process ,kwd ,has-inverse
 				     ',mac-name
 				     nil
 				     #'html-standard-print))

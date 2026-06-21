@@ -93,24 +93,24 @@ typedef VOID *NEARPROC;
 typedef VOID *PROC;
 
 typedef struct tagRECT {
-	LONG left;
-	LONG top;
-	LONG right;
-	LONG bottom;
+LONG left;
+LONG top;
+LONG right;
+LONG bottom;
 } RECT,RECTL,*LPRECT,*LPRECTL;
 typedef const RECT *LPCRECT;
 typedef const RECT *LPCRECTL;
 typedef struct tagPOINT {
-	LONG x;
-	LONG y;
+LONG x;
+LONG y;
 } POINT,POINTL,*PPOINT,*LPPOINT,*PPOINTL,*LPPOINTL;
 typedef struct tagSIZE {
-	LONG cx;
-	LONG cy;
+LONG cx;
+LONG cy;
 } SIZE,SIZEL,*PSIZE,*LPSIZE,*PSIZEL,*LPSIZEL;
 typedef struct tagPOINTS {
-	SHORT x;
-	SHORT y;
+SHORT x;
+SHORT y;
 } POINTS,*PPOINTS,*LPPOINTS;
 
 !#

@@ -23,7 +23,7 @@
 (defwinconstant TKIND_UNION 	7)
 (defwinconstant TKIND_MAX 		8)
 (defwinconstant TKIND-NAME 			;; for backward lookups
-	#("ENUM" "RECORD" "MODULE" "INTERFACE" "DISPATCH" "COCLASS" "ALIAS" "UNION"))
+    #("ENUM" "RECORD" "MODULE" "INTERFACE" "DISPATCH" "COCLASS" "ALIAS" "UNION"))
 
 ;; SYSKIND enum
 (defwintype SYSKIND :long)
@@ -33,14 +33,14 @@
 
 #! (:export t)
 typedef struct  tagTLIBATTR
-    {
-    GUID guid;
-    LCID lcid;
-    SYSKIND syskind;
-    WORD wMajorVerNum;
-    WORD wMinorVerNum;
-    WORD wLibFlags;
-    }	TLIBATTR;
+{
+GUID guid;
+LCID lcid;
+SYSKIND syskind;
+WORD wMajorVerNum;
+WORD wMinorVerNum;
+WORD wLibFlags;
+}	TLIBATTR;
 
 typedef struct TLIBATTR* LPTLIBATTR;
 
@@ -48,39 +48,39 @@ typedef unsigned short VARTYPE;
 
 typedef struct  tagTYPEDESC
 {
-	void* *lptdesc;	// could be TYPEDESC*, ARRAYDESC*, HREFTYPE or unused
-    VARTYPE vt;
-	unsigned short pad;
+void* *lptdesc;	// could be TYPEDESC*, ARRAYDESC*, HREFTYPE or unused
+VARTYPE vt;
+unsigned short pad;
 }	TYPEDESC;
 
 typedef struct  tagIDLDESC
 {
-    ULONG dwReserved;
-    USHORT wIDLFlags;
-    USHORT wPad;
+ULONG dwReserved;
+USHORT wIDLFlags;
+USHORT wPad;
 }	IDLDESC;
 
 typedef struct  tagTYPEATTR
-    {
-    GUID guid;
-    LCID lcid;
-    DWORD dwReserved;
-    MEMBERID memidConstructor;
-    MEMBERID memidDestructor;
-    LPOLESTR lpstrSchema;
-    ULONG cbSizeInstance;
-    TYPEKIND typekind;
-    WORD cFuncs;
-    WORD cVars;
-    WORD cImplTypes;
-    WORD cbSizeVft;
-    WORD cbAlignment;
-    WORD wTypeFlags;
-    WORD wMajorVerNum;
-    WORD wMinorVerNum;
-    TYPEDESC tdescAlias;
-    IDLDESC idldescType;
-    }	TYPEATTR;
+{
+GUID guid;
+LCID lcid;
+DWORD dwReserved;
+MEMBERID memidConstructor;
+MEMBERID memidDestructor;
+LPOLESTR lpstrSchema;
+ULONG cbSizeInstance;
+TYPEKIND typekind;
+WORD cFuncs;
+WORD cVars;
+WORD cImplTypes;
+WORD cbSizeVft;
+WORD cbAlignment;
+WORD wTypeFlags;
+WORD wMajorVerNum;
+WORD wMinorVerNum;
+TYPEDESC tdescAlias;
+IDLDESC idldescType;
+}	TYPEATTR;
 
 typedef TYPEATTR* LPTYPEATTR;
 !#
@@ -89,22 +89,22 @@ typedef TYPEATTR* LPTYPEATTR;
 
 typedef struct tagDEC
 {
-    USHORT wReserved;
-    BYTE scale;
-    BYTE sign;
-    ULONG Hi32;
-    ULONG Lo32;
-    ULONG Mid32;
+USHORT wReserved;
+BYTE scale;
+BYTE sign;
+ULONG Hi32;
+ULONG Lo32;
+ULONG Mid32;
 } DECIMAL;
 
 struct VARIANT
 {
-	VARTYPE vt;
-	WORD wReserved1;
-	WORD wReserved2;
-	WORD wReserved3;
-	DWORD data_lo;
-	DWORD data_high;
+VARTYPE vt;
+WORD wReserved1;
+WORD wReserved2;
+WORD wReserved3;
+DWORD data_lo;
+DWORD data_high;
 };
 typedef VARIANT *LPVARIANT;
 
@@ -114,10 +114,10 @@ typedef VARIANT *LPVARIANTARG;
 
 typedef struct  tagDISPPARAMS
 {
-    VARIANTARG *rgvarg;
-    DISPID *rgdispidNamedArgs;
-    UINT cArgs;
-    UINT cNamedArgs;
+VARIANTARG *rgvarg;
+DISPID *rgdispidNamedArgs;
+UINT cArgs;
+UINT cNamedArgs;
 }	DISPPARAMS;
 
 !#
@@ -155,40 +155,40 @@ typedef struct  tagDISPPARAMS
 #! (:export t)
 typedef struct  tagPARAMDESCEX
 {
-    ULONG cBytes;
-    VARIANTARG varDefaultValue;
+ULONG cBytes;
+VARIANTARG varDefaultValue;
 }	PARAMDESCEX;
 
 typedef PARAMDESCEX *LPPARAMDESCEX;
 
 typedef struct  tagPARAMDESC
 {
-    LPPARAMDESCEX pparamdescex;
-    USHORT wParamFlags;
+LPPARAMDESCEX pparamdescex;
+USHORT wParamFlags;
 }	PARAMDESC;
 
 typedef PARAMDESC *LPPARAMDESC;
 
 typedef struct  tagELEMDESC
 {
-    TYPEDESC tdesc;
-    PARAMDESC paramdesc;
+TYPEDESC tdesc;
+PARAMDESC paramdesc;
 }	ELEMDESC;
 
 typedef struct  tagFUNCDESC
 {
-    MEMBERID memid;
-    SCODE *lprgscode;
-    ELEMDESC *lprgelemdescParam;
-    FUNCKIND funckind;
-    INVOKEKIND invkind;
-    CALLCONV callconv;
-    SHORT cParams;
-    SHORT cParamsOpt;
-    SHORT oVft;
-    SHORT cScodes;
-    ELEMDESC elemdescFunc;
-    WORD wFuncFlags;
+MEMBERID memid;
+SCODE *lprgscode;
+ELEMDESC *lprgelemdescParam;
+FUNCKIND funckind;
+INVOKEKIND invkind;
+CALLCONV callconv;
+SHORT cParams;
+SHORT cParamsOpt;
+SHORT oVft;
+SHORT cScodes;
+ELEMDESC elemdescFunc;
+WORD wFuncFlags;
 }	FUNCDESC;
 
 typedef FUNCDESC *LPFUNCDESC;
@@ -197,55 +197,55 @@ typedef FUNCDESC *LPFUNCDESC;
 #! (:export t)
 interface ITypeComp : IUnknown
 {
-	HRESULT Bind(LPOLESTR szName, ULONG lHashVal, WORD wFlags, ITypeInfo** ppTInfo,
-			DESCKIND* pDescKind, BINDPTR* pBindPtr);
-	HRESULT BindType(LPOLESTR szName, ULONG lHashVal, ITypeInfo** ppTInfo, ITypeComp** ppTComp);
+HRESULT Bind(LPOLESTR szName, ULONG lHashVal, WORD wFlags, ITypeInfo** ppTInfo,
+		      DESCKIND* pDescKind, BINDPTR* pBindPtr);
+HRESULT BindType(LPOLESTR szName, ULONG lHashVal, ITypeInfo** ppTInfo, ITypeComp** ppTComp);
 };
 !#
 
 #! (:export t)
 interface ITypeInfo : IUnknown
 {
-	HRESULT GetTypeAttr(TYPEATTR** ppTypeAttr);
-    HRESULT GetTypeComp(ITypeComp** ppTComp);
-    HRESULT GetFuncDesc(UINT index, FUNCDESC** ppFuncDesc);
-    HRESULT GetVarDesc(UINT index, VARDESC** ppVarDesc);
-    HRESULT GetNames(MEMBERID memid, BSTR* rgBstrNames, UINT cMaxNames, UINT* pcNames);
-	HRESULT GetRefTypeOfImplType(UINT index, HREFTYPE* pRefType);
-	HRESULT GetImplTypeFlags(UINT index, INT* pImplTypeFlags);
-	HRESULT GetIDsOfNames(LPOLESTR* rgszNames, UINT cNames, MEMBERID* pMemId);
-	HRESULT Invoke(PVOID pvInstance, MEMBERID memid, WORD wFlags, DISPPARAMS* pDispParams,
-				VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
-	HRESULT GetDocumentation(MEMBERID memid, BSTR* pBstrName, BSTR* pBstrDocString,
-				DWORD* pdwHelpContext, BSTR* pBstrHelpFile);
-	HRESULT GetDllEntry(MEMBERID memid, INVOKEKIND invKind, BSTR* pBstrDllName,
-				BSTR* pBstrName, WORD* pwOrdinal);
-	HRESULT GetRefTypeInfo(HREFTYPE hRefType, ITypeInfo** ppTInfo);
-	HRESULT AddressOfMember(MEMBERID memid, INVOKEKIND invKind, PVOID* ppv);
-	HRESULT CreateInstance(IUnknown* pUnkOuter, REFIID riid, PVOID* ppvObj);
-	HRESULT GetMops(MEMBERID memid, BSTR* pBstrMops);
-	HRESULT GetContainingTypeLib(ITypeLib** ppTLib, UINT* pIndex);
-	void 	ReleaseTypeAttr(TYPEATTR* pTypeAttr);
-	void 	ReleaseFuncDesc(FUNCDESC* pFuncDesc);
-	void 	ReleaseVarDesc(VARDESC* pVarDesc);
+HRESULT GetTypeAttr(TYPEATTR** ppTypeAttr);
+HRESULT GetTypeComp(ITypeComp** ppTComp);
+HRESULT GetFuncDesc(UINT index, FUNCDESC** ppFuncDesc);
+HRESULT GetVarDesc(UINT index, VARDESC** ppVarDesc);
+HRESULT GetNames(MEMBERID memid, BSTR* rgBstrNames, UINT cMaxNames, UINT* pcNames);
+HRESULT GetRefTypeOfImplType(UINT index, HREFTYPE* pRefType);
+HRESULT GetImplTypeFlags(UINT index, INT* pImplTypeFlags);
+HRESULT GetIDsOfNames(LPOLESTR* rgszNames, UINT cNames, MEMBERID* pMemId);
+HRESULT Invoke(PVOID pvInstance, MEMBERID memid, WORD wFlags, DISPPARAMS* pDispParams,
+		     VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+HRESULT GetDocumentation(MEMBERID memid, BSTR* pBstrName, BSTR* pBstrDocString,
+				  DWORD* pdwHelpContext, BSTR* pBstrHelpFile);
+HRESULT GetDllEntry(MEMBERID memid, INVOKEKIND invKind, BSTR* pBstrDllName,
+			     BSTR* pBstrName, WORD* pwOrdinal);
+HRESULT GetRefTypeInfo(HREFTYPE hRefType, ITypeInfo** ppTInfo);
+HRESULT AddressOfMember(MEMBERID memid, INVOKEKIND invKind, PVOID* ppv);
+HRESULT CreateInstance(IUnknown* pUnkOuter, REFIID riid, PVOID* ppvObj);
+HRESULT GetMops(MEMBERID memid, BSTR* pBstrMops);
+HRESULT GetContainingTypeLib(ITypeLib** ppTLib, UINT* pIndex);
+void 	ReleaseTypeAttr(TYPEATTR* pTypeAttr);
+void 	ReleaseFuncDesc(FUNCDESC* pFuncDesc);
+void 	ReleaseVarDesc(VARDESC* pVarDesc);
 };
 !#
 
 #! (:export t)
 interface ITypeLib : IUnknown
 {
-	UINT GetTypeInfoCount();
-    HRESULT GetTypeInfo(UINT index, ITypeInfo** ppTInfo);
-    HRESULT GetTypeInfoType(UINT index, TYPEKIND* pTKind);
-    HRESULT GetTypeInfoOfGuid(REFGUID guid, ITypeInfo** ppTinfo);
-	HRESULT GetLibAttr(TLIBATTR** ppTLibAttr);
-	HRESULT GetTypeComp(ITypeComp** ppTComp);
-	HRESULT GetDocumentation(INT index, BSTR* pBstrName, BSTR* pBstrDocString,
-				DWORD* pdwHelpContext, BSTR* pBstrHelpFile);
-	HRESULT IsName(LPOLESTR szNameBuf, ULONG lHashVal, BOOL* pfName);
-	HRESULT FindName(LPOLESTR szNameBuf, ULONG lHashVal, ITypeInfo** ppTInfo,
-				MEMBERID* rgMemId, USHORT* pcFound);
-	void 	ReleaseLibAttr(TLIBATTR* pTLibAttr);
+UINT GetTypeInfoCount();
+HRESULT GetTypeInfo(UINT index, ITypeInfo** ppTInfo);
+HRESULT GetTypeInfoType(UINT index, TYPEKIND* pTKind);
+HRESULT GetTypeInfoOfGuid(REFGUID guid, ITypeInfo** ppTinfo);
+HRESULT GetLibAttr(TLIBATTR** ppTLibAttr);
+HRESULT GetTypeComp(ITypeComp** ppTComp);
+HRESULT GetDocumentation(INT index, BSTR* pBstrName, BSTR* pBstrDocString,
+			     DWORD* pdwHelpContext, BSTR* pBstrHelpFile);
+HRESULT IsName(LPOLESTR szNameBuf, ULONG lHashVal, BOOL* pfName);
+HRESULT FindName(LPOLESTR szNameBuf, ULONG lHashVal, ITypeInfo** ppTInfo,
+			  MEMBERID* rgMemId, USHORT* pcFound);
+void 	ReleaseLibAttr(TLIBATTR* pTLibAttr);
 };
 !#
 
@@ -255,161 +255,161 @@ interface ITypeLib : IUnknown
 ;;; Returns the interface to the loaded type library, or NIL.
 ;;;
 (defun load-type-lib (path)
-	(ct:with-fresh-foreign-block (b '((ITypeLib *) *))
-		(let ((ret (LoadTypeLib (ct:lisp-string-to-unicode path) b)))
-			(if (zerop ret)
-				(ct:cref ((ITypeLib *) *) b 0)))))
+  (ct:with-fresh-foreign-block (b '((ITypeLib *) *))
+    (let ((ret (LoadTypeLib (ct:lisp-string-to-unicode path) b)))
+      (if (zerop ret)
+	  (ct:cref ((ITypeLib *) *) b 0)))))
 
 (defmacro with-com-interface ((var init-form) &rest forms)
-	`(let ((,var ,init-form))
-		(unwind-protect
-			(progn ,@forms)
-			(IUnknown-Release ,var))))
+  `(let ((,var ,init-form))
+     (unwind-protect
+	  (progn ,@forms)
+       (IUnknown-Release ,var))))
 
 (defstruct type-lib
-	name
-	interface
-	element-count
-	help-string
-	elements)
+  name
+  interface
+  element-count
+  help-string
+  elements)
 
 (defstruct type-lib-element-info
-	name
-	interface
-	kind
-	help-string
-	kind-name)
+  name
+  interface
+  kind
+  help-string
+  kind-name)
 
 (defstruct type-attributes
-	guid
-    lcid
-    constructor
-    destructor
-    schema
-    instance-size
-    typekind
-    funcs
-    vars
-    impl-types
-    vtable-size
-    alignment
-    type-flags
-    major-version
-    minor-version
-    alias
-    idl-desc-type
-	kind-name)
+  guid
+  lcid
+  constructor
+  destructor
+  schema
+  instance-size
+  typekind
+  funcs
+  vars
+  impl-types
+  vtable-size
+  alignment
+  type-flags
+  major-version
+  minor-version
+  alias
+  idl-desc-type
+  kind-name)
 
 (defun com-type-lib (path)
-	(let ((interface (load-type-lib path))
-		  name
-		  help-string
-		  element-count
-		  (elements nil))
-		(unless interface
-			(error "Could not load type library from file ~A" path))
-		(with-fresh-foreign-block (a '(BSTR *))
-			(with-fresh-foreign-block (b '(BSTR *))
-				(let ((ret (ITypeLib-GetDocumentation interface -1 a b null null)))
-					(if (/= ret s_ok)
-						(error "Error getting type-lib information. Error code = ~D" ret))
-					(unless (ct:cpointer-null (ct:cref (BSTR *) a 0))
-						(setf name
-							(bstr-to-lisp-string (ct:cref (BSTR *) a 0)))
-						(SysFreeString a))
-					(unless (ct:cpointer-null (ct:cref (BSTR *) b 0))
-						(setf help-string
-							(bstr-to-lisp-string (ct:cref (BSTR *) b 0)))
-						(SysFreeString b))
-					(setf element-count (ITypeLib-GetTypeInfoCount interface))
-					(dotimes (i element-count)
-						(let (element-name
-							  element-helpstring
-							  element-kind
-							  element-interface)
-							(setf ret (ITypeLib-GetDocumentation interface i a b null null))
-							(if (/= ret s_ok)
-								(error "Error getting type-lib element information.~
+  (let ((interface (load-type-lib path))
+	name
+	help-string
+	element-count
+	(elements nil))
+    (unless interface
+      (error "Could not load type library from file ~A" path))
+    (with-fresh-foreign-block (a '(BSTR *))
+      (with-fresh-foreign-block (b '(BSTR *))
+	(let ((ret (ITypeLib-GetDocumentation interface -1 a b null null)))
+	  (if (/= ret s_ok)
+	      (error "Error getting type-lib information. Error code = ~D" ret))
+	  (unless (ct:cpointer-null (ct:cref (BSTR *) a 0))
+	    (setf name
+		  (bstr-to-lisp-string (ct:cref (BSTR *) a 0)))
+	    (SysFreeString a))
+	  (unless (ct:cpointer-null (ct:cref (BSTR *) b 0))
+	    (setf help-string
+		  (bstr-to-lisp-string (ct:cref (BSTR *) b 0)))
+	    (SysFreeString b))
+	  (setf element-count (ITypeLib-GetTypeInfoCount interface))
+	  (dotimes (i element-count)
+	    (let (element-name
+		  element-helpstring
+		  element-kind
+		  element-interface)
+	      (setf ret (ITypeLib-GetDocumentation interface i a b null null))
+	      (if (/= ret s_ok)
+		  (error "Error getting type-lib element information.~
 									 Error code = ~D" ret))
-							(unless (ct:cpointer-null (ct:cref (BSTR *) a 0))
-								(setf element-name
-									(bstr-to-lisp-string (ct:cref (BSTR *) a 0)))
-								(SysFreeString a))
-							(unless (ct:cpointer-null (ct:cref (BSTR *) b 0))
-								(setf element-helpstring
-									(bstr-to-lisp-string (ct:cref (BSTR *) b 0)))
-								(SysFreeString b))
-							(setf ret (ITypeLib-GetTypeInfo interface i a))
-							(if (/= ret s_ok)
-								(error "Error getting type-lib element information.~
+	      (unless (ct:cpointer-null (ct:cref (BSTR *) a 0))
+		(setf element-name
+		      (bstr-to-lisp-string (ct:cref (BSTR *) a 0)))
+		(SysFreeString a))
+	      (unless (ct:cpointer-null (ct:cref (BSTR *) b 0))
+		(setf element-helpstring
+		      (bstr-to-lisp-string (ct:cref (BSTR *) b 0)))
+		(SysFreeString b))
+	      (setf ret (ITypeLib-GetTypeInfo interface i a))
+	      (if (/= ret s_ok)
+		  (error "Error getting type-lib element information.~
 									 Error code = ~D" ret))
-							(setf element-interface (ct:cref ((ITypeInfo *) *) a 0))
-							(setf ret (ITypeLib-GetTypeInfoType interface i a))
-							(if (/= ret s_ok)
-								(error "Error getting type-lib element information.~
+	      (setf element-interface (ct:cref ((ITypeInfo *) *) a 0))
+	      (setf ret (ITypeLib-GetTypeInfoType interface i a))
+	      (if (/= ret s_ok)
+		  (error "Error getting type-lib element information.~
 									 Error code = ~D" ret))
-							(setf element-kind (ct:cref (TYPEKIND *) a 0))
-							(push (make-type-lib-element-info
-									:name element-name
-									:interface element-interface
-									:kind element-kind
-									:help-string element-helpstring
-									:kind-name (elt tkind-name element-kind))
-								elements)))
+	      (setf element-kind (ct:cref (TYPEKIND *) a 0))
+	      (push (make-type-lib-element-info
+		     :name element-name
+		     :interface element-interface
+		     :kind element-kind
+		     :help-string element-helpstring
+		     :kind-name (elt tkind-name element-kind))
+		    elements)))
 
-					(make-type-lib :interface interface
-						:name name
-						:element-count element-count
-						:help-string help-string
-						:elements (nreverse elements)))))))
+	  (make-type-lib :interface interface
+			 :name name
+			 :element-count element-count
+			 :help-string help-string
+			 :elements (nreverse elements)))))))
 
 (defun com-type-info (interface)
-	(let* ((type-attr)
-		   ret)
-		(with-fresh-foreign-block (a '(BSTR *))
-			(setf ret (ITypeInfo-GetTypeAttr interface a))
-			(if (/= ret s_ok)
-				(error "Error getting type-attr information.~
+  (let* ((type-attr)
+	 ret)
+    (with-fresh-foreign-block (a '(BSTR *))
+      (setf ret (ITypeInfo-GetTypeAttr interface a))
+      (if (/= ret s_ok)
+	  (error "Error getting type-attr information.~
 						Error code = ~D" ret))
-			(unless (ct:cpointer-null (ct:cref (BSTR *) a 0))
-				(ct:with-c-struct (s (ct:cref ((TYPEATTR *) *) a 0) TYPEATTR)
-					(setf type-attr
-						(make-type-attributes
-							:guid guid
-						    :lcid lcid
-						    :constructor memidConstructor
-						    :destructor memidDestructor
-						    :schema lpstrSchema
-						    :instance-size cbSizeInstance
-						    :typekind typekind
-						    :funcs cFuncs
-						    :vars cVars
-						    :impl-types cImplTypes
-						    :vtable-size cbSizeVft
-						    :alignment cbAlignment
-						    :type-flags wTypeFlags
-						    :major-version wMajorVerNum
-						    :minor-version wMinorVerNum
-						    :alias tdescAlias
-						    :idl-desc-type idldescType
-							:kind-name (elt tkind-name typekind))))
-				(ITypeInfo-ReleaseTypeAttr interface a)))
-		type-attr))
+      (unless (ct:cpointer-null (ct:cref (BSTR *) a 0))
+	(ct:with-c-struct (s (ct:cref ((TYPEATTR *) *) a 0) TYPEATTR)
+	  (setf type-attr
+		(make-type-attributes
+		 :guid guid
+		 :lcid lcid
+		 :constructor memidConstructor
+		 :destructor memidDestructor
+		 :schema lpstrSchema
+		 :instance-size cbSizeInstance
+		 :typekind typekind
+		 :funcs cFuncs
+		 :vars cVars
+		 :impl-types cImplTypes
+		 :vtable-size cbSizeVft
+		 :alignment cbAlignment
+		 :type-flags wTypeFlags
+		 :major-version wMajorVerNum
+		 :minor-version wMinorVerNum
+		 :alias tdescAlias
+		 :idl-desc-type idldescType
+		 :kind-name (elt tkind-name typekind))))
+	(ITypeInfo-ReleaseTypeAttr interface a)))
+    type-attr))
 
 #|
 ;;; test stuff
 (setf type-lib
-	(com-type-lib "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL"))
+(com-type-lib "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL"))
 (setf info
-	(com-type-info
-		(type-lib-element-info-interface
-			(first (type-lib-elements type-lib)))))
+(com-type-info
+(type-lib-element-info-interface
+(first (type-lib-elements type-lib)))))
 (IUnknown-Release (type-lib-interface type-lib))
 
 (with-com-interface (type-lib
-		(load-type-lib "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL"))
-	(format t "Type library: ~S, count = ~D~%" type-lib
-		(GetTypeInfoCount-ITypeLib type-lib)))
+(load-type-lib "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL"))
+(format t "Type library: ~S, count = ~D~%" type-lib
+(GetTypeInfoCount-ITypeLib type-lib)))
 |#
 
 

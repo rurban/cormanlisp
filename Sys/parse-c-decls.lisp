@@ -48,9 +48,9 @@
   ;; It is a macro so that ERROR is called directly from the function
   ;; reporting the error (the function name is displayed in the error banner).
   `(error "Invalid syntax in C declaration ~A: ~?"
-    *current-definition*
-    ,message
-    (list ,@args)))
+	  *current-definition*
+	  ,message
+	  (list ,@args)))
 
 (defun syntax-warning (message &rest args)
   (format *error-output* "~&;;; Warning translating <~A>:~%;;; ~?~%"
@@ -90,11 +90,11 @@
 				  (error "invalid C keyword specifier"))))
 		       defs)))
     `(defconstant ,const-symbol
-      (let ((ht (make-hash-table :test #'equal)))
-	,@(mapcar #'(lambda (def)
-		      `(setf (gethash ,(car def) ht) ,(cdr def)))
-		  pairs)
-	ht))))
+       (let ((ht (make-hash-table :test #'equal)))
+	 ,@(mapcar #'(lambda (def)
+		       `(setf (gethash ,(car def) ht) ,(cdr def)))
+		   pairs)
+	 ht))))
 
 (define-c-keywords +c-keywords+
     "void" "char" "int" "float" "HANDLE"
@@ -135,10 +135,10 @@
 	    (if (eql #\0 (char string 0))
 		(if (eql #\x (and (> (length string) 1) (char string 1)))
 		    (setq start 2 radix 16)
-		  (setq start 0 radix 8))
-	      (setq start 0 radix 10))
+		    (setq start 0 radix 8))
+		(setq start 0 radix 10))
 	    (parse-integer string :start start :radix radix :junk-allowed t))
-	string)))
+	  string)))
 
 
 (defun id-token-p (tok)
@@ -208,7 +208,7 @@
 ;;;
 
 (declaim #|(inline c-constituent-char-p)|#
-	 (ftype (function (character) boolean) c-constituent-char-p))
+ (ftype (function (character) boolean) c-constituent-char-p))
 
 (defun c-constituent-char-p (x)
   (declare (optimize (speed 3) (safety 0))
@@ -232,15 +232,15 @@
     (#\/
      (peek-char #\Newline stream t nil t)
      t)
-	(#\*
+    (#\*
      (do ((ch (peek-char #\* stream t nil t)
 	      (peek-char #\* stream t nil t)))
-	 	 (nil)
-		(declare (ignore ch))
-       	 (read-char stream t nil t)	; skip this *
-       	 (when (eql #\/ (peek-char nil stream t nil t))
-	 		(read-char stream t nil t)
-	 		(return t))))
+	 (nil)
+       (declare (ignore ch))
+       (read-char stream t nil t)	; skip this *
+       (when (eql #\/ (peek-char nil stream t nil t))
+	 (read-char stream t nil t)
+	 (return t))))
     (t
      nil)))
 
@@ -297,7 +297,7 @@
 		 ;; the directive may be continued on the next line with \
 		 (unless (eql (read-token stream t) #\Newline)
 		   (syntax-error "Newline expected after a backslash"))
-	       (push tok tokens))))
+		 (push tok tokens))))
 	  ((eq (car tokens) :lisp)
 	   (return-from next-statement-or-directive tokens))
 	  (t
@@ -358,7 +358,7 @@
 		 (match lookahead)
 		 (funcall tail-fun
 			  (list op form (funcall head-fun))))
-	     form))
+	       form))
 	 (expr ()
 	   (expr-rest (term0)))
 	 (expr-rest (form)
@@ -413,8 +413,8 @@
 
 (defun translate-expression (tokens)
   (if (string-token-p (car tokens))
-    (translate-string-expression tokens)
-    (translate-arithmetic-expression tokens)))
+      (translate-string-expression tokens)
+      (translate-arithmetic-expression tokens)))
 
 (defun translate-sharpdefine (tokens)
   (let ((const-name (cadr tokens))
@@ -467,8 +467,8 @@
   (or (cadr (assoc symbol-list +predefined-types+ :test #'equal))
       (if (= 1 (length symbol-list))
 	  (car symbol-list)
-	(syntax-error "Invalid non-predefined type reference: ~A"
-		      symbol-list))))
+	  (syntax-error "Invalid non-predefined type reference: ~A"
+			symbol-list))))
 
 (defun make-type-form (type-description pointer-level)
   (let ((type-form (type-symbols-to-lisp-type type-description)))
@@ -513,8 +513,8 @@
 		  (modifier)
 		  (if (member lookahead +predefined-type-modifiers+)
 		      (src-type)
-		    (when (member lookahead +predefined-base-types+)
-		      (predefined-type))))
+		      (when (member lookahead +predefined-base-types+)
+			(predefined-type))))
 		 ((member lookahead +predefined-base-types+)
 		  (predefined-type))
 		 (t
@@ -537,11 +537,11 @@
       (syntax-error "No valid type declaration found"))
     (unless base-type
       (cond
-       ((intersection modifiers '(:signed :unsigned :short :long))
-	(setq base-type '(:int)))
-       ((intersection modifiers '(:single :double))
-	(setq base-type '(:float)))
-       (t (error "No valid type declaration found"))))
+	((intersection modifiers '(:signed :unsigned :short :long))
+	 (setq base-type '(:int)))
+	((intersection modifiers '(:single :double))
+	 (setq base-type '(:float)))
+	(t (error "No valid type declaration found"))))
     (values (make-type-form (delete-if #'null (append modifiers base-type))
 			    pointer-level)
 	    input)))
@@ -584,8 +584,8 @@
 	(match nil))
       (values var-name
 	      (if array-size
-		(list type-form array-size)
-		type-form)))))
+		  (list type-form array-size)
+		  type-form)))))
 
 (defun translate-typedef-scalar (tokens)
   (multiple-value-bind (new-type-name type-def-form)
@@ -628,7 +628,7 @@
 		       #'(lambda (decl)
 			   (let ((parsed
 				  (multiple-value-list
-				      (parse-variable-declaration decl))))
+				   (parse-variable-declaration decl))))
 			     (unless (car parsed)
 			       (syntax-error "Field name is missing"))
 			     parsed))
@@ -686,8 +686,8 @@
 ;;
 (defun translate-struct (tokens)
   (multiple-value-bind (tag fields vars)
-                       (parse-struct-declaration tokens)
-	(declare (ignore vars))
+      (parse-struct-declaration tokens)
+    (declare (ignore vars))
     (when (null tag)
       (syntax-error "No defined type name."))
     (maybe-export-sym tag)
@@ -700,7 +700,7 @@
 ;;
 (defun translate-typedef-struct (tokens)
   (multiple-value-bind (tag fields vars)
-                       (parse-struct-declaration (cdr tokens))
+      (parse-struct-declaration (cdr tokens))
     (let* ((principal-name (find-if #'(lambda (def) (null (cdr def)))
 				    vars))
 	   (other-vars (remove principal-name vars))
@@ -716,17 +716,17 @@
 	     (syntax-error "Invalid structure type declaration")))
       (dolist (var other-vars)
 	(push `(c-types:defctype ,(car var)
-		,(make-type-form (list struct-name) (1- (length var))))
+		   ,(make-type-form (list struct-name) (1- (length var))))
 	      defs))
       (mapc #'(lambda (def) (maybe-export-sym (cadr def))) defs)
       (if (cdr defs)
 	  (list* 'progn (nreverse defs))
-	(car defs)))))
+	  (car defs)))))
 
 (defun translate-typedef (tokens)
   (if (eq (cadr tokens) :struct)
-    (translate-typedef-struct tokens)
-    (translate-typedef-scalar tokens)))
+      (translate-typedef-struct tokens)
+      (translate-typedef-scalar tokens)))
 
 
 
@@ -752,15 +752,15 @@
 					     (member elt *pascal-hints*
 						     :test #'string=))))
 				tokens)
-		     :pascal
-		     :c))
+		       :pascal
+		       :c))
 	  (params nil))
       (labels
 	  ((skip-garbage ()
-	   (do ()
-	       ((not (ignored-token-p lookahead)))
-	     (setq input (cdr input))
-	     (setq lookahead (car input))))
+	     (do ()
+		 ((not (ignored-token-p lookahead)))
+	       (setq input (cdr input))
+	       (setq lookahead (car input))))
 	   (match (tok)
 	     (unless (eql tok lookahead)
 	       (syntax-error "~A expected, got: ~A" tok lookahead))
@@ -783,8 +783,8 @@
 			(mapcar
 			 #'(lambda (decl)
 			     (let ((definition
-				       (multiple-value-list
-					   (parse-variable-declaration decl))))
+				    (multiple-value-list
+				     (parse-variable-declaration decl))))
 			       ;; If there is no explicit parameter name,
 			       ;; replace it with "" which defun-dll recognizes
 			       ;; as no parameter name.
@@ -816,10 +816,10 @@
       (parse-fun-declaration tokens)
     (maybe-export-sym name)
     `(c-types:defun-dll ,name ,params
-      :return-type ,return-type
-      :library-name ,*target-library*
-      :entry-name ,entry-name
-      :linkage-type ,linkage)))
+       :return-type ,return-type
+       :library-name ,*target-library*
+       :entry-name ,entry-name
+       :linkage-type ,linkage)))
 
 
 
@@ -836,17 +836,17 @@
 (defun translate-com-declaration (interface-name base-index-sym index tokens)
   (multiple-value-bind (name params return-type entry-name linkage)
       (parse-fun-declaration tokens)
-	(declare (ignore entry-name linkage))
+    (declare (ignore entry-name linkage))
     (let ((name (intern-id (concatenate 'string
-			       (symbol-name interface-name)
-			       "-"
-			       (symbol-name name)))))
+					(symbol-name interface-name)
+					"-"
+					(symbol-name name)))))
       (maybe-export-sym name)
       `(c-types:defun-com-method
-	,name
-	,(cons '(win32::interface *) params)
-	(+ ,base-index-sym ,index)
-	:return-type ,return-type))))
+	   ,name
+	   ,(cons '(win32::interface *) params)
+	 (+ ,base-index-sym ,index)
+	 :return-type ,return-type))))
 
 (defun translate-interface (tokens)
   (let ((input tokens)
@@ -917,13 +917,13 @@
       `(let ((,base-index ,(if parent-name
 			       `(length (interface-method-list ',parent-name))
 			       0)))
-				(defctype ,name win::interface)
-	,@method-forms
-	(setf (interface-method-list ',name)
-	 (append ,(if parent-name
-		      `(interface-method-list ',parent-name)
-		      nil)
-	  ',(mapcar #'cadr method-forms)))))))
+	 (defctype ,name win::interface)
+	 ,@method-forms
+	 (setf (interface-method-list ',name)
+	       (append ,(if parent-name
+			    `(interface-method-list ',parent-name)
+			    nil)
+		       ',(mapcar #'cadr method-forms)))))))
 
 
 
@@ -1032,10 +1032,10 @@
 	 (tps (canonicalize-translation-params header))
 	 (*target-library*
 	  (let ((lname (cdr (assoc :library tps))))
-	     (and lname
-		  (if (find #\. lname)
-		      lname
-		    (concatenate 'string lname ".dll")))))
+	    (and lname
+		 (if (find #\. lname)
+		     lname
+		     (concatenate 'string lname ".dll")))))
 	 (*name-translations*
 	  (append (cdr (assoc :translate tps))
 		  (translations-from-name-list (cdr (assoc :trim-last tps)))))
@@ -1051,16 +1051,16 @@
 	  (if (and (keywordp header) (null tps))
 	      ;; That is, there were no parameters, we got the first
 	      ;; "interface" token--put it back before proceeding.
-	       (cons :interface (next-statement-or-directive stream))
-	     (next-statement-or-directive stream))
-	   (next-statement-or-directive stream)))
-	 ((null thing)
-	  (cons
-	   'PROGN
-	   (if *exported-syms*
-	       (cons `(EXPORT ',(nreverse *exported-syms*))
-		     (nreverse translation-forms))
-	       (nreverse translation-forms))))
+	      (cons :interface (next-statement-or-directive stream))
+	      (next-statement-or-directive stream))
+	  (next-statement-or-directive stream)))
+	((null thing)
+	 (cons
+	  'PROGN
+	  (if *exported-syms*
+	      (cons `(EXPORT ',(nreverse *exported-syms*))
+		    (nreverse translation-forms))
+	      (nreverse translation-forms))))
       (push (if (eq (car thing) :lisp)
 		(read stream t nil t)
 	        (translate-c-thing thing))
@@ -1070,11 +1070,11 @@
 (set-dispatch-macro-character #\# #\! #'sharpbang)
 
 (defun cl::format-universal-time (time stream)
-	(declare (ignore time stream)) nil) ;; forward declaration
+  (declare (ignore time stream)) nil) ;; forward declaration
 
 (defun transcribe-file (in-file out-file
-				&optional (package :common-lisp-user)
-				          (prettyp t))
+			&optional (package :common-lisp-user)
+			  (prettyp t))
   ;; Open IN-FILE, read all forms in it and write them prettily formatted into
   ;; OUT-FILE.  The output file will therefore have regular Lisp FFI
   ;; declarations in place of C declaration.  The original formatting and the

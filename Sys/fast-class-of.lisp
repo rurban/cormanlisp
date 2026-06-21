@@ -65,7 +65,7 @@
 
 (defun %class-from-magic-cookie (cookie)
   (declare (optimize (speed 3) (safety 0))
-		   (type fixnum cookie))
+	   (type fixnum cookie))
   (svref %*magic-class-table* cookie))
 
 (defvar %t-class (find-class 't))
@@ -75,105 +75,105 @@
 
 (ccl:defasm class-of (object)
   {
-    push  ebp
-	mov   ebp, esp
-	cmp   ecx, 1
-	jz 	  short :args-ok
-	callp _wrong-number-of-args-error
+  push  ebp
+  mov   ebp, esp
+  cmp   ecx, 1
+  jz 	  short :args-ok
+  callp _wrong-number-of-args-error
   :args-ok
-    ;; See what kind of an object we are looking at--generate a magic cookie
-    ;; which is either the type ID field of the object's uvector, or some
-    ;; other value for immediates and a cons.  The cookie is a machine
-    ;; integer, not a Lisp value.
-    mov   edx, [ebp + ARGS_OFFSET]
-	mov   eax, edx
-	and   eax, 7
-	cmp   eax, uvector-tag
-	jz    short :uvector-tag
-	cmp   eax, x86::cons-tag
-	jz    short :cons-tag
-	cmp   eax, 0
-	jz    short :fixnum-tag
-	cmp   eax, 1
-	jz    short :char-tag
-	cmp   eax, 3
-	jz    short :short-float-tag
-	cmp   eax, 7
-	jz    short :short-float-tag
-	;; Should never fall through the above, but just in case...
-	mov   eax, "Wrong object in CLASS-OF"
-	push  eax
-	mov   ecx, 1
-	callf error
-	add   esp, 4
-	pop   ebp
-	ret
+  ;; See what kind of an object we are looking at--generate a magic cookie
+  ;; which is either the type ID field of the object's uvector, or some
+  ;; other value for immediates and a cons.  The cookie is a machine
+  ;; integer, not a Lisp value.
+  mov   edx, [ebp + ARGS_OFFSET]
+  mov   eax, edx
+  and   eax, 7
+  cmp   eax, uvector-tag
+  jz    short :uvector-tag
+  cmp   eax, x86::cons-tag
+  jz    short :cons-tag
+  cmp   eax, 0
+  jz    short :fixnum-tag
+  cmp   eax, 1
+  jz    short :char-tag
+  cmp   eax, 3
+  jz    short :short-float-tag
+  cmp   eax, 7
+  jz    short :short-float-tag
+  ;; Should never fall through the above, but just in case...
+  mov   eax, "Wrong object in CLASS-OF"
+  push  eax
+  mov   ecx, 1
+  callf error
+  add   esp, 4
+  pop   ebp
+  ret
   :uvector-tag
-    mov   eax, [edx - uvector-tag]
-	shr   eax, 3
-	and   eax, #b11111
-	jmp   short :got-a-cookie
+  mov   eax, [edx - uvector-tag]
+  shr   eax, 3
+  and   eax, #b11111
+  jmp   short :got-a-cookie
   :cons-tag
-    mov   eax, 32
-	jmp   short :got-a-cookie
+  mov   eax, 32
+  jmp   short :got-a-cookie
   :fixnum-tag
-    mov   eax, 33
-	jmp   short :got-a-cookie
+  mov   eax, 33
+  jmp   short :got-a-cookie
   :char-tag
-    mov   eax, 34
-	jmp   short :got-a-cookie
+  mov   eax, 34
+  jmp   short :got-a-cookie
   :short-float-tag
-    mov   eax, 35
+  mov   eax, 35
   :got-a-cookie
-	;; The cookie is now in EAX
-	cmp   eax, cl::uvector-clos-instance-tag; instance tag
-	jz	  :instance
-	cmp   eax, cl::uvector-structure-tag; structure tag
-	jz    short :structure				; structures are tougher
-	cmp   eax, cl::uvector-symbol-tag	; symbol tag
-	jz    short :symbol					; so are symbols
-	;; None of the above -- lookup the class in the cookie table.
-	shl   eax, 3						; make a cookie a fixnum
-	push  eax							; CX is already 1
-	callf cl::%class-from-magic-cookie
-	add   esp, 4
-	jmp   short :exit
+  ;; The cookie is now in EAX
+  cmp   eax, cl::uvector-clos-instance-tag; instance tag
+  jz	  :instance
+  cmp   eax, cl::uvector-structure-tag; structure tag
+  jz    short :structure				; structures are tougher
+  cmp   eax, cl::uvector-symbol-tag	; symbol tag
+  jz    short :symbol					; so are symbols
+  ;; None of the above -- lookup the class in the cookie table.
+  shl   eax, 3						; make a cookie a fixnum
+  push  eax							; CX is already 1
+  callf cl::%class-from-magic-cookie
+  add   esp, 4
+  jmp   short :exit
   :structure
- 	mov	  eax, [ebp + ARGS_OFFSET]
-	mov       eax, [eax + (uvector-offset 1)]  ;; eax = structure definition vector
-	mov   edx, eax
-        mov   edx, [edx - uvector-tag]
-        shr   edx, 3
-        and   edx, #b11111
-        cmp   edx, cl::uvector-symbol-tag
-        jz    short :ss
-	mov	  eax, [eax + (uvector-offset (+ 2 cl::struct-template-class-offset))] ;; (elt template 0)
-	jmp   short :exit
+  mov	  eax, [ebp + ARGS_OFFSET]
+  mov       eax, [eax + (uvector-offset 1)]  ;; eax = structure definition vector
+  mov   edx, eax
+  mov   edx, [edx - uvector-tag]
+  shr   edx, 3
+  and   edx, #b11111
+  cmp   edx, cl::uvector-symbol-tag
+  jz    short :ss
+  mov	  eax, [eax + (uvector-offset (+ 2 cl::struct-template-class-offset))] ;; (elt template 0)
+  jmp   short :exit
   :ss
-        mov   eax, 'cl::%struct-class
-        jmp   short :get-symbol-value-and-exit
+  mov   eax, 'cl::%struct-class
+  jmp   short :get-symbol-value-and-exit
   :st1
-	mov   eax, [eax + (- 8 uvector-tag)] ; first STD-INSTANCE slot
-	jmp   short :exit
+  mov   eax, [eax + (- 8 uvector-tag)] ; first STD-INSTANCE slot
+  jmp   short :exit
   :instance
-	mov	  eax, [ebp + ARGS_OFFSET]
-	mov   eax, [eax + (uvector-offset cl::clos-instance-class-offset)]
-	jmp	  short :exit
+  mov	  eax, [ebp + ARGS_OFFSET]
+  mov   eax, [eax + (uvector-offset cl::clos-instance-class-offset)]
+  jmp	  short :exit
   :symbol
-    ;; If this is NIL, return class NULL. Otherwise say it is a SYMBOL.
-	mov   eax, [ebp + ARGS_OFFSET]
-	cmp   eax, [esi]
-	jz    short :sy1
-    mov   eax, 'cl::%symbol-class
-	jmp   short :get-symbol-value-and-exit
-    :sy1
-	mov   eax, 'cl::%null-class
+  ;; If this is NIL, return class NULL. Otherwise say it is a SYMBOL.
+  mov   eax, [ebp + ARGS_OFFSET]
+  cmp   eax, [esi]
+  jz    short :sy1
+  mov   eax, 'cl::%symbol-class
+  jmp   short :get-symbol-value-and-exit
+  :sy1
+  mov   eax, 'cl::%null-class
   :get-symbol-value-and-exit
-	push  eax
-	mov   ecx, 1
-	callp cl::symbol-value
-	add   esp, 4
+  push  eax
+  mov   ecx, 1
+  callp cl::symbol-value
+  add   esp, 4
   :exit
-	pop   ebp
-	ret
+  pop   ebp
+  ret
   })

@@ -16,64 +16,64 @@
 (defun add-word (n a) (add-byte (lobyte n) a)(add-byte (hibyte n) a))
 (defun add-dword(n a) (add-word (loword n) a)(add-word (hiword n) a))
 (defun add-wide-string (s a)
-    (loop for c across s do     ; Copy the string
+  (loop for c across s do     ; Copy the string
         (add-word (char-int c) a))
-    (add-dword 0 a))               ; null terminate
+  (add-dword 0 a))               ; null terminate
 
 (defun dword-boundary (a)
-    (let* ((mod (mod (length a) 4))
-           (pad (if (= mod 0) 0 (- 4 mod))))
-        (dotimes (i pad)
-            (add-byte 0 a))))
+  (let* ((mod (mod (length a) 4))
+         (pad (if (= mod 0) 0 (- 4 mod))))
+    (dotimes (i pad)
+      (add-byte 0 a))))
 
 (defun create-dialog-template ()
-    (let ((a (make-array template-max-size :element-type 'byte :adjustable t :fill-pointer 0))
-          (style (logior DS_MODALFRAME WS_POPUP WS_VISIBLE WS_CAPTION WS_SYSMENU DS_SETFONT))
-          (num-items 1)
-          (title "Dialog"))
+  (let ((a (make-array template-max-size :element-type 'byte :adjustable t :fill-pointer 0))
+        (style (logior DS_MODALFRAME WS_POPUP WS_VISIBLE WS_CAPTION WS_SYSMENU DS_SETFONT))
+        (num-items 1)
+        (title "Dialog"))
 
-        (add-word 1 a)                  ; DlgVer
-        (add-word #xffff a)             ; Signature
-        (add-dword 0 a)                 ; HelpID
-        (add-dword 0 a)                 ; lExtendedStyle
-        (add-dword style a)             ; lStyle
-        (add-word num-items a)          ; NumberOfItems
-        (add-word 210 a)                ; x
-        (add-word 10 a)                 ; y
-        (add-word 100 a)                ; cx
-        (add-word 100 a)                ; cy
-        (add-word 0 a)                  ; menu
-        (add-word 0 a)                  ; Class
-        (add-wide-string title a)       ; Copy the title of the dialog box
-        (add-word 18 a)                 ; Point size
-        (add-word FW_DONTCARE a)        ; Weight
-        (add-byte FALSE a)              ; Italic
-        (add-byte DEFAULT_CHARSET a)    ; charset
-        (add-wide-string "Times New Roman" a) ; typeface
+    (add-word 1 a)                  ; DlgVer
+    (add-word #xffff a)             ; Signature
+    (add-dword 0 a)                 ; HelpID
+    (add-dword 0 a)                 ; lExtendedStyle
+    (add-dword style a)             ; lStyle
+    (add-word num-items a)          ; NumberOfItems
+    (add-word 210 a)                ; x
+    (add-word 10 a)                 ; y
+    (add-word 100 a)                ; cx
+    (add-word 100 a)                ; cy
+    (add-word 0 a)                  ; menu
+    (add-word 0 a)                  ; Class
+    (add-wide-string title a)       ; Copy the title of the dialog box
+    (add-word 18 a)                 ; Point size
+    (add-word FW_DONTCARE a)        ; Weight
+    (add-byte FALSE a)              ; Italic
+    (add-byte DEFAULT_CHARSET a)    ; charset
+    (add-wide-string "Times New Roman" a) ; typeface
 
-        ;; first item
-        (dword-boundary a)              ; pad to dword boundary
-        (add-dword 0 a)                 ; lHelpID
-        (add-dword 0 a)                 ; lExtendedStyle
-        (add-dword
-            (logior BS_PUSHBUTTON WS_VISIBLE
-                WS_CHILD WS_TABSTOP) a) ; lStyle
-        (add-word 10 a)                 ; x
-        (add-word 60 a)                 ; y
-        (add-word 80 a)                 ; cx
-        (add-word 20 a)                 ; cy
-        (add-word IDOK a)               ; Control ID
-        (add-wide-string "BUTTON" a)    ; name of class
-        (add-wide-string "OK" a)        ; text of item
+    ;; first item
+    (dword-boundary a)              ; pad to dword boundary
+    (add-dword 0 a)                 ; lHelpID
+    (add-dword 0 a)                 ; lExtendedStyle
+    (add-dword
+     (logior BS_PUSHBUTTON WS_VISIBLE
+             WS_CHILD WS_TABSTOP) a) ; lStyle
+    (add-word 10 a)                 ; x
+    (add-word 60 a)                 ; y
+    (add-word 80 a)                 ; cx
+    (add-word 20 a)                 ; cy
+    (add-word IDOK a)               ; Control ID
+    (add-wide-string "BUTTON" a)    ; name of class
+    (add-wide-string "OK" a)        ; text of item
 
-        (dword-boundary a)              ; pad to dword boundary
-        (let ((template (LocalAlloc 0 (length a))))
-            (dotimes (i (length a))
-                (setf (ct:cref (BYTE *) template i) (aref a i)))
-            (DialogBoxIndirectParam (cl::get-application-instance)
-                template (cl::get-application-main-window)
-                (get-callback-procinst 'dialog-wndproc)
-                0))))
+    (dword-boundary a)              ; pad to dword boundary
+    (let ((template (LocalAlloc 0 (length a))))
+      (dotimes (i (length a))
+        (setf (ct:cref (BYTE *) template i) (aref a i)))
+      (DialogBoxIndirectParam (cl::get-application-instance)
+			      template (cl::get-application-main-window)
+			      (get-callback-procinst 'dialog-wndproc)
+			      0))))
 
 
 
@@ -98,9 +98,9 @@ WS_SYSMENU| DS_SETFONT;
 *p++ = 0;          // Class/* Copy the title of the dialog box. */
 nchar = nCopyAnsiToWideChar (p, TEXT("Dialog"));
 p += nchar;   /* Font information because of DS_SETFONT. */
-      *p++ = 18;  // Point size
-      *p++ = FW_DONTCARE;  // Weight
-      *p++ = MAKEWORD( FALSE, DEFAULT_CHARSET );  // italic flag and charset.nchar = nCopyAnsiToWideChar (p, TEXT("Times New Roman"));  // Face name
+*p++ = 18;  // Point size
+*p++ = FW_DONTCARE;  // Weight
+*p++ = MAKEWORD( FALSE, DEFAULT_CHARSET );  // italic flag and charset.nchar = nCopyAnsiToWideChar (p, TEXT("Times New Roman"));  // Face name
 p += nchar;
 
 /* Make sure the first item starts on a DWORD boundary. */
@@ -122,7 +122,7 @@ nchar = nCopyAnsiToWideChar (p, TEXT("BUTTON"));/* Copy the text of the first it
 nchar = nCopyAnsiToWideChar (p, TEXT("OK"));
 p += nchar;*p++ = 0;  // Advance pointer over nExtraStuff WORD.
 
-        /* make sure the second item starts on a DWORD boundary. */
+/* make sure the second item starts on a DWORD boundary. */
 p = lpwAlign (p);lStyle = WS_VISIBLE | WS_CHILD;
 *p++ = 0;             // LOWORD (lHelpID)
 *p++ = 0;             // HIWORD (lHelpID)
@@ -154,16 +154,16 @@ Helper routines taken from the WIN32SDK DYNDLG sample.
 //
 LPWORD lpwAlign ( LPWORD lpIn)
 {
-  ULONG ul;  ul = (ULONG) lpIn;
-  ul +=3;
-  ul >>=2;
-  ul <<=2;
-  return (LPWORD) ul;
+ULONG ul;  ul = (ULONG) lpIn;
+ul +=3;
+ul >>=2;
+ul <<=2;
+return (LPWORD) ul;
 }int nCopyAnsiToWideChar (LPWORD lpWCStr, LPSTR lpAnsiIn)
 {
-  int nChar = 0;  do {
-    *lpWCStr++ = (WORD) *lpAnsiIn;
-    nChar++;
-  } while (*lpAnsiIn++);  return nChar;
+int nChar = 0;  do {
+*lpWCStr++ = (WORD) *lpAnsiIn;
+nChar++;
+} while (*lpAnsiIn++);  return nChar;
 }
 |#

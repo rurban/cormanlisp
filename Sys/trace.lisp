@@ -30,7 +30,7 @@
     eval
     macroexpand
     macroexpand-1
-		)
+    )
   "Set of functions, when traced, that lead to problems")
 
 (defun traced-function-p (func)
@@ -40,93 +40,93 @@
 (defmacro with-trace (tracep &rest decls-and-forms)
   "enables/disables tracing for execution of decls-and-forms"
   `(let* ((*trace-enabled* ,tracep))
-    ,@decls-and-forms))
+     ,@decls-and-forms))
 
 (defmacro with-trace-disabled (&rest decls-and-forms)
   "irrespective of value of *trace-enabled*, disables tracing"
   `(let* ((*trace-enabled* nil))
-    ,@decls-and-forms))
+     ,@decls-and-forms))
 
 (defmacro with-trace-enabled (&rest decls-and-forms)
   "irrespective of value of *trace-enabled*, enables tracing"
   `(let* ((*trace-enabled* t))
-    ,@decls-and-forms))
+     ,@decls-and-forms))
 
 (defun my-register-traced-function (function-name)
   (let* ((orig-function (symbol-function function-name)))
     (setf (symbol-function function-name)
           #'(lambda (&rest x)
-							(if *trace-enabled*
-									(with-trace-disabled
-											(dotimes (i *trace-level*) (write #\Space :escape nil :stream *trace-output*))
-										(format *trace-output* "=>(~A~{ ~S~})~%" function-name x)
-										(force-output *trace-output*)
-										(let* ((*trace-level* (+ *trace-level* 1))
-													 (ret))
+	      (if *trace-enabled*
+		  (with-trace-disabled
+		      (dotimes (i *trace-level*) (write #\Space :escape nil :stream *trace-output*))
+		    (format *trace-output* "=>(~A~{ ~S~})~%" function-name x)
+		    (force-output *trace-output*)
+		    (let* ((*trace-level* (+ *trace-level* 1))
+			   (ret))
                       (setq ret (multiple-value-list
-																		(with-trace (< *trace-level* *max-trace-level*)
-																			(apply orig-function x))))
-											(dotimes (i (- *trace-level* 1)) (write #\Space :escape nil :stream *trace-output*))
-											(format *trace-output* "(~A~{ ~S~})=>~{ ~S~}~%" function-name x ret)
-											(force-output *trace-output*)
-											(apply #'values ret)))
-									(apply orig-function x))))
+				 (with-trace (< *trace-level* *max-trace-level*)
+				   (apply orig-function x))))
+		      (dotimes (i (- *trace-level* 1)) (write #\Space :escape nil :stream *trace-output*))
+		      (format *trace-output* "(~A~{ ~S~})=>~{ ~S~}~%" function-name x ret)
+		      (force-output *trace-output*)
+		      (apply #'values ret)))
+		  (apply orig-function x))))
     (setf *traced-functions*
           (adjoin (cons function-name orig-function) *traced-functions*
                   :key #'car :test #'eq))))
 
 (defun my-register-traced-generic-function (func-name)
   (let* ((gf (symbol-function func-name))
-				 (methods (generic-function-methods gf))
-				 (old-functions '()))
+	 (methods (generic-function-methods gf))
+	 (old-functions '()))
     (dolist (method methods)
       (let ((orig-func (cl::method-function method))
-						(method-string (format nil "~A" method)))
-				(push method old-functions)
-				(push orig-func old-functions)
-				(setf (cl::method-function method)
-							#'(lambda (&rest x)
-									(if *trace-enabled*
-											(with-trace-disabled
-													(dotimes (i *trace-level*) (write #\Space :escape nil :stream *trace-output*))
-												(format *trace-output* "=>(~A~{ ~S~})~%" method-string (butlast x))
-												(force-output *trace-output*)
-												(let* ((*trace-level* (+ *trace-level* 1))
-															 (ret))
+	    (method-string (format nil "~A" method)))
+	(push method old-functions)
+	(push orig-func old-functions)
+	(setf (cl::method-function method)
+	      #'(lambda (&rest x)
+		  (if *trace-enabled*
+		      (with-trace-disabled
+			  (dotimes (i *trace-level*) (write #\Space :escape nil :stream *trace-output*))
+			(format *trace-output* "=>(~A~{ ~S~})~%" method-string (butlast x))
+			(force-output *trace-output*)
+			(let* ((*trace-level* (+ *trace-level* 1))
+			       (ret))
                           (setq ret (multiple-value-list
-																				(with-trace (< *trace-level* *max-trace-level*)
-																					(apply orig-func x))))
-													(dotimes (i (- *trace-level* 1)) (write #\Space :escape nil :stream *trace-output*))
-													(format *trace-output* "(~A~{ ~S~})=>~{ ~S~}~%" method-string x ret)
-													(force-output *trace-output*)
-													(apply #'values ret)))
-											(apply orig-func x))))))
+				     (with-trace (< *trace-level* *max-trace-level*)
+				       (apply orig-func x))))
+			  (dotimes (i (- *trace-level* 1)) (write #\Space :escape nil :stream *trace-output*))
+			  (format *trace-output* "(~A~{ ~S~})=>~{ ~S~}~%" method-string x ret)
+			  (force-output *trace-output*)
+			  (apply #'values ret)))
+		      (apply orig-func x))))))
     (setf *traced-functions* (adjoin (cons func-name (nreverse old-functions)) *traced-functions*
-																				 :key #'car :test #'eq))
+				     :key #'car :test #'eq))
     (cl::clear-method-table (cl::classes-to-emf-table gf))))
 
 (defun my-register-traced-macro (macro-name)
   (let* ((orig-macro-function (macro-function macro-name)))
     (setf (macro-function macro-name)
-					#'(lambda (form &optional env)
+	  #'(lambda (form &optional env)
               (if *trace-enabled*
-									(with-trace-disabled
-											(dotimes (i *trace-level*) (write #\Space :escape nil :stream *trace-output*))
-										(format *trace-output* "=>(~A~{ ~S~})~%" macro-name (cdr form))
-										(force-output *trace-output*)
-										(let* ((*trace-level* (+ *trace-level* 1))
-													 (ret))
+		  (with-trace-disabled
+		      (dotimes (i *trace-level*) (write #\Space :escape nil :stream *trace-output*))
+		    (format *trace-output* "=>(~A~{ ~S~})~%" macro-name (cdr form))
+		    (force-output *trace-output*)
+		    (let* ((*trace-level* (+ *trace-level* 1))
+			   (ret))
                       (setq ret (multiple-value-list
-																		(with-trace (< *trace-level* *max-trace-level*)
-																			(funcall orig-macro-function form env))))
-											(dotimes (i (- *trace-level* 1)) (write #\Space :escape nil :stream *trace-output*))
-											(format *trace-output* "(~A~{ ~S~})=>~{ ~S~}~%" macro-name (cdr form) ret)
-											(force-output *trace-output*)
-											(apply #'values ret)))
-									(funcall orig-macro-function form env))))
+				 (with-trace (< *trace-level* *max-trace-level*)
+				   (funcall orig-macro-function form env))))
+		      (dotimes (i (- *trace-level* 1)) (write #\Space :escape nil :stream *trace-output*))
+		      (format *trace-output* "(~A~{ ~S~})=>~{ ~S~}~%" macro-name (cdr form) ret)
+		      (force-output *trace-output*)
+		      (apply #'values ret)))
+		  (funcall orig-macro-function form env))))
     (setf *traced-functions*
-					(adjoin (cons macro-name orig-macro-function) *traced-functions*
-									:key #'car :test #'eq))))
+	  (adjoin (cons macro-name orig-macro-function) *traced-functions*
+		  :key #'car :test #'eq))))
 
 (defun my-%register-traced-functions (funcs)
   (dolist (func funcs)
@@ -209,8 +209,8 @@
 ;;;;	Common Lisp TRACE macro
 ;;;;
 (defmacro trace (&rest funcs)
-	(with-trace-disabled
-			`(with-trace-disabled (my-%register-traced-functions ',funcs))))
+  (with-trace-disabled
+      `(with-trace-disabled (my-%register-traced-functions ',funcs))))
 
 ;;;;
 ;;;;	Common Lisp UNTRACE macro
@@ -218,23 +218,23 @@
 (defmacro untrace (&rest funcs)
   (with-trace-disabled
       (if (null funcs)
-					(setf funcs (trace)))
+	  (setf funcs (trace)))
     `(with-trace-disabled (my-%unregister-traced-functions ',funcs))))
 
 ;;;;
 ;;;;	Common Lisp ROOM function
 ;;;;
 (defun room	()
-	(gc 3)				;; flush all ephemeral heaps
-	(format t "~%Total heap size: ~A bytes. Heap available: ~A bytes.~%"
-			(heap-capacity)
-			(- (heap-capacity) (heap-currently-used)))
-	(format t "Jump table size:	~A entries. Entries available: ~A.~%"
-			(jump-table-capacity)
-			(- (jump-table-capacity) (jump-table-used)))
-	(format t "Global symbol table size:	~A entries. Entries available: ~A.~%"
-			(symbol-table-capacity)
-			(- (symbol-table-capacity) (symbol-table-used))))
+  (gc 3)				;; flush all ephemeral heaps
+  (format t "~%Total heap size: ~A bytes. Heap available: ~A bytes.~%"
+	  (heap-capacity)
+	  (- (heap-capacity) (heap-currently-used)))
+  (format t "Jump table size:	~A entries. Entries available: ~A.~%"
+	  (jump-table-capacity)
+	  (- (jump-table-capacity) (jump-table-used)))
+  (format t "Global symbol table size:	~A entries. Entries available: ~A.~%"
+	  (symbol-table-capacity)
+	  (- (symbol-table-capacity) (symbol-table-used))))
 
 (defun funcall-ignoring-errors (func &rest args)
-	(ignore-errors (apply func args)))
+  (ignore-errors (apply func args)))

@@ -29,7 +29,7 @@
 #|
 (in-package "CORMANLISP")
 (export '(%random-single-float %random-double-float random-chunk
-			       random-fixnum-max))
+random-fixnum-max))
 |#
 ;;;; Random state hackery:
 
@@ -58,7 +58,7 @@
 (declaim (ftype (function () real) rand1))	  ;; forward reference
 
 (defstruct (random-state
-	    (:constructor make-random-object))
+	     (:constructor make-random-object))
   (j 24 :type index)
   (k 0 :type index)
   (seed (make-array (1+ random-max) :initial-contents
@@ -98,13 +98,13 @@
   (cond ((not state) (copy-state *random-state*))
 	((random-state-p state) (copy-state state))
 	((eq state t) (setq rand-seed (get-universal-time))
-		      (make-random-object))
+	 (make-random-object))
 	(t (error "Argument is not a RANDOM-STATE, T or NIL: ~S" state))))
 
 ;;;; Random entries:
 
 (declaim (special start-block random %random-single-float %random-double-float
-		      random-chunk))
+		  random-chunk))
 
 ;;; random-chunk  --  Internal
 ;;;
@@ -138,40 +138,40 @@
 ;;;
 ;;(declaim (inline %random-single-float %random-double-float))
 (defun %random-single-float (arg state)
-	(declare (type (single-float (0f0)) arg)
-		(type (or random-state null) state))
-	(* arg
-		(- (%make-single-float
-				(dpb (ash (random-chunk (or state *random-state*))
-						(- single-float-digits random-chunk-length))
-					single-float-significand-byte
-					(%single-float-bits 1.0f0)))
-			1.0f0)))
+  (declare (type (single-float (0f0)) arg)
+	   (type (or random-state null) state))
+  (* arg
+     (- (%make-single-float
+	 (dpb (ash (random-chunk (or state *random-state*))
+		   (- single-float-digits random-chunk-length))
+	      single-float-significand-byte
+	      (%single-float-bits 1.0f0)))
+	1.0f0)))
 
 (defun %random-short-float (arg state)
-	(declare (type (short-float (0s0)) arg)
-		(type (or random-state null) state))
-	(* arg
-		(- (%make-short-float
-				(dpb (ash (random-chunk (or state *random-state*))
-						(- short-float-digits random-chunk-length))
-					short-float-significand-byte
-					(%short-float-bits 1.0s0)))
-			1.0s0)))
+  (declare (type (short-float (0s0)) arg)
+	   (type (or random-state null) state))
+  (* arg
+     (- (%make-short-float
+	 (dpb (ash (random-chunk (or state *random-state*))
+		   (- short-float-digits random-chunk-length))
+	      short-float-significand-byte
+	      (%short-float-bits 1.0s0)))
+	1.0s0)))
 
 (defun %random-double-float (arg state)
-	(declare (type (double-float (0d0)) arg)
-		(type (or random-state null) state))
-	(let ((state (or state *random-state*)))
-		(* arg
-			(- (%make-double-float
-					(dpb
-						(logxor (ash (random-chunk state)
-								(- 53 random-chunk-length))
-							(random-chunk state))
-						double-float-significand-byte
-						(%double-float-bits 1d0)))
-				1d0))))
+  (declare (type (double-float (0d0)) arg)
+	   (type (or random-state null) state))
+  (let ((state (or state *random-state*)))
+    (* arg
+       (- (%make-double-float
+	   (dpb
+	    (logxor (ash (random-chunk state)
+			 (- 53 random-chunk-length))
+		    (random-chunk state))
+	    double-float-significand-byte
+	    (%double-float-bits 1d0)))
+	  1d0))))
 
 ;;;; Random integers:
 
@@ -206,16 +206,16 @@
       (declare (fixnum count)))))
 
 (defun random (arg &optional (state *random-state*))
-	"Generate a uniformly distributed pseudo-random number between zero
+  "Generate a uniformly distributed pseudo-random number between zero
 	 and Arg.  State, if supplied, is the random state to use."
-	(declare (inline %random-single-float %random-double-float))
-	(cond
-		((and (fixnump arg)(<= arg random-fixnum-max)) (rem (random-chunk state) arg))
-		((typep arg 'single-float)(%random-single-float arg state))
-		((typep arg 'double-float)(%random-double-float arg state))
-		((typep arg 'short-float)(%random-short-float arg state))
-		((integerp arg)(%random-integer arg state))
-		(t (error "Argument is not a positive real number: ~S" arg))))
+  (declare (inline %random-single-float %random-double-float))
+  (cond
+    ((and (fixnump arg)(<= arg random-fixnum-max)) (rem (random-chunk state) arg))
+    ((typep arg 'single-float)(%random-single-float arg state))
+    ((typep arg 'double-float)(%random-double-float arg state))
+    ((typep arg 'short-float)(%random-short-float arg state))
+    ((integerp arg)(%random-integer arg state))
+    (t (error "Argument is not a positive real number: ~S" arg))))
 ;;((	(t (error 'simple-type-error :expected-type '(real (0)) :datum arg
 ;;				:format-control "Argument is not a positive real number: ~S"
 ;;				:format-arguments (list arg)))))

@@ -83,7 +83,7 @@
 	   #:operation-on-warnings
 	   #:operation-on-failure
 
-	   ;#:*component-parent-pathname*
+					;#:*component-parent-pathname*
 	   #:*system-definition-search-functions*
 	   #:*central-registry*		; variables
 	   #:*compile-file-warnings-behaviour*
@@ -140,7 +140,7 @@ and NIL NAME and TYPE components"
   (make-pathname :name nil :type nil :defaults pathname))
 
 (define-modify-macro appendf (&rest args)
-		     append "Append onto list")
+  append "Append onto list")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; classes, condiitons
@@ -332,11 +332,11 @@ and NIL NAME and TYPE components"
 
 (defvar *defined-systems* (make-hash-table :test 'equal))
 (defun coerce-name (name)
-   (typecase name
-     (component (component-name name))
-     (symbol (string-downcase (symbol-name name)))
-     (string name)
-     (t (sysdef-error "~@<invalid component designator ~A~@:>" name))))
+  (typecase name
+    (component (component-name name))
+    (symbol (string-downcase (symbol-name name)))
+    (string name)
+    (t (sysdef-error "~@<invalid component designator ~A~@:>" name))))
 
 ;;; for the sake of keeping things reasonably neat, we adopt a
 ;;; convention that functions in this list are prefixed SYSDEF-
@@ -368,8 +368,8 @@ and NIL NAME and TYPE components"
 (defun make-temporary-package ()
   (flet ((try (counter)
            (ignore-errors
-                   (make-package (format nil "ASDF~D" counter)
-                                 :use '(:cl :asdf)))))
+             (make-package (format nil "ASDF~D" counter)
+                           :use '(:cl :asdf)))))
     (do* ((counter 0 (+ counter 1))
           (package (try counter) (try counter)))
          (package package))))
@@ -481,7 +481,7 @@ system."))
 
 (defmethod shared-initialize :after ((operation operation) slot-names
 				     &key force
-				     &allow-other-keys)
+				       &allow-other-keys)
   (declare (ignore slot-names force))
   ;; empty method to disable initarg validity checking
   )
@@ -766,9 +766,9 @@ system."))
   (let ((source-file (component-pathname c))
         (output-file (car (output-files operation c))))
     (multiple-value-bind (output warnings-p failure-p)
-	                 (compile-file source-file
-			               :output-file output-file)
-      ;(declare (ignore output))
+	(compile-file source-file
+		      :output-file output-file)
+					;(declare (ignore output))
       (when warnings-p
         (case (operation-on-warnings operation)
           (:warn (warn
@@ -890,7 +890,7 @@ system."))
 ;;; invoking operations
 
 (defun operate (operation-class system &rest args &key (verbose t) version
-                                &allow-other-keys)
+						    &allow-other-keys)
   (let* ((op (apply #'make-instance operation-class
 		    :original-initargs args
 		    args))
@@ -901,26 +901,26 @@ system."))
     (let ((steps (traverse op system)))
       (with-compilation-unit ()
 	(loop for (op . component) in steps do
-	     (loop
-		(restart-case
-		    (progn (perform op component)
-			   (return))
-		  (retry ()
-		    :report
-		    (lambda (s)
-		      (format s "~@<Retry performing ~S on ~S.~@:>"
-			      op component)))
-		  (accept ()
-		    :report
-		    (lambda (s)
-		      (format s
-			      "~@<Continue, treating ~S on ~S as ~
+	      (loop
+	       (restart-case
+		   (progn (perform op component)
+			  (return))
+		 (retry ()
+		   :report
+		   (lambda (s)
+		     (format s "~@<Retry performing ~S on ~S.~@:>"
+			     op component)))
+		 (accept ()
+		   :report
+		   (lambda (s)
+		     (format s
+			     "~@<Continue, treating ~S on ~S as ~
                                having been successful.~@:>"
-			      op component))
-		    (setf (gethash (type-of op)
-				   (component-operation-times component))
-			  (get-universal-time))
-		    (return)))))))))
+			     op component))
+		   (setf (gethash (type-of op)
+				  (component-operation-times component))
+			 (get-universal-time))
+		   (return)))))))))
 
 (defun oos (&rest args)
   "Alias of OPERATE function"
@@ -942,30 +942,30 @@ system."))
   (destructuring-bind (&key pathname (class 'system) &allow-other-keys) options
     (let ((component-options (remove-keyword :class options)))
       `(progn
-	;; system must be registered before we parse the body, otherwise
-	;; we recur when trying to find an existing system of the same name
-	;; to reuse options (e.g. pathname) from
-	(let ((s (system-registered-p ',name)))
-	  (cond ((and s (eq (type-of (cdr s)) ',class))
-		 (setf (car s) (get-universal-time)))
-		(s
-		 #+clisp
-		 (sysdef-error "Cannot redefine the existing system ~A with a different class" s)
-		 #-clisp
-		 (change-class (cdr s) ',class))
-		(t
-		 (register-system (quote ,name)
-				  (make-instance ',class :name ',name)))))
-	(parse-component-form nil (apply
-				   #'list
-				   :module (coerce-name ',name)
-				   :pathname
-				   (or ,pathname
-				       (when *load-truename*
-					 (pathname-sans-name+type
-					  (resolve-symlinks  *load-truename*)))
-				       *default-pathname-defaults*)
-				   ',component-options))))))
+	 ;; system must be registered before we parse the body, otherwise
+	 ;; we recur when trying to find an existing system of the same name
+	 ;; to reuse options (e.g. pathname) from
+	 (let ((s (system-registered-p ',name)))
+	   (cond ((and s (eq (type-of (cdr s)) ',class))
+		  (setf (car s) (get-universal-time)))
+		 (s
+		  #+clisp
+		  (sysdef-error "Cannot redefine the existing system ~A with a different class" s)
+		  #-clisp
+		  (change-class (cdr s) ',class))
+		 (t
+		  (register-system (quote ,name)
+				   (make-instance ',class :name ',name)))))
+	 (parse-component-form nil (apply
+				    #'list
+				    :module (coerce-name ',name)
+				    :pathname
+				    (or ,pathname
+					(when *load-truename*
+					  (pathname-sans-name+type
+					   (resolve-symlinks  *load-truename*)))
+					*default-pathname-defaults*)
+				    ',component-options))))))
 
 
 (defun class-for-type (parent type)
@@ -1033,11 +1033,11 @@ Returns the new tree (which probably shares structure with the old one)"
     (check-component-input type name weakly-depends-on depends-on components in-order-to)
 
     (when (and parent
-	     (find-component parent name)
-	     ;; ignore the same object when rereading the defsystem
-	     (not
-	      (typep (find-component parent name)
-		     (class-for-type parent type))))
+	       (find-component parent name)
+	       ;; ignore the same object when rereading the defsystem
+	       (not
+		(typep (find-component parent name)
+		       (class-for-type parent type))))
       (error 'duplicate-names :name name))
 
     (let* ((other-args (remove-keys
@@ -1081,9 +1081,9 @@ Returns the new tree (which probably shares structure with the old one)"
 			     name-hash)
 		    (error 'duplicate-names
 			   :name (component-name c))
-		  (setf (gethash (component-name c)
-				 name-hash)
-			t)))))
+		    (setf (gethash (component-name c)
+				   name-hash)
+			  t)))))
 
       (setf (slot-value ret 'in-order-to)
 	    (union-of-dependencies
@@ -1105,7 +1105,7 @@ Returns the new tree (which probably shares structure with the old one)"
 	    do (destructuring-bind (op qual (o c) &body body) v
 		 (pushnew
 		  (eval `(defmethod ,n ,qual ((,o ,op) (,c (eql ,ret)))
-			  ,@body))
+				    ,@body))
 		  (component-inline-methods ret))))
       ret)))
 
@@ -1123,7 +1123,7 @@ Returns the new tree (which probably shares structure with the old one)"
 			    type name components))
   (unless (and (listp in-order-to) (listp (car in-order-to)))
     (sysdef-error-component ":in-order-to must be NIL or a list of components."
-			   type name in-order-to)))
+			    type name in-order-to)))
 
 (defun sysdef-error-component (msg type name value)
   (sysdef-error (concatenate 'string msg
@@ -1228,8 +1228,8 @@ output to *VERBOSE-OUT*.  Returns the shell's exit code."
 
   (pushnew
    '(let ((home (sb-ext:posix-getenv "SBCL_HOME")))
-      (when home
-        (merge-pathnames "site-systems/" (truename home))))
+     (when home
+       (merge-pathnames "site-systems/" (truename home))))
    *central-registry*)
 
   (pushnew
@@ -1243,32 +1243,32 @@ output to *VERBOSE-OUT*.  Returns the shell's exit code."
 #+cormanlisp
 ;; Edi Weitz enhancement for Corman Lisp, integrated into this file by Roger Corman
 (progn
-    (defpackage :asdf-util
-        (:use :cl)
-        (:export #:source-dir-search
-               #:*source-dirs*))
+  (defpackage :asdf-util
+    (:use :cl)
+    (:export #:source-dir-search
+             #:*source-dirs*))
 
-    (in-package :asdf-util))
+  (in-package :asdf-util))
 
 #+cormanlisp
 (progn
-    (defparameter *source-dirs*)
+  (defparameter *source-dirs*)
 
-    (defun source-dir-search (system)
-      (let ((name (asdf::coerce-name system)))
-        (dolist (source-dir *source-dirs*)
-          (dolist (subdir (cl::directory-subdirs source-dir))
-            (let ((file (merge-pathnames
-                         (make-pathname :name name
-                                        :type "asd"
-                                        :version :newest
-                                        :directory nil
-                                        :host nil
-                                        :device nil)
-                         subdir)))
-              (when (probe-file file)
-                (return-from source-dir-search file)))))))
-    (pushnew 'source-dir-search
-         asdf:*system-definition-search-functions*))
+  (defun source-dir-search (system)
+    (let ((name (asdf::coerce-name system)))
+      (dolist (source-dir *source-dirs*)
+        (dolist (subdir (cl::directory-subdirs source-dir))
+          (let ((file (merge-pathnames
+                       (make-pathname :name name
+                                      :type "asd"
+                                      :version :newest
+                                      :directory nil
+                                      :host nil
+                                      :device nil)
+                       subdir)))
+            (when (probe-file file)
+              (return-from source-dir-search file)))))))
+  (pushnew 'source-dir-search
+           asdf:*system-definition-search-functions*))
 
 (provide 'asdf)

@@ -4,28 +4,28 @@
 (in-package :win32)
 #! (:library "GDI32" :ignore "WINUSERAPI" :export t :pascal "WINAPI")
 typedef struct tagBITMAP
-  {
-    LONG        bmType;
-    LONG        bmWidth;
-    LONG        bmHeight;
-    LONG        bmWidthBytes;
-    WORD        bmPlanes;
-    WORD        bmBitsPixel;
-    LPVOID      bmBits;
-  } BITMAP, *PBITMAP, NEAR *NPBITMAP, FAR *LPBITMAP;
+{
+LONG        bmType;
+LONG        bmWidth;
+LONG        bmHeight;
+LONG        bmWidthBytes;
+WORD        bmPlanes;
+WORD        bmBitsPixel;
+LPVOID      bmBits;
+} BITMAP, *PBITMAP, NEAR *NPBITMAP, FAR *LPBITMAP;
 
 typedef struct tagBITMAPINFOHEADER{
-        DWORD      biSize;
-        LONG       biWidth;
-        LONG       biHeight;
-        WORD       biPlanes;
-        WORD       biBitCount;
-        DWORD      biCompression;
-        DWORD      biSizeImage;
-        LONG       biXPelsPerMeter;
-        LONG       biYPelsPerMeter;
-        DWORD      biClrUsed;
-        DWORD      biClrImportant;
+DWORD      biSize;
+LONG       biWidth;
+LONG       biHeight;
+WORD       biPlanes;
+WORD       biBitCount;
+DWORD      biCompression;
+DWORD      biSizeImage;
+LONG       biXPelsPerMeter;
+LONG       biYPelsPerMeter;
+DWORD      biClrUsed;
+DWORD      biClrImportant;
 } BITMAPINFOHEADER, FAR *LPBITMAPINFOHEADER, *PBITMAPINFOHEADER;
 
 /* Ternary raster operations */
@@ -62,7 +62,7 @@ WINGDIAPI HBITMAP WINAPI CreateBitmapIndirect(CONST BITMAP *);
 WINGDIAPI int   WINAPI GetObjectA(HGDIOBJ, int, LPVOID);
 WINGDIAPI int   WINAPI GetObjectW(HGDIOBJ, int, LPVOID);
 WINGDIAPI int   WINAPI SetDIBitsToDevice(HDC, int, int, DWORD, DWORD, int,
-        int, UINT, UINT, CONST VOID *, CONST BITMAPINFO *, UINT);
+					      int, UINT, UINT, CONST VOID *, CONST BITMAPINFO *, UINT);
 WINGDIAPI HPEN WINAPI CreatePen(int iStyle, int cWidth, COLORREF color);
 !#
 

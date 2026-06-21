@@ -37,7 +37,7 @@
 ;;;;
 ;;;;
 (defconstant *as-source-directory*
-    (concatenate 'string *cormanlisp-directory* "\\modules\\as\\"))
+  (concatenate 'string *cormanlisp-directory* "\\modules\\as\\"))
 
 (require 'acl-excl)
 (require 'uri)
@@ -47,16 +47,16 @@
 (in-package :cl-user)
 
 (defconstant *as-files*
-	(list
-		"htmlgen\\htmlgen.cl"
-		"macs.cl"
-		"main.cl"
-		"parse.cl"
-		"decode.cl"
-		"publish.cl"
-		"authorize.cl"
-		"log.cl"
-		"client.cl"))
+  (list
+   "htmlgen\\htmlgen.cl"
+   "macs.cl"
+   "main.cl"
+   "parse.cl"
+   "decode.cl"
+   "publish.cl"
+   "authorize.cl"
+   "log.cl"
+   "client.cl"))
 
 (loop for file in *as-files* do (load (concatenate 'string *as-source-directory* file)))
 

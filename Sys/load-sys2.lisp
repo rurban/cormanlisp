@@ -9,10 +9,10 @@
 ;;;;
 
 (defun load-file (filename)
-    (if (eq (cl::cormanlisp-client-type) 2)
-        (editor-set-message (format nil "Compiling ~a" filename))
-        (progn (format t "Compiling ~a~%" filename)(force-output)))
-    (load filename))
+  (if (eq (cl::cormanlisp-client-type) 2)
+      (editor-set-message (format nil "Compiling ~a" filename))
+      (progn (format t "Compiling ~a~%" filename)(force-output)))
+  (load filename))
 
 (setq cl::*compiler-save-lambdas* nil)
 (setq cl::*compiler-save-table-references* nil)
@@ -102,29 +102,29 @@
 ;; Load patches
 (in-package :cl)
 (let ((patch-files
-        (sort (directory
-                    (merge-pathnames "CormanLisp_3_0_patch_??.lisp" (ccl::local-patches-directory)))
-            #'string< :key 'namestring)))
-    (dolist (f (mapcar 'namestring patch-files))
-        (let ((ccl::*patch* (ccl::make-patch f)))
-            (load-file f))))
+       (sort (directory
+              (merge-pathnames "CormanLisp_3_0_patch_??.lisp" (ccl::local-patches-directory)))
+             #'string< :key 'namestring)))
+  (dolist (f (mapcar 'namestring patch-files))
+    (let ((ccl::*patch* (ccl::make-patch f)))
+      (load-file f))))
 
 (export 'ccl::find-in-files :ccl)
 (ccl:define-autoloaded-module "Modules/find-in-files.lisp" (:functions ccl::find-in-files))
 
 ;; QUASILOAD will replace all the functions and macros with thunks,
 ;; making the originals garbage-collectable.
-;(show-message "Making PARSE-C-DECLS.LISP autoloadable")
-;(ccl:quasiload "Sys/parse-c-decls.lisp")
+					;(show-message "Making PARSE-C-DECLS.LISP autoloadable")
+					;(ccl:quasiload "Sys/parse-c-decls.lisp")
 ;; Demote the ct::+c-keywords+ constant defined by the parser to a
 ;; mutable variable to avoid a warning when the autoload above fires.
 (%symbol-set-flags
-	(logandc2 (%symbol-get-flags 'ct::+c-keywords+) *symbol-constant-flag*)
-	'ct::+c-keywords+)
+ (logandc2 (%symbol-get-flags 'ct::+c-keywords+) *symbol-constant-flag*)
+ 'ct::+c-keywords+)
 
 (do-symbols (sym (find-package :keyword))
-	(cl::symbol-set-constant-flag sym)
-	(cl::symbol-set-special-flag sym))		;; keywords defined in the kernel need to be made constant
+  (cl::symbol-set-constant-flag sym)
+  (cl::symbol-set-special-flag sym))		;; keywords defined in the kernel need to be made constant
 
 (editor-set-default-message)
 

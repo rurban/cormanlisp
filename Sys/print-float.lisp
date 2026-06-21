@@ -105,13 +105,13 @@
 	(t
 	 (setf (fill-pointer *digit-string*) 0)
 	 (multiple-value-bind (sig exp)
-			      (integer-decode-float x)
+	     (integer-decode-float x)
 	   (let* ((precision (float-precision x))
 		  (digits (float-digits x))
 		  (fudge (- digits precision))
 		  (width (if width (max width 1) nil)))
-	   (float-string (ash sig (- fudge)) (+ exp fudge) precision width
-			 fdigits scale fmin))))))
+	     (float-string (ash sig (- fudge)) (+ exp fudge) precision width
+			   fdigits scale fmin))))))
 
 
 (defun float-string (fraction exponent precision width fdigits scale fmin)
@@ -242,7 +242,7 @@
 (defun scale-exponent (original-x)
   (let* ((x (coerce original-x 'long-float)))
     (multiple-value-bind (sig exponent)
-			 (decode-float x)
+	(decode-float x)
       (declare (ignore sig))
       (if (= x 0.0l0)
 	  (values (float 0.0l0 original-x) 1)
@@ -285,24 +285,24 @@
 ;;;    Print the appropriate exponent marker for X and the specified exponent.
 ;;;
 (defun print-float-exponent (x exp stream)
-    (declare (float x) (integer exp) (stream stream))
-    (let
-        ((*print-radix* nil)
-            (plusp (plusp exp)))
-        (if
-            (typep x *read-default-float-format*)
-            (unless (eql exp 0) (format stream "e~:[~;+~]~D" plusp exp))
-            (format
-                stream
-                "~C~:[~;+~]~D"
-                (etypecase
-                    x
-                    (single-float #\f)
-                    (double-float #\d)
-                    (short-float #\s)
-                    (long-float #\L))
-                plusp
-                exp))))
+  (declare (float x) (integer exp) (stream stream))
+  (let
+      ((*print-radix* nil)
+       (plusp (plusp exp)))
+    (if
+     (typep x *read-default-float-format*)
+     (unless (eql exp 0) (format stream "e~:[~;+~]~D" plusp exp))
+     (format
+      stream
+      "~C~:[~;+~]~D"
+      (etypecase
+          x
+        (single-float #\f)
+        (double-float #\d)
+        (short-float #\s)
+        (long-float #\L))
+      plusp
+      exp))))
 
 
 ;;; FLOAT-FORMAT-NAME  --  Internal
@@ -357,61 +357,61 @@
 ;;;
 (defun output-float (x stream)
   (cond
-   ((float-infinity-p x)
-    (output-float-infinity x stream))
-   ((float-nan-p x)
-    (output-float-nan x stream))
-   (t
-    (let ((x (cond ((minusp (float-sign x))
-		    (write-char #\- stream)
-		    (- x))
-		   (t
-		    x))))
-      (cond
-       ((zerop x)
-	(write-string "0.0" stream)
-	(print-float-exponent x 0 stream))
-       (t
-	(output-float-aux x stream (float 1/1000 x) (float 10000000 x))))))))
+    ((float-infinity-p x)
+     (output-float-infinity x stream))
+    ((float-nan-p x)
+     (output-float-nan x stream))
+    (t
+     (let ((x (cond ((minusp (float-sign x))
+		     (write-char #\- stream)
+		     (- x))
+		    (t
+		     x))))
+       (cond
+	 ((zerop x)
+	  (write-string "0.0" stream)
+	  (print-float-exponent x 0 stream))
+	 (t
+	  (output-float-aux x stream (float 1/1000 x) (float 10000000 x))))))))
 ;;;
 (defun output-float-aux (x stream e-min e-max)
-    (if
-        (and (>= x e-min) (< x e-max))
-        (multiple-value-bind
-            (str len lpoint tpoint)
-            (flonum-to-string x)
-            (declare (ignore len))
-            (when lpoint (write-char #\0 stream))
-            (write-string str stream)
-            (when tpoint (write-char #\0 stream))
-            (print-float-exponent x 0 stream))
-        (multiple-value-bind
-            (f ex)
-            (scale-exponent x)
-            (multiple-value-bind
-                (str len lpoint tpoint)
-                (flonum-to-string f nil nil 1)
-                (declare (ignore len))
-                (when lpoint (write-char #\0 stream))
-                (write-string str stream)
-                (when tpoint (write-char #\0 stream))
-                (print-float-exponent x (1- ex) stream)))))
+  (if
+   (and (>= x e-min) (< x e-max))
+   (multiple-value-bind
+         (str len lpoint tpoint)
+       (flonum-to-string x)
+     (declare (ignore len))
+     (when lpoint (write-char #\0 stream))
+     (write-string str stream)
+     (when tpoint (write-char #\0 stream))
+     (print-float-exponent x 0 stream))
+   (multiple-value-bind
+         (f ex)
+       (scale-exponent x)
+     (multiple-value-bind
+           (str len lpoint tpoint)
+         (flonum-to-string f nil nil 1)
+       (declare (ignore len))
+       (when lpoint (write-char #\0 stream))
+       (write-string str stream)
+       (when tpoint (write-char #\0 stream))
+       (print-float-exponent x (1- ex) stream)))))
 
 (defun float-infinity-p (f)
-	(multiple-value-bind (m e s)
-		(integer-decode-float f)
-		(declare (ignore s))
-		(or (and (cl::double-float-p f)(= e 972)(= m #x10000000000000))
-			(and (cl::single-float-p f)(= e 105)(= m #x800000))
-			(and (cl::short-float-p f)(= e 107)(= m #x200000)))))
+  (multiple-value-bind (m e s)
+      (integer-decode-float f)
+    (declare (ignore s))
+    (or (and (cl::double-float-p f)(= e 972)(= m #x10000000000000))
+	(and (cl::single-float-p f)(= e 105)(= m #x800000))
+	(and (cl::short-float-p f)(= e 107)(= m #x200000)))))
 
 (defun float-nan-p (f)
-	(multiple-value-bind (m e s)
-		(integer-decode-float f)
-		(declare (ignore s))
-		(or (and (cl::double-float-p f)(= e 972)(/= m #x10000000000000))
-			(and (cl::single-float-p f)(= e 105)(/= m #x800000))
-			(and (cl::short-float-p f)(= e 107)(/= m #x200000)))))
+  (multiple-value-bind (m e s)
+      (integer-decode-float f)
+    (declare (ignore s))
+    (or (and (cl::double-float-p f)(= e 972)(/= m #x10000000000000))
+	(and (cl::single-float-p f)(= e 105)(/= m #x800000))
+	(and (cl::short-float-p f)(= e 107)(/= m #x200000)))))
 
 ;;;
 ;;;	RGC Need to implement these:
@@ -421,93 +421,93 @@
 
 #|
 (%set-format-dispatch-func #\F
-	#'(lambda (stream args index atsign-modifier colon-modifier control
-				&optional width digits (scale 0) overflow-char padchar)
-		(declare (ignore control colon-modifier))
-		(setq args (nthcdr index args))
-		(if (null args)
-			(error "Not enough args for ~~F format directive"))
-		(if (and overflow-char (integerp overflow-char))
-			(setf overflow-char (int-char overflow-char)))
-		(setq padchar (if padchar (if (integerp padchar) (int-char padchar) padchar) #\Space))
-		(let* ((f (abs (car args)))
-			   (neg (minusp (car args)))
-			   (print-sign (or neg (and atsign-modifier (plusp f))))
-			   (sign-width (if print-sign 1 0)))
-			(multiple-value-bind (float-str digit-length leading-point trailing-point point-pos)
-				(ccl::flonum-to-string f (if width (- width sign-width)) digits scale)
-				(declare (ignore digit-length point-pos))
-				(if width
-					;; do any necessary padding
-					(dotimes (i (- width
-								(+ (length float-str) sign-width
-									(if leading-point 1 0)
-									(if trailing-point 1 0))))
-						(write-char padchar stream)))
-				(if print-sign
-					(write-char (if neg #\- #\+) stream))
-				(if leading-point (write-char #\0) stream)
-				(write-string float-str stream)
-				(if trailing-point (write-char #\0) stream)))
-		(1+ index)))
+#'(lambda (stream args index atsign-modifier colon-modifier control
+&optional width digits (scale 0) overflow-char padchar)
+(declare (ignore control colon-modifier))
+(setq args (nthcdr index args))
+(if (null args)
+(error "Not enough args for ~~F format directive"))
+(if (and overflow-char (integerp overflow-char))
+(setf overflow-char (int-char overflow-char)))
+(setq padchar (if padchar (if (integerp padchar) (int-char padchar) padchar) #\Space))
+(let* ((f (abs (car args)))
+(neg (minusp (car args)))
+(print-sign (or neg (and atsign-modifier (plusp f))))
+(sign-width (if print-sign 1 0)))
+(multiple-value-bind (float-str digit-length leading-point trailing-point point-pos)
+(ccl::flonum-to-string f (if width (- width sign-width)) digits scale)
+(declare (ignore digit-length point-pos))
+(if width
+;; do any necessary padding
+(dotimes (i (- width
+(+ (length float-str) sign-width
+(if leading-point 1 0)
+(if trailing-point 1 0))))
+(write-char padchar stream)))
+(if print-sign
+(write-char (if neg #\- #\+) stream))
+(if leading-point (write-char #\0) stream)
+(write-string float-str stream)
+(if trailing-point (write-char #\0) stream)))
+(1+ index)))
 |#
 
 (defun decimal-string (n)
-	(write-to-string n :base 10 :radix nil :escape nil))
+  (write-to-string n :base 10 :radix nil :escape nil))
 
 (defun format-write-field (stream string mincol colinc minpad padchar padleft)
-  	(unless padleft
-    	(write-string string stream))
-  	(dotimes (i minpad)
-	    (write-char padchar stream))
-  	(do ((chars (+ (length string) minpad) (+ chars colinc)))
-      	((>= chars mincol))
+  (unless padleft
+    (write-string string stream))
+  (dotimes (i minpad)
+    (write-char padchar stream))
+  (do ((chars (+ (length string) minpad) (+ chars colinc)))
+      ((>= chars mincol))
     (dotimes (i colinc)
-      	(write-char padchar stream)))
-  	(when padleft
-    	(write-string string stream)))
+      (write-char padchar stream)))
+  (when padleft
+    (write-string string stream)))
 
 ;;; We return true if we overflowed, so that ~G can output the overflow char
 ;;; instead of spaces.
 ;;;
 (defun format-fixed-aux (stream number w d k ovf pad atsign)
-	(cond
-		((and (not k) (not (or w d)))
-			(prin1 number stream)
-			nil)
-		(t (let ((spaceleft w))
-				(when (and w (or atsign (minusp number))) (decf spaceleft))
-      			(multiple-value-bind
-	  				(str len lpoint tpoint)
-	  				(ccl::flonum-to-string (abs number) spaceleft d k)
-					;;if caller specifically requested no fraction digits, suppress the
-					;;optional trailing zero
-					(when (and d (zerop d)) (setq tpoint nil))
-					(when w
-						(decf spaceleft len)
-	  					;;optional leading zero
-	  					(when lpoint
-							(if (or (> spaceleft 0) tpoint) ;force at least one digit
-								(decf spaceleft)
-								(setq lpoint nil)))
-	  					;;optional trailing zero
-	  					(when tpoint
-							(if (> spaceleft 0)
-								(decf spaceleft)
-								(setq tpoint nil))))
-					(cond ((and w (< spaceleft 0) ovf)
-	       					;;field width overflow
-							(dotimes (i w) (write-char ovf stream))
-							t)
-						  (t
-							(when w (dotimes (i spaceleft) (write-char pad stream)))
-							(if (minusp number)
-		   						(write-char #\- stream)
-		   						(if atsign (write-char #\+ stream)))
-	       					(when lpoint (write-char #\0 stream))
-	       					(write-string str stream)
-	       					(when tpoint (write-char #\0 stream))
-	       					nil)))))))
+  (cond
+    ((and (not k) (not (or w d)))
+     (prin1 number stream)
+     nil)
+    (t (let ((spaceleft w))
+	 (when (and w (or atsign (minusp number))) (decf spaceleft))
+      	 (multiple-value-bind
+	       (str len lpoint tpoint)
+	     (ccl::flonum-to-string (abs number) spaceleft d k)
+	   ;;if caller specifically requested no fraction digits, suppress the
+	   ;;optional trailing zero
+	   (when (and d (zerop d)) (setq tpoint nil))
+	   (when w
+	     (decf spaceleft len)
+	     ;;optional leading zero
+	     (when lpoint
+	       (if (or (> spaceleft 0) tpoint) ;force at least one digit
+		   (decf spaceleft)
+		   (setq lpoint nil)))
+	     ;;optional trailing zero
+	     (when tpoint
+	       (if (> spaceleft 0)
+		   (decf spaceleft)
+		   (setq tpoint nil))))
+	   (cond ((and w (< spaceleft 0) ovf)
+	       	  ;;field width overflow
+		  (dotimes (i w) (write-char ovf stream))
+		  t)
+		 (t
+		  (when w (dotimes (i spaceleft) (write-char pad stream)))
+		  (if (minusp number)
+		      (write-char #\- stream)
+		      (if atsign (write-char #\+ stream)))
+	       	  (when lpoint (write-char #\0 stream))
+	       	  (write-string str stream)
+	       	  (when tpoint (write-char #\0 stream))
+	       	  nil)))))))
 
 (defun format-fixed (stream number w d k ovf pad atsign)
   (if (floatp number)
@@ -521,42 +521,42 @@
 			      w 1 0 #\space t))))
 
 (defun format-general-aux (stream number w d e k ovf pad marker atsign)
-	(multiple-value-bind (ignore n)
-		(ccl::scale-exponent (abs number))
-		(declare (ignore ignore))
-	    ;;Default d if omitted.  The procedure is taken directly
-	    ;;from the definition given in the manual, and is not
-	    ;;very efficient, since we generate the digits twice.
-	    ;;Future maintainers are encouraged to improve on this.
-	    (unless d
-	      	(multiple-value-bind (str len)
-				(ccl::flonum-to-string (abs number))
-				(declare (ignore str))
-				(let ((q (if (= len 1) 1 (1- len))))
-					(setq d (max q (min n 7))))))
-		(let* ((ee (if e (+ e 2) 4))
-			   (ww (if w (- w ee) nil))
-	   		   (dd (- d n)))
-			(cond ((<= 0 dd d)
-				   (let ((char (if (format-fixed-aux stream number ww dd nil
+  (multiple-value-bind (ignore n)
+      (ccl::scale-exponent (abs number))
+    (declare (ignore ignore))
+    ;;Default d if omitted.  The procedure is taken directly
+    ;;from the definition given in the manual, and is not
+    ;;very efficient, since we generate the digits twice.
+    ;;Future maintainers are encouraged to improve on this.
+    (unless d
+      (multiple-value-bind (str len)
+	  (ccl::flonum-to-string (abs number))
+	(declare (ignore str))
+	(let ((q (if (= len 1) 1 (1- len))))
+	  (setq d (max q (min n 7))))))
+    (let* ((ee (if e (+ e 2) 4))
+	   (ww (if w (- w ee) nil))
+	   (dd (- d n)))
+      (cond ((<= 0 dd d)
+	     (let ((char (if (format-fixed-aux stream number ww dd nil
 					       ovf pad atsign)
-									ovf #\space)))
-						(dotimes (i ee) (write-char char stream))))
-				 (t (format-exp-aux stream number w d e (or k 1) ovf pad marker atsign))))))
+			     ovf #\space)))
+	       (dotimes (i ee) (write-char char stream))))
+	    (t (format-exp-aux stream number w d e (or k 1) ovf pad marker atsign))))))
 
 (defun format-general (stream number w d e k ovf pad marker atsign)
   ;;The Excelsior edition does not say what to do if
   ;;the argument is not a float.  Here, we adopt the
   ;;conventions used by ~F and ~E.
-	(if (floatp number)
-		(format-general-aux stream number w d e k ovf pad marker atsign)
-		(if (rationalp number)
-	  		(format-general-aux stream
-				(coerce number 'single-float)
-			    w d e k ovf pad marker atsign)
-	  		(format-write-field stream
-				(decimal-string number)
-			    w 1 0 #\space t))))
+  (if (floatp number)
+      (format-general-aux stream number w d e k ovf pad marker atsign)
+      (if (rationalp number)
+	  (format-general-aux stream
+			      (coerce number 'single-float)
+			      w d e k ovf pad marker atsign)
+	  (format-write-field stream
+			      (decimal-string number)
+			      w 1 0 #\space t))))
 
 
 (defun format-exponential (stream number w d e k ovf pad marker atsign)
@@ -590,7 +590,7 @@
   (if (not (or w d))
       (prin1 number stream)
       (multiple-value-bind (num expt)
-			   (ccl::scale-exponent (abs number))
+	  (ccl::scale-exponent (abs number))
 	(let* ((expt (- expt k))
 	       (estr (decimal-string (abs expt)))
 	       (elen (if e (max (length estr) e) (length estr)))
@@ -604,7 +604,7 @@
 	  (if (and w ovf e (> elen e)) ;exponent overflow
 	      (dotimes (i w) (write-char ovf stream))
 	      (multiple-value-bind
-		  (fstr flen lpoint)
+		    (fstr flen lpoint)
 		  (ccl::flonum-to-string num spaceleft fdig k fmin)
 		(when w
 		  (decf spaceleft flen)
@@ -634,92 +634,92 @@
 			 (write-string estr stream)))))))))
 
 (cl::%set-format-dispatch-func #\E
-	#'(lambda (stream args index atsign-modifier colon-modifier control
-				&optional width digits exp-digits
-					scale overflow-char
-					padchar
-					exponent-char)
-		(declare (ignore control))
-		(when colon-modifier
-		    (error "Cannot specify the colon modifier ~~E format directive."))
-		(setq args (nthcdr index args))
-		(if (null args)
-			(error "Not enough args for ~~E format directive"))
+			       #'(lambda (stream args index atsign-modifier colon-modifier control
+					  &optional width digits exp-digits
+					    scale overflow-char
+					    padchar
+					    exponent-char)
+				   (declare (ignore control))
+				   (when colon-modifier
+				     (error "Cannot specify the colon modifier ~~E format directive."))
+				   (setq args (nthcdr index args))
+				   (if (null args)
+				       (error "Not enough args for ~~E format directive"))
 
-		;; initialize defaults
-		(unless padchar (setf padchar #\Space))
-		(unless scale (setf scale 1))
-		(if (integerp overflow-char)
-			(setf overflow-char (int-char overflow-char)))
-		(if (integerp padchar)
-			(setf padchar (int-char padchar)))
-		(if (integerp exponent-char)
-			(setf exponent-char (int-char exponent-char)))
+				   ;; initialize defaults
+				   (unless padchar (setf padchar #\Space))
+				   (unless scale (setf scale 1))
+				   (if (integerp overflow-char)
+				       (setf overflow-char (int-char overflow-char)))
+				   (if (integerp padchar)
+				       (setf padchar (int-char padchar)))
+				   (if (integerp exponent-char)
+				       (setf exponent-char (int-char exponent-char)))
 
-		(format-exponential stream (car args) width digits exp-digits scale
-			overflow-char padchar exponent-char atsign-modifier)
-		(1+ index)))
+				   (format-exponential stream (car args) width digits exp-digits scale
+						       overflow-char padchar exponent-char atsign-modifier)
+				   (1+ index)))
 
 (cl::%set-format-dispatch-func #\F
-	#'(lambda (stream args index atsign-modifier colon-modifier control
-				&optional width digits
-					scale overflow-char
-					padchar)
-		(declare (ignore control))
-		(when colon-modifier
-		    (error "Cannot specify the colon modifier with ~~F format directive."))
-		(setq args (nthcdr index args))
-		(if (null args)
-			(error "Not enough args for ~~F format directive"))
+			       #'(lambda (stream args index atsign-modifier colon-modifier control
+					  &optional width digits
+					    scale overflow-char
+					    padchar)
+				   (declare (ignore control))
+				   (when colon-modifier
+				     (error "Cannot specify the colon modifier with ~~F format directive."))
+				   (setq args (nthcdr index args))
+				   (if (null args)
+				       (error "Not enough args for ~~F format directive"))
 
-		(unless padchar (setf padchar #\Space))
-		(if (integerp overflow-char)
-			(setf overflow-char (int-char overflow-char)))
-		(if (integerp padchar)
-			(setf padchar (int-char padchar)))
+				   (unless padchar (setf padchar #\Space))
+				   (if (integerp overflow-char)
+				       (setf overflow-char (int-char overflow-char)))
+				   (if (integerp padchar)
+				       (setf padchar (int-char padchar)))
 
-		(format-fixed stream (car args) width digits scale
-			overflow-char padchar atsign-modifier)
-		(1+ index)))
+				   (format-fixed stream (car args) width digits scale
+						 overflow-char padchar atsign-modifier)
+				   (1+ index)))
 
 (cl::%set-format-dispatch-func #\G
-	#'(lambda (stream args index atsign-modifier colon-modifier control
-				&optional width digits exp-digits scale overflow-char padchar
-					exponent-char)
-		(declare (ignore control))
-		(when colon-modifier
-		    (error "Cannot specify the colon modifier with ~~G format directive."))
-		(setq args (nthcdr index args))
-		(if (null args)
-			(error "Not enough args for ~~G format directive"))
+			       #'(lambda (stream args index atsign-modifier colon-modifier control
+					  &optional width digits exp-digits scale overflow-char padchar
+					    exponent-char)
+				   (declare (ignore control))
+				   (when colon-modifier
+				     (error "Cannot specify the colon modifier with ~~G format directive."))
+				   (setq args (nthcdr index args))
+				   (if (null args)
+				       (error "Not enough args for ~~G format directive"))
 
-		;; initialize defaults
-		(unless padchar (setf padchar #\Space))
-		(if (integerp overflow-char)
-			(setf overflow-char (int-char overflow-char)))
-		(if (integerp padchar)
-			(setf padchar (int-char padchar)))
-		(if (integerp exponent-char)
-			(setf exponent-char (int-char exponent-char)))
+				   ;; initialize defaults
+				   (unless padchar (setf padchar #\Space))
+				   (if (integerp overflow-char)
+				       (setf overflow-char (int-char overflow-char)))
+				   (if (integerp padchar)
+				       (setf padchar (int-char padchar)))
+				   (if (integerp exponent-char)
+				       (setf exponent-char (int-char exponent-char)))
 
-		(format-general stream (car args) width digits exp-digits scale
-			overflow-char padchar exponent-char atsign-modifier)
-		(1+ index)))
+				   (format-general stream (car args) width digits exp-digits scale
+						   overflow-char padchar exponent-char atsign-modifier)
+				   (1+ index)))
 
 (cl::%set-format-dispatch-func #\$
-	#'(lambda (stream args index atsign-modifier colon-modifier control
-				&optional digits n width padchar)
-		(declare (ignore control atsign-modifier colon-modifier n)) ;; need to implement these
-		(setq args (nthcdr index args))
-		(if (null args)
-			(error "Not enough args for ~~$ format directive"))
+			       #'(lambda (stream args index atsign-modifier colon-modifier control
+					  &optional digits n width padchar)
+				   (declare (ignore control atsign-modifier colon-modifier n)) ;; need to implement these
+				   (setq args (nthcdr index args))
+				   (if (null args)
+				       (error "Not enough args for ~~$ format directive"))
 
-		(unless padchar (setf padchar #\Space))
-		(if (integerp padchar)
-			(setf padchar (int-char padchar)))
-		(format-fixed stream (car args) width (if digits digits 2) nil
-			nil padchar nil)
-		(1+ index)))
+				   (unless padchar (setf padchar #\Space))
+				   (if (integerp padchar)
+				       (setf padchar (int-char padchar)))
+				   (format-fixed stream (car args) width (if digits digits 2) nil
+						 nil padchar nil)
+				   (1+ index)))
 
 ;;; Redefine this to handle infinity and NAN.
 ;;; Used by WRITE

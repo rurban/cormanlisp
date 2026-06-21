@@ -12,12 +12,12 @@
 ;; *debug-io* is not available?
 
 (defun expand-snooper (stream char)
-    (declare (ignore char))
+  (declare (ignore char))
   (let ((form (read stream t nil t))
         (newsym (gensym)))
     `(let* ((,newsym ,form))
-      (format *snooper-output* "?: ~S~%"
-       ,newsym)
-      ,newsym)))
+       (format *snooper-output* "?: ~S~%"
+	       ,newsym)
+       ,newsym)))
 
 (set-macro-character #\? #'expand-snooper)

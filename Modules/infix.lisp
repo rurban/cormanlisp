@@ -349,21 +349,21 @@
    the operator to the left."
   (let ((left (get-first-token stream)))
     (loop
-      (setq left (post-process-expression left))
-      (let ((peeked-token (peek-token stream)))
-	(let ((fancy-p (fancy-number-format-p left peeked-token stream)))
-	  (when fancy-p
-	    ;; i.e., we've got a number like 1e-3 or 1e+3 or 1f-1
-	    (setq left fancy-p
-		  peeked-token (peek-token stream))))
-	(unless (or (operator-lessp previous-operator peeked-token)
-		    (and (same-operator-p peeked-token previous-operator)
-			 (operator-right-associative-p previous-operator)))
-	  ;; The loop should continue when the peeked operator is
-	  ;; either superior in precedence to the previous operator,
-	  ;; or the same operator and right-associative.
-	  (return left)))
-      (setq left (get-next-token stream left)))))
+     (setq left (post-process-expression left))
+     (let ((peeked-token (peek-token stream)))
+       (let ((fancy-p (fancy-number-format-p left peeked-token stream)))
+	 (when fancy-p
+	   ;; i.e., we've got a number like 1e-3 or 1e+3 or 1f-1
+	   (setq left fancy-p
+		 peeked-token (peek-token stream))))
+       (unless (or (operator-lessp previous-operator peeked-token)
+		   (and (same-operator-p peeked-token previous-operator)
+			(operator-right-associative-p previous-operator)))
+	 ;; The loop should continue when the peeked operator is
+	 ;; either superior in precedence to the previous operator,
+	 ;; or the same operator and right-associative.
+	 (return left)))
+     (setq left (get-next-token stream left)))))
 
 (defun get-first-token (stream)
   (let ((token (read-token stream)))
@@ -413,26 +413,26 @@
 ;;; ********************************
 
 (defparameter *operator-ordering*
-    '(( \[ \( \! )			; \[ is array reference
-      ( ^^ )				; exponentiation
-      ( ~ )				; lognot
-      ( * /  % )			; % is mod
-      ( + - )
-      ( << >> )
-      ( < == > <= != >= )
-      ( & )				; logand
-      ( ^ )				; logxor
-      ( \| )				; logior
-      ( not )
-      ( and )
-      ( or )
-      ;; Where should setf and friends go in the precedence?
-      ( = += -= *= /= )
-      ( \, )				; progn (statement delimiter)
-      ( if )
-      ( then else )
-      ( \] \) )
-      ( %infix-end-token% ))		; end of infix expression
+  '(( \[ \( \! )			; \[ is array reference
+    ( ^^ )				; exponentiation
+    ( ~ )				; lognot
+    ( * /  % )			; % is mod
+    ( + - )
+    ( << >> )
+    ( < == > <= != >= )
+    ( & )				; logand
+    ( ^ )				; logxor
+    ( \| )				; logior
+    ( not )
+    ( and )
+    ( or )
+    ;; Where should setf and friends go in the precedence?
+    ( = += -= *= /= )
+    ( \, )				; progn (statement delimiter)
+    ( if )
+    ( then else )
+    ( \] \) )
+    ( %infix-end-token% ))		; end of infix expression
   "Ordered list of operators of equal precedence.")
 
 (defun operator-lessp (op1 op2)
@@ -463,8 +463,8 @@
 
 (eval-when (compile load eval)
   (defmacro define-token-operator (operator-name &key
-						 (prefix nil prefix-p)
-						 (infix nil infix-p))
+						   (prefix nil prefix-p)
+						   (infix nil infix-p))
     `(progn
        (pushnew ',operator-name *token-operators*)
        ,(when prefix-p
@@ -757,12 +757,12 @@
 #|
 ;;; Commented out because no longer using $ as the macro character.
 (define-character-tokenization #\$
-    #'(lambda (stream char)
-	(declare (ignore stream char))
-	'%infix-end-token%))
+#'(lambda (stream char)
+(declare (ignore stream char))
+'%infix-end-token%))
 (define-token-operator %infix-end-token%
-    :infix (infix-error "Prematurely terminated infix expression")
-    :prefix (infix-error "Prematurely terminated infix expression"))
+:infix (infix-error "Prematurely terminated infix expression")
+:prefix (infix-error "Prematurely terminated infix expression"))
 |#
 
 (define-character-tokenization #\;
@@ -772,7 +772,7 @@
 		   (peek-char nil stream t nil t)))
 	    ((or (char= char #\newline) (char= char #\return)
 		 ;; was #\$
-;		 (char= char #\))
+					;		 (char= char #\))
 		 )
 	     ;; Gobble characters until the end of the line or the
 	     ;; end of the input.
@@ -838,160 +838,160 @@
 ;;; Prints out all the tests that fail and a count of the number of failures.
 
 (defparameter *test-cases*
-    ;; Note that in strings, we have to slashify \ as \\.
-    '(("1 * +2"         (* 1 2))
-      ("1 * -2"         (* 1 (- 2)))
-      ("1 * /2"         (* 1 (/ 2)))
-      ("/2"             (/ 2))
-      ("not true"       (not true))
-      ("foo\\-bar"     foo-bar)
-      ("a + b-c"       (+ a b (- c)))
-      ("a + b\\-c"      (+ a b-c))
-      ("f\\oo"          |FoO|)
-      ("!foo-bar * 2"  (* foo-bar 2))
-      ("!(foo bar baz)" (foo bar baz))
-      ("!foo-bar "     foo-bar)
-      ;; The following now longer gives an eof error, since the close
-      ;; parenthesis terminates the token.
-      ("!foo-bar"      foo-bar)		; eof error -- ! eats the close $
-      ("a+-b"          (+ a (- b)))
-      ("a+b"           (+ a b))
-      ("a+b*c"         (+ a (* b c)))
-      ("a+b+c"         (+ a b c))
-      ("a+b-c"         (+ a b (- c)))
-      ("a+b-c+d"       (+ a b (- c) d))
-      ("a+b-c-d"       (+ a b (- c) (- d)))
-      ("a-b"           (- a b))
-      ("a*b"           (* a b))
-      ("a*b*c"         (* a b c))
-      ("a*b+c"         (+ (* a b) c))
-      ("a/b"           (/ a b))
-      ("a^^b"          (expt a b))
-      ("foo/-bar"      (/ foo (- bar)))
-      ("1+2*3^^4"       (+ 1 (* 2 (expt 3 4))))
-      ("1+2*3^^4+5"     (+ 1 (* 2 (expt 3 4)) 5))
-      ("2*3^^4+1"       (+ (* 2 (expt 3 4)) 1))
-      ("2+3^^4*5"       (+ 2 (* (expt 3 4) 5)))
-      ("2^^3^^4"        (expt 2 (expt 3 4)))
-      ("x^^2 + y^^2"    (+ (expt x 2) (expt y 2)))
-      ("(1+2)/3"       (/ (+ 1 2) 3))
-      ("(a=b)"         (setq a b))
-      ("(a=b,b=c)"     (progn (setq a b) (setq b c)))
-      ("1*(2+3)"       (* 1 (+ 2 3)))
-      ("1+2/3"         (+ 1 (/ 2 3)))
-      ("a,b"           (progn a b))
-      ("a,b,c"         (progn a b c))
-      ("foo(a,b,(c,d))" (foo a b (progn c d)))
-      ("foo(a,b,c)"    (foo a b c))
-      ("(a+b,c)"       (progn (+ a b) c))
-      ("1"             1)
-      ("-1"            (- 1))
-      ("+1"            1)
-      ("1."            1)
-      ("1.1"           1.1)
-      ("1e3"           1000.0)
-      ("1e-3"          0.001)
-      ("1f-3"          1f-3)
-      ("1e-3e"         (- 1e0 3e0))
-      ("!1e-3 "        0.001)
-      ("a and b and c" (and a b c))
-      ("a and b or c"  (or (and a b) c))
-      ("a and b"       (and a b))
-      ("a or b and c"  (or a (and b c)))
-      ("a or b"        (or a b))
-      ("a<b and b<c"   (and (< a b) (< b c)))
-      ("if (if a then b else c) then e" (when (if a b c) e))
-      ("if 1 then 2 else 3+4"  (if 1 2 (+ 3 4)))
-      ("(if 1 then 2 else 3)+4"  (+ (if 1 2 3) 4))
-      ("if a < b then b else a"   (if (< a b) b a))
-      ("if a and b then c and d else e and f"
-       (if (and a b) (and c d) (and e f)))
-      ("if a or b then c or d else e or f" (if (or a b) (or c d) (or e f)))
-      ("if a then (if b then c else d) else e"  (if a (if b c d) e))
-      ("if a then (if b then c) else d"  (if a (when b c) d))
-      ("if a then b else c"       (if a b c))
-      ("if a then b"              (when a b))
-      ("if a then if b then c else d else e" (if a (if b c d) e))
-      ("if a then if b then c else d"  (when a (if b c d)))
-      ("if if a then b else c then e" (when (if a b c) e))
-      ("if not a and not b then c" (when (and (not a) (not b)) c))
-      ("if not a then not b else not c and d"
-       (if (not a) (not b) (and (not c) d)))
-      ("not a and not b" (and (not a) (not b)))
-      ("not a or not b" (or (not a) (not b)))
-      ("not a<b and not b<c"   (and (not (< a b)) (not (< b c))))
-      ("not a<b"       (not (< a b)))
-      ("a[i,k]*b[j,k]"          (* (aref a i k) (aref b j k)))
-      ("foo(bar)=foo[bar,baz]"  (setf (foo bar) (aref foo bar baz)))
-      ("foo(bar,baz)"           (foo bar baz))
-      ("foo[bar,baz]"           (aref foo bar baz))
-      ("foo[bar,baz]=barf"      (setf (aref foo bar baz) barf))
-      ("max = if a < b then b else a"   (setq max (if (< a b) b a)))
-      ("a < b < c"     (< A B C))
-      ("a < b <= c"    (and (< a b) (<= b c)))
-      ("a <= b <= c"   (<= A B C))
-      ("a <= b <= c"   (<= A B C))
-      ("a!=b and b<c"  (and (not (= a b)) (< b c)))
-      ("a!=b"          (not (= a b)))
-      ("a<b"           (< a b))
-      ("a==b"          (= a b))
-      ("a*b(c)+d"      (+ (* a (b c)) d))
-      ("a+b(c)*d"      (+ a (* (b c) d)))
-      ("a+b(c)+d"      (+ a (b c) d))
-      ("d+a*b(c)"      (+ d (* a (b c))))
-      ("+a+b"          (+ a b))
-      ("-a+b"          (+ (- a) b))
-      ("-a-b"          (+ (- a) (- b)))
-      ("-a-b-c"        (+ (- a) (- b) (- c)))
-      ("a*b/c"         (/ (* a b) c))
-      ("a+b-c"         (+ a b (- c)))
-      ("a-b-c"         (- a b c))
-      ("a/b*c"         (* (/ a b) c))
-      ("a/b/c"         (/ a b c))
-      ("/a/b"          (/ (* a b)))
-      ("a^^b^^c"         (expt a (expt b c)))
-      ("a(d)^^b^^c"      (expt (a d) (expt b c)))
-      ("a<b+c<d"       (< a (+ b c) d))
-      ("1*~2+3"        (+ (* 1 (lognot 2)) 3))
-      ("1+~2*3"        (+ 1 (* (lognot 2) 3)))
-      ("1+~2+3"        (+ 1 (lognot 2) 3))
-      ("f(a)*=g(b)"    (setf (f a) (* (f a) (g b))))
-      ("f(a)+=g(b)"    (incf (f a) (g b)))
-      ("f(a)-=g(b)"    (decf (f a) (g b)))
-      ("f(a)/=g(b)"    (setf (f a) (/ (f a) (g b))))
-      ("a&b"           (logand a b))
-      ("a^b"           (logxor a b))
-      ("a|b"           (logior a b))
-      ("a<<b"          (ash a b))
-      ("a>>b"          (ash a (- b)))
-      ("~a"            (lognot a))
-      ("a&&b"          (and a b))
-      ("a||b"          (or a b))
-      ("a%b"           (mod a b))
+  ;; Note that in strings, we have to slashify \ as \\.
+  '(("1 * +2"         (* 1 2))
+    ("1 * -2"         (* 1 (- 2)))
+    ("1 * /2"         (* 1 (/ 2)))
+    ("/2"             (/ 2))
+    ("not true"       (not true))
+    ("foo\\-bar"     foo-bar)
+    ("a + b-c"       (+ a b (- c)))
+    ("a + b\\-c"      (+ a b-c))
+    ("f\\oo"          |FoO|)
+    ("!foo-bar * 2"  (* foo-bar 2))
+    ("!(foo bar baz)" (foo bar baz))
+    ("!foo-bar "     foo-bar)
+    ;; The following now longer gives an eof error, since the close
+    ;; parenthesis terminates the token.
+    ("!foo-bar"      foo-bar)		; eof error -- ! eats the close $
+    ("a+-b"          (+ a (- b)))
+    ("a+b"           (+ a b))
+    ("a+b*c"         (+ a (* b c)))
+    ("a+b+c"         (+ a b c))
+    ("a+b-c"         (+ a b (- c)))
+    ("a+b-c+d"       (+ a b (- c) d))
+    ("a+b-c-d"       (+ a b (- c) (- d)))
+    ("a-b"           (- a b))
+    ("a*b"           (* a b))
+    ("a*b*c"         (* a b c))
+    ("a*b+c"         (+ (* a b) c))
+    ("a/b"           (/ a b))
+    ("a^^b"          (expt a b))
+    ("foo/-bar"      (/ foo (- bar)))
+    ("1+2*3^^4"       (+ 1 (* 2 (expt 3 4))))
+    ("1+2*3^^4+5"     (+ 1 (* 2 (expt 3 4)) 5))
+    ("2*3^^4+1"       (+ (* 2 (expt 3 4)) 1))
+    ("2+3^^4*5"       (+ 2 (* (expt 3 4) 5)))
+    ("2^^3^^4"        (expt 2 (expt 3 4)))
+    ("x^^2 + y^^2"    (+ (expt x 2) (expt y 2)))
+    ("(1+2)/3"       (/ (+ 1 2) 3))
+    ("(a=b)"         (setq a b))
+    ("(a=b,b=c)"     (progn (setq a b) (setq b c)))
+    ("1*(2+3)"       (* 1 (+ 2 3)))
+    ("1+2/3"         (+ 1 (/ 2 3)))
+    ("a,b"           (progn a b))
+    ("a,b,c"         (progn a b c))
+    ("foo(a,b,(c,d))" (foo a b (progn c d)))
+    ("foo(a,b,c)"    (foo a b c))
+    ("(a+b,c)"       (progn (+ a b) c))
+    ("1"             1)
+    ("-1"            (- 1))
+    ("+1"            1)
+    ("1."            1)
+    ("1.1"           1.1)
+    ("1e3"           1000.0)
+    ("1e-3"          0.001)
+    ("1f-3"          1f-3)
+    ("1e-3e"         (- 1e0 3e0))
+    ("!1e-3 "        0.001)
+    ("a and b and c" (and a b c))
+    ("a and b or c"  (or (and a b) c))
+    ("a and b"       (and a b))
+    ("a or b and c"  (or a (and b c)))
+    ("a or b"        (or a b))
+    ("a<b and b<c"   (and (< a b) (< b c)))
+    ("if (if a then b else c) then e" (when (if a b c) e))
+    ("if 1 then 2 else 3+4"  (if 1 2 (+ 3 4)))
+    ("(if 1 then 2 else 3)+4"  (+ (if 1 2 3) 4))
+    ("if a < b then b else a"   (if (< a b) b a))
+    ("if a and b then c and d else e and f"
+     (if (and a b) (and c d) (and e f)))
+    ("if a or b then c or d else e or f" (if (or a b) (or c d) (or e f)))
+    ("if a then (if b then c else d) else e"  (if a (if b c d) e))
+    ("if a then (if b then c) else d"  (if a (when b c) d))
+    ("if a then b else c"       (if a b c))
+    ("if a then b"              (when a b))
+    ("if a then if b then c else d else e" (if a (if b c d) e))
+    ("if a then if b then c else d"  (when a (if b c d)))
+    ("if if a then b else c then e" (when (if a b c) e))
+    ("if not a and not b then c" (when (and (not a) (not b)) c))
+    ("if not a then not b else not c and d"
+     (if (not a) (not b) (and (not c) d)))
+    ("not a and not b" (and (not a) (not b)))
+    ("not a or not b" (or (not a) (not b)))
+    ("not a<b and not b<c"   (and (not (< a b)) (not (< b c))))
+    ("not a<b"       (not (< a b)))
+    ("a[i,k]*b[j,k]"          (* (aref a i k) (aref b j k)))
+    ("foo(bar)=foo[bar,baz]"  (setf (foo bar) (aref foo bar baz)))
+    ("foo(bar,baz)"           (foo bar baz))
+    ("foo[bar,baz]"           (aref foo bar baz))
+    ("foo[bar,baz]=barf"      (setf (aref foo bar baz) barf))
+    ("max = if a < b then b else a"   (setq max (if (< a b) b a)))
+    ("a < b < c"     (< A B C))
+    ("a < b <= c"    (and (< a b) (<= b c)))
+    ("a <= b <= c"   (<= A B C))
+    ("a <= b <= c"   (<= A B C))
+    ("a!=b and b<c"  (and (not (= a b)) (< b c)))
+    ("a!=b"          (not (= a b)))
+    ("a<b"           (< a b))
+    ("a==b"          (= a b))
+    ("a*b(c)+d"      (+ (* a (b c)) d))
+    ("a+b(c)*d"      (+ a (* (b c) d)))
+    ("a+b(c)+d"      (+ a (b c) d))
+    ("d+a*b(c)"      (+ d (* a (b c))))
+    ("+a+b"          (+ a b))
+    ("-a+b"          (+ (- a) b))
+    ("-a-b"          (+ (- a) (- b)))
+    ("-a-b-c"        (+ (- a) (- b) (- c)))
+    ("a*b/c"         (/ (* a b) c))
+    ("a+b-c"         (+ a b (- c)))
+    ("a-b-c"         (- a b c))
+    ("a/b*c"         (* (/ a b) c))
+    ("a/b/c"         (/ a b c))
+    ("/a/b"          (/ (* a b)))
+    ("a^^b^^c"         (expt a (expt b c)))
+    ("a(d)^^b^^c"      (expt (a d) (expt b c)))
+    ("a<b+c<d"       (< a (+ b c) d))
+    ("1*~2+3"        (+ (* 1 (lognot 2)) 3))
+    ("1+~2*3"        (+ 1 (* (lognot 2) 3)))
+    ("1+~2+3"        (+ 1 (lognot 2) 3))
+    ("f(a)*=g(b)"    (setf (f a) (* (f a) (g b))))
+    ("f(a)+=g(b)"    (incf (f a) (g b)))
+    ("f(a)-=g(b)"    (decf (f a) (g b)))
+    ("f(a)/=g(b)"    (setf (f a) (/ (f a) (g b))))
+    ("a&b"           (logand a b))
+    ("a^b"           (logxor a b))
+    ("a|b"           (logior a b))
+    ("a<<b"          (ash a b))
+    ("a>>b"          (ash a (- b)))
+    ("~a"            (lognot a))
+    ("a&&b"          (and a b))
+    ("a||b"          (or a b))
+    ("a%b"           (mod a b))
 
-      ;; Comment character -- must have carriage return after semicolon.
-      ("x^^2   ; the x coordinate
+    ;; Comment character -- must have carriage return after semicolon.
+    ("x^^2   ; the x coordinate
         + y^^2 ; the y coordinate" :error)
-      ("x^^2   ; the x coordinate
+    ("x^^2   ; the x coordinate
         + y^^2 ; the y coordinate
         "              (+ (expt x 2) (expt y 2)))
 
-      ;; Errors
-      ("foo(bar,baz"   :error)		; premature termination
-      ;; The following no longer gives an error
-      ("foo(bar,baz))" (foo bar baz))	; extra close parenthesis
-      ("foo[bar,baz]]" :error)		; extra close bracket
-      ("[foo,bar]"     :error)		; AREF is not a prefix operator
-      ("and a"         :error)		; AND is not a prefix operator
-      ("< a"           :error)		; < is not a prefix operator
-      ("=bar"         :error)		; SETF is not a prefix operator
-      ("*bar"          :error)		; * is not a prefix operator
-      ("a not b"       :error)		; NOT is not an infix operator
-      ("a if b then c" :error)		; IF is not an infix operator
-      (""              :error)		; premature termination (empty clause)
-      (")a"            :error)		; left parent is not a prefix operator
-      ("]a"            :error)		; left bracket is not a prefix operator
-      ))
+    ;; Errors
+    ("foo(bar,baz"   :error)		; premature termination
+    ;; The following no longer gives an error
+    ("foo(bar,baz))" (foo bar baz))	; extra close parenthesis
+    ("foo[bar,baz]]" :error)		; extra close bracket
+    ("[foo,bar]"     :error)		; AREF is not a prefix operator
+    ("and a"         :error)		; AND is not a prefix operator
+    ("< a"           :error)		; < is not a prefix operator
+    ("=bar"         :error)		; SETF is not a prefix operator
+    ("*bar"          :error)		; * is not a prefix operator
+    ("a not b"       :error)		; NOT is not an infix operator
+    ("a if b then c" :error)		; IF is not an infix operator
+    (""              :error)		; premature termination (empty clause)
+    (")a"            :error)		; left parent is not a prefix operator
+    ("]a"            :error)		; left bracket is not a prefix operator
+    ))
 
 (defun test-infix (&optional (tests *test-cases*))
   (let ((count 0))
@@ -1006,8 +1006,8 @@
   (multiple-value-bind (value error)
       (let ((*package* (find-package "INFIX")))
 	(ignore-errors
-	 (values (read-from-string (concatenate 'string "#I(" string ")")
-				   t nil))))
+	  (values (read-from-string (concatenate 'string "#I(" string ")")
+				    t nil))))
     (cond (error
 	   (cond ((eq result :error)
 		  t)

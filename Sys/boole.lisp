@@ -22,39 +22,39 @@
 
 
 (defun boole (op i1 i2)
-	(case op
-		(#.boole-clr
-			(check-type i1 integer) (check-type i2 integer) 0)
-		(#.boole-and
-			(logand i1 i2))
-		(#.boole-andc1
-			(logandc1 i1 i2))
-		(#.boole-2
-			(check-type i1 integer) (check-type i2 integer) i2)
-		(#.boole-andc2
-			(logandc2 i1 i2))
-		(#.boole-1
-			(check-type i1 integer) (check-type i2 integer) i1)
-		(#.boole-xor
-			(logxor i1 i2))
-		(#.boole-ior
-			(logior i1 i2))
-		(#.boole-nor
-			(lognor i1 i2))
-		(#.boole-eqv
-			(logeqv i1 i2))
-		(#.boole-c1
-			(check-type i2 integer) (lognot i1))
-		(#.boole-orc1
-			(logorc1 i1 i2))
-		(#.boole-c2
-			(check-type i1 integer) (lognot i2))
-		(#.boole-orc2
-			(logorc2 i1 i2))
-		(#.boole-nand
-			(lognand i1 i2))
-		(#.boole-set
-			(check-type i1 integer) (check-type i2 integer) -1)
-		(otherwise
-			(error (make-condition 'type-error
-				:datum op :expected-type "a valid boole- operation")))))
+  (case op
+    (#.boole-clr
+     (check-type i1 integer) (check-type i2 integer) 0)
+    (#.boole-and
+     (logand i1 i2))
+    (#.boole-andc1
+     (logandc1 i1 i2))
+    (#.boole-2
+     (check-type i1 integer) (check-type i2 integer) i2)
+    (#.boole-andc2
+     (logandc2 i1 i2))
+    (#.boole-1
+     (check-type i1 integer) (check-type i2 integer) i1)
+    (#.boole-xor
+     (logxor i1 i2))
+    (#.boole-ior
+     (logior i1 i2))
+    (#.boole-nor
+     (lognor i1 i2))
+    (#.boole-eqv
+     (logeqv i1 i2))
+    (#.boole-c1
+     (check-type i2 integer) (lognot i1))
+    (#.boole-orc1
+     (logorc1 i1 i2))
+    (#.boole-c2
+     (check-type i1 integer) (lognot i2))
+    (#.boole-orc2
+     (logorc2 i1 i2))
+    (#.boole-nand
+     (lognand i1 i2))
+    (#.boole-set
+     (check-type i1 integer) (check-type i2 integer) -1)
+    (otherwise
+     (error (make-condition 'type-error
+			    :datum op :expected-type "a valid boole- operation")))))

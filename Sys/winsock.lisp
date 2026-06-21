@@ -18,8 +18,8 @@
 
 #! (:export t :library "WS2_32")
 /*
- * Basic system type definitions, taken from the BSD file sys/types.h.
- */
+* Basic system type definitions, taken from the BSD file sys/types.h.
+*/
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;
 typedef unsigned int    u_int;
@@ -27,26 +27,26 @@ typedef unsigned long   u_long;
 typedef unsigned short  WORD;		// XXX RGC addition.
 
 /*
- * The new type to be used in all
- * instances which refer to sockets.
- */
+* The new type to be used in all
+* instances which refer to sockets.
+*/
 typedef u_int           SOCKET;
 
 /*
- * Select uses arrays of SOCKETs.  These macros manipulate such
- * arrays.  FD_SETSIZE may be defined by the user before including
- * this file, but the default here should be >= 64.
- *
- * CAVEAT IMPLEMENTOR and USER: THESE MACROS AND TYPES MUST BE
- * INCLUDED IN WINSOCK.H EXACTLY AS SHOWN HERE.
- */
+* Select uses arrays of SOCKETs.  These macros manipulate such
+* arrays.  FD_SETSIZE may be defined by the user before including
+* this file, but the default here should be >= 64.
+*
+* CAVEAT IMPLEMENTOR and USER: THESE MACROS AND TYPES MUST BE
+* INCLUDED IN WINSOCK.H EXACTLY AS SHOWN HERE.
+*/
 //#ifndef FD_SETSIZE
 #define FD_SETSIZE      64
 //#endif /* FD_SETSIZE */
 
 typedef struct fd_set {
-        u_int   fd_count;               /* how many are SET? */
-        SOCKET  fd_array[FD_SETSIZE];   /* an array of SOCKETs */
+u_int   fd_count;               /* how many are SET? */
+SOCKET  fd_array[FD_SETSIZE];   /* an array of SOCKETs */
 } fd_set;
 
 //#ifdef __cplusplus
@@ -61,24 +61,24 @@ typedef struct fd_set {
 
 /*
 #define FD_CLR(fd, set) do { \
-    u_int __i; \
-    for (__i = 0; __i < ((fd_set FAR *)(set))->fd_count ;
-          __i++) { \
-        if (((fd_set FAR *)(set))->fd_array[__i] == fd) { \
-            while (__i < ((fd_set FAR *)(set))->fd_count-1) { \
-                ((fd_set FAR *)(set))->fd_array[__i] = \
-                    ((fd_set FAR *)(set))->fd_array[__i+1]; \
-                __i++; \
-            } \
-            ((fd_set FAR *)(set))->fd_count--; \
-            break; \
-        } \
-    } \
+u_int __i; \
+for (__i = 0; __i < ((fd_set FAR *)(set))->fd_count ;
+         __i++) { \
+if (((fd_set FAR *)(set))->fd_array[__i] == fd) { \
+while (__i < ((fd_set FAR *)(set))->fd_count-1) { \
+((fd_set FAR *)(set))->fd_array[__i] = \
+((fd_set FAR *)(set))->fd_array[__i+1]; \
+__i++; \
+} \
+((fd_set FAR *)(set))->fd_count--; \
+break; \
+} \
+} \
 } while(0)
 
 #define FD_SET(fd, set) do { \
-    if (((fd_set FAR *)(set))->fd_count < FD_SETSIZE) \
-        ((fd_set FAR *)(set))->fd_array[((fd_set FAR *)(set))->fd_count++]=(fd);\
+if (((fd_set FAR *)(set))->fd_count < FD_SETSIZE) \
+((fd_set FAR *)(set))->fd_array[((fd_set FAR *)(set))->fd_count++]=(fd);\
 } while(0)
 
 #define FD_ZERO(set) (((fd_set FAR *)(set))->fd_count=0)
@@ -87,35 +87,35 @@ typedef struct fd_set {
 */
 
 /*
- * Structure used in select() call, taken from the BSD file sys/time.h.
- */
+* Structure used in select() call, taken from the BSD file sys/time.h.
+*/
 struct timeval {
-        long    tv_sec;         /* seconds */
-        long    tv_usec;        /* and microseconds */
+long    tv_sec;         /* seconds */
+long    tv_usec;        /* and microseconds */
 };
 
 /*
- * Operations on timevals.
- *
- * NB: timercmp does not work for >= or <=.
- */
+* Operations on timevals.
+*
+* NB: timercmp does not work for >= or <=.
+*/
 /*
 #define timerisset(tvp)         ((tvp)->tv_sec || (tvp)->tv_usec)
 #define timercmp(tvp, uvp, cmp) \
-        ((tvp)->tv_sec cmp (uvp)->tv_sec || \
-         (tvp)->tv_sec == (uvp)->tv_sec && (tvp)->tv_usec cmp (uvp)->tv_usec)
+((tvp)->tv_sec cmp (uvp)->tv_sec || \
+ (tvp)->tv_sec == (uvp)->tv_sec && (tvp)->tv_usec cmp (uvp)->tv_usec)
 #define timerclear(tvp)         (tvp)->tv_sec = (tvp)->tv_usec = 0
 */
 /*
- * Commands for ioctlsocket(),  taken from the BSD file fcntl.h.
- *
- *
- * Ioctl's have the command encoded in the lower word,
- * and the size of any in or out parameters in the upper
- * word.  The high 2 bits of the upper word are used
- * to encode the in/out status of the parameter; for now
- * we restrict parameters to at most 128 bytes.
- */
+* Commands for ioctlsocket(),  taken from the BSD file fcntl.h.
+*
+*
+* Ioctl's have the command encoded in the lower word,
+* and the size of any in or out parameters in the upper
+* word.  The high 2 bits of the upper word are used
+* to encode the in/out status of the parameter; for now
+* we restrict parameters to at most 128 bytes.
+*/
 #define IOCPARM_MASK    0x7f            /* parameters must be < 128 bytes */
 #define IOC_VOID        0x20000000      /* no parameters */
 #define IOC_OUT         0x40000000      /* copy out parameters */

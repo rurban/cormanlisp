@@ -102,10 +102,10 @@
                 {\\fonttbl\\f0\\fswiss Helvetica;}~
                 \\fs20~
                 ~{~A\\par\\par ~}}"      ; each par used to end with
-                                         ; ~%, but resulting Rtf looks
-                                         ; strange (WinXP, WiX 3.0.x,
-                                         ; ?)
-                         pars)))
+					; ~%, but resulting Rtf looks
+					; strange (WinXP, WiX 3.0.x,
+					; ?)
+            pars)))
 
 (defun cleanup-hyperspec-terms (pars)
   (mapcar #'(lambda (par)
@@ -151,10 +151,10 @@
 
 
 (generate-license-rtf
-  (concatenate 'string *cormanlisp-directory* "LICENSE.txt")
-  (concatenate 'string *cormanlisp-directory* "HyperSpec-Legalese.text")
-  (concatenate 'string *cormanlisp-directory* "LICENSE.OpenSSL.txt")
-  (concatenate 'string *cormanlisp-directory* "CormanLispServer\\distorm\\COPYING")
-  (concatenate 'string *cormanlisp-directory* "zlib\\README")
-  (concatenate 'string *cormanlisp-directory* "Sys\\scmindent\\COPYING")
-  (concatenate 'string *cormanlisp-directory* "installer\\LICENSE.rtf"))
+ (concatenate 'string *cormanlisp-directory* "LICENSE.txt")
+ (concatenate 'string *cormanlisp-directory* "HyperSpec-Legalese.text")
+ (concatenate 'string *cormanlisp-directory* "LICENSE.OpenSSL.txt")
+ (concatenate 'string *cormanlisp-directory* "CormanLispServer\\distorm\\COPYING")
+ (concatenate 'string *cormanlisp-directory* "zlib\\README")
+ (concatenate 'string *cormanlisp-directory* "Sys\\scmindent\\COPYING")
+ (concatenate 'string *cormanlisp-directory* "installer\\LICENSE.rtf"))

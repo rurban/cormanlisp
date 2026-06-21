@@ -867,174 +867,174 @@ typedef struct _ACL_SIZE_INFORMATION {
 #define CONTEXT_DEBUG_REGISTERS	(CONTEXT_i386|0x00000010L)
 #define CONTEXT_FULL	(CONTEXT_CONTROL|CONTEXT_INTEGER|CONTEXT_SEGMENTS)
 typedef struct _FLOATING_SAVE_AREA {
-	DWORD	ControlWord;
-	DWORD	StatusWord;
-	DWORD	TagWord;
-	DWORD	ErrorOffset;
-	DWORD	ErrorSelector;
-	DWORD	DataOffset;
-	DWORD	DataSelector;
-	BYTE	RegisterArea[80];
-	DWORD	Cr0NpxState;
+DWORD	ControlWord;
+DWORD	StatusWord;
+DWORD	TagWord;
+DWORD	ErrorOffset;
+DWORD	ErrorSelector;
+DWORD	DataOffset;
+DWORD	DataSelector;
+BYTE	RegisterArea[80];
+DWORD	Cr0NpxState;
 } FLOATING_SAVE_AREA;
 typedef struct _CONTEXT {
-	DWORD	ContextFlags;
-	DWORD	Dr0;
-	DWORD	Dr1;
-	DWORD	Dr2;
-	DWORD	Dr3;
-	DWORD	Dr6;
-	DWORD	Dr7;
-	FLOATING_SAVE_AREA FloatSave;
-	DWORD	SegGs;
-	DWORD	SegFs;
-	DWORD	SegEs;
-	DWORD	SegDs;
-	DWORD	Edi;
-	DWORD	Esi;
-	DWORD	Ebx;
-	DWORD	Edx;
-	DWORD	Ecx;
-	DWORD	Eax;
-	DWORD	Ebp;
-	DWORD	Eip;
-	DWORD	SegCs;
-	DWORD	EFlags;
-	DWORD	Esp;
-	DWORD	SegSs;
+DWORD	ContextFlags;
+DWORD	Dr0;
+DWORD	Dr1;
+DWORD	Dr2;
+DWORD	Dr3;
+DWORD	Dr6;
+DWORD	Dr7;
+FLOATING_SAVE_AREA FloatSave;
+DWORD	SegGs;
+DWORD	SegFs;
+DWORD	SegEs;
+DWORD	SegDs;
+DWORD	Edi;
+DWORD	Esi;
+DWORD	Ebx;
+DWORD	Edx;
+DWORD	Ecx;
+DWORD	Eax;
+DWORD	Ebp;
+DWORD	Eip;
+DWORD	SegCs;
+DWORD	EFlags;
+DWORD	Esp;
+DWORD	SegSs;
 } CONTEXT,*PCONTEXT,*LPCONTEXT;
 !#
 
 #! (:export t :library "KERNEL32")
 typedef struct _EXCEPTION_RECORD {
-	DWORD ExceptionCode;
-	DWORD ExceptionFlags;
-	PVOID /*struct _EXCEPTION_RECORD **/ ExceptionRecord;
-	PVOID ExceptionAddress;
-	DWORD NumberParameters;
-	DWORD ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS];
+DWORD ExceptionCode;
+DWORD ExceptionFlags;
+PVOID /*struct _EXCEPTION_RECORD **/ ExceptionRecord;
+PVOID ExceptionAddress;
+DWORD NumberParameters;
+DWORD ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS];
 } EXCEPTION_RECORD,*PEXCEPTION_RECORD;
 typedef struct _EXCEPTION_POINTERS {
-	PEXCEPTION_RECORD ExceptionRecord;
-	PCONTEXT ContextRecord;
+PEXCEPTION_RECORD ExceptionRecord;
+PCONTEXT ContextRecord;
 } EXCEPTION_POINTERS,*PEXCEPTION_POINTERS,*LPEXCEPTION_POINTERS;
 
 typedef struct _LARGE_INTEGER {
-		DWORD LowPart;
-		LONG HighPart;
+DWORD LowPart;
+LONG HighPart;
 } LARGE_INTEGER,*PLARGE_INTEGER;
 
 typedef struct _ULARGE_INTEGER {
-		DWORD LowPart;
-		DWORD HighPart;
+DWORD LowPart;
+DWORD HighPart;
 } ULARGE_INTEGER,*PULARGE_INTEGER;
 
 typedef LARGE_INTEGER LUID;
 typedef LARGE_INTEGER *PLUID;
 typedef struct _LUID_AND_ATTRIBUTES {
-	LUID   Luid;
-	DWORD  Attributes;
+LUID   Luid;
+DWORD  Attributes;
 } LUID_AND_ATTRIBUTES;
 typedef LUID_AND_ATTRIBUTES LUID_AND_ATTRIBUTES_ARRAY[ANYSIZE_ARRAY];
 typedef LUID_AND_ATTRIBUTES_ARRAY *PLUID_AND_ATTRIBUTES_ARRAY;
 
 typedef struct _PRIVILEGE_SET {
-	DWORD PrivilegeCount;
-	DWORD Control;
-	LUID_AND_ATTRIBUTES Privilege[ANYSIZE_ARRAY];
+DWORD PrivilegeCount;
+DWORD Control;
+LUID_AND_ATTRIBUTES Privilege[ANYSIZE_ARRAY];
 } PRIVILEGE_SET,*PPRIVILEGE_SET;
 /*
 typedef enum _SECURITY_IMPERSONATION_LEVEL {
-	SecurityAnonymous,
-	SecurityIdentification,
-	SecurityImpersonation,
-	SecurityDelegation
+SecurityAnonymous,
+SecurityIdentification,
+SecurityImpersonation,
+SecurityDelegation
 } SECURITY_IMPERSONATION_LEVEL;
 */
 typedef int SECURITY_IMPERSONATION_LEVEL;
 typedef BOOLEAN SECURITY_CONTEXT_TRACKING_MODE;
 typedef BOOLEAN *PSECURITY_CONTEXT_TRACKING_MODE;
 typedef struct _SECURITY_QUALITY_OF_SERVICE {
-	DWORD Length;
-	SECURITY_IMPERSONATION_LEVEL ImpersonationLevel;
-	SECURITY_CONTEXT_TRACKING_MODE ContextTrackingMode;
-	BOOLEAN EffectiveOnly;
+DWORD Length;
+SECURITY_IMPERSONATION_LEVEL ImpersonationLevel;
+SECURITY_CONTEXT_TRACKING_MODE ContextTrackingMode;
+BOOLEAN EffectiveOnly;
 } SECURITY_QUALITY_OF_SERVICE,*PSECURITY_QUALITY_OF_SERVICE;
 typedef DWORD SECURITY_DESCRIPTOR;
 typedef PVOID PSECURITY_DESCRIPTOR;
 typedef PVOID PACCESS_TOKEN;
 typedef struct _SE_IMPERSONATION_STATE {
-	PACCESS_TOKEN Token;
-	BOOLEAN CopyOnOpen;
-	BOOLEAN EffectiveOnly;
-	SECURITY_IMPERSONATION_LEVEL Level;
+PACCESS_TOKEN Token;
+BOOLEAN CopyOnOpen;
+BOOLEAN EffectiveOnly;
+SECURITY_IMPERSONATION_LEVEL Level;
 } SE_IMPERSONATION_STATE,*PSE_IMPERSONATION_STATE;
 typedef struct _SID_AND_ATTRIBUTES {
-	PSID Sid;
-	DWORD Attributes;
+PSID Sid;
+DWORD Attributes;
 } SID_AND_ATTRIBUTES;
 typedef SID_AND_ATTRIBUTES SID_AND_ATTRIBUTES_ARRAY[ANYSIZE_ARRAY];
 typedef SID_AND_ATTRIBUTES_ARRAY *PSID_AND_ATTRIBUTES_ARRAY;
 typedef struct _TOKEN_SOURCE {
-	CHAR SourceName[8];
-	LUID SourceIdentifier;
+CHAR SourceName[8];
+LUID SourceIdentifier;
 } TOKEN_SOURCE;
 
 typedef struct _TOKEN_CONTROL {
-	LUID TokenId;
-	LUID AuthenticationId;
-	LUID ModifiedId;
-	TOKEN_SOURCE TokenSource;
+LUID TokenId;
+LUID AuthenticationId;
+LUID ModifiedId;
+TOKEN_SOURCE TokenSource;
 } TOKEN_CONTROL;
 typedef struct _TOKEN_DEFAULT_DACL {
-	PACL DefaultDacl;
+PACL DefaultDacl;
 } TOKEN_DEFAULT_DACL;
 typedef struct _TOKEN_GROUPS {
-	DWORD GroupCount;
-	SID_AND_ATTRIBUTES Groups[ANYSIZE_ARRAY];
+DWORD GroupCount;
+SID_AND_ATTRIBUTES Groups[ANYSIZE_ARRAY];
 } TOKEN_GROUPS,*PTOKEN_GROUPS,*LPTOKEN_GROUPS;
 typedef struct _TOKEN_OWNER {
-	PSID Owner;
+PSID Owner;
 } TOKEN_OWNER;
 typedef struct _TOKEN_PRIMARY_GROUP {
-	PSID PrimaryGroup;
+PSID PrimaryGroup;
 } TOKEN_PRIMARY_GROUP;
 typedef struct _TOKEN_PRIVILEGES {
-	DWORD PrivilegeCount;
-	LUID_AND_ATTRIBUTES Privileges[ANYSIZE_ARRAY];
+DWORD PrivilegeCount;
+LUID_AND_ATTRIBUTES Privileges[ANYSIZE_ARRAY];
 } TOKEN_PRIVILEGES,*PTOKEN_PRIVILEGES,*LPTOKEN_PRIVILEGES;
 
 //typedef enum tagTOKEN_TYPE { TokenPrimary=1,TokenImpersonation }TOKEN_TYPE;
 typedef int TOKEN_TYPE;
 typedef struct _TOKEN_STATISTICS {
-	LUID TokenId;
-	LUID AuthenticationId;
-	LARGE_INTEGER ExpirationTime;
-	TOKEN_TYPE TokenType;
-	SECURITY_IMPERSONATION_LEVEL ImpersonationLevel;
-	DWORD DynamicCharged;
-	DWORD DynamicAvailable;
-	DWORD GroupCount;
-	DWORD PrivilegeCount;
-	LUID ModifiedId;
+LUID TokenId;
+LUID AuthenticationId;
+LARGE_INTEGER ExpirationTime;
+TOKEN_TYPE TokenType;
+SECURITY_IMPERSONATION_LEVEL ImpersonationLevel;
+DWORD DynamicCharged;
+DWORD DynamicAvailable;
+DWORD GroupCount;
+DWORD PrivilegeCount;
+LUID ModifiedId;
 } TOKEN_STATISTICS;
 
 typedef struct _TOKEN_USER {
-	SID_AND_ATTRIBUTES User;
+SID_AND_ATTRIBUTES User;
 } TOKEN_USER;
 typedef struct _SID_IDENTIFIER_AUTHORITY {
-	BYTE Value[6];
+BYTE Value[6];
 } SID_IDENTIFIER_AUTHORITY,*PSID_IDENTIFIER_AUTHORITY,*LPSID_IDENTIFIER_AUTHORITY;
 typedef struct _SID {
-	BYTE  Revision;
-	BYTE  SubAuthorityCount;
-	SID_IDENTIFIER_AUTHORITY IdentifierAuthority;
-	DWORD SubAuthority[ANYSIZE_ARRAY];
+BYTE  Revision;
+BYTE  SubAuthorityCount;
+SID_IDENTIFIER_AUTHORITY IdentifierAuthority;
+DWORD SubAuthority[ANYSIZE_ARRAY];
 } SID, *PISID;
 typedef struct _SECURITY_ATTRIBUTES {
-	DWORD nLength;
-	LPVOID lpSecurityDescriptor;
-	BOOL bInheritHandle;
+DWORD nLength;
+LPVOID lpSecurityDescriptor;
+BOOL bInheritHandle;
 } SECURITY_ATTRIBUTES,*LPSECURITY_ATTRIBUTES;
 typedef DWORD SECURITY_INFORMATION;
 typedef SECURITY_INFORMATION *PSECURITY_INFORMATION;
@@ -1043,620 +1043,620 @@ typedef SECURITY_DESCRIPTOR_CONTROL *PSECURITY_DESCRIPTOR_CONTROL;
 
 /*
 typedef enum _TOKEN_INFORMATION_CLASS {
-	TokenUser=1,TokenGroups,TokenPrivileges,TokenOwner,
-	TokenPrimaryGroup,TokenDefaultDacl,TokenSource,TokenType,
-	TokenImpersonationLevel,TokenStatistics
+TokenUser=1,TokenGroups,TokenPrivileges,TokenOwner,
+TokenPrimaryGroup,TokenDefaultDacl,TokenSource,TokenType,
+TokenImpersonationLevel,TokenStatistics
 } TOKEN_INFORMATION_CLASS;
 */
 typedef int TOKEN_INFORMATION_CLASS;
 /*
 typedef enum _SID_NAME_USE {
-	SidTypeUser=1,SidTypeGroup,SidTypeDomain,SidTypeAlias,SidTypeWellKnownGroup,
-	SidTypeDeletedAccount,SidTypeInvalid,SidTypeUnknown
+SidTypeUser=1,SidTypeGroup,SidTypeDomain,SidTypeAlias,SidTypeWellKnownGroup,
+SidTypeDeletedAccount,SidTypeInvalid,SidTypeUnknown
 } SID_NAME_USE,*PSID_NAME_USE;
 */
 typedef int SID_NAME_USE;
 typedef SID_NAME_USE *PSID_NAME_USE;
 
 typedef struct _FILE_NOTIFY_INFORMATION {
-	DWORD NextEntryOffset;
-	DWORD Action;
-	DWORD FileNameLength;
-	WCHAR FileName[1];
+DWORD NextEntryOffset;
+DWORD Action;
+DWORD FileNameLength;
+WCHAR FileName[1];
 } FILE_NOTIFY_INFORMATION,*PFILE_NOTIFY_INFORMATION;
 typedef struct _TAPE_ERASE { ULONG Type; } TAPE_ERASE;
 typedef struct _TAPE_GET_DRIVE_PARAMETERS {
-	BOOLEAN ECC;
-	BOOLEAN Compression;
-	BOOLEAN DataPadding;
-	BOOLEAN ReportSetmarks;
-	ULONG DefaultBlockSize;
-	ULONG MaximumBlockSize;
-	ULONG MinimumBlockSize;
-	ULONG MaximumPartitionCount;
-	ULONG FeaturesLow;
-	ULONG FeaturesHigh;
-	ULONG EOTWarningZoneSize;
+BOOLEAN ECC;
+BOOLEAN Compression;
+BOOLEAN DataPadding;
+BOOLEAN ReportSetmarks;
+ULONG DefaultBlockSize;
+ULONG MaximumBlockSize;
+ULONG MinimumBlockSize;
+ULONG MaximumPartitionCount;
+ULONG FeaturesLow;
+ULONG FeaturesHigh;
+ULONG EOTWarningZoneSize;
 } TAPE_GET_DRIVE_PARAMETERS;
 
 typedef struct _TAPE_GET_MEDIA_PARAMETERS {
-	LARGE_INTEGER Capacity;
-	LARGE_INTEGER Remaining;
-	DWORD BlockSize;
-	DWORD PartitionCount;
-	BOOLEAN WriteProtected;
+LARGE_INTEGER Capacity;
+LARGE_INTEGER Remaining;
+DWORD BlockSize;
+DWORD PartitionCount;
+BOOLEAN WriteProtected;
 } TAPE_GET_MEDIA_PARAMETERS;
 typedef struct _TAPE_GET_POSITION {
-	ULONG Type;
-	ULONG Partition;
-	ULONG OffsetLow;
-	ULONG OffsetHigh;
+ULONG Type;
+ULONG Partition;
+ULONG OffsetLow;
+ULONG OffsetHigh;
 } TAPE_GET_POSITION;
 typedef struct _TAPE_PREPARE { ULONG Operation; } TAPE_PREPARE;
 typedef struct _TAPE_SET_DRIVE_PARAMETERS {
-	BOOLEAN ECC;
-	BOOLEAN Compression;
-	BOOLEAN DataPadding;
-	BOOLEAN ReportSetmarks;
-	ULONG EOTWarningZoneSize;
+BOOLEAN ECC;
+BOOLEAN Compression;
+BOOLEAN DataPadding;
+BOOLEAN ReportSetmarks;
+ULONG EOTWarningZoneSize;
 } TAPE_SET_DRIVE_PARAMETERS;
 typedef struct _TAPE_SET_MEDIA_PARAMETERS {	ULONG BlockSize; } TAPE_SET_MEDIA_PARAMETERS;
 typedef struct _TAPE_SET_POSITION {
-	ULONG Method;
-	ULONG Partition;
-	ULONG OffsetLow;
-	ULONG OffsetHigh;
+ULONG Method;
+ULONG Partition;
+ULONG OffsetLow;
+ULONG OffsetHigh;
 } TAPE_SET_POSITION;
 typedef struct _TAPE_WRITE_MARKS {
-	ULONG Type;
-	ULONG Count;
+ULONG Type;
+ULONG Count;
 } TAPE_WRITE_MARKS;
 
 typedef struct _MEMORY_BASIC_INFORMATION {
-	PVOID BaseAddress;
-	PVOID AllocationBase;
-	DWORD AllocationProtect;
-	DWORD RegionSize;
-	DWORD State;
-	DWORD Protect;
-	DWORD Type;
+PVOID BaseAddress;
+PVOID AllocationBase;
+DWORD AllocationProtect;
+DWORD RegionSize;
+DWORD State;
+DWORD Protect;
+DWORD Type;
 } MEMORY_BASIC_INFORMATION,*PMEMORY_BASIC_INFORMATION;
 typedef struct _MESSAGE_RESOURCE_ENTRY {
-	WORD Length;
-	WORD Flags;
-	BYTE Text[1];
+WORD Length;
+WORD Flags;
+BYTE Text[1];
 } MESSAGE_RESOURCE_ENTRY,*PMESSAGE_RESOURCE_ENTRY;
 typedef struct _MESSAGE_RESOURCE_BLOCK {
-	DWORD LowId;
-	DWORD HighId;
-	DWORD OffsetToEntries;
+DWORD LowId;
+DWORD HighId;
+DWORD OffsetToEntries;
 } MESSAGE_RESOURCE_BLOCK,*PMESSAGE_RESOURCE_BLOCK;
 typedef struct _MESSAGE_RESOURCE_DATA {
-	DWORD NumberOfBlocks;
-	MESSAGE_RESOURCE_BLOCK Blocks[1];
+DWORD NumberOfBlocks;
+MESSAGE_RESOURCE_BLOCK Blocks[1];
 } MESSAGE_RESOURCE_DATA,*PMESSAGE_RESOURCE_DATA;
 typedef struct _LIST_ENTRY {
-	VOID /*struct _LIST_ENTRY */ *Flink;
-	VOID /*struct _LIST_ENTRY */ *Blink;
+VOID /*struct _LIST_ENTRY */ *Flink;
+VOID /*struct _LIST_ENTRY */ *Blink;
 } LIST_ENTRY,*PLIST_ENTRY;
 
 typedef struct _RTL_CRITICAL_SECTION_DEBUG {
-	WORD Type;
-	WORD CreatorBackTraceIndex;
-	VOID /*struct _RTL_CRITICAL_SECTION*/ *CriticalSection;
-	LIST_ENTRY ProcessLocksList;
-	DWORD EntryCount;
-	DWORD ContentionCount;
-	DWORD Spare[2];
+WORD Type;
+WORD CreatorBackTraceIndex;
+VOID /*struct _RTL_CRITICAL_SECTION*/ *CriticalSection;
+LIST_ENTRY ProcessLocksList;
+DWORD EntryCount;
+DWORD ContentionCount;
+DWORD Spare[2];
 } RTL_CRITICAL_SECTION_DEBUG,*PRTL_CRITICAL_SECTION_DEBUG;
 typedef struct _RTL_CRITICAL_SECTION {
-	PRTL_CRITICAL_SECTION_DEBUG DebugInfo;
-	LONG LockCount;
-	LONG RecursionCount;
-	HANDLE OwningThread;
-	HANDLE LockSemaphore;
-	DWORD Reserved;
+PRTL_CRITICAL_SECTION_DEBUG DebugInfo;
+LONG LockCount;
+LONG RecursionCount;
+HANDLE OwningThread;
+HANDLE LockSemaphore;
+DWORD Reserved;
 } RTL_CRITICAL_SECTION,*PRTL_CRITICAL_SECTION;
 
 typedef struct _EVENTLOGRECORD {
-	DWORD Length;
-	DWORD Reserved;
-	DWORD RecordNumber;
-	DWORD TimeGenerated;
-	DWORD TimeWritten;
-	DWORD EventID;
-	WORD EventType;
-	WORD NumStrings;
-	WORD EventCategory;
-	WORD ReservedFlags;
-	DWORD ClosingRecordNumber;
-	DWORD StringOffset;
-	DWORD UserSidLength;
-	DWORD UserSidOffset;
-	DWORD DataLength;
-	DWORD DataOffset;
+DWORD Length;
+DWORD Reserved;
+DWORD RecordNumber;
+DWORD TimeGenerated;
+DWORD TimeWritten;
+DWORD EventID;
+WORD EventType;
+WORD NumStrings;
+WORD EventCategory;
+WORD ReservedFlags;
+DWORD ClosingRecordNumber;
+DWORD StringOffset;
+DWORD UserSidLength;
+DWORD UserSidOffset;
+DWORD DataLength;
+DWORD DataOffset;
 } EVENTLOGRECORD,*PEVENTLOGRECORD;
 typedef struct _IMAGE_VXD_HEADER {
-	WORD e32_magic;
-	BYTE e32_border;
-	BYTE e32_worder;
-	DWORD e32_level;
-	WORD e32_cpu;
-	WORD e32_os;
-	DWORD e32_ver;
-	DWORD e32_mflags;
-	DWORD e32_mpages;
-	DWORD e32_startobj;
-	DWORD e32_eip;
-	DWORD e32_stackobj;
-	DWORD e32_esp;
-	DWORD e32_pagesize;
-	DWORD e32_lastpagesize;
-	DWORD e32_fixupsize;
-	DWORD e32_fixupsum;
-	DWORD e32_ldrsize;
-	DWORD e32_ldrsum;
-	DWORD e32_objtab;
-	DWORD e32_objcnt;
-	DWORD e32_objmap;
-	DWORD e32_itermap;
-	DWORD e32_rsrctab;
-	DWORD e32_rsrccnt;
-	DWORD e32_restab;
-	DWORD e32_enttab;
-	DWORD e32_dirtab;
-	DWORD e32_dircnt;
-	DWORD e32_fpagetab;
-	DWORD e32_frectab;
-	DWORD e32_impmod;
-	DWORD e32_impmodcnt;
-	DWORD e32_impproc;
-	DWORD e32_pagesum;
-	DWORD e32_datapage;
-	DWORD e32_preload;
-	DWORD e32_nrestab;
-	DWORD e32_cbnrestab;
-	DWORD e32_nressum;
-	DWORD e32_autodata;
-	DWORD e32_debuginfo;
-	DWORD e32_debuglen;
-	DWORD e32_instpreload;
-	DWORD e32_instdemand;
-	DWORD e32_heapsize;
-	BYTE e32_res3[12];
-	DWORD e32_winresoff;
-	DWORD e32_winreslen;
-	WORD e32_devid;
-	WORD e32_ddkver;
+WORD e32_magic;
+BYTE e32_border;
+BYTE e32_worder;
+DWORD e32_level;
+WORD e32_cpu;
+WORD e32_os;
+DWORD e32_ver;
+DWORD e32_mflags;
+DWORD e32_mpages;
+DWORD e32_startobj;
+DWORD e32_eip;
+DWORD e32_stackobj;
+DWORD e32_esp;
+DWORD e32_pagesize;
+DWORD e32_lastpagesize;
+DWORD e32_fixupsize;
+DWORD e32_fixupsum;
+DWORD e32_ldrsize;
+DWORD e32_ldrsum;
+DWORD e32_objtab;
+DWORD e32_objcnt;
+DWORD e32_objmap;
+DWORD e32_itermap;
+DWORD e32_rsrctab;
+DWORD e32_rsrccnt;
+DWORD e32_restab;
+DWORD e32_enttab;
+DWORD e32_dirtab;
+DWORD e32_dircnt;
+DWORD e32_fpagetab;
+DWORD e32_frectab;
+DWORD e32_impmod;
+DWORD e32_impmodcnt;
+DWORD e32_impproc;
+DWORD e32_pagesum;
+DWORD e32_datapage;
+DWORD e32_preload;
+DWORD e32_nrestab;
+DWORD e32_cbnrestab;
+DWORD e32_nressum;
+DWORD e32_autodata;
+DWORD e32_debuginfo;
+DWORD e32_debuglen;
+DWORD e32_instpreload;
+DWORD e32_instdemand;
+DWORD e32_heapsize;
+BYTE e32_res3[12];
+DWORD e32_winresoff;
+DWORD e32_winreslen;
+WORD e32_devid;
+WORD e32_ddkver;
 } IMAGE_VXD_HEADER,*PIMAGE_VXD_HEADER;
 typedef struct _IMAGE_FILE_HEADER {
-	WORD Machine;
-	WORD NumberOfSections;
-	DWORD TimeDateStamp;
-	DWORD PointerToSymbolTable;
-	DWORD NumberOfSymbols;
-	WORD SizeOfOptionalHeader;
-	WORD Characteristics;
+WORD Machine;
+WORD NumberOfSections;
+DWORD TimeDateStamp;
+DWORD PointerToSymbolTable;
+DWORD NumberOfSymbols;
+WORD SizeOfOptionalHeader;
+WORD Characteristics;
 } IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
 typedef struct _IMAGE_DATA_DIRECTORY {
-	DWORD VirtualAddress;
-	DWORD Size;
+DWORD VirtualAddress;
+DWORD Size;
 } IMAGE_DATA_DIRECTORY,*PIMAGE_DATA_DIRECTORY;
 typedef struct _IMAGE_OPTIONAL_HEADER {
-	WORD Magic;
-	BYTE MajorLinkerVersion;
-	BYTE MinorLinkerVersion;
-	DWORD SizeOfCode;
-	DWORD SizeOfInitializedData;
-	DWORD SizeOfUninitializedData;
-	DWORD AddressOfEntryPoint;
-	DWORD BaseOfCode;
-	DWORD BaseOfData;
-	DWORD ImageBase;
-	DWORD SectionAlignment;
-	DWORD FileAlignment;
-	WORD MajorOperatingSystemVersion;
-	WORD MinorOperatingSystemVersion;
-	WORD MajorImageVersion;
-	WORD MinorImageVersion;
-	WORD MajorSubsystemVersion;
-	WORD MinorSubsystemVersion;
-	DWORD Reserved1;
-	DWORD SizeOfImage;
-	DWORD SizeOfHeaders;
-	DWORD CheckSum;
-	WORD Subsystem;
-	WORD DllCharacteristics;
-	DWORD SizeOfStackReserve;
-	DWORD SizeOfStackCommit;
-	DWORD SizeOfHeapReserve;
-	DWORD SizeOfHeapCommit;
-	DWORD LoaderFlags;
-	DWORD NumberOfRvaAndSizes;
-	IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+WORD Magic;
+BYTE MajorLinkerVersion;
+BYTE MinorLinkerVersion;
+DWORD SizeOfCode;
+DWORD SizeOfInitializedData;
+DWORD SizeOfUninitializedData;
+DWORD AddressOfEntryPoint;
+DWORD BaseOfCode;
+DWORD BaseOfData;
+DWORD ImageBase;
+DWORD SectionAlignment;
+DWORD FileAlignment;
+WORD MajorOperatingSystemVersion;
+WORD MinorOperatingSystemVersion;
+WORD MajorImageVersion;
+WORD MinorImageVersion;
+WORD MajorSubsystemVersion;
+WORD MinorSubsystemVersion;
+DWORD Reserved1;
+DWORD SizeOfImage;
+DWORD SizeOfHeaders;
+DWORD CheckSum;
+WORD Subsystem;
+WORD DllCharacteristics;
+DWORD SizeOfStackReserve;
+DWORD SizeOfStackCommit;
+DWORD SizeOfHeapReserve;
+DWORD SizeOfHeapCommit;
+DWORD LoaderFlags;
+DWORD NumberOfRvaAndSizes;
+IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
 } IMAGE_OPTIONAL_HEADER,*PIMAGE_OPTIONAL_HEADER;
 typedef struct _IMAGE_ROM_OPTIONAL_HEADER {
-	WORD Magic;
-	BYTE MajorLinkerVersion;
-	BYTE MinorLinkerVersion;
-	DWORD SizeOfCode;
-	DWORD SizeOfInitializedData;
-	DWORD SizeOfUninitializedData;
-	DWORD AddressOfEntryPoint;
-	DWORD BaseOfCode;
-	DWORD BaseOfData;
-	DWORD BaseOfBss;
-	DWORD GprMask;
-	DWORD CprMask[4];
-	DWORD GpValue;
+WORD Magic;
+BYTE MajorLinkerVersion;
+BYTE MinorLinkerVersion;
+DWORD SizeOfCode;
+DWORD SizeOfInitializedData;
+DWORD SizeOfUninitializedData;
+DWORD AddressOfEntryPoint;
+DWORD BaseOfCode;
+DWORD BaseOfData;
+DWORD BaseOfBss;
+DWORD GprMask;
+DWORD CprMask[4];
+DWORD GpValue;
 } IMAGE_ROM_OPTIONAL_HEADER,*PIMAGE_ROM_OPTIONAL_HEADER;
 
 typedef struct _IMAGE_DOS_HEADER {
-	WORD e_magic;
-	WORD e_cblp;
-	WORD e_cp;
-	WORD e_crlc;
-	WORD e_cparhdr;
-	WORD e_minalloc;
-	WORD e_maxalloc;
-	WORD e_ss;
-	WORD e_sp;
-	WORD e_csum;
-	WORD e_ip;
-	WORD e_cs;
-	WORD e_lfarlc;
-	WORD e_ovno;
-	WORD e_res[4];
-	WORD e_oemid;
-	WORD e_oeminfo;
-	WORD e_res2[10];
-	LONG e_lfanew;
+WORD e_magic;
+WORD e_cblp;
+WORD e_cp;
+WORD e_crlc;
+WORD e_cparhdr;
+WORD e_minalloc;
+WORD e_maxalloc;
+WORD e_ss;
+WORD e_sp;
+WORD e_csum;
+WORD e_ip;
+WORD e_cs;
+WORD e_lfarlc;
+WORD e_ovno;
+WORD e_res[4];
+WORD e_oemid;
+WORD e_oeminfo;
+WORD e_res2[10];
+LONG e_lfanew;
 } IMAGE_DOS_HEADER,*PIMAGE_DOS_HEADER;
 typedef struct _IMAGE_OS2_HEADER {
-	WORD ne_magic;
-	CHAR ne_ver;
-	CHAR ne_rev;
-	WORD ne_enttab;
-	WORD ne_cbenttab;
-	LONG ne_crc;
-	WORD ne_flags;
-	WORD ne_autodata;
-	WORD ne_heap;
-	WORD ne_stack;
-	LONG ne_csip;
-	LONG ne_sssp;
-	WORD ne_cseg;
-	WORD ne_cmod;
-	WORD ne_cbnrestab;
-	WORD ne_segtab;
-	WORD ne_rsrctab;
-	WORD ne_restab;
-	WORD ne_modtab;
-	WORD ne_imptab;
-	LONG ne_nrestab;
-	WORD ne_cmovent;
-	WORD ne_align;
-	WORD ne_cres;
-	BYTE ne_exetyp;
-	BYTE ne_flagsothers;
-	WORD ne_pretthunks;
-	WORD ne_psegrefbytes;
-	WORD ne_swaparea;
-	WORD ne_expver;
+WORD ne_magic;
+CHAR ne_ver;
+CHAR ne_rev;
+WORD ne_enttab;
+WORD ne_cbenttab;
+LONG ne_crc;
+WORD ne_flags;
+WORD ne_autodata;
+WORD ne_heap;
+WORD ne_stack;
+LONG ne_csip;
+LONG ne_sssp;
+WORD ne_cseg;
+WORD ne_cmod;
+WORD ne_cbnrestab;
+WORD ne_segtab;
+WORD ne_rsrctab;
+WORD ne_restab;
+WORD ne_modtab;
+WORD ne_imptab;
+LONG ne_nrestab;
+WORD ne_cmovent;
+WORD ne_align;
+WORD ne_cres;
+BYTE ne_exetyp;
+BYTE ne_flagsothers;
+WORD ne_pretthunks;
+WORD ne_psegrefbytes;
+WORD ne_swaparea;
+WORD ne_expver;
 } IMAGE_OS2_HEADER,*PIMAGE_OS2_HEADER;
 
 typedef struct _IMAGE_NT_HEADERS {
-	DWORD Signature;
-	IMAGE_FILE_HEADER FileHeader;
-	IMAGE_OPTIONAL_HEADER OptionalHeader;
+DWORD Signature;
+IMAGE_FILE_HEADER FileHeader;
+IMAGE_OPTIONAL_HEADER OptionalHeader;
 } IMAGE_NT_HEADERS,*PIMAGE_NT_HEADERS;
 typedef struct _IMAGE_ROM_HEADERS {
-	IMAGE_FILE_HEADER FileHeader;
-	IMAGE_ROM_OPTIONAL_HEADER OptionalHeader;
+IMAGE_FILE_HEADER FileHeader;
+IMAGE_ROM_OPTIONAL_HEADER OptionalHeader;
 } IMAGE_ROM_HEADERS,*PIMAGE_ROM_HEADERS;
 
 typedef struct _IMAGE_SECTION_HEADER {
-	BYTE Name[IMAGE_SIZEOF_SHORT_NAME];
+BYTE Name[IMAGE_SIZEOF_SHORT_NAME];
 /*	union {
-		DWORD PhysicalAddress;
-		DWORD VirtualSize;
-	} Misc; */
-	DWORD PhysicalAddress;
-	DWORD VirtualAddress;
-	DWORD SizeOfRawData;
-	DWORD PointerToRawData;
-	DWORD PointerToRelocations;
-	DWORD PointerToLinenumbers;
-	WORD NumberOfRelocations;
-	WORD NumberOfLinenumbers;
-	DWORD Characteristics;
+DWORD PhysicalAddress;
+DWORD VirtualSize;
+} Misc; */
+DWORD PhysicalAddress;
+DWORD VirtualAddress;
+DWORD SizeOfRawData;
+DWORD PointerToRawData;
+DWORD PointerToRelocations;
+DWORD PointerToLinenumbers;
+WORD NumberOfRelocations;
+WORD NumberOfLinenumbers;
+DWORD Characteristics;
 } IMAGE_SECTION_HEADER,*PIMAGE_SECTION_HEADER;
 
 typedef struct _IMAGE_SYMBOL {
-	BYTE ShortName[8];
-	DWORD Value;
-	SHORT SectionNumber;
-	WORD Type;
-	BYTE StorageClass;
-	BYTE NumberOfAuxSymbols;
+BYTE ShortName[8];
+DWORD Value;
+SHORT SectionNumber;
+WORD Type;
+BYTE StorageClass;
+BYTE NumberOfAuxSymbols;
 } IMAGE_SYMBOL,*PIMAGE_SYMBOL;
 
 /*
 typedef union _IMAGE_AUX_SYMBOL {
-	struct {
-		DWORD TagIndex;
-		union {
-			struct {
-				WORD Linenumber;
-				WORD Size;
-			} LnSz;
-			DWORD TotalSize;
-		} Misc;
-		union {
-			struct {
-				DWORD PointerToLinenumber;
-				DWORD PointerToNextFunction;
-			} Function;
-			struct {
-				WORD Dimension[4];
-			} Array;
-		} FcnAry;
-		WORD TvIndex;
-	} Sym;
-	struct {
-		BYTE Name[IMAGE_SIZEOF_SYMBOL];
-	} File;
-	struct {
-		DWORD Length;
-		WORD NumberOfRelocations;
-		WORD NumberOfLinenumbers;
-		DWORD CheckSum;
-		SHORT Number;
-		BYTE Selection;
-	} Section;
+struct {
+DWORD TagIndex;
+union {
+struct {
+WORD Linenumber;
+WORD Size;
+} LnSz;
+DWORD TotalSize;
+} Misc;
+union {
+struct {
+DWORD PointerToLinenumber;
+DWORD PointerToNextFunction;
+} Function;
+struct {
+WORD Dimension[4];
+} Array;
+} FcnAry;
+WORD TvIndex;
+} Sym;
+struct {
+BYTE Name[IMAGE_SIZEOF_SYMBOL];
+} File;
+struct {
+DWORD Length;
+WORD NumberOfRelocations;
+WORD NumberOfLinenumbers;
+DWORD CheckSum;
+SHORT Number;
+BYTE Selection;
+} Section;
 } IMAGE_AUX_SYMBOL,*PIMAGE_AUX_SYMBOL;
 */
 typedef struct _IMAGE_COFF_SYMBOLS_HEADER {
-	DWORD NumberOfSymbols;
-	DWORD LvaToFirstSymbol;
-	DWORD NumberOfLinenumbers;
-	DWORD LvaToFirstLinenumber;
-    DWORD RvaToFirstByteOfCode;
-	DWORD RvaToLastByteOfCode;
-	DWORD RvaToFirstByteOfData;
-	DWORD RvaToLastByteOfData;
+DWORD NumberOfSymbols;
+DWORD LvaToFirstSymbol;
+DWORD NumberOfLinenumbers;
+DWORD LvaToFirstLinenumber;
+DWORD RvaToFirstByteOfCode;
+DWORD RvaToLastByteOfCode;
+DWORD RvaToFirstByteOfData;
+DWORD RvaToLastByteOfData;
 } IMAGE_COFF_SYMBOLS_HEADER,*PIMAGE_COFF_SYMBOLS_HEADER;
 
 /*
 typedef struct _IMAGE_RELOCATION {
-	union {
-		DWORD VirtualAddress;
-		DWORD RelocCount;
-	} DUMMYUNIONNAME;
-	DWORD SymbolTableIndex;
-	WORD Type;
+union {
+DWORD VirtualAddress;
+DWORD RelocCount;
+} DUMMYUNIONNAME;
+DWORD SymbolTableIndex;
+WORD Type;
 } IMAGE_RELOCATION,*PIMAGE_RELOCATION;
 */
 typedef struct _IMAGE_BASE_RELOCATION {
-	DWORD VirtualAddress;
-	DWORD SizeOfBlock;
+DWORD VirtualAddress;
+DWORD SizeOfBlock;
 } IMAGE_BASE_RELOCATION,*PIMAGE_BASE_RELOCATION;
 /*
 typedef struct _IMAGE_LINENUMBER {
-	union {
-		DWORD SymbolTableIndex;
-		DWORD VirtualAddress;
-	} Type;
-	WORD Linenumber;
+union {
+DWORD SymbolTableIndex;
+DWORD VirtualAddress;
+} Type;
+WORD Linenumber;
 } IMAGE_LINENUMBER,*PIMAGE_LINENUMBER;
 */
 typedef struct _IMAGE_ARCHIVE_MEMBER_HEADER {
-	BYTE Name[16];
-	BYTE Date[12];
-	BYTE UserID[6];
-	BYTE GroupID[6];
-	BYTE Mode[8];
-	BYTE Size[10];
-	BYTE EndHeader[2];
+BYTE Name[16];
+BYTE Date[12];
+BYTE UserID[6];
+BYTE GroupID[6];
+BYTE Mode[8];
+BYTE Size[10];
+BYTE EndHeader[2];
 } IMAGE_ARCHIVE_MEMBER_HEADER,*PIMAGE_ARCHIVE_MEMBER_HEADER;
 typedef struct _IMAGE_EXPORT_DIRECTORY {
-	DWORD Characteristics;
-	DWORD TimeDateStamp;
-	WORD MajorVersion;
-	WORD MinorVersion;
-	DWORD Name;
-	DWORD Base;
-	DWORD NumberOfFunctions;
-	DWORD NumberOfNames;
-	PDWORD *AddressOfFunctions;
-	PDWORD *AddressOfNames;
-	PWORD *AddressOfNameOrdinals;
+DWORD Characteristics;
+DWORD TimeDateStamp;
+WORD MajorVersion;
+WORD MinorVersion;
+DWORD Name;
+DWORD Base;
+DWORD NumberOfFunctions;
+DWORD NumberOfNames;
+PDWORD *AddressOfFunctions;
+PDWORD *AddressOfNames;
+PWORD *AddressOfNameOrdinals;
 } IMAGE_EXPORT_DIRECTORY,*PIMAGE_EXPORT_DIRECTORY;
 typedef struct _IMAGE_IMPORT_BY_NAME {
-	WORD Hint;
-	BYTE Name[1];
+WORD Hint;
+BYTE Name[1];
 } IMAGE_IMPORT_BY_NAME,*PIMAGE_IMPORT_BY_NAME;
 
 /*
 typedef struct _IMAGE_THUNK_DATA {
-	union {
-		PBYTE ForwarderString;
-		PDWORD Function;
-		DWORD Ordinal;
-		PIMAGE_IMPORT_BY_NAME AddressOfData;
-	} u1;
+union {
+PBYTE ForwarderString;
+PDWORD Function;
+DWORD Ordinal;
+PIMAGE_IMPORT_BY_NAME AddressOfData;
+} u1;
 } IMAGE_THUNK_DATA,*PIMAGE_THUNK_DATA;
 typedef struct _IMAGE_IMPORT_DESCRIPTOR {
-	union {
-		DWORD Characteristics;
-		PIMAGE_THUNK_DATA OriginalFirstThunk;
-    } DUMMYUNIONNAME;
-	DWORD TimeDateStamp;
-	DWORD ForwarderChain;
-	DWORD Name;
-	PIMAGE_THUNK_DATA FirstThunk;
+union {
+DWORD Characteristics;
+PIMAGE_THUNK_DATA OriginalFirstThunk;
+} DUMMYUNIONNAME;
+DWORD TimeDateStamp;
+DWORD ForwarderChain;
+DWORD Name;
+PIMAGE_THUNK_DATA FirstThunk;
 } IMAGE_IMPORT_DESCRIPTOR,*PIMAGE_IMPORT_DESCRIPTOR;
 */
 typedef struct _IMAGE_BOUND_IMPORT_DESCRIPTOR {
-	DWORD TimeDateStamp;
-	WORD OffsetModuleName;
-	WORD NumberOfModuleForwarderRefs;
+DWORD TimeDateStamp;
+WORD OffsetModuleName;
+WORD NumberOfModuleForwarderRefs;
 } IMAGE_BOUND_IMPORT_DESCRIPTOR,*PIMAGE_BOUND_IMPORT_DESCRIPTOR;
 typedef struct _IMAGE_BOUND_FORWARDER_REF {
-	DWORD TimeDateStamp;
-	WORD OffsetModuleName;
-	WORD Reserved;
+DWORD TimeDateStamp;
+WORD OffsetModuleName;
+WORD Reserved;
 } IMAGE_BOUND_FORWARDER_REF,*PIMAGE_BOUND_FORWARDER_REF;
 
 //typedef void(NTAPI *PIMAGE_TLS_CALLBACK)(PVOID,DWORD,PVOID);
 typedef PVOID PIMAGE_TLS_CALLBACK;
 
 typedef struct _IMAGE_TLS_DIRECTORY {
-	DWORD StartAddressOfRawData;
-	DWORD EndAddressOfRawData;
-	PDWORD AddressOfIndex;
-	PIMAGE_TLS_CALLBACK *AddressOfCallBacks;
-	DWORD SizeOfZeroFill;
-	DWORD Characteristics;
+DWORD StartAddressOfRawData;
+DWORD EndAddressOfRawData;
+PDWORD AddressOfIndex;
+PIMAGE_TLS_CALLBACK *AddressOfCallBacks;
+DWORD SizeOfZeroFill;
+DWORD Characteristics;
 } IMAGE_TLS_DIRECTORY,*PIMAGE_TLS_DIRECTORY;
 typedef struct _IMAGE_RESOURCE_DIRECTORY {
-	DWORD Characteristics;
-	DWORD TimeDateStamp;
-	WORD MajorVersion;
-	WORD MinorVersion;
-	WORD NumberOfNamedEntries;
-	WORD NumberOfIdEntries;
+DWORD Characteristics;
+DWORD TimeDateStamp;
+WORD MajorVersion;
+WORD MinorVersion;
+WORD NumberOfNamedEntries;
+WORD NumberOfIdEntries;
 } IMAGE_RESOURCE_DIRECTORY,*PIMAGE_RESOURCE_DIRECTORY;
 /*
 typedef struct _IMAGE_RESOURCE_DIRECTORY_ENTRY {
-	union {
-		struct {
-			DWORD NameOffset:31;
-			DWORD NameIsString:1;
-		}DUMMYSTRUCTNAME;
-		DWORD Name;
-		WORD Id;
-    } DUMMYUNIONNAME;
-	union {
-		DWORD OffsetToData;
-		struct {
-			DWORD OffsetToDirectory:31;
-			DWORD DataIsDirectory:1;
-		} DUMMYSTRUCTNAME2;
-    } DUMMYUNIONNAME2;
+union {
+struct {
+DWORD NameOffset:31;
+DWORD NameIsString:1;
+}DUMMYSTRUCTNAME;
+DWORD Name;
+WORD Id;
+} DUMMYUNIONNAME;
+union {
+DWORD OffsetToData;
+struct {
+DWORD OffsetToDirectory:31;
+DWORD DataIsDirectory:1;
+} DUMMYSTRUCTNAME2;
+} DUMMYUNIONNAME2;
 } IMAGE_RESOURCE_DIRECTORY_ENTRY,*PIMAGE_RESOURCE_DIRECTORY_ENTRY;
 */
 typedef struct _IMAGE_RESOURCE_DIRECTORY_STRING {
-	WORD Length;
-	CHAR NameString[1];
+WORD Length;
+CHAR NameString[1];
 } IMAGE_RESOURCE_DIRECTORY_STRING,*PIMAGE_RESOURCE_DIRECTORY_STRING;
 
 typedef struct _IMAGE_RESOURCE_DIR_STRING_U {
-	WORD Length;
-	WCHAR NameString[1];
+WORD Length;
+WCHAR NameString[1];
 } IMAGE_RESOURCE_DIR_STRING_U,*PIMAGE_RESOURCE_DIR_STRING_U;
 typedef struct _IMAGE_RESOURCE_DATA_ENTRY {
-	DWORD OffsetToData;
-	DWORD Size;
-	DWORD CodePage;
-	DWORD Reserved;
+DWORD OffsetToData;
+DWORD Size;
+DWORD CodePage;
+DWORD Reserved;
 } IMAGE_RESOURCE_DATA_ENTRY,*PIMAGE_RESOURCE_DATA_ENTRY;
 typedef struct _IMAGE_LOAD_CONFIG_DIRECTORY {
-	DWORD Characteristics;
-	DWORD TimeDateStamp;
-	WORD MajorVersion;
-	WORD MinorVersion;
-	DWORD GlobalFlagsClear;
-	DWORD GlobalFlagsSet;
-	DWORD CriticalSectionDefaultTimeout;
-	DWORD DeCommitFreeBlockThreshold;
-	DWORD DeCommitTotalFreeThreshold;
-	PVOID LockPrefixTable;
-	DWORD MaximumAllocationSize;
-	DWORD VirtualMemoryThreshold;
-	DWORD ProcessHeapFlags;
-	DWORD Reserved[4];
+DWORD Characteristics;
+DWORD TimeDateStamp;
+WORD MajorVersion;
+WORD MinorVersion;
+DWORD GlobalFlagsClear;
+DWORD GlobalFlagsSet;
+DWORD CriticalSectionDefaultTimeout;
+DWORD DeCommitFreeBlockThreshold;
+DWORD DeCommitTotalFreeThreshold;
+PVOID LockPrefixTable;
+DWORD MaximumAllocationSize;
+DWORD VirtualMemoryThreshold;
+DWORD ProcessHeapFlags;
+DWORD Reserved[4];
 } IMAGE_LOAD_CONFIG_DIRECTORY,*PIMAGE_LOAD_CONFIG_DIRECTORY;
 typedef struct _IMAGE_RUNTIME_FUNCTION_ENTRY {
-	DWORD BeginAddress;
-	DWORD EndAddress;
-	PVOID ExceptionHandler;
-	PVOID HandlerData;
-	DWORD PrologEndAddress;
+DWORD BeginAddress;
+DWORD EndAddress;
+PVOID ExceptionHandler;
+PVOID HandlerData;
+DWORD PrologEndAddress;
 } IMAGE_RUNTIME_FUNCTION_ENTRY,*PIMAGE_RUNTIME_FUNCTION_ENTRY;
 typedef struct _IMAGE_DEBUG_DIRECTORY {
-	DWORD Characteristics;
-	DWORD TimeDateStamp;
-	WORD MajorVersion;
-	WORD MinorVersion;
-	DWORD Type;
-	DWORD SizeOfData;
-	DWORD AddressOfRawData;
-	DWORD PointerToRawData;
+DWORD Characteristics;
+DWORD TimeDateStamp;
+WORD MajorVersion;
+WORD MinorVersion;
+DWORD Type;
+DWORD SizeOfData;
+DWORD AddressOfRawData;
+DWORD PointerToRawData;
 } IMAGE_DEBUG_DIRECTORY,*PIMAGE_DEBUG_DIRECTORY;
 
 /*
 typedef struct _FPO_DATA {
-	DWORD ulOffStart;
-	DWORD cbProcSize;
-	DWORD cdwLocals;
-	WORD cdwParams;
-	WORD cbProlog:8;
-	WORD cbRegs:3;
-	WORD fHasSEH:1;
-	WORD fUseBP:1;
-	WORD reserved:1;
-	WORD cbFrame:2;
+DWORD ulOffStart;
+DWORD cbProcSize;
+DWORD cdwLocals;
+WORD cdwParams;
+WORD cbProlog:8;
+WORD cbRegs:3;
+WORD fHasSEH:1;
+WORD fUseBP:1;
+WORD reserved:1;
+WORD cbFrame:2;
 } FPO_DATA,*PFPO_DATA;
 */
 typedef struct _IMAGE_DEBUG_MISC {
-	DWORD DataType;
-	DWORD Length;
-	BOOLEAN Unicode;
-	BYTE Reserved[3];
-	BYTE Data[1];
+DWORD DataType;
+DWORD Length;
+BOOLEAN Unicode;
+BYTE Reserved[3];
+BYTE Data[1];
 } IMAGE_DEBUG_MISC,*PIMAGE_DEBUG_MISC;
 typedef struct _IMAGE_FUNCTION_ENTRY {
-	DWORD StartingAddress;
-	DWORD EndingAddress;
-	DWORD EndOfPrologue;
+DWORD StartingAddress;
+DWORD EndingAddress;
+DWORD EndOfPrologue;
 } IMAGE_FUNCTION_ENTRY,*PIMAGE_FUNCTION_ENTRY;
 
 typedef struct _IMAGE_SEPARATE_DEBUG_HEADER {
-	WORD Signature;
-	WORD Flags;
-	WORD Machine;
-	WORD Characteristics;
-	DWORD TimeDateStamp;
-	DWORD CheckSum;
-	DWORD ImageBase;
-	DWORD SizeOfImage;
-	DWORD NumberOfSections;
-	DWORD ExportedNamesSize;
-	DWORD DebugDirectorySize;
-	DWORD Reserved[3];
+WORD Signature;
+WORD Flags;
+WORD Machine;
+WORD Characteristics;
+DWORD TimeDateStamp;
+DWORD CheckSum;
+DWORD ImageBase;
+DWORD SizeOfImage;
+DWORD NumberOfSections;
+DWORD ExportedNamesSize;
+DWORD DebugDirectorySize;
+DWORD Reserved[3];
 } IMAGE_SEPARATE_DEBUG_HEADER,*PIMAGE_SEPARATE_DEBUG_HEADER;
 /*
 typedef enum _CM_SERVICE_NODE_TYPE {
-	DriverType=SERVICE_KERNEL_DRIVER,
-	FileSystemType=SERVICE_FILE_SYSTEM_DRIVER,
-	Win32ServiceOwnProcess=SERVICE_WIN32_OWN_PROCESS,
-	Win32ServiceShareProcess=SERVICE_WIN32_SHARE_PROCESS,
-	AdapterType=SERVICE_ADAPTER,
-	RecognizerType=SERVICE_RECOGNIZER_DRIVER
+DriverType=SERVICE_KERNEL_DRIVER,
+FileSystemType=SERVICE_FILE_SYSTEM_DRIVER,
+Win32ServiceOwnProcess=SERVICE_WIN32_OWN_PROCESS,
+Win32ServiceShareProcess=SERVICE_WIN32_SHARE_PROCESS,
+AdapterType=SERVICE_ADAPTER,
+RecognizerType=SERVICE_RECOGNIZER_DRIVER
 } SERVICE_NODE_TYPE;
 typedef enum _CM_SERVICE_LOAD_TYPE {
-	BootLoad=SERVICE_BOOT_START,
-	SystemLoad=SERVICE_SYSTEM_START,
-	AutoLoad=SERVICE_AUTO_START,
-	DemandLoad=SERVICE_DEMAND_START,
-	DisableLoad=SERVICE_DISABLED
+BootLoad=SERVICE_BOOT_START,
+SystemLoad=SERVICE_SYSTEM_START,
+AutoLoad=SERVICE_AUTO_START,
+DemandLoad=SERVICE_DEMAND_START,
+DisableLoad=SERVICE_DISABLED
 } SERVICE_LOAD_TYPE;
 typedef enum _CM_ERROR_CONTROL_TYPE {
-	IgnoreError=SERVICE_ERROR_IGNORE,
-	NormalError=SERVICE_ERROR_NORMAL,
-	SevereError=SERVICE_ERROR_SEVERE,
-	CriticalError=SERVICE_ERROR_CRITICAL
+IgnoreError=SERVICE_ERROR_IGNORE,
+NormalError=SERVICE_ERROR_NORMAL,
+SevereError=SERVICE_ERROR_SEVERE,
+CriticalError=SERVICE_ERROR_CRITICAL
 } SERVICE_ERROR_TYPE;
 */
 typedef int SERVICE_NODE_TYPE;

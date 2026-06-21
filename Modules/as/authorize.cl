@@ -57,18 +57,18 @@
 
 
 (defmethod authorize ((auth password-authorizer)
-		  (req http-request)
-		  (ent entity))
+		      (req http-request)
+		      (ent entity))
   ;; check if this is valid request, return t if ok
   ;; and :done if we've sent a request for a  new name and password
   ;;
   (multiple-value-bind (name password) (get-basic-authorization req)
 
     (if*  name
-       then (dolist (pair (password-authorizer-allowed auth))
-	      (if* (and (equal (car pair) name)
-			(equal (cdr pair) password))
-		 then (return-from authorize t))))
+	  then (dolist (pair (password-authorizer-allowed auth))
+		 (if* (and (equal (car pair) name)
+			   (equal (cdr pair) password))
+		      then (return-from authorize t))))
 
     ;; valid name/password not given, ask for it
     (with-http-response (req ent :response
@@ -127,53 +127,53 @@
   (let ((request-ipaddress (socket:remote-host (request-socket req))))
     (dolist (pattern (location-authorizer-patterns auth))
       (if* (atom pattern)
-	 then (case pattern
-		(:accept (return-from authorize t))
-		(:deny   (return-from authorize nil))
-		(t (warn "bogus authorization pattern: ~s" pattern)
-		   (return-from authorize nil)))
-	 else (let ((decision (car pattern))
-		    (ipaddress (cadr pattern))
-		    (bits (if* (cddr pattern)
-			     then (caddr pattern)
-			     else 32)))
-		(if* (not (member decision '(:accept :deny)))
-		   then (warn "bogus authorization pattern: ~s" pattern)
-			(return-from authorize nil))
+	   then (case pattern
+		  (:accept (return-from authorize t))
+		  (:deny   (return-from authorize nil))
+		  (t (warn "bogus authorization pattern: ~s" pattern)
+		     (return-from authorize nil)))
+	   else (let ((decision (car pattern))
+		      (ipaddress (cadr pattern))
+		      (bits (if* (cddr pattern)
+				 then (caddr pattern)
+				 else 32)))
+		  (if* (not (member decision '(:accept :deny)))
+		       then (warn "bogus authorization pattern: ~s" pattern)
+		       (return-from authorize nil))
 
-		(if* (stringp ipaddress)
-		   then ; check for dotted ip address first
-			(let ((newaddr (socket:dotted-to-ipaddr ipaddress
-								:errorp nil)))
-			  (if* (null newaddr)
-			     then ; success!
-				  (ignore-errors
-				   (setq newaddr (socket:lookup-hostname ipaddress))))
+		  (if* (stringp ipaddress)
+		       then ; check for dotted ip address first
+		       (let ((newaddr (socket:dotted-to-ipaddr ipaddress
+							       :errorp nil)))
+			 (if* (null newaddr)
+			      then ; success!
+			      (ignore-errors
+				(setq newaddr (socket:lookup-hostname ipaddress))))
 
-			  (if* newaddr
-			     then (setf (cadr pattern)
-				    (setq ipaddress newaddr))
-			     else ; can't compute the address
-				  ; so we'll not accept and we will deny
-				  ; just to be safe
-				  (warn "can't resolve host name ~s" ipaddress)
-				  (return-from authorize nil))))
+			 (if* newaddr
+			      then (setf (cadr pattern)
+					 (setq ipaddress newaddr))
+			      else ; can't compute the address
+					; so we'll not accept and we will deny
+					; just to be safe
+			      (warn "can't resolve host name ~s" ipaddress)
+			      (return-from authorize nil))))
 
 
-		(if* (not (and (integerp bits) (<= 1 bits 32)))
-		   then (warn "bogus authorization pattern: ~s" pattern)
-			(return-from authorize nil))
+		  (if* (not (and (integerp bits) (<= 1 bits 32)))
+		       then (warn "bogus authorization pattern: ~s" pattern)
+		       (return-from authorize nil))
 
-		; now we're finally ready to test things
-		(let ((mask (if* (eql bits 32)
-			       then -1
-			       else (ash -1 (- 32 bits)))))
-		  (if* (eql (logand request-ipaddress mask)
-			    (logand ipaddress mask))
-		     then ; matched,
-			  (case decision
-			    (:accept (return-from authorize t))
-			    (:deny   (return-from authorize nil))))))))
+					; now we're finally ready to test things
+		  (let ((mask (if* (eql bits 32)
+				   then -1
+				   else (ash -1 (- 32 bits)))))
+		    (if* (eql (logand request-ipaddress mask)
+			      (logand ipaddress mask))
+			 then ; matched,
+			 (case decision
+			   (:accept (return-from authorize t))
+			   (:deny   (return-from authorize nil))))))))
 
     t ; the default is to accept
     ))
