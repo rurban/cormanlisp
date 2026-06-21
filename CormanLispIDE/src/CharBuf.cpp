@@ -13,34 +13,30 @@
 
 #include "CharBuf.h"
 
-CharBuf::CharBuf(long length)
-: fCharsAvailable(), fBufEmpty() 
-{ 
+CharBuf::CharBuf(long length) : fCharsAvailable(), fBufEmpty()
+{
 	fSize = length;
 	fBuf = new char[fSize];
 	fIndex = 0;
 }
 
-CharBuf::~CharBuf() 
-{ 
-	delete [] fBuf; 
+CharBuf::~CharBuf()
+{
+	delete[] fBuf;
 }
 
-long 
-CharBuf::size() 
-{ 
-	return fSize; 
+long CharBuf::size()
+{
+	return fSize;
 }
 
-long 
-CharBuf::numchars() 
-{ 
-	return fIndex; 
+long CharBuf::numchars()
+{
+	return fIndex;
 }
 
-char* 
-CharBuf::getChars() 
-{ 
+char* CharBuf::getChars()
+{
 	PLSingleLock myLock(&fSemaphore, TRUE);
 	fBuf[fIndex] = 0;
 	char* s = new char[fIndex + 1];
@@ -50,8 +46,7 @@ CharBuf::getChars()
 	return s;
 }
 
-long 
-CharBuf::getCharsInBuffer(unsigned char* buf, long num)
+long CharBuf::getCharsInBuffer(unsigned char* buf, long num)
 {
 	PLSingleLock myLock(&fSemaphore, TRUE);
 	if (fIndex > num)
@@ -71,8 +66,7 @@ CharBuf::getCharsInBuffer(unsigned char* buf, long num)
 	}
 }
 
-long 
-CharBuf::addChars(const char* buf, long num)
+long CharBuf::addChars(const char* buf, long num)
 {
 	long i;
 	if (num <= 0)
@@ -89,8 +83,7 @@ CharBuf::addChars(const char* buf, long num)
 		fCharsAvailable.SetEvent();
 		BOOL ret = PostMessage(AfxGetApp()->GetMainWnd()->m_hWnd, WM_ENTERIDLE, 0, 0);
 	}
-	else
-	if (i == 0)	// if buffer is full, wait until it is empty
+	else if (i == 0) // if buffer is full, wait until it is empty
 	{
 		fBufEmpty.ResetEvent();
 		myLock.Unlock();
@@ -100,15 +93,12 @@ CharBuf::addChars(const char* buf, long num)
 	return i;
 }
 
-PLEvent*
-CharBuf::charsAvailable()
+PLEvent* CharBuf::charsAvailable()
 {
 	return &fCharsAvailable;
 }
 
-PLEvent*
-CharBuf::bufEmpty()
+PLEvent* CharBuf::bufEmpty()
 {
 	return &fBufEmpty;
 }
-

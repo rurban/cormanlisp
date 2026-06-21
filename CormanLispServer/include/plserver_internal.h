@@ -10,8 +10,8 @@
 
 #include "CharBuf.h"
 
-extern IUnknown*					ClientUnknown;
-extern ICormanLispTextOutput*		ClientTextOutput;
-extern ICormanLispStatusMessage*	ClientMessage;
+extern IUnknown* ClientUnknown;
+extern ICormanLispTextOutput* ClientTextOutput;
+extern ICormanLispStatusMessage* ClientMessage;
 
 extern CharBuf TerminalInputBuf;

@@ -16,10 +16,8 @@
 #include <shlobj.h>
 
 UserInfo::UserInfo(void)
-: name(NULL), name_len(0),
-profile_directory(NULL), profile_directory_len(0),
-personal_directory(NULL), personal_directory_len(0),
-version(31)
+	: name(NULL), name_len(0), profile_directory(NULL), profile_directory_len(0), personal_directory(NULL),
+	  personal_directory_len(0), version(31)
 {
 }
 
@@ -35,7 +33,7 @@ UserInfo::~UserInfo(void)
 		delete[] personal_directory;
 }
 
-const char *UserInfo::GetName(void) const
+const char* UserInfo::GetName(void) const
 {
 	return name == NULL ? "" : name;
 }
@@ -45,8 +43,7 @@ size_t UserInfo::GetNameLength(void) const
 	return name_len;
 }
 
-
-const char *UserInfo::GetProfileDirectory(void) const
+const char* UserInfo::GetProfileDirectory(void) const
 {
 	return profile_directory == NULL ? "" : profile_directory;
 }
@@ -56,7 +53,7 @@ size_t UserInfo::GetProfileDirectoryLength(void) const
 	return profile_directory_len;
 }
 
-const char *UserInfo::GetPersonalDirectory(void) const
+const char* UserInfo::GetPersonalDirectory(void) const
 {
 	return personal_directory == NULL ? "" : personal_directory;
 }
@@ -66,21 +63,20 @@ size_t UserInfo::GetPersonalDirectoryLength(void) const
 	return personal_directory_len;
 }
 
-
 int UserInfo::GetVersion(void) const
 {
 	return version;
 }
 
-bool UserInfo::FillUserInfo(UserInfo &ui)
+bool UserInfo::FillUserInfo(UserInfo& ui)
 {
 	// obraining user name
 	DWORD user_name_size = 0;
 	DWORD user_profile_buffer_size = 0;
 	size_t user_personal_size = 0;
-	char *name_buf = NULL;
-	char *profile_buf = NULL;
-	char *personal_buf = NULL;
+	char* name_buf = NULL;
+	char* profile_buf = NULL;
+	char* personal_buf = NULL;
 	bool user_name_status = true;
 	bool user_profile_status = true;
 	bool user_personal_status = false;
@@ -115,7 +111,7 @@ bool UserInfo::FillUserInfo(UserInfo &ui)
 			user_profile_status = false;
 		}
 
-		// get user profile path itself 
+		// get user profile path itself
 		if (user_profile_status)
 		{
 			// get buffer size
@@ -151,12 +147,12 @@ bool UserInfo::FillUserInfo(UserInfo &ui)
 
 		if (user_token != NULL)
 		{
-			char buf[MAX_PATH] = { 0 };
+			char buf[MAX_PATH] = {0};
 			// obtain path to the Documents folder
-			if (SHGetFolderPathA(NULL, CSIDL_PERSONAL, user_token, SHGFP_TYPE_CURRENT, (char *)buf) == S_OK)
+			if (SHGetFolderPathA(NULL, CSIDL_PERSONAL, user_token, SHGFP_TYPE_CURRENT, (char*)buf) == S_OK)
 			{
 				bool append_backslash = false;
-				size_t len  = strnlen((char *)buf, MAX_PATH);
+				size_t len = strnlen((char*)buf, MAX_PATH);
 				user_personal_size = len + 1;
 				if (user_personal_size <= 2 || buf[user_personal_size - 2] != '\\')
 				{
@@ -165,7 +161,7 @@ bool UserInfo::FillUserInfo(UserInfo &ui)
 				}
 
 				personal_buf = new char[user_personal_size];
-				strncpy_s(personal_buf, user_personal_size, (char *)buf, len);
+				strncpy_s(personal_buf, user_personal_size, (char*)buf, len);
 
 				if (append_backslash)
 				{

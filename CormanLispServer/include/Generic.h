@@ -18,7 +18,7 @@
 #define FALSE 0
 #endif
 
-#define X86		1
+#define X86 1
 #define CORMANLISP 1
 
 typedef unsigned char byte;

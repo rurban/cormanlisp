@@ -18,7 +18,7 @@ class AboutDialog : public CDialog
 {
 public:
 	AboutDialog(UINT nIDTemplate);
-	
+
 	BOOL OnInitDialog();
 	void OnCreditsInfo();
 	void OnCormanNet();
@@ -63,6 +63,5 @@ public:
 	int lineNumber_;
 	int lineNumber();
 };
-
 
 #endif // DIALOGS_H

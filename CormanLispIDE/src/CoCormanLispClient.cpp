@@ -22,42 +22,39 @@ CoCormanLispClient::CoCormanLispClient()
 	m_eventLoopThreadID = GetCurrentThreadId();
 }
 
-CoCormanLispClient::~CoCormanLispClient()
-{
-}
-
+CoCormanLispClient::~CoCormanLispClient() {}
 
 //////////////////////////////////////////////////////////////////////
 // IUnknown interfaces
 
 STDMETHODIMP CoCormanLispClient::QueryInterface(REFIID riid, void** ppv)
 {
-    if (riid == IID_IUnknown)
-        *ppv = (ICormanLisp*)this;
-    else if (riid == IID_ICormanLispTextOutput)
-        *ppv = (ICormanLispTextOutput*)this;
-    else if (riid == IID_ICormanLispStatusMessage)
-        *ppv = (ICormanLispStatusMessage*)this;
-    else if (riid == IID_ICormanLispShutdown)
-        *ppv = (ICormanLispShutdown*)this;
-    else
-        *ppv = 0;
-    if (*ppv)
-        ((IUnknown*)*ppv)->AddRef();
-    return *ppv ? S_OK : E_NOINTERFACE;
+	if (riid == IID_IUnknown)
+		*ppv = (ICormanLisp*)this;
+	else if (riid == IID_ICormanLispTextOutput)
+		*ppv = (ICormanLispTextOutput*)this;
+	else if (riid == IID_ICormanLispStatusMessage)
+		*ppv = (ICormanLispStatusMessage*)this;
+	else if (riid == IID_ICormanLispShutdown)
+		*ppv = (ICormanLispShutdown*)this;
+	else
+		*ppv = 0;
+	if (*ppv)
+		((IUnknown*)*ppv)->AddRef();
+	return *ppv ? S_OK : E_NOINTERFACE;
 }
 
 STDMETHODIMP_(ULONG) CoCormanLispClient::AddRef()
 {
-    return InterlockedIncrement(&m_cRef);
+	return InterlockedIncrement(&m_cRef);
 }
 
 STDMETHODIMP_(ULONG) CoCormanLispClient::Release()
 {
-    if (InterlockedDecrement(&m_cRef) != 0)
-        return m_cRef;
-    delete this;
-    return 0;
+	if (InterlockedDecrement(&m_cRef) != 0)
+		return m_cRef;
+	delete this;
+	return 0;
 }
 
 STDMETHODIMP CoCormanLispClient::OutputText(const char* text, long numBytes)
@@ -121,9 +118,11 @@ STDMETHODIMP CoCormanLispClient::OpenEditWindow(char* file, HWND* wnd)
 	if (m_eventLoopThreadID != GetCurrentThreadId())
 	{
 		*wnd = 0;
-		while (theApp.waitingForDocumentToOpen());
+		while (theApp.waitingForDocumentToOpen())
+			;
 		bool ret = theApp.SetDocumentToOpen(file);
-		while (theApp.waitingForDocumentToOpen());
+		while (theApp.waitingForDocumentToOpen())
+			;
 		doc = theApp.m_lastDocOpened;
 	}
 	else
@@ -144,20 +143,23 @@ STDMETHODIMP CoCormanLispClient::OpenURL(char* file, HWND* wnd)
 	*wnd = 0;
 	if (m_eventLoopThreadID != GetCurrentThreadId())
 	{
-		while (theApp.waitingForDocumentToOpen());
+		while (theApp.waitingForDocumentToOpen())
+			;
 		ret = theApp.SetURLToOpen(file);
-		while (theApp.waitingForDocumentToOpen());
+		while (theApp.waitingForDocumentToOpen())
+			;
 	}
 	else
 	{
-		//theApp.NavigateURL(file);
-		// We cannot call NavigateURL() directly from Lisp as it seems to leave stack
-		// in inconsistent state in the case of an error (well, at least from the Lisp's POV).
-		// To avoid the problem we use this ugly hack.
-		// The problem is probably related to the (SEH) exception handling:
-		// Internet Explorer internally uses (or causes) some exception on which we rely too (just a theory).
+		// theApp.NavigateURL(file);
+		//  We cannot call NavigateURL() directly from Lisp as it seems to leave stack
+		//  in inconsistent state in the case of an error (well, at least from the Lisp's POV).
+		//  To avoid the problem we use this ugly hack.
+		//  The problem is probably related to the (SEH) exception handling:
+		//  Internet Explorer internally uses (or causes) some exception on which we rely too (just a theory).
 
-		while (theApp.waitingForDocumentToOpen());
+		while (theApp.waitingForDocumentToOpen())
+			;
 		ret = theApp.SetURLToOpen(file);
 		theApp.OnBrowse(); // create browser window (to return its handle)
 		// Later the documented will be opened in a browser window.
@@ -195,38 +197,35 @@ CoCormanLispShutdownClient::CoCormanLispShutdownClient()
 	m_eventLoopThreadID = GetCurrentThreadId();
 }
 
-CoCormanLispShutdownClient::~CoCormanLispShutdownClient()
-{
-}
-
+CoCormanLispShutdownClient::~CoCormanLispShutdownClient() {}
 
 //////////////////////////////////////////////////////////////////////
 // IUnknown interfaces
 
 STDMETHODIMP CoCormanLispShutdownClient::QueryInterface(REFIID riid, void** ppv)
 {
-    if (riid == IID_IUnknown)
-        *ppv = this;
-    else if (riid == IID_ICormanLispShutdown)
-        *ppv = (ICormanLispShutdown*)this;
-    else
-        *ppv = 0;
-    if (*ppv)
-        ((IUnknown*)*ppv)->AddRef();
-    return *ppv ? S_OK : E_NOINTERFACE;
+	if (riid == IID_IUnknown)
+		*ppv = this;
+	else if (riid == IID_ICormanLispShutdown)
+		*ppv = (ICormanLispShutdown*)this;
+	else
+		*ppv = 0;
+	if (*ppv)
+		((IUnknown*)*ppv)->AddRef();
+	return *ppv ? S_OK : E_NOINTERFACE;
 }
 
 STDMETHODIMP_(ULONG) CoCormanLispShutdownClient::AddRef()
 {
-    return InterlockedIncrement(&m_cRef);
+	return InterlockedIncrement(&m_cRef);
 }
 
 STDMETHODIMP_(ULONG) CoCormanLispShutdownClient::Release()
 {
-    if (InterlockedDecrement(&m_cRef) != 0)
-        return m_cRef;
-    delete this;
-    return 0;
+	if (InterlockedDecrement(&m_cRef) != 0)
+		return m_cRef;
+	delete this;
+	return 0;
 }
 
 extern void DisableLispSystem();
@@ -250,5 +249,3 @@ STDMETHODIMP CoCormanLispShutdownClient::Disconnect(IConnectionPoint* pConnectio
 {
 	return pConnectionPoint->Unadvise(m_dwCookie);
 }
-
-

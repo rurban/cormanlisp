@@ -16,34 +16,26 @@
 
 #ifdef _WIN32
 
-PLEvent::PLEvent(BOOL bInitiallyOwn, BOOL bManualReset, LPCTSTR pstrName,
-	LPSECURITY_ATTRIBUTES lpsaAttribute)
+PLEvent::PLEvent(BOOL bInitiallyOwn, BOOL bManualReset, LPCTSTR pstrName, LPSECURITY_ATTRIBUTES lpsaAttribute)
 	: PLSyncObject(pstrName)
 {
-	m_hObject = ::CreateEvent(lpsaAttribute, bManualReset,
-		bInitiallyOwn, pstrName);
+	m_hObject = ::CreateEvent(lpsaAttribute, bManualReset, bInitiallyOwn, pstrName);
 }
 
-PLEvent::~PLEvent()
-{
-}
+PLEvent::~PLEvent() {}
 
 BOOL PLEvent::Unlock()
 {
 	return TRUE;
 }
 
-PLSemaphore::PLSemaphore(LONG lInitialCount, LONG lMaxCount,
-	LPCTSTR pstrName, LPSECURITY_ATTRIBUTES lpsaAttributes)
-	:  PLSyncObject(pstrName)
+PLSemaphore::PLSemaphore(LONG lInitialCount, LONG lMaxCount, LPCTSTR pstrName, LPSECURITY_ATTRIBUTES lpsaAttributes)
+	: PLSyncObject(pstrName)
 {
-	m_hObject = ::CreateSemaphore(lpsaAttributes, lInitialCount, lMaxCount,
-		pstrName);
+	m_hObject = ::CreateSemaphore(lpsaAttributes, lInitialCount, lMaxCount, pstrName);
 }
 
-PLSemaphore::~PLSemaphore()
-{
-}
+PLSemaphore::~PLSemaphore() {}
 
 BOOL PLSemaphore::Unlock(LONG lCount, LPLONG lpPrevCount /* =NULL */)
 {
@@ -117,9 +109,7 @@ PLSyncObject::PLSyncObject(LPCTSTR /*pstrName*/)
 	m_hObject = NULL;
 }
 
-PLSyncObject::~PLSyncObject()
-{
-}
+PLSyncObject::~PLSyncObject() {}
 
 BOOL PLSyncObject::Lock(DWORD /*dwTimeout*/)
 {
@@ -128,11 +118,8 @@ BOOL PLSyncObject::Lock(DWORD /*dwTimeout*/)
 
 // ---- PLEvent ----
 
-PLEvent::PLEvent(BOOL bInitiallyOwn, BOOL bManualReset, LPCTSTR /*pstrName*/,
-	LPSECURITY_ATTRIBUTES /*lpsaAttribute*/)
-	: PLSyncObject(NULL)
-	, m_signaled(bInitiallyOwn ? true : false)
-	, m_manualReset(bManualReset ? true : false)
+PLEvent::PLEvent(BOOL bInitiallyOwn, BOOL bManualReset, LPCTSTR /*pstrName*/, LPSECURITY_ATTRIBUTES /*lpsaAttribute*/)
+	: PLSyncObject(NULL), m_signaled(bInitiallyOwn ? true : false), m_manualReset(bManualReset ? true : false)
 {
 	pthread_mutex_init(&m_eventMutex, NULL);
 	pthread_cond_init(&m_eventCond, NULL);
@@ -162,8 +149,8 @@ BOOL PLEvent::Unlock()
 
 // ---- PLSemaphore ----
 
-PLSemaphore::PLSemaphore(LONG lInitialCount, LONG lMaxCount,
-	LPCTSTR /*pstrName*/, LPSECURITY_ATTRIBUTES /*lpsaAttributes*/)
+PLSemaphore::PLSemaphore(LONG lInitialCount, LONG lMaxCount, LPCTSTR /*pstrName*/,
+						 LPSECURITY_ATTRIBUTES /*lpsaAttributes*/)
 	: PLSyncObject(NULL)
 {
 	sem_init(&m_sem, 0, (unsigned int)lInitialCount);

@@ -15,13 +15,13 @@
 class CWBCmdGroup
 {
 public:
-   // CommandTarget ids for menu driving
-   enum 
-   {
-      HTMLID_FIND         = 1,
-      HTMLID_VIEWSOURCE   = 2,
-      HTMLID_OPTIONS      = 3,
-   };
+	// CommandTarget ids for menu driving
+	enum
+	{
+		HTMLID_FIND = 1,
+		HTMLID_VIEWSOURCE = 2,
+		HTMLID_OPTIONS = 3,
+	};
 };
 
 class CUrlEdit : public CEdit
@@ -35,27 +35,28 @@ public:
 class CBrowserFrame : public CSMDIChildWnd
 {
 public:
-   // Utility Methods
-   void SetUrlCBText(const CString& strUrlText);
-   void SetStatusBarText(const CString& strUrlText);
+	// Utility Methods
+	void SetUrlCBText(const CString& strUrlText);
+	void SetStatusBarText(const CString& strUrlText);
 
-   void PrintDocument();
-   void SaveAsFile();
-   HWND m_hwndWebBrowser;
-   void activateUrlView(bool);
+	void PrintDocument();
+	void SaveAsFile();
+	HWND m_hwndWebBrowser;
+	void activateUrlView(bool);
 
 protected: // create from serialization only
 	CBrowserFrame();
 	DECLARE_DYNCREATE(CBrowserFrame)
 
-// Operations
+	// Operations
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+
 protected:
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
-// Implementation
+	// Implementation
 public:
 	virtual ~CBrowserFrame();
 #ifdef _DEBUG
@@ -63,8 +64,8 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:  // control bar embedded members
-	CToolBar    m_wndToolBar;
+protected: // control bar embedded members
+	CToolBar m_wndToolBar;
 
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -90,9 +91,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 private:
 	CStatusBar m_wndStatusBar;
-	CUrlEdit  m_cbURL;              // The URL text box
+	CUrlEdit m_cbURL; // The URL text box
 	bool m_bUrlActive;
-	HRESULT ExecCmdTarget(const GUID *pguidCmdGroup, DWORD nCmdID);
+	HRESULT ExecCmdTarget(const GUID* pguidCmdGroup, DWORD nCmdID);
 };
 
 class CBrowserDoc : public CDocument
@@ -126,7 +127,7 @@ public:
 	CBrowserView();
 	~CBrowserView();
 
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
+	virtual void OnDraw(CDC* pDC); // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	CBrowserDoc* GetDocument();
 	virtual void OnInitialUpdate();
@@ -140,14 +141,14 @@ public:
 	int m_sizeY;
 
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSize( UINT nType, int cx, int cy );
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnFilePrint();
 	afx_msg void OnFileSaveAs();
 	afx_msg void OnTitleChange(LPCTSTR lpszText);
 	afx_msg void OnDownloadComplete();
 	afx_msg void OnStatusTextChange(LPCTSTR lpszText);
 	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
- 
+
 	DECLARE_EVENTSINK_MAP()
 
 	DECLARE_MESSAGE_MAP()
@@ -157,8 +158,8 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 private:
-	HRESULT ExecCmdTarget(const GUID *pguidCmdGroup, DWORD nCmdID);
-   CBrowserFrame* m_pFrame;
+	HRESULT ExecCmdTarget(const GUID* pguidCmdGroup, DWORD nCmdID);
+	CBrowserFrame* m_pFrame;
 };
 
 #endif

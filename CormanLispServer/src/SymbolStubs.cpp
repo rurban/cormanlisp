@@ -13,35 +13,38 @@
 // names aren't reachable from GCC inline asm (which uses unmangled names).
 // Provide weak aliases from the asm-expected name to the mangled symbol.
 
-extern "C" {
+extern "C"
+{
+	// From CormanLispServer.cpp (mangled _Z8ThreadQVv)
+	extern LispObj* ThreadQV() __asm__("_Z8ThreadQVv");
 
-// From CormanLispServer.cpp (mangled _Z8ThreadQVv)
-extern LispObj* ThreadQV() __asm__("_Z8ThreadQVv");
+	// From Gc.cpp
+	extern void EnterGCCriticalSection() __asm__("_Z22EnterGCCriticalSectionv");
+	extern LispObj AllocLocalCons() __asm__("_Z14AllocLocalConsv");
+	extern LispObj LoadLocalHeap() __asm__("_Z13LoadLocalHeapv");
+	extern void garbageCollect(long) __asm__("_Z14garbageCollectl");
 
-// From Gc.cpp
-extern void EnterGCCriticalSection() __asm__("_Z22EnterGCCriticalSectionv");
-extern LispObj AllocLocalCons() __asm__("_Z14AllocLocalConsv");
-extern LispObj LoadLocalHeap() __asm__("_Z13LoadLocalHeapv");
-extern void garbageCollect(long) __asm__("_Z14garbageCollectl");
+	// From Lispfunc.cpp
+	extern LispObj Plus(LispObj, ...) __asm__("_Z4Plusmz");
+	extern LispObj Minus(LispObj, ...) __asm__("_Z5Minusmz");
+	extern void checkFunction(LispObj) __asm__("_Z13checkFunctionm");
 
-// From Lispfunc.cpp
-extern LispObj Plus(LispObj, ...) __asm__("_Z4Plusmz");
-extern LispObj Minus(LispObj, ...) __asm__("_Z5Minusmz");
-extern void checkFunction(LispObj) __asm__("_Z13checkFunctionm");
+	// ---- Stubs for functions lost to #if 0 ----
 
-// ---- Stubs for functions lost to #if 0 ----
+	// AllocLargeVector was inside #if 0 in Gc.cpp
+	LispObj AllocLargeVector(long)
+	{
+		return 0;
+	}
 
-// AllocLargeVector was inside #if 0 in Gc.cpp
-LispObj AllocLargeVector(long) { return 0; }
+	// WrongNumberOfArgs
+	void WrongNumberOfArgs() {}
 
-// WrongNumberOfArgs
-void WrongNumberOfArgs() {}
+	// throwOSException / ThrowUserException — inside #if 0 in Lisp.cpp
+	void throwOSException() {}
+	void ThrowUserException() {}
 
-// throwOSException / ThrowUserException — inside #if 0 in Lisp.cpp
-void throwOSException() {}
-void ThrowUserException() {}
-
-// LeaveGCCriticalSection — inside #if 0 in Gc.cpp
-void LeaveGCCriticalSection() {}
+	// LeaveGCCriticalSection — inside #if 0 in Gc.cpp
+	void LeaveGCCriticalSection() {}
 
 } // extern "C"

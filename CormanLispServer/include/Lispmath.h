@@ -65,4 +65,4 @@ LispDeclare(Logorc1);
 LispDeclare(Logorc2);
 LispDeclare(Complex);
 
-#endif	// LISPMATH_H
+#endif // LISPMATH_H

@@ -22,7 +22,7 @@
 
 class CharBuf;
 
-void InitializeCormanLisp(IUnknown* client, const UserInfo *user_info);
+void InitializeCormanLisp(IUnknown* client, const UserInfo* user_info);
 void RunCormanLisp(HANDLE* thread);
 void ProcessLispSource(char* text, long numChars);
 long GetNumLispThreads();
@@ -32,22 +32,22 @@ extern "C" __declspec(dllexport) void BlessThread();
 extern "C" __declspec(dllexport) void UnblessThread();
 extern "C" __declspec(dllexport) void* GetCallbackFunctionPointer(wchar_t* functionName, wchar_t* packageName);
 long handleStructuredException(long exception, LPEXCEPTION_POINTERS info);
-EXCEPTION_DISPOSITION __cdecl Heap_Fault_Handler(struct _EXCEPTION_RECORD* ExceptionRecord,
-    void* EstablisherFrame, struct _CONTEXT* ContextRecord, void* DispatcherContext);
+EXCEPTION_DISPOSITION __cdecl Heap_Fault_Handler(struct _EXCEPTION_RECORD* ExceptionRecord, void* EstablisherFrame,
+												 struct _CONTEXT* ContextRecord, void* DispatcherContext);
 long getHeapStatistics(long generation, long* allocated, long* used);
 
-extern IUnknown*					ClientUnknown;
-extern ICormanLispTextOutput*		ClientTextOutput;
-extern ICormanLispStatusMessage*	ClientMessage;
-extern ICormanLispShutdown*			ClientShutdown;
-extern CoCormanLisp*				CormanLispServer;
-extern CharBuf						TerminalInputBuf;
-extern const int					LispImageNameMax;
-extern char							LispImageName[];
-extern int							CormanLispClientType;
-extern const UserInfo*              CurrentUserInfo;
+extern IUnknown* ClientUnknown;
+extern ICormanLispTextOutput* ClientTextOutput;
+extern ICormanLispStatusMessage* ClientMessage;
+extern ICormanLispShutdown* ClientShutdown;
+extern CoCormanLisp* CormanLispServer;
+extern CharBuf TerminalInputBuf;
+extern const int LispImageNameMax;
+extern char LispImageName[];
+extern int CormanLispClientType;
+extern const UserInfo* CurrentUserInfo;
 
 typedef void (*TextOutputFuncType)(wchar_t* text, long numChars);
-extern TextOutputFuncType			TextOutputFuncPtr;
+extern TextOutputFuncType TextOutputFuncPtr;
 
-#endif	// CORMANLISPSERVER_H
+#endif // CORMANLISPSERVER_H

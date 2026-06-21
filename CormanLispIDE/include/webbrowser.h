@@ -23,28 +23,25 @@ protected:
 public:
 	CLSID const& GetClsid()
 	{
-		static CLSID const clsid
-			= { 0xeab22ac3, 0x30c1, 0x11cf, { 0xa7, 0xeb, 0x0, 0x0, 0xc0, 0x5b, 0xae, 0xb } };
+		static CLSID const clsid = {0xeab22ac3, 0x30c1, 0x11cf, {0xa7, 0xeb, 0x0, 0x0, 0xc0, 0x5b, 0xae, 0xb}};
 		return clsid;
 	}
-	virtual BOOL Create(LPCTSTR /*lpszClassName*/,
-		LPCTSTR lpszWindowName, DWORD dwStyle,
-		const RECT& rect,
-		CWnd* pParentWnd, UINT nID,
-		CCreateContext* /*pContext*/ = NULL)
-	{ return CreateControl(GetClsid(), lpszWindowName, dwStyle, rect, pParentWnd, nID); }
+	virtual BOOL Create(LPCTSTR /*lpszClassName*/, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect,
+						CWnd* pParentWnd, UINT nID, CCreateContext* /*pContext*/ = NULL)
+	{
+		return CreateControl(GetClsid(), lpszWindowName, dwStyle, rect, pParentWnd, nID);
+	}
 
-    BOOL Create(LPCTSTR lpszWindowName, DWORD dwStyle,
-		const RECT& rect, CWnd* pParentWnd, UINT nID,
-		CFile* pPersist = NULL, BOOL bStorage = FALSE,
-		BSTR bstrLicKey = NULL)
-	{ return CreateControl(GetClsid(), lpszWindowName, dwStyle, rect, pParentWnd, nID,
-		pPersist, bStorage, bstrLicKey); }
+	BOOL Create(LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID,
+				CFile* pPersist = NULL, BOOL bStorage = FALSE, BSTR bstrLicKey = NULL)
+	{
+		return CreateControl(GetClsid(), lpszWindowName, dwStyle, rect, pParentWnd, nID, pPersist, bStorage,
+							 bstrLicKey);
+	}
 
-// Attributes
+	// Attributes
 public:
-
-// Operations
+	// Operations
 public:
 	void GoBack();
 	void GoForward();

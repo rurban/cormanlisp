@@ -16,22 +16,20 @@ class CSMDIChildWnd : public CMDIChildWnd
 {
 	DECLARE_DYNCREATE(CSMDIChildWnd)
 protected:
-	CSMDIChildWnd();           // protected constructor used by dynamic creation
+	CSMDIChildWnd(); // protected constructor used by dynamic creation
 
-// Attributes
+	// Attributes
 public:
-
-// Operations
+	// Operations
 public:
-
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSMDIChildWnd)
-	public:
+public:
 	virtual BOOL DestroyWindow();
 	//}}AFX_VIRTUAL
 
-// Implementation
+	// Implementation
 protected:
 	virtual ~CSMDIChildWnd();
 
@@ -41,7 +39,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-	bool	m_bShowOnce;
+	bool m_bShowOnce;
 };
 
 /////////////////////////////////////////////////////////////////////////////

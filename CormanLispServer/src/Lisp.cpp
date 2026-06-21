@@ -35,7 +35,7 @@
 #include <wtypes.h>
 #endif
 
-#pragma warning (disable:4127)				// conditional expression is constant
+#pragma warning(disable : 4127) // conditional expression is constant
 
 CL_EXPORT DWORD QV_Index = 0;
 CL_EXPORT DWORD Thread_Index = 0;
@@ -63,8 +63,7 @@ LispThreadQueue ThreadList;
 extern CriticalSection TQCriticalSection;
 PLEvent InitializationEvent(FALSE, TRUE, 0 /*"CormanLispInitialization" */);
 
-LispObj* 
-createNewQV()
+LispObj* createNewQV()
 {
 	int i = 0;
 	LispObj* qvr = new LispObj[QV_MAX];
@@ -79,7 +78,7 @@ createNewQV()
 
 	for (i = FirstSpecialSymbolEntry; i < QV_MAX; i++)
 	{
-		// skip over any special bindings other than the 
+		// skip over any special bindings other than the
 		// last (shared) one
 		LispObj c = QV[i];
 		while (isCons(c) && isCons(CDR(c)))
@@ -90,8 +89,7 @@ createNewQV()
 	return qvr;
 }
 
-void
-initSymbols()
+void initSymbols()
 {
 	long i = 0;
 
@@ -108,45 +106,45 @@ initSymbols()
 	// create NIL symbol -- everyone needs this!
 	QV[Nil_Index] = AllocVector(SYMBOL_SIZE);
 	UVECTOR(NIL)[0] |= (SymbolType << 3);
-	UVECTOR(NIL)[SYMBOL_NAME] = stringNode("NIL");			//	print value
-	UVECTOR(NIL)[SYMBOL_VALUE] = cons(NIL, NIL);			//	value
-	UVECTOR(NIL)[SYMBOL_PACKAGE] = NIL;						//	package
-	UVECTOR(NIL)[SYMBOL_PROPERTY_LIST] = NIL;				//	property list
-	UVECTOR(NIL)[SYMBOL_CONSTANT] = 0;						//	constant (change later)
-	UVECTOR(NIL)[SYMBOL_FUNCTION] = cons(UNINITIALIZED, NIL);//	function
-	UVECTOR(NIL)[SYMBOL_FUNCTION_TYPE]	= NIL;
-	UVECTOR(NIL)[SYMBOL_JUMP_TABLE]	= 0;
-	UVECTOR(NIL)[SYMBOL_VAR_TABLE]	= 0;
+	UVECTOR(NIL)[SYMBOL_NAME] = stringNode("NIL"); //	print value
+	UVECTOR(NIL)[SYMBOL_VALUE] = cons(NIL, NIL); //	value
+	UVECTOR(NIL)[SYMBOL_PACKAGE] = NIL; //	package
+	UVECTOR(NIL)[SYMBOL_PROPERTY_LIST] = NIL; //	property list
+	UVECTOR(NIL)[SYMBOL_CONSTANT] = 0; //	constant (change later)
+	UVECTOR(NIL)[SYMBOL_FUNCTION] = cons(UNINITIALIZED, NIL); //	function
+	UVECTOR(NIL)[SYMBOL_FUNCTION_TYPE] = NIL;
+	UVECTOR(NIL)[SYMBOL_JUMP_TABLE] = 0;
+	UVECTOR(NIL)[SYMBOL_VAR_TABLE] = 0;
 
 	// create T symbol
 	QV[T_Index] = AllocVector(SYMBOL_SIZE);
 	UVECTOR(T)[0] |= (SymbolType << 3);
-	UVECTOR(T)[SYMBOL_NAME] = stringNode("T");				//	print value
-	UVECTOR(T)[SYMBOL_VALUE] = cons(T, NIL);				//	value
-	UVECTOR(T)[SYMBOL_PACKAGE] = NIL;						//	package
-	UVECTOR(T)[SYMBOL_PROPERTY_LIST] = NIL;					//	property list
-	UVECTOR(T)[SYMBOL_CONSTANT] = SYMBOL_CONSTANT_FLAG;		//	constant
-	UVECTOR(T)[SYMBOL_FUNCTION] = cons(UNINITIALIZED, NIL);	//	function
-	UVECTOR(T)[SYMBOL_FUNCTION_TYPE]	= NIL;
-	UVECTOR(T)[SYMBOL_JUMP_TABLE]	= 0;
-	UVECTOR(T)[SYMBOL_VAR_TABLE]	= 0;
+	UVECTOR(T)[SYMBOL_NAME] = stringNode("T"); //	print value
+	UVECTOR(T)[SYMBOL_VALUE] = cons(T, NIL); //	value
+	UVECTOR(T)[SYMBOL_PACKAGE] = NIL; //	package
+	UVECTOR(T)[SYMBOL_PROPERTY_LIST] = NIL; //	property list
+	UVECTOR(T)[SYMBOL_CONSTANT] = SYMBOL_CONSTANT_FLAG; //	constant
+	UVECTOR(T)[SYMBOL_FUNCTION] = cons(UNINITIALIZED, NIL); //	function
+	UVECTOR(T)[SYMBOL_FUNCTION_TYPE] = NIL;
+	UVECTOR(T)[SYMBOL_JUMP_TABLE] = 0;
+	UVECTOR(T)[SYMBOL_VAR_TABLE] = 0;
 
-	UVECTOR(NIL)[SYMBOL_CONSTANT] = SYMBOL_CONSTANT_FLAG;	//	make NIL constant
-	UVECTOR(T)[SYMBOL_CONSTANT] = SYMBOL_CONSTANT_FLAG;		//	make T constant
+	UVECTOR(NIL)[SYMBOL_CONSTANT] = SYMBOL_CONSTANT_FLAG; //	make NIL constant
+	UVECTOR(T)[SYMBOL_CONSTANT] = SYMBOL_CONSTANT_FLAG; //	make T constant
 
-//	INIT_SYMBOL(CHARACTER);	
+	//	INIT_SYMBOL(CHARACTER);
 	// create CHARACTER symbol
 	QV[CHARACTER_Index] = AllocVector(SYMBOL_SIZE);
 	UVECTOR(CHARACTER)[0] |= (SymbolType << 3);
-	UVECTOR(CHARACTER)[SYMBOL_NAME] = stringNode("CHARACTER");		//	print value
-	UVECTOR(CHARACTER)[SYMBOL_VALUE] = cons(UNINITIALIZED, NIL);	//	value
-	UVECTOR(CHARACTER)[SYMBOL_PACKAGE] = NIL;						//	package
-	UVECTOR(CHARACTER)[SYMBOL_PROPERTY_LIST] = NIL;					//	property list
-	UVECTOR(CHARACTER)[SYMBOL_CONSTANT] = 0;						//	constant
-	UVECTOR(CHARACTER)[SYMBOL_FUNCTION] = cons(UNINITIALIZED, NIL);	//	function
-	UVECTOR(CHARACTER)[SYMBOL_FUNCTION_TYPE]	= NIL;
-	UVECTOR(CHARACTER)[SYMBOL_JUMP_TABLE]	= 0;
-	UVECTOR(CHARACTER)[SYMBOL_VAR_TABLE]	= 0;
+	UVECTOR(CHARACTER)[SYMBOL_NAME] = stringNode("CHARACTER"); //	print value
+	UVECTOR(CHARACTER)[SYMBOL_VALUE] = cons(UNINITIALIZED, NIL); //	value
+	UVECTOR(CHARACTER)[SYMBOL_PACKAGE] = NIL; //	package
+	UVECTOR(CHARACTER)[SYMBOL_PROPERTY_LIST] = NIL; //	property list
+	UVECTOR(CHARACTER)[SYMBOL_CONSTANT] = 0; //	constant
+	UVECTOR(CHARACTER)[SYMBOL_FUNCTION] = cons(UNINITIALIZED, NIL); //	function
+	UVECTOR(CHARACTER)[SYMBOL_FUNCTION_TYPE] = NIL;
+	UVECTOR(CHARACTER)[SYMBOL_JUMP_TABLE] = 0;
+	UVECTOR(CHARACTER)[SYMBOL_VAR_TABLE] = 0;
 
 	addSymbol(CL_PACKAGE, UVECTOR(NIL)[SYMBOL_NAME], NIL, 1);
 	addSymbol(CL_PACKAGE, UVECTOR(T)[SYMBOL_NAME], T, 1);
@@ -161,17 +159,17 @@ initSymbols()
 	for (i = 0; i < NUM_STACK_MARKERS; i++)
 		QV[STACK_MARKERS_Index + i] = 0;
 
-    for (i = 0; i < NUM_FOREIGN_CELLS; i++)
+	for (i = 0; i < NUM_FOREIGN_CELLS; i++)
 		QV[FOREIGN_CELLS_Index + i] = 0;
 
-    for (i = 0; i < NUM_RETURN_VALUES; i++)
+	for (i = 0; i < NUM_RETURN_VALUES; i++)
 		QV[RETURN_VALUES_Index + i] = 0;
 
-	INIT_SYMBOL(QUOTE);	
-	INIT_SYMBOL(FUNCTION);	
-	INIT_SYMBOL(LIST);	
-	INIT_SYMBOL(APPEND);	
-	INIT_SYMBOL(MACRO);	
+	INIT_SYMBOL(QUOTE);
+	INIT_SYMBOL(FUNCTION);
+	INIT_SYMBOL(LIST);
+	INIT_SYMBOL(APPEND);
+	INIT_SYMBOL(MACRO);
 	INIT_SYMBOL(LAMBDA);
 	INIT_SYMBOL(SETQ);
 	INIT_SYMBOL(FUNCALL);
@@ -222,20 +220,20 @@ initSymbols()
 	INIT_SYMBOL(RATIO);
 	INIT_SYMBOL(NUMBER);
 
-	LETSTAR = findSymbol("LET*");	
-	RETURN_FROM = findSymbol("RETURN-FROM");	
-	EVAL_WHEN = findSymbol("EVAL-WHEN");	
-	SYMBOL_VALUE_SYM = findSymbol("SYMBOL-VALUE");	
-	SYMBOL_FUNCTION_SYM = findSymbol("SYMBOL-FUNCTION");	
-	LISTSTAR = findSymbol("LIST*");	
-	SPECIAL_OPERATOR = findSymbol("SPECIAL-OPERATOR");	
-	Eof = findSymbol("EOF");	
-	COMMA_TOKEN = findSymbol("%__COMMA__");	
-	COMMA_DOT_TOKEN = findSymbol("%__COMMA_DOT__");	
-	COMMA_ATSIGN_TOKEN = findSymbol("%__COMMA_ATSIGN__");	
-	CREATE_CLOSURE = findSymbol("%CREATE-CLOSURE");	
-	DOT = findSymbol(".");	
-	RIGHT_PAREN = findSymbol(")");	
+	LETSTAR = findSymbol("LET*");
+	RETURN_FROM = findSymbol("RETURN-FROM");
+	EVAL_WHEN = findSymbol("EVAL-WHEN");
+	SYMBOL_VALUE_SYM = findSymbol("SYMBOL-VALUE");
+	SYMBOL_FUNCTION_SYM = findSymbol("SYMBOL-FUNCTION");
+	LISTSTAR = findSymbol("LIST*");
+	SPECIAL_OPERATOR = findSymbol("SPECIAL-OPERATOR");
+	Eof = findSymbol("EOF");
+	COMMA_TOKEN = findSymbol("%__COMMA__");
+	COMMA_DOT_TOKEN = findSymbol("%__COMMA_DOT__");
+	COMMA_ATSIGN_TOKEN = findSymbol("%__COMMA_ATSIGN__");
+	CREATE_CLOSURE = findSymbol("%CREATE-CLOSURE");
+	DOT = findSymbol(".");
+	RIGHT_PAREN = findSymbol(")");
 	READTABLE = findSymbol("*READTABLE*");
 	STRINGNODE = findSymbol("%STRINGNODE");
 	STANDARD_INPUT = findSymbol("*STANDARD-INPUT*");
@@ -430,9 +428,9 @@ initSymbols()
 	EXECUTE_FINALIZERS = findSymbol("%EXECUTE-FINALIZERS");
 	UNDEFINED_FUNCTIONS = findSymbol("*UNDEFINED-FUNCTIONS*");
 	INIT_SYMBOL(GENSYM);
-	COMPILER_CHECK_ARGS_NUM	= findSymbol("COMPILER-CHECK-ARGS-NUM");
-	COMPILER_CHECK_TYPES	= findSymbol("COMPILER-CHECK-TYPES");
-	COMPILER_FOLD_CONSTANTS	= findSymbol("COMPILER-FOLD-CONSTANTS");
+	COMPILER_CHECK_ARGS_NUM = findSymbol("COMPILER-CHECK-ARGS-NUM");
+	COMPILER_CHECK_TYPES = findSymbol("COMPILER-CHECK-TYPES");
+	COMPILER_FOLD_CONSTANTS = findSymbol("COMPILER-FOLD-CONSTANTS");
 	COMPILER_INLINE_FUNCTIONS = findSymbol("COMPILER-INLINE-FUNCTIONS");
 	COMPILER_OPTIMIZE_TAIL_RECURSION = findSymbol("COMPILER-OPTIMIZE-TAIL-RECURSION");
 	LOAD_LOCAL_HEAP = findSymbol("%LOAD-LOCAL-HEAP");
@@ -456,7 +454,7 @@ initSymbols()
 	CAPTURED_LEXICAL_CALLBACK = findSymbol("*CAPTURED-LEXICAL-CALLBACK*");
 	WARN = findSymbol("WARN");
 	RESET_HASH_ID = findSymbol("RESET-HASH-ID");
-    LOAD_TIME_VALUES = findSymbol("*LOAD-TIME-VALUES*");
+	LOAD_TIME_VALUES = findSymbol("*LOAD-TIME-VALUES*");
 
 	HEAP_0_START = findSymbol("HEAP_0_START");
 	HEAP_0_END = findSymbol("HEAP_0_END");
@@ -472,8 +470,7 @@ initSymbols()
 
 char CormanLispDirectoryBuffer[_MAX_PATH];
 
-void
-initLisp()
+void initLisp()
 {
 	long i = 0;
 	long tableSize = (6007 * 3);
@@ -491,20 +488,20 @@ initLisp()
 	// set up common lisp package
 	CL_PACKAGE = AllocVector(PACKAGE_SIZE);
 
-	UVECTOR(CL_PACKAGE)[0]						|= (PackageType << 3);
-	UVECTOR(CL_PACKAGE)[PACKAGE_NAME]			= 0;
-	UVECTOR(CL_PACKAGE)[PACKAGE_NICKNAMES]		= 0;
-	UVECTOR(CL_PACKAGE)[PACKAGE_USE_LIST]		= 0;
+	UVECTOR(CL_PACKAGE)[0] |= (PackageType << 3);
+	UVECTOR(CL_PACKAGE)[PACKAGE_NAME] = 0;
+	UVECTOR(CL_PACKAGE)[PACKAGE_NICKNAMES] = 0;
+	UVECTOR(CL_PACKAGE)[PACKAGE_USE_LIST] = 0;
 	UVECTOR(CL_PACKAGE)[PACKAGE_USED_BY_LIST] = 0;
 	UVECTOR(CL_PACKAGE)[PACKAGE_SHADOWING_SYMBOLS] = 0;
-	UVECTOR(CL_PACKAGE)[PACKAGE_CAPACITY]		= wrapInteger(4001);		// capacity
-	UVECTOR(CL_PACKAGE)[PACKAGE_COUNT]			= wrapInteger(0);			// current count
-	UVECTOR(CL_PACKAGE)[PACKAGE_SYNC]			= 0;
+	UVECTOR(CL_PACKAGE)[PACKAGE_CAPACITY] = wrapInteger(4001); // capacity
+	UVECTOR(CL_PACKAGE)[PACKAGE_COUNT] = wrapInteger(0); // current count
+	UVECTOR(CL_PACKAGE)[PACKAGE_SYNC] = 0;
 	// set up package table
 	packageTable = AllocVector(tableSize + 1);
 	UVECTOR(packageTable)[0] |= (SimpleVectorType << 3);
 	UVECTOR(packageTable)[ARRAY_SIMPLE_VECTOR_LENGTH] = wrapInteger(tableSize);
-	UVECTOR(CL_PACKAGE)[PACKAGE_TABLE] = packageTable;	// storage
+	UVECTOR(CL_PACKAGE)[PACKAGE_TABLE] = packageTable; // storage
 
 	SYMBOL_TABLE_COUNT = wrapInteger(FirstJumpTableEntry);
 	SYMBOL_TABLE_VAR_COUNT = wrapInteger(FirstSpecialSymbolEntry);
@@ -519,23 +516,22 @@ initLisp()
 	setSymbolValue(PACKAGE, CL_PACKAGE);
 
 	UVECTOR(CL_PACKAGE)[PACKAGE_NAME] = stringNode("COMMON-LISP");
-	UVECTOR(CL_PACKAGE)[PACKAGE_NICKNAMES]		= NIL;
-	UVECTOR(CL_PACKAGE)[PACKAGE_USE_LIST]		= NIL;
-	UVECTOR(CL_PACKAGE)[PACKAGE_USED_BY_LIST]	= NIL;
+	UVECTOR(CL_PACKAGE)[PACKAGE_NICKNAMES] = NIL;
+	UVECTOR(CL_PACKAGE)[PACKAGE_USE_LIST] = NIL;
+	UVECTOR(CL_PACKAGE)[PACKAGE_USED_BY_LIST] = NIL;
 	UVECTOR(CL_PACKAGE)[PACKAGE_SHADOWING_SYMBOLS] = NIL;
-	UVECTOR(CL_PACKAGE)[PACKAGE_SYNC]			= NIL;
+	UVECTOR(CL_PACKAGE)[PACKAGE_SYNC] = NIL;
 
 	USER_PACKAGE = packageNode(stringNode("COMMON-LISP-USER"));
 	CORMANLISP_PACKAGE = packageNode(stringNode("CORMANLISP"));
 	KEYWORD_PACKAGE = packageNode(stringNode("KEYWORD"));
 
-	UVECTOR(USER_PACKAGE)[PACKAGE_USE_LIST]		= list(CORMANLISP_PACKAGE, END_LIST);
-	UVECTOR(CORMANLISP_PACKAGE)[PACKAGE_USE_LIST]= cons(CL_PACKAGE, NIL);
-	UVECTOR(KEYWORD_PACKAGE)[PACKAGE_USE_LIST]	= NIL;
-//	UVECTOR(CL_PACKAGE)[PACKAGE_USE_LIST]		= cons(CORMANLISP_PACKAGE, NIL);
+	UVECTOR(USER_PACKAGE)[PACKAGE_USE_LIST] = list(CORMANLISP_PACKAGE, END_LIST);
+	UVECTOR(CORMANLISP_PACKAGE)[PACKAGE_USE_LIST] = cons(CL_PACKAGE, NIL);
+	UVECTOR(KEYWORD_PACKAGE)[PACKAGE_USE_LIST] = NIL;
+	//	UVECTOR(CL_PACKAGE)[PACKAGE_USE_LIST]		= cons(CORMANLISP_PACKAGE, NIL);
 
-	setSymbolValue(PACKAGE_LIST, list(CL_PACKAGE, USER_PACKAGE, 
-				CORMANLISP_PACKAGE, KEYWORD_PACKAGE, END_LIST));
+	setSymbolValue(PACKAGE_LIST, list(CL_PACKAGE, USER_PACKAGE, CORMANLISP_PACKAGE, KEYWORD_PACKAGE, END_LIST));
 
 	initKernelFunctions();
 	setSymbolValue(READTABLE, readtableNode());
@@ -571,7 +567,7 @@ initLisp()
 	EX_SINGLE_STEP = findKeyword("EXCEPTION-SINGLE-STEP");
 	EX_STACK_OVERFLOW = findKeyword("EXCEPTION-STACK-OVERFLOW");
 	EX_USER_ABORT = findKeyword("EXCEPTION-USER-ABORT");
-	
+
 	UREF = findSymbol("UREF");
 	UREF_SET = findSymbol("UREF-SET");
 	COMPILER_CODE_BUFFER = findPLSymbol("*COMPILER-CODE-BUFFER*");
@@ -606,10 +602,10 @@ initLisp()
 	INPUT_KEY = findKeyword("INPUT");
 	OUTPUT_KEY = findKeyword("OUTPUT");
 	BIDIRECTIONAL_KEY = findKeyword("BIDIRECTIONAL");
-	SOURCE_FILE	= findPLSymbol("*SOURCE-FILE*");
-	SOURCE_LINE	= findPLSymbol("*SOURCE-LINE*");
-	SAVE_DEBUG_INFO	= findPLSymbol("*SOURCE-DEBUG-INFO*");
-	SOURCE_LINES	= findPLSymbol("*SOURCE-LINES*");
+	SOURCE_FILE = findPLSymbol("*SOURCE-FILE*");
+	SOURCE_LINE = findPLSymbol("*SOURCE-LINE*");
+	SAVE_DEBUG_INFO = findPLSymbol("*SOURCE-DEBUG-INFO*");
+	SOURCE_LINES = findPLSymbol("*SOURCE-LINES*");
 	CORMANLISP_SERVER_DIRECTORY = findPLSymbol("*CORMANLISP-SERVER-DIRECTORY*");
 
 	createSymbolTableEntry(COMPILER_CLEANUPS);
@@ -665,9 +661,9 @@ initLisp()
 	createSymbolTableEntry(COMPILING_LAMBDA);
 	createSymbolTableEntry(FINALIZATION_PENDING);
 	createSymbolTableEntry(CAPTURED_LEXICAL_CALLBACK);
-    createSymbolTableEntry(LOAD_TIME_VALUES);
-    createSymbolTableEntry(PAGE_TABLE);
-    createSymbolTableEntry(DISASSEMBLY_OUTPUT_BUF);
+	createSymbolTableEntry(LOAD_TIME_VALUES);
+	createSymbolTableEntry(PAGE_TABLE);
+	createSymbolTableEntry(DISASSEMBLY_OUTPUT_BUF);
 
 	setSymbolValue(COMPILER_OPTIMIZE_SPEED, 0);
 	setSymbolValue(COMPILER_OPTIMIZE_SAFETY, wrapInteger(3));
@@ -735,7 +731,7 @@ initLisp()
 			break;
 	}
 	if (i >= 0)
-		CormanLispDirectoryBuffer[i + 1] = 0;		// we only want the directory
+		CormanLispDirectoryBuffer[i + 1] = 0; // we only want the directory
 
 	setSymbolValue(CORMANLISP_DIRECTORY, stringNode(CormanLispDirectoryBuffer));
 	setSymbolValue(CORMANLISP_SERVER_DIRECTORY, stringNode(CormanLispServerDirectory));
@@ -767,7 +763,7 @@ initLisp()
 	setSymbolValue(LAMBDA_SPECIAL_VARS, NIL);
 	setSymbolValue(COMPILING_LAMBDA, NIL);
 	setSymbolValue(CAPTURED_LEXICAL_CALLBACK, NIL);
-    setSymbolValue(LOAD_TIME_VALUES, NIL);
+	setSymbolValue(LOAD_TIME_VALUES, NIL);
 
 	setSymbolValue(HEAP_0_START, foreignNode());
 	setSymbolValue(HEAP_0_END, foreignNode());
@@ -776,12 +772,12 @@ initLisp()
 	setSymbolValue(HEAP_2_START, foreignNode());
 	setSymbolValue(HEAP_2_END, foreignNode());
 
-	foreignPtr(symbolValue(HEAP_0_START))	= (LispObj)EphemeralHeap1.start;	
-	foreignPtr(symbolValue(HEAP_0_END))		= (LispObj)EphemeralHeap1.end;	
-	foreignPtr(symbolValue(HEAP_1_START))	= (LispObj)EphemeralHeap2.start;	
-	foreignPtr(symbolValue(HEAP_1_END))		= (LispObj)EphemeralHeap2.end;	
-	foreignPtr(symbolValue(HEAP_2_START))	= (LispObj)LispHeap1.start;	
-	foreignPtr(symbolValue(HEAP_2_END))		= (LispObj)LispHeap1.end;
+	foreignPtr(symbolValue(HEAP_0_START)) = (LispObj)EphemeralHeap1.start;
+	foreignPtr(symbolValue(HEAP_0_END)) = (LispObj)EphemeralHeap1.end;
+	foreignPtr(symbolValue(HEAP_1_START)) = (LispObj)EphemeralHeap2.start;
+	foreignPtr(symbolValue(HEAP_1_END)) = (LispObj)EphemeralHeap2.end;
+	foreignPtr(symbolValue(HEAP_2_START)) = (LispObj)LispHeap1.start;
+	foreignPtr(symbolValue(HEAP_2_END)) = (LispObj)LispHeap1.end;
 
 	createSymbolTableEntry(HEAP_0_START);
 	createSymbolTableEntry(HEAP_0_END);
@@ -798,16 +794,12 @@ initLisp()
 	setSymbolValue(HEAP_2_GC_ID, 0);
 }
 
-void
-exitLisp()
-{
-}
+void exitLisp() {}
 
 //
 //	Create bidirection console stream (*terminal-io*)
 //
-static LispObj
-createConsoleStream()
+static LispObj createConsoleStream()
 {
 	LispObj bufLen = 0;
 	LispObj buf = 0;
@@ -815,138 +807,131 @@ createConsoleStream()
 
 	s = AllocVector(STREAM_SIZE);
 	setUvectorType(s, StreamType);
-	bufLen = wrapInteger(0x0800);		// use 2k buffer
+	bufLen = wrapInteger(0x0800); // use 2k buffer
 	buf = charVector(bufLen);
 
-	streamName(s)				= symbolName(TERMINAL_IO);
-	streamUnderflowFunc(s)		= CONSOLE_UNDERFLOW_FUNCTION;
-	streamOverflowFunc(s)		= CONSOLE_OVERFLOW_FUNCTION;
-	streamPosition(s)			= 0;
-	streamColPosition(s)		= 0;
-	streamInputBuffer(s)		= buf;
-	streamInputBufferLength(s)	= bufLen;
-	streamInputBufferPos(s)		= 0;
-	streamInputBufferNum(s)		= 0;
-	streamHandle(s)				= 0;
-	streamSubclass(s)			= CONSOLE_STREAM;
-	streamBinary(s)				= NIL;
-	streamOpen(s)				= T;
-	streamDirection(s)			= BIDIRECTIONAL_KEY;
-	streamInteractive(s)		= T;
-	streamElementType(s)		= CHARACTER;
-	streamAssociatedStreams(s)	= NIL;
-	streamOutputBuffer(s)		= charVector(bufLen);
+	streamName(s) = symbolName(TERMINAL_IO);
+	streamUnderflowFunc(s) = CONSOLE_UNDERFLOW_FUNCTION;
+	streamOverflowFunc(s) = CONSOLE_OVERFLOW_FUNCTION;
+	streamPosition(s) = 0;
+	streamColPosition(s) = 0;
+	streamInputBuffer(s) = buf;
+	streamInputBufferLength(s) = bufLen;
+	streamInputBufferPos(s) = 0;
+	streamInputBufferNum(s) = 0;
+	streamHandle(s) = 0;
+	streamSubclass(s) = CONSOLE_STREAM;
+	streamBinary(s) = NIL;
+	streamOpen(s) = T;
+	streamDirection(s) = BIDIRECTIONAL_KEY;
+	streamInteractive(s) = T;
+	streamElementType(s) = CHARACTER;
+	streamAssociatedStreams(s) = NIL;
+	streamOutputBuffer(s) = charVector(bufLen);
 	streamOutputBufferLength(s) = bufLen;
-	streamOutputBufferPos(s)	= 0;
-	streamLineNumber(s)			= 0;
+	streamOutputBufferPos(s) = 0;
+	streamLineNumber(s) = 0;
 
 	return s;
 }
 
-LispObj
-inputFileStreamNode(LispObj path)
+LispObj inputFileStreamNode(LispObj path)
 {
 	LispObj bufLen = 0;
 	LispObj buf = 0;
 	LispObj s = 0;
 	HANDLE handle = 0;
-	
-	handle = CreateFile(
-	(char*)byteArrayStart(nullTerminate(path)), // pointer to name of the file
-		GENERIC_READ,						 // access (read-write) mode
-		FILE_SHARE_READ,					 // share mode
-		NULL,								 // pointer to security descriptor
-		OPEN_EXISTING,						 // how to create
-		FILE_ATTRIBUTE_NORMAL,				 //	file attributes
-		NULL);								 // handle to file with attributes to copy
+
+	handle = CreateFile((char*)byteArrayStart(nullTerminate(path)), // pointer to name of the file
+						GENERIC_READ, // access (read-write) mode
+						FILE_SHARE_READ, // share mode
+						NULL, // pointer to security descriptor
+						OPEN_EXISTING, // how to create
+						FILE_ATTRIBUTE_NORMAL, //	file attributes
+						NULL); // handle to file with attributes to copy
 
 	if (handle == INVALID_HANDLE_VALUE)
-		Error("Could not open file ~A for reading, error code = ~A", 
-			path, createLispInteger(GetLastError()));
+		Error("Could not open file ~A for reading, error code = ~A", path, createLispInteger(GetLastError()));
 
 	s = AllocVector(STREAM_SIZE);
 	setUvectorType(s, StreamType);
-	bufLen = wrapInteger(0x0800);		// use 2k buffer
+	bufLen = wrapInteger(0x0800); // use 2k buffer
 	buf = charVector(bufLen);
 
-	streamName(s)				= path;
-	streamUnderflowFunc(s)		= FILE_UNDERFLOW_FUNCTION;
-	streamOverflowFunc(s)		= NIL;
-	streamPosition(s)			= 0;
-	streamColPosition(s)		= 0;
-	streamInputBuffer(s)		= buf;
-	streamInputBufferLength(s)	= bufLen;
-	streamInputBufferPos(s)		= 0;
-	streamInputBufferNum(s)		= 0;
-	streamHandle(s)				= createLispInteger((unsigned long)handle);
-	streamSubclass(s)			= FILE_STREAM;
-	streamBinary(s)				= NIL;
-	streamOpen(s)				= T;
-	streamDirection(s)			= INPUT_KEY;
-	streamInteractive(s)		= T;
-	streamElementType(s)		= CHARACTER;
-	streamAssociatedStreams(s)	= NIL;
- 	streamOutputBuffer(s)		= NIL;
+	streamName(s) = path;
+	streamUnderflowFunc(s) = FILE_UNDERFLOW_FUNCTION;
+	streamOverflowFunc(s) = NIL;
+	streamPosition(s) = 0;
+	streamColPosition(s) = 0;
+	streamInputBuffer(s) = buf;
+	streamInputBufferLength(s) = bufLen;
+	streamInputBufferPos(s) = 0;
+	streamInputBufferNum(s) = 0;
+	streamHandle(s) = createLispInteger((unsigned long)handle);
+	streamSubclass(s) = FILE_STREAM;
+	streamBinary(s) = NIL;
+	streamOpen(s) = T;
+	streamDirection(s) = INPUT_KEY;
+	streamInteractive(s) = T;
+	streamElementType(s) = CHARACTER;
+	streamAssociatedStreams(s) = NIL;
+	streamOutputBuffer(s) = NIL;
 	streamOutputBufferLength(s) = 0;
-	streamOutputBufferPos(s)	= 0;
-	streamLineNumber(s)			= 0;
+	streamOutputBufferPos(s) = 0;
+	streamLineNumber(s) = 0;
 
 	return s;
 }
 
-LispObj
-outputFileStreamNode(LispObj path)
+LispObj outputFileStreamNode(LispObj path)
 {
 	LispObj bufLen = 0;
 	LispObj buf = 0;
 	LispObj s = 0;
 	HANDLE handle = 0;
-	
-	handle = CreateFile(
-		(char*)byteArrayStart(nullTerminate(path)), // pointer to name of the file
-		GENERIC_WRITE,						 // access (read-write) mode
-		FILE_SHARE_READ,					 // share mode
-		NULL,								 // pointer to security descriptor
-		CREATE_ALWAYS,						 // how to create
-		FILE_ATTRIBUTE_NORMAL,				 //	file attributes
-		NULL);								 // handle to file with attributes to copy
+
+	handle = CreateFile((char*)byteArrayStart(nullTerminate(path)), // pointer to name of the file
+						GENERIC_WRITE, // access (read-write) mode
+						FILE_SHARE_READ, // share mode
+						NULL, // pointer to security descriptor
+						CREATE_ALWAYS, // how to create
+						FILE_ATTRIBUTE_NORMAL, //	file attributes
+						NULL); // handle to file with attributes to copy
 
 	if (handle == INVALID_HANDLE_VALUE)
-		Error("Could not open file ~A for writing, error code = ~A", 
-			path, createLispInteger(GetLastError()));
-	
+		Error("Could not open file ~A for writing, error code = ~A", path, createLispInteger(GetLastError()));
+
 	s = AllocVector(STREAM_SIZE);
 	setUvectorType(s, StreamType);
-	bufLen = wrapInteger(0x0800);		// use 2k buffer
+	bufLen = wrapInteger(0x0800); // use 2k buffer
 	buf = charVector(bufLen);
 
-	streamName(s)				= path;
-	streamUnderflowFunc(s)		= NIL;
-	streamOverflowFunc(s)		= FILE_OVERFLOW_FUNCTION;
-	streamPosition(s)			= 0;
-	streamColPosition(s)		= 0;
-	streamInputBuffer(s)		= NIL;
-	streamInputBufferLength(s)	= 0;
-	streamInputBufferPos(s)		= 0;
-	streamInputBufferNum(s)		= 0;
-	streamHandle(s)				= createLispInteger((unsigned long)handle);
-	streamSubclass(s)			= FILE_STREAM;
-	streamBinary(s)				= NIL;
-	streamOpen(s)				= T;
-	streamDirection(s)			= OUTPUT_KEY;
-	streamInteractive(s)		= T;
-	streamElementType(s)		= CHARACTER;
-	streamAssociatedStreams(s)	= NIL;
-	streamOutputBuffer(s)		= buf;
+	streamName(s) = path;
+	streamUnderflowFunc(s) = NIL;
+	streamOverflowFunc(s) = FILE_OVERFLOW_FUNCTION;
+	streamPosition(s) = 0;
+	streamColPosition(s) = 0;
+	streamInputBuffer(s) = NIL;
+	streamInputBufferLength(s) = 0;
+	streamInputBufferPos(s) = 0;
+	streamInputBufferNum(s) = 0;
+	streamHandle(s) = createLispInteger((unsigned long)handle);
+	streamSubclass(s) = FILE_STREAM;
+	streamBinary(s) = NIL;
+	streamOpen(s) = T;
+	streamDirection(s) = OUTPUT_KEY;
+	streamInteractive(s) = T;
+	streamElementType(s) = CHARACTER;
+	streamAssociatedStreams(s) = NIL;
+	streamOutputBuffer(s) = buf;
 	streamOutputBufferLength(s) = bufLen;
-	streamOutputBufferPos(s)	= 0;
-	streamLineNumber(s)			= 0;
+	streamOutputBufferPos(s) = 0;
+	streamLineNumber(s) = 0;
 
 	return s;
 }
 
-int
-lispmain()
+int lispmain()
 {
 	__try
 	{
@@ -959,8 +944,7 @@ lispmain()
 	return 0;
 }
 
-int
-lispSecondary(LispObj func)
+int lispSecondary(LispObj func)
 {
 	__try
 	{
@@ -972,8 +956,7 @@ lispSecondary(LispObj func)
 	return 0;
 }
 
-static void
-throwOSException()
+static void throwOSException()
 {
 	LispObj ex = 0;
 	DWORD exceptionCode = 0;
@@ -984,27 +967,27 @@ throwOSException()
 	asm volatile("mov %%eax, %0" : "=m"(exceptionCode) : : "eax");
 #endif
 
-	switch (exceptionCode)
+		switch (exceptionCode)
 	{
-	case EXCEPTION_ACCESS_VIOLATION:			ex = EX_ACCESS_VIOLATION;			break;
-	case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:		ex = EX_ARRAY_BOUNDS_EXCEEDED;		break;
-	case EXCEPTION_BREAKPOINT:					ex = EX_BREAKPOINT;					break;
-	case EXCEPTION_DATATYPE_MISALIGNMENT:		ex = EX_DATATYPE_MISALIGNMENT;		break;
-	case EXCEPTION_FLT_DENORMAL_OPERAND:		ex = EX_FLT_DENORMAL_OPERAND;		break;
-	case EXCEPTION_FLT_DIVIDE_BY_ZERO:			ex = EX_FLT_DIVIDE_BY_ZERO;			break;
-	case EXCEPTION_FLT_INEXACT_RESULT:			ex = EX_FLT_INEXACT_RESULT;			break;
-	case EXCEPTION_FLT_INVALID_OPERATION:		ex = EX_FLT_INVALID_OPERATION;		break;
-	case EXCEPTION_FLT_OVERFLOW:				ex = EX_FLT_OVERFLOW;				break;
-	case EXCEPTION_FLT_STACK_CHECK:				ex = EX_FLT_STACK_CHECK;			break;
-	case EXCEPTION_FLT_UNDERFLOW:				ex = EX_FLT_UNDERFLOW;				break;
-	case EXCEPTION_ILLEGAL_INSTRUCTION:			ex = EX_ILLEGAL_INSTRUCTION;		break;
-	case EXCEPTION_IN_PAGE_ERROR: 				ex = EX_IN_PAGE_ERROR;				break;
-	case EXCEPTION_INT_DIVIDE_BY_ZERO: 			ex = EX_INT_DIVIDE_BY_ZERO;			break;
-	case EXCEPTION_INVALID_DISPOSITION:			ex = EX_INVALID_DISPOSITION;		break;
-	case EXCEPTION_NONCONTINUABLE_EXCEPTION:	ex = EX_NONCONTINUABLE_EXCEPTION;	break;
-	case EXCEPTION_PRIV_INSTRUCTION: 			ex = EX_PRIV_INSTRUCTION;			break;
-	case EXCEPTION_SINGLE_STEP:					ex = EX_SINGLE_STEP;				break;
-	case EXCEPTION_STACK_OVERFLOW: 				ex = EX_STACK_OVERFLOW;				break;
+		case EXCEPTION_ACCESS_VIOLATION: ex = EX_ACCESS_VIOLATION; break;
+		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: ex = EX_ARRAY_BOUNDS_EXCEEDED; break;
+		case EXCEPTION_BREAKPOINT: ex = EX_BREAKPOINT; break;
+		case EXCEPTION_DATATYPE_MISALIGNMENT: ex = EX_DATATYPE_MISALIGNMENT; break;
+		case EXCEPTION_FLT_DENORMAL_OPERAND: ex = EX_FLT_DENORMAL_OPERAND; break;
+		case EXCEPTION_FLT_DIVIDE_BY_ZERO: ex = EX_FLT_DIVIDE_BY_ZERO; break;
+		case EXCEPTION_FLT_INEXACT_RESULT: ex = EX_FLT_INEXACT_RESULT; break;
+		case EXCEPTION_FLT_INVALID_OPERATION: ex = EX_FLT_INVALID_OPERATION; break;
+		case EXCEPTION_FLT_OVERFLOW: ex = EX_FLT_OVERFLOW; break;
+		case EXCEPTION_FLT_STACK_CHECK: ex = EX_FLT_STACK_CHECK; break;
+		case EXCEPTION_FLT_UNDERFLOW: ex = EX_FLT_UNDERFLOW; break;
+		case EXCEPTION_ILLEGAL_INSTRUCTION: ex = EX_ILLEGAL_INSTRUCTION; break;
+		case EXCEPTION_IN_PAGE_ERROR: ex = EX_IN_PAGE_ERROR; break;
+		case EXCEPTION_INT_DIVIDE_BY_ZERO: ex = EX_INT_DIVIDE_BY_ZERO; break;
+		case EXCEPTION_INVALID_DISPOSITION: ex = EX_INVALID_DISPOSITION; break;
+		case EXCEPTION_NONCONTINUABLE_EXCEPTION: ex = EX_NONCONTINUABLE_EXCEPTION; break;
+		case EXCEPTION_PRIV_INSTRUCTION: ex = EX_PRIV_INSTRUCTION; break;
+		case EXCEPTION_SINGLE_STEP: ex = EX_SINGLE_STEP; break;
+		case EXCEPTION_STACK_OVERFLOW: ex = EX_STACK_OVERFLOW; break;
 	}
 
 	LispCall2(Funcall, THROW_SYSTEM_EXCEPTION, ex);
@@ -1017,16 +1000,15 @@ long gStackOverflowAddress = 0;
 CL_NAKED void CallThrowOSExceptionStub()
 {
 #ifdef _MSC_VER
-	__asm push edx
-	__asm jmp throwOSException
+	__asm push edx __asm jmp throwOSException
 #else
 	asm volatile("jmp throwOSException");
 #endif
 }
 
 // a handler to be called by the system, used in compiled lisp code
-EXCEPTION_DISPOSITION __cdecl Heap_Fault_Handler(struct _EXCEPTION_RECORD* ExceptionRecord,
-    void* EstablisherFrame, struct _CONTEXT* ContextRecord, void* DispatcherContext)
+EXCEPTION_DISPOSITION __cdecl Heap_Fault_Handler(struct _EXCEPTION_RECORD* ExceptionRecord, void* EstablisherFrame,
+												 struct _CONTEXT* ContextRecord, void* DispatcherContext)
 {
 	BOOL ret = 0;
 	byte* attemptedAddress = 0;
@@ -1034,10 +1016,10 @@ EXCEPTION_DISPOSITION __cdecl Heap_Fault_Handler(struct _EXCEPTION_RECORD* Excep
 	{
 		attemptedAddress = (byte*)(ExceptionRecord->ExceptionInformation[1]);
 		if (handleMemoryAccessException(attemptedAddress))
-			return ExceptionContinueExecution;	// handled page fault--try again
+			return ExceptionContinueExecution; // handled page fault--try again
 
-        // dump information about the problem
-        WriteMemoryReportTask(attemptedAddress, ContextRecord);
+		// dump information about the problem
+		WriteMemoryReportTask(attemptedAddress, ContextRecord);
 	}
 	return ExceptionContinueSearch;
 }
@@ -1055,22 +1037,22 @@ long handleStructuredException(long exception, LPEXCEPTION_POINTERS info)
 		if (ret)
 			return EXCEPTION_CONTINUE_EXECUTION;
 
-        // dump information about the problem
-        WriteMemoryReportTask(attemptedAddress, info->ContextRecord);
+		// dump information about the problem
+		WriteMemoryReportTask(attemptedAddress, info->ContextRecord);
 
 		ip = info->ContextRecord->Eip;
 		// check for trying to execute code in the collected heap
 		// debug purposes only
 		if (inLispHeap2AddressRange(ip))
 		{
-			ip = tranlateToOtherPrimaryHeap(ip); 
+			ip = tranlateToOtherPrimaryHeap(ip);
 			info->ContextRecord->Eip = (long)ip;
-			//DebugBreak();
+			// DebugBreak();
 			OutputDebugString("Error: trying to execute code in the collected heap!!");
 
 			return EXCEPTION_CONTINUE_EXECUTION;
 		}
-	}	
+	}
 	if (exception == CONTROL_C_EXIT)
 		return EXCEPTION_CONTINUE_EXECUTION;
 
@@ -1083,11 +1065,11 @@ long handleStructuredException(long exception, LPEXCEPTION_POINTERS info)
 	asm volatile("mov %%esp, %0" : "=m"(gStackOverflowAddress) : : "memory");
 #endif
 
-	return EXCEPTION_CONTINUE_EXECUTION;
+		return EXCEPTION_CONTINUE_EXECUTION;
 }
 
 extern char LispImageName[];
-char missingImgMessage[MAX_PATH+64] = "Could not find the image file ";
+char missingImgMessage[MAX_PATH + 64] = "Could not find the image file ";
 
 void LispLoop()
 {
@@ -1119,7 +1101,7 @@ void LispLoop()
 			}
 			setSymbolValue(SOURCE_LINE, NIL);
 			x = LispCall5(Funcall, symbolFunction(READ), symbolValue(STANDARD_INPUT), NIL, UNINITIALIZED, NIL);
-			if (x == UNINITIALIZED)		// EOF
+			if (x == UNINITIALIZED) // EOF
 			{
 				extern bool g_batch_input_done;
 				if (g_batch_input_done)
@@ -1134,23 +1116,22 @@ void LispLoop()
 			if (NumReturnValues == 1)
 			{
 #ifdef _DEBUG
-				fprintf(stderr, "[LispLoop] writing val=%p to stream=%p\n",
-					(void*)val, (void*)symbolValue(STANDARD_OUTPUT));
+				fprintf(stderr, "[LispLoop] writing val=%p to stream=%p\n", (void*)val,
+						(void*)symbolValue(STANDARD_OUTPUT));
 #endif
-				LispCall2(Write, val, symbolValue(STANDARD_OUTPUT));	// just echo for now
+				LispCall2(Write, val, symbolValue(STANDARD_OUTPUT)); // just echo for now
 				LispCall1(Terpri, symbolValue(STANDARD_OUTPUT));
 				LispCall1(Force_Output, symbolValue(STANDARD_OUTPUT));
 #ifdef _DEBUG
 				fprintf(stderr, "[LispLoop] done writing\n");
 #endif
 			}
-			else
-			if (NumReturnValues > 1)
+			else if (NumReturnValues > 1)
 			{
 				vals = MULTIPLE_RETURN_VALUES;
 				while (isCons(vals))
 				{
-					LispCall2(Write, CAR(vals), symbolValue(STANDARD_OUTPUT));	// just echo for now
+					LispCall2(Write, CAR(vals), symbolValue(STANDARD_OUTPUT)); // just echo for now
 					LispCall1(Terpri, symbolValue(STANDARD_OUTPUT));
 					LispCall1(Force_Output, symbolValue(STANDARD_OUTPUT));
 					vals = CDR(vals);
@@ -1180,51 +1161,38 @@ void LispLoop()
 //
 #ifdef _MSC_VER
 
-#define SETUP_LISP_CALL(numargs)		\
-	__asm push ebp						\
-	__asm mov  ebp, esp					\
-	__asm push esi						\
-	__asm push edi						\
-	__asm push ecx						\
-	__asm push ebx						\
-	__asm call ThreadQV					\
-	__asm mov esi, eax					\
-	__asm mov ecx, numargs				\
-	__asm mov edi, [esi]
+#define SETUP_LISP_CALL(numargs)                                                                           \
+	__asm push ebp __asm mov ebp,                                                                          \
+		esp __asm push esi __asm push edi __asm push ecx __asm push ebx __asm call ThreadQV __asm mov esi, \
+		eax __asm mov ecx, numargs __asm mov edi, [esi]
 
-#define END_LISP_CALL()					\
-	__asm mov dword ptr NumReturnValues, ecx   \
-	__asm pop ebx						\
-	__asm pop ecx						\
-	__asm pop edi						\
-	__asm pop esi						\
-	__asm mov esp, ebp					\
-	__asm pop ebp						\
-	__asm ret
+#define END_LISP_CALL()                                                                                             \
+	__asm mov dword ptr NumReturnValues, ecx __asm pop ebx __asm pop ecx __asm pop edi __asm pop esi __asm mov esp, \
+		ebp __asm pop ebp __asm ret
 
 #else
 
-#define SETUP_LISP_CALL(n)                                              \
-    "push %%ebp\n\t"                                                   \
-    "mov %%esp, %%ebp\n\t"                                            \
-    "push %%esi\n\t"                                                   \
-    "push %%edi\n\t"                                                   \
-    "push %%ecx\n\t"                                                   \
-    "push %%ebx\n\t"                                                   \
-    "call ThreadQV\n\t"                                                \
-    "mov %%eax, %%esi\n\t"          /* esi = QV */                     \
-    "mov $" #n ", %%ecx\n\t"        /* numargs */                      \
-    "mov (%%esi), %%edi\n\t"        /* edi = QV[0] */
+#define SETUP_LISP_CALL(n)                 \
+	"push %%ebp\n\t"                       \
+	"mov %%esp, %%ebp\n\t"                 \
+	"push %%esi\n\t"                       \
+	"push %%edi\n\t"                       \
+	"push %%ecx\n\t"                       \
+	"push %%ebx\n\t"                       \
+	"call ThreadQV\n\t"                    \
+	"mov %%eax, %%esi\n\t" /* esi = QV */  \
+	"mov $" #n ", %%ecx\n\t" /* numargs */ \
+	"mov (%%esi), %%edi\n\t" /* edi = QV[0] */
 
-#define END_LISP_CALL()                                                 \
-    "mov %%ecx, %[nrv]\n\t"                                            \
-    "pop %%ebx\n\t"                                                    \
-    "pop %%ecx\n\t"                                                    \
-    "pop %%edi\n\t"                                                    \
-    "pop %%esi\n\t"                                                    \
-    "mov %%ebp, %%esp\n\t"                                             \
-    "pop %%ebp\n\t"                                                    \
-    "ret"
+#define END_LISP_CALL()     \
+	"mov %%ecx, %[nrv]\n\t" \
+	"pop %%ebx\n\t"         \
+	"pop %%ecx\n\t"         \
+	"pop %%edi\n\t"         \
+	"pop %%esi\n\t"         \
+	"mov %%ebp, %%esp\n\t"  \
+	"pop %%ebp\n\t"         \
+	"ret"
 
 #endif
 
@@ -1233,17 +1201,15 @@ CL_NAKED LispObj LispCall0(LispFunc func)
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(0);
 
-	__asm	call	dword ptr [func]
+	__asm call dword ptr[func]
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(0)
-		"mov 8(%%ebp), %%eax\n\t"
-		"call *%%eax\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(0) "mov 8(%%ebp), %%eax\n\t"
+									"call *%%eax\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
@@ -1252,22 +1218,18 @@ CL_NAKED LispObj LispCall1(LispFunc func, LispObj a1)
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(1);
 
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 4
+	__asm mov eax, dword ptr[a1] __asm push eax __asm call dword ptr[func] __asm add esp,
+		4
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(1)
-		"mov 12(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-		"call *8(%%ebp)\n\t"
-		"add $4, %%esp\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(1) "mov 12(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"call *8(%%ebp)\n\t"
+									"add $4, %%esp\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
@@ -1276,26 +1238,21 @@ CL_NAKED LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(2);
 
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 8
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax,
+		dword ptr[a2] __asm push eax __asm call dword ptr[func] __asm add esp,
+		8
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(2)
-        "mov 12(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 16(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-		"call *8(%%ebp)\n\t"
-		"add $8, %%esp\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(2) "mov 12(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 16(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"call *8(%%ebp)\n\t"
+									"add $8, %%esp\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
@@ -1304,30 +1261,23 @@ CL_NAKED LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, LispObj a3)
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(3);
 
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 12
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
+		dword ptr[a3] __asm push eax __asm call dword ptr[func] __asm add esp,
+		12
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(3)
-        "mov 12(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 16(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 20(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-		"call *8(%%ebp)\n\t"
-		"add $12, %%esp\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(3) "mov 12(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 16(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 20(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"call *8(%%ebp)\n\t"
+									"add $12, %%esp\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
@@ -1336,34 +1286,26 @@ CL_NAKED LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(4);
 
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 16
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
+		dword ptr[a3] __asm push eax __asm mov eax,
+		dword ptr[a4] __asm push eax __asm call dword ptr[func] __asm add esp,
+		16
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(4)
-        "mov 12(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 16(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 20(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 24(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-		"call *8(%%ebp)\n\t"
-		"add $16, %%esp\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(4) "mov 12(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 16(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 20(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 24(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"call *8(%%ebp)\n\t"
+									"add $16, %%esp\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
@@ -1372,38 +1314,28 @@ CL_NAKED LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(5);
 
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a5]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 20
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
+		dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax,
+		dword ptr[a5] __asm push eax __asm call dword ptr[func] __asm add esp,
+		20
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(5)
-        "mov 12(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 16(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 20(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 24(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 28(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-		"call *8(%%ebp)\n\t"
-		"add $20, %%esp\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(5) "mov 12(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 16(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 20(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 24(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 28(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"call *8(%%ebp)\n\t"
+									"add $20, %%esp\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
@@ -1412,152 +1344,114 @@ CL_NAKED LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(6);
 
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a5]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a6]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 24
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
+		dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax,
+		dword ptr[a5] __asm push eax __asm mov eax,
+		dword ptr[a6] __asm push eax __asm call dword ptr[func] __asm add esp,
+		24
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(6)
-        "mov 12(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 16(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 20(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 24(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 28(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 32(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-		"call *8(%%ebp)\n\t"
-		"add $24, %%esp\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(6) "mov 12(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 16(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 20(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 24(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 28(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 32(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"call *8(%%ebp)\n\t"
+									"add $24, %%esp\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
-CL_NAKED LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7)
+CL_NAKED LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6,
+						   LispObj a7)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(7);
 
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a5]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a6]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a7]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 28
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
+		dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax,
+		dword ptr[a5] __asm push eax __asm mov eax, dword ptr[a6] __asm push eax __asm mov eax,
+		dword ptr[a7] __asm push eax __asm call dword ptr[func] __asm add esp,
+		28
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(7)
-        "mov 12(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 16(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 20(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 24(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 28(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 32(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 36(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-		"call *8(%%ebp)\n\t"
-		"add $28, %%esp\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(7) "mov 12(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 16(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 20(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 24(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 28(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 32(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 36(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"call *8(%%ebp)\n\t"
+									"add $28, %%esp\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
-CL_NAKED LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6, LispObj a7, LispObj a8)
+CL_NAKED LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, LispObj a3, LispObj a4, LispObj a5, LispObj a6,
+						   LispObj a7, LispObj a8)
 {
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(8);
 
-	__asm	mov		eax, dword ptr [a1]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a2]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a3]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a4]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a5]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a6]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a7]
-	__asm	push	eax
-	__asm	mov		eax, dword ptr [a8]
-	__asm	push	eax
-	__asm	call	dword ptr [func]
-	__asm	add		esp, 32
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
+		dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax,
+		dword ptr[a5] __asm push eax __asm mov eax, dword ptr[a6] __asm push eax __asm mov eax,
+		dword ptr[a7] __asm push eax __asm mov eax,
+		dword ptr[a8] __asm push eax __asm call dword ptr[func] __asm add esp,
+		32
 
-	END_LISP_CALL();
+		END_LISP_CALL();
 #else
-	asm volatile(
-		SETUP_LISP_CALL(8)
-        "mov 12(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 16(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 20(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 24(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 28(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 32(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 36(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-        "mov 40(%%ebp), %%eax\n\t"
-		"push %%eax\n\t"
-		"call *8(%%ebp)\n\t"
-		"add $32, %%esp\n\t"
-		END_LISP_CALL()
-		: : [nrv] "m"(NumReturnValues) : "eax", "ecx", "edx", "memory"
-	);
+	asm volatile(SETUP_LISP_CALL(8) "mov 12(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 16(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 20(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 24(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 28(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 32(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 36(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"mov 40(%%ebp), %%eax\n\t"
+									"push %%eax\n\t"
+									"call *8(%%ebp)\n\t"
+									"add $32, %%esp\n\t" END_LISP_CALL()
+				 :
+				 : [nrv] "m"(NumReturnValues)
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
-
 
 //
 //	Lookup the requested symbol in the common lisp package.
 //	If not there add it. Then return the symbol.
 //
-LispObj 
-findSymbol(const char* name)
+LispObj findSymbol(const char* name)
 {
 	LispObj sym = 0;
 	LispObj str = 0;
@@ -1574,8 +1468,7 @@ findSymbol(const char* name)
 }
 
 // look up the requested symbol in the Corman Lisp package
-LispObj 
-findPLSymbol(const char* name)
+LispObj findPLSymbol(const char* name)
 {
 	LispObj sym = 0;
 	LispObj str = 0;
@@ -1591,8 +1484,7 @@ findPLSymbol(const char* name)
 	return addSymbol(CORMANLISP_PACKAGE, str, sym, FALSE);
 }
 
-LispObj 
-findKeyword(const char* name)
+LispObj findKeyword(const char* name)
 {
 	LispObj str = 0;
 
@@ -1600,8 +1492,7 @@ findKeyword(const char* name)
 	return findKeywordSym(str);
 }
 
-LispObj 
-findKeywordSym(LispObj str)
+LispObj findKeywordSym(LispObj str)
 {
 	LispObj sym = 0;
 
@@ -1625,8 +1516,7 @@ findKeywordSym(LispObj str)
 //	Looks for the passed symbol in the CL package
 //	Returns UNINITIALIZED if error, symbol otherwise.
 //
-LispObj
-searchSymbol(LispObj package, LispObj str)
+LispObj searchSymbol(LispObj package, LispObj str)
 {
 	long tableSize = 0;
 	long h = 0;
@@ -1638,10 +1528,11 @@ searchSymbol(LispObj package, LispObj str)
 	if (!isString(PACKAGE_ENTRY(package, h)[0]))
 		return UNINITIALIZED;
 	if (!lispStringsEqual(str, PACKAGE_ENTRY(package, h)[0]))
-	{		
+	{
 		// if not found there, look from the end
 		offset = (tableSize - 1) - h;
-		if (offset == 0) offset++;
+		if (offset == 0)
+			offset++;
 		while (TRUE)
 		{
 			h -= offset;
@@ -1656,15 +1547,14 @@ searchSymbol(LispObj package, LispObj str)
 	return PACKAGE_ENTRY(package, h)[1];
 }
 
-LispObj
-addSymbol(LispObj package, LispObj key, LispObj value, xbool externFlag)
+LispObj addSymbol(LispObj package, LispObj key, LispObj value, xbool externFlag)
 {
 	long h = 0;
 	long offset = 0;
 
 	long tableSize = GET_PACKAGE_CAPACITY(package);
 	long count = integer(UVECTOR(package)[PACKAGE_COUNT]);
-	
+
 	// grow the hash table if necessary
 	if ((double)count > (PACKAGE_RESIZE_THRESHOLD * (double)tableSize))
 		growPackage(package);
@@ -1674,7 +1564,8 @@ addSymbol(LispObj package, LispObj key, LispObj value, xbool externFlag)
 	{
 		// if occupied but not equal to key, loop
 		offset = (tableSize - 1) - h;
-		if (offset == 0) offset++;
+		if (offset == 0)
+			offset++;
 		while (TRUE)
 		{
 			h -= offset;
@@ -1685,25 +1576,22 @@ addSymbol(LispObj package, LispObj key, LispObj value, xbool externFlag)
 		}
 	}
 
-	if (!isString(PACKAGE_ENTRY(package, h)[0]))		// if not already occupied
+	if (!isString(PACKAGE_ENTRY(package, h)[0])) // if not already occupied
 		PACKAGE_ENTRY(package, h)[0] = key;
 	PACKAGE_ENTRY(package, h)[1] = value;
 	PACKAGE_ENTRY(package, h)[2] = externFlag ? wrapInteger(1) : wrapInteger(0);
-	UVECTOR(package)[PACKAGE_COUNT] =
-		wrapInteger(integer(UVECTOR(package)[PACKAGE_COUNT]) + 1);
+	UVECTOR(package)[PACKAGE_COUNT] = wrapInteger(integer(UVECTOR(package)[PACKAGE_COUNT]) + 1);
 	UVECTOR(value)[SYMBOL_PACKAGE] = package;
 
 	return value;
-}			
-
-void
-growPackage(LispObj package)
-{
-	Error("Package capacity exceeded: ~A", package);		// need to implement
 }
 
-LispObj 
-symbolNode(LispObj name)
+void growPackage(LispObj package)
+{
+	Error("Package capacity exceeded: ~A", package); // need to implement
+}
+
+LispObj symbolNode(LispObj name)
 {
 	LispObj sym = 0;
 	LispObj t1 = 0;
@@ -1712,37 +1600,35 @@ symbolNode(LispObj name)
 	sym = AllocVector(SYMBOL_SIZE);
 	t1 = cons(UNINITIALIZED, NIL);
 	t2 = cons(UNINITIALIZED, NIL);
-	UVECTOR(sym)[0]						|= (SymbolType << 3);
-	UVECTOR(sym)[SYMBOL_NAME]			= name;
-	UVECTOR(sym)[SYMBOL_VALUE]			= t1;
-	UVECTOR(sym)[SYMBOL_PACKAGE]		= NIL;
-	UVECTOR(sym)[SYMBOL_PROPERTY_LIST]	= NIL;
-	UVECTOR(sym)[SYMBOL_CONSTANT]		= 0;
-	UVECTOR(sym)[SYMBOL_FUNCTION]		= t2;
-	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE]	= NIL;
-	UVECTOR(sym)[SYMBOL_JUMP_TABLE]		= 0;
-	UVECTOR(sym)[SYMBOL_VAR_TABLE]		= 0;
+	UVECTOR(sym)[0] |= (SymbolType << 3);
+	UVECTOR(sym)[SYMBOL_NAME] = name;
+	UVECTOR(sym)[SYMBOL_VALUE] = t1;
+	UVECTOR(sym)[SYMBOL_PACKAGE] = NIL;
+	UVECTOR(sym)[SYMBOL_PROPERTY_LIST] = NIL;
+	UVECTOR(sym)[SYMBOL_CONSTANT] = 0;
+	UVECTOR(sym)[SYMBOL_FUNCTION] = t2;
+	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = NIL;
+	UVECTOR(sym)[SYMBOL_JUMP_TABLE] = 0;
+	UVECTOR(sym)[SYMBOL_VAR_TABLE] = 0;
 
 	return sym;
 }
 
-LispObj 
-foreignNode()
+LispObj foreignNode()
 {
 	LispObj fp = 0;
 	fp = AllocVector(FOREIGN_SIZE);
-	UVECTOR(fp)[0]						|= (ForeignType << 3);
-	UVECTOR(fp)[FOREIGN_PTR]			= 0;
+	UVECTOR(fp)[0] |= (ForeignType << 3);
+	UVECTOR(fp)[FOREIGN_PTR] = 0;
 	return fp;
 }
 
-LispObj 
-weakPointer()
+LispObj weakPointer()
 {
 	LispObj wp = 0;
 	wp = AllocVector(WEAK_PTR_SIZE);
-	UVECTOR(wp)[0]						|= (WeakPointerType << 3);
-	UVECTOR(wp)[WEAK_PTR]				= 0;
+	UVECTOR(wp)[0] |= (WeakPointerType << 3);
+	UVECTOR(wp)[WEAK_PTR] = 0;
 	return wp;
 }
 
@@ -1769,24 +1655,22 @@ CL_NAKED LispObj cons(LispObj a, LispObj b)
 		ret
 	}
 #else
-	asm volatile(
-		"push %%ebp\n\t"
-		"mov %%esp, %%ebp\n\t"
-		"push %%esi\n\t"
-		"call ThreadQV\n\t"
-		"mov %%eax, %%esi\n\t"            // esi = QV
-		"call AllocLocalCons\n\t"
-		"mov 8(%%ebp), %%ecx\n\t"        // a = [ebp+8]
-		"mov %%ecx, -4(%%eax)\n\t"       // CAR(ret) = a
-		"mov 12(%%ebp), %%ecx\n\t"       // b = [ebp+12]
-		"mov %%ecx, (%%eax)\n\t"         // CDR(ret) = b
-		"pop %%esi\n\t"
-		"pop %%ebp\n\t"
-		"ret"
-		:
-		:
-		: "eax", "ecx", "edx", "memory"
-	);
+	asm volatile("push %%ebp\n\t"
+				 "mov %%esp, %%ebp\n\t"
+				 "push %%esi\n\t"
+				 "call ThreadQV\n\t"
+				 "mov %%eax, %%esi\n\t" // esi = QV
+				 "call AllocLocalCons\n\t"
+				 "mov 8(%%ebp), %%ecx\n\t" // a = [ebp+8]
+				 "mov %%ecx, -4(%%eax)\n\t" // CAR(ret) = a
+				 "mov 12(%%ebp), %%ecx\n\t" // b = [ebp+12]
+				 "mov %%ecx, (%%eax)\n\t" // CDR(ret) = b
+				 "pop %%esi\n\t"
+				 "pop %%ebp\n\t"
+				 "ret"
+				 :
+				 :
+				 : "eax", "ecx", "edx", "memory");
 #endif
 }
 
@@ -1798,9 +1682,9 @@ LispObj stringNode(const char* str)
 	long i = 0;
 
 	a = AllocVector(((len + 1) >> 1) + 1);
-	UVECTOR(a)[0]					|= (SimpleCharVectorType << 3);
+	UVECTOR(a)[0] |= (SimpleCharVectorType << 3);
 	UVECTOR(a)[ARRAY_SIMPLE_VECTOR_LENGTH] = wrapInteger(len);
- 
+
 	registerUntaggedValues(a, wrapInteger(ARRAY_SIMPLE_VECTOR_START));
 	for (i = 0; i < len; i++)
 		charArrayStart(a)[i] = (LISP_CHAR)(unsigned char)str[i];
@@ -1816,9 +1700,9 @@ LispObj wstringNode(const wchar_t* str)
 	long i = 0;
 
 	a = AllocVector(((len + 1) >> 1) + 1);
-	UVECTOR(a)[0]					|= (SimpleCharVectorType << 3);
+	UVECTOR(a)[0] |= (SimpleCharVectorType << 3);
 	UVECTOR(a)[ARRAY_SIMPLE_VECTOR_LENGTH] = wrapInteger(len);
- 
+
 	registerUntaggedValues(a, wrapInteger(ARRAY_SIMPLE_VECTOR_START));
 	for (i = 0; i < len; i++)
 		charArrayStart(a)[i] = str[i];
@@ -1832,7 +1716,7 @@ LispObj byteVector(LispObj length)
 	GCCriticalSection.Enter();
 
 	a = AllocVector(((integer(length) + 3) >> 2) + 1);
-	UVECTOR(a)[0]					|= (SimpleByteVectorType << 3);
+	UVECTOR(a)[0] |= (SimpleByteVectorType << 3);
 	UVECTOR(a)[ARRAY_SIMPLE_VECTOR_LENGTH] = length;
 
 	registerUntaggedValues(a, wrapInteger(ARRAY_SIMPLE_VECTOR_START));
@@ -1847,7 +1731,7 @@ LispObj charVector(LispObj length)
 	GCCriticalSection.Enter();
 
 	a = AllocVector(((integer(length) + 1) >> 1) + 1);
-	UVECTOR(a)[0]					|= (SimpleCharVectorType << 3);
+	UVECTOR(a)[0] |= (SimpleCharVectorType << 3);
 	UVECTOR(a)[ARRAY_SIMPLE_VECTOR_LENGTH] = length;
 	registerUntaggedValues(a, wrapInteger(ARRAY_SIMPLE_VECTOR_START));
 	GCCriticalSection.Leave();
@@ -1856,7 +1740,8 @@ LispObj charVector(LispObj length)
 
 void Error(const char* msg)
 {
-	if (!isFunction(symbolFunction(LISPERROR))) {
+	if (!isFunction(symbolFunction(LISPERROR)))
+	{
 		fprintf(stderr, "Error: %s\n", msg);
 		exit(1);
 	}
@@ -1865,7 +1750,8 @@ void Error(const char* msg)
 
 void Error(const char* msg, LispObj a1)
 {
-	if (!isFunction(symbolFunction(LISPERROR))) {
+	if (!isFunction(symbolFunction(LISPERROR)))
+	{
 		fprintf(stderr, "Error: %s (arg: %p)\n", msg, (void*)a1);
 		exit(1);
 	}
@@ -1874,7 +1760,8 @@ void Error(const char* msg, LispObj a1)
 
 void Error(const char* msg, LispObj a1, LispObj a2)
 {
-	if (!isFunction(symbolFunction(LISPERROR))) {
+	if (!isFunction(symbolFunction(LISPERROR)))
+	{
 		fprintf(stderr, "Error: %s\n", msg);
 		exit(1);
 	}
@@ -1883,17 +1770,17 @@ void Error(const char* msg, LispObj a1, LispObj a2)
 
 void Error(const char* msg, LispObj a1, LispObj a2, LispObj a3)
 {
-	if (!isFunction(symbolFunction(LISPERROR))) {
+	if (!isFunction(symbolFunction(LISPERROR)))
+	{
 		fprintf(stderr, "Error: %s\n", msg);
 		exit(1);
 	}
 	LispCall5(Funcall, LISPERROR, stringNode(msg), a1, a2, a3);
 }
 
-LispObj 
-list(LispObj args, ...)
+LispObj list(LispObj args, ...)
 {
-	va_list va__; 
+	va_list va__;
 	va_start(va__, args);
 	LispObj list = NIL;
 	LispObj arg = args;
@@ -1905,8 +1792,7 @@ list(LispObj args, ...)
 	return Cnreverse(list);
 }
 
-LispObj 
-Cnreverse(LispObj list)
+LispObj Cnreverse(LispObj list)
 {
 	if (!isCons(list))
 		return list;
@@ -1926,8 +1812,7 @@ Cnreverse(LispObj list)
 	return q;
 }
 
-long 
-listLength(LispObj n)
+long listLength(LispObj n)
 {
 	long length = 0;
 	while (isCons(n))
@@ -1938,8 +1823,7 @@ listLength(LispObj n)
 	return length;
 }
 
-long 
-sequenceLength(LispObj n)
+long sequenceLength(LispObj n)
 {
 	if (n == NIL)
 		return 0;
@@ -1948,23 +1832,20 @@ sequenceLength(LispObj n)
 	if (isVector(n))
 		return integer(vectorLength(n));
 	Error("Not a sequence: ~A", n);
-	return 0;	// never gets here
+	return 0; // never gets here
 }
 
-LispObj 
-charNode(long c)
+LispObj charNode(long c)
 {
 	return wrap(c << 8, ImmediateTag);
 }
 
-LispObj 
-integerNode(long n)
+LispObj integerNode(long n)
 {
 	return wrapInteger(n);
 }
 
-LispObj 
-doubleFloatNode(double d)
+LispObj doubleFloatNode(double d)
 {
 	LispObj f = 0;
 	f = AllocVector(DOUBLE_FLOAT_SIZE);
@@ -1974,8 +1855,7 @@ doubleFloatNode(double d)
 	return f;
 }
 
-LispObj 
-singleFloatNode(double d)
+LispObj singleFloatNode(double d)
 {
 	LispObj f = 0;
 	f = AllocVector(SINGLE_FLOAT_SIZE);
@@ -1984,8 +1864,7 @@ singleFloatNode(double d)
 	return f;
 }
 
-LispObj 
-ratioNode(LispObj num, LispObj denom)
+LispObj ratioNode(LispObj num, LispObj denom)
 {
 	LispObj f = 0;
 	f = AllocVector(RATIO_SIZE);
@@ -1995,8 +1874,7 @@ ratioNode(LispObj num, LispObj denom)
 	return f;
 }
 
-LispObj 
-complexNode(LispObj real, LispObj imag)
+LispObj complexNode(LispObj real, LispObj imag)
 {
 	LispObj f = 0;
 	f = AllocVector(COMPLEX_SIZE);
@@ -2017,7 +1895,7 @@ LispObj bignumNode(LispObj length)
 	UVECTOR(f)[BIGNUM_LENGTH] = (length * 2);
 	for (i = 0; i < len; i++)
 	{
-		UVECTOR(f)[BIGNUM_FIRST_CELL + i] = 0;	   // init all cells to zero
+		UVECTOR(f)[BIGNUM_FIRST_CELL + i] = 0; // init all cells to zero
 	}
 	return f;
 }
@@ -2038,8 +1916,7 @@ LispObj createBignum(long* p)
 	return f;
 }
 
-LispObj
-vectorNode(LispObj size, LispObj initialValues)
+LispObj vectorNode(LispObj size, LispObj initialValues)
 {
 	LispObj v = 0;
 	LispObj* p = 0;
@@ -2067,20 +1944,18 @@ vectorNode(LispObj size, LispObj initialValues)
 	return v;
 }
 
-LispObj
-vectorNode(LispObj size)
+LispObj vectorNode(LispObj size)
 {
 	LispObj v = 0;
 
 	v = AllocVector(integer(size) + 1);
 	setUvectorType(v, SimpleVectorType);
-	UVECTOR(v)[ARRAY_SIMPLE_VECTOR_LENGTH]	= size;
+	UVECTOR(v)[ARRAY_SIMPLE_VECTOR_LENGTH] = size;
 
 	return v;
 }
 
-LispObj 
-packageNode(LispObj name)
+LispObj packageNode(LispObj name)
 {
 	LispObj p = 0;
 	LispObj table = 0;
@@ -2097,93 +1972,82 @@ packageNode(LispObj name)
 	UVECTOR(p)[PACKAGE_COUNT] = 0;
 	UVECTOR(p)[PACKAGE_TABLE] = table;
 	UVECTOR(p)[PACKAGE_SYNC] = NIL;
-	
+
 	return p;
 }
 
-void 
-checkNumArgs(long numArgsPassed, long numRequired)
+void checkNumArgs(long numArgsPassed, long numRequired)
 {
 	if (numArgsPassed != numRequired)
-		Error("Wrong number of arguments: number passed = ~A, number required = ~A", 
-			wrapInteger(numArgsPassed), wrapInteger(numRequired));
+		Error("Wrong number of arguments: number passed = ~A, number required = ~A", wrapInteger(numArgsPassed),
+			  wrapInteger(numRequired));
 }
 
-void 
-checkNumArgsRange(long numArgsPassed, long min, long max)
+void checkNumArgsRange(long numArgsPassed, long min, long max)
 {
 	if (numArgsPassed < min || numArgsPassed > max)
-		Error("Wrong number of arguments: number passed = ~A, number required >= ~A and <= ~A", 
-			wrapInteger(numArgsPassed), wrapInteger(min), wrapInteger(max));
+		Error("Wrong number of arguments: number passed = ~A, number required >= ~A and <= ~A",
+			  wrapInteger(numArgsPassed), wrapInteger(min), wrapInteger(max));
 }
 
-void
-checkChar(LispObj n)
+void checkChar(LispObj n)
 {
 	if (!isCharacter(n))
 		Error("Not a character: ~A", n);
 }
 
-void
-checkList(LispObj n)
+void checkList(LispObj n)
 {
 	if (!isList(n))
 		Error("Not a list: ~A", n);
 }
 
-void
-checkSequence(LispObj n)
+void checkSequence(LispObj n)
 {
 	if (!isSequence(n))
 		Error("Not a sequence: ~A", n);
 }
 
-void
-checkCons(LispObj n)
+void checkCons(LispObj n)
 {
 	if (!isCons(n))
 		Error("Not a cons cell: ~A", n);
 }
 
-void
-checkSymbol(LispObj n)
+void checkSymbol(LispObj n)
 {
 	if (!isSymbol(n))
 		Error("Not a symbol: ~A", n);
 }
 
-void
-checkFunction(LispObj n)
+void checkFunction(LispObj n)
 {
-	if (!isFunction(n)) {
+	if (!isFunction(n))
+	{
 		fprintf(stderr, "Not a function: %p\n", (void*)n);
 		exit(1);
 	}
 }
 
-void
-checkStream(LispObj n)
+void checkStream(LispObj n)
 {
 	if (!isStream(n))
 		Error("Not a stream: ~A", n);
 }
 
-void
-checkArray(LispObj n)
+void checkArray(LispObj n)
 {
 	if (!isArray(n))
 		Error("Not an array: ~A", n);
 }
 
-void
-checkSimpleVector(LispObj n)
+void checkSimpleVector(LispObj n)
 {
 	if (!(isUvector(n) && isSimpleGenericVector(n)))
 		Error("Not a simple vector: ~A", n);
 }
 
-void
-checkOutputStream(LispObj n)
+void checkOutputStream(LispObj n)
 {
 	LispObj stype = 0;
 	if (!isStream(n))
@@ -2193,8 +2057,7 @@ checkOutputStream(LispObj n)
 		Error("Not an output stream: ~A", n);
 }
 
-void
-checkInputStream(LispObj n)
+void checkInputStream(LispObj n)
 {
 	LispObj stype = 0;
 	if (!isStream(n))
@@ -2204,71 +2067,61 @@ checkInputStream(LispObj n)
 		Error("Not an input stream: ~A", n);
 }
 
-void
-checkPackage(LispObj n)
+void checkPackage(LispObj n)
 {
 	if (!isPackage(n))
 		Error("Not a package: ~A", n);
 }
 
-void
-checkString(LispObj n)
+void checkString(LispObj n)
 {
 	if (!isString(n))
 		Error("Not a string: ~A", n);
 }
 
-void
-checkUvector(LispObj n)
+void checkUvector(LispObj n)
 {
 	if (!isUvector(n))
 		Error("Not a uvector: ~A", n);
 }
 
-void
-checkInteger(LispObj n)
+void checkInteger(LispObj n)
 {
 	if (!isFixnum(n))
 		Error("Not a fixnum: ~A", n);
 }
 
-void
-checkBit(LispObj n)
+void checkBit(LispObj n)
 {
 	if (!isBit(n))
 		Error("Not a bit: ~A", n);
 }
 
-void
-checkLispInteger(LispObj n)
+void checkLispInteger(LispObj n)
 {
 	if (!isLispInteger(n))
 		Error("Not an integer: ~A", n);
 }
 
-void
-checkFloat(LispObj n)
+void checkFloat(LispObj n)
 {
 	if (!isFloat(n))
 		Error("Not a floating point number: ~A", n);
 }
 
-void
-checkReal(LispObj n)
+void checkReal(LispObj n)
 {
 	if (!isFixnum(n) && !isFloat(n) && !isRatio(n) && !isBignum(n))
 		Error("Not a real number: ~A", n);
 }
 
-void
-checkNumber(LispObj n)
+void checkNumber(LispObj n)
 {
 	if (!isFixnum(n) && !isFloat(n) && !isRatio(n) && !isBignum(n) && !isComplex(n))
 		Error("Not a number: ~A", n);
 }
 
-void
-checkCharacter(LispObj n)
+void checkCharacter(LispObj n)
 {
 	if (!isCharacter(n))
 		Error("Not a character: ~A", n);
@@ -2285,10 +2138,8 @@ LispObj eval(LispObj s, LispObj env)
 	return val;
 }
 
-LispObj 
-compiledFunctionNode(LispObj code, LispObj length, LispObj refs, 
-					 LispObj numRefs, LispObj env, LispObj info, 
-					 LispObj appendRefsToCode)
+LispObj compiledFunctionNode(LispObj code, LispObj length, LispObj refs, LispObj numRefs, LispObj env, LispObj info,
+							 LispObj appendRefsToCode)
 {
 	long len = integer(length);
 	long nRefs = integer(numRefs);
@@ -2341,8 +2192,7 @@ compiledFunctionNode(LispObj code, LispObj length, LispObj refs,
 		offset = 0;
 		pos = ((len + 3) / 4) * 4;
 		UVECTOR(cbuf)[COMPILED_CODE_REFERENCES] = wrapInteger(pos);
-		*(unsigned short*)(((byte*)(UVECTOR(cbuf) + COMPILED_CODE_OFFSET)) + pos)
-			= (unsigned short)nRefs;
+		*(unsigned short*)(((byte*)(UVECTOR(cbuf) + COMPILED_CODE_OFFSET)) + pos) = (unsigned short)nRefs;
 		pos += 2;
 		for (i = 0; i < nRefs; i++)
 		{
@@ -2353,8 +2203,7 @@ compiledFunctionNode(LispObj code, LispObj length, LispObj refs,
 				GCCriticalSection.Leave();
 				Error("Function is too large--references are more than 64k apart");
 			}
-			*(unsigned short*)(((byte*)(UVECTOR(cbuf) + COMPILED_CODE_OFFSET)) + pos)
-				= (unsigned short)diff;
+			*(unsigned short*)(((byte*)(UVECTOR(cbuf) + COMPILED_CODE_OFFSET)) + pos) = (unsigned short)diff;
 			offset = refOffset;
 			pos += 2;
 		}
@@ -2362,22 +2211,19 @@ compiledFunctionNode(LispObj code, LispObj length, LispObj refs,
 		UVECTOR(func)[FUNCTION_ENVIRONMENT] = env;
 		UVECTOR(func)[FUNCTION_ADDRESS] = cbuf;
 		UVECTOR(cbuf)[COMPILED_CODE_PROPERTIES] = info;
-
 	}
 
 	// update the code references in case a gc occurred
 	for (i = 0; i < nRefs; i++)
 	{
-		*(LispObj*)(((byte*)(UVECTOR(cbuf) + COMPILED_CODE_OFFSET))
-				+ integer(arrayStart(refs)[i * 2 + 1]))
-			= arrayStart(refs)[i * 2];
+		*(LispObj*)(((byte*)(UVECTOR(cbuf) + COMPILED_CODE_OFFSET)) + integer(arrayStart(refs)[i * 2 + 1])) =
+			arrayStart(refs)[i * 2];
 	}
 	GCCriticalSection.Leave();
 	return func;
 }
 
-LispObj 
-kernelFunctionNode(LispFunc f)
+LispObj kernelFunctionNode(LispFunc f)
 {
 	LispObj func = 0;
 
@@ -2394,8 +2240,7 @@ kernelFunctionNode(LispFunc f)
 //	Given a list of length 1 or more, returns the last cons
 //	cell of the list.
 //
-LispObj 
-lastCons(LispObj x)
+LispObj lastCons(LispObj x)
 {
 	while (isCons(CDR(x)))
 		x = CDR(x);
@@ -2406,8 +2251,7 @@ lastCons(LispObj x)
 //	Creverse()
 //	Reverses a passed list.
 //
-LispObj
-Creverse(LispObj x)
+LispObj Creverse(LispObj x)
 {
 	LispObj n = NIL;
 	while (isCons(x))
@@ -2419,8 +2263,7 @@ Creverse(LispObj x)
 }
 
 // like MEMBER, but simpler and uses EQ test.
-LispObj
-Cmember(LispObj item, LispObj list)
+LispObj Cmember(LispObj item, LispObj list)
 {
 	while (isCons(list))
 	{
@@ -2451,9 +2294,9 @@ void updateJumpTable(LispObj sym, LispObj func, LispObj env)
 	// set up jump table entry
 	tableIndex = UVECTOR(sym)[SYMBOL_JUMP_TABLE];
 
-	funcaddr = UVECTOR(func)[FUNCTION_ADDRESS]; 
+	funcaddr = UVECTOR(func)[FUNCTION_ADDRESS];
 	if (uvectorType(func) == FunctionType)
-		funcaddr = (LispObj)(UVECTOR(funcaddr) + COMPILED_CODE_OFFSET);	// start after header cells
+		funcaddr = (LispObj)(UVECTOR(funcaddr) + COMPILED_CODE_OFFSET); // start after header cells
 	// funcaddr is untagged address
 
 	QV[integer(tableIndex)] = env;
@@ -2466,7 +2309,7 @@ void updateJumpTable(LispObj sym, LispObj func, LispObj env)
 		tr = tr->next;
 	}
 
-	process = GetCurrentProcess(); 
+	process = GetCurrentProcess();
 	FlushInstructionCache(process, NULL, 0);
 	TQCriticalSection.Leave();
 	GCCriticalSection.Leave();
@@ -2510,13 +2353,12 @@ void updateSymbolFunctionAddress(LispObj s, LispFunc funcaddr)
 		}
 	}
 
-	process = GetCurrentProcess(); 
+	process = GetCurrentProcess();
 	FlushInstructionCache(process, NULL, 0);
 	TQCriticalSection.Leave();
 }
 
-void
-createFuncTableEntry(LispObj s)
+void createFuncTableEntry(LispObj s)
 {
 	if (UVECTOR(s)[SYMBOL_JUMP_TABLE] == 0)
 	{
@@ -2525,8 +2367,7 @@ createFuncTableEntry(LispObj s)
 	}
 }
 
-void
-createSymbolTableEntry(LispObj sym)
+void createSymbolTableEntry(LispObj sym)
 {
 	LispObj varIndex = SYMBOL_TABLE_VAR_COUNT;
 	LispObj symval = UVECTOR(sym)[SYMBOL_VALUE];
@@ -2534,8 +2375,8 @@ createSymbolTableEntry(LispObj sym)
 	ThreadRecord* tr = ThreadList.getList();
 	SYMBOL_TABLE_VAR_COUNT += wrapInteger(1);
 	setSymbolVarTableIndex(sym, varIndex);
-	
- 	QV[integer(varIndex)] = symval;
+
+	QV[integer(varIndex)] = symval;
 	while (tr)
 	{
 		tr->QV_rec[integer(varIndex)] = symval;
@@ -2544,28 +2385,23 @@ createSymbolTableEntry(LispObj sym)
 	TQCriticalSection.Leave();
 }
 
-void
-pushCatcher(LispObj tag, unsigned long* regs)
+void pushCatcher(LispObj tag, unsigned long* regs)
 {
-	setSymbolValue(COMPILER_RUNTIME, 
-		cons(list(CATCH_HEADER_CODE, tag, (LispObj)regs, END_LIST), symbolValue(COMPILER_RUNTIME)));
+	setSymbolValue(COMPILER_RUNTIME,
+				   cons(list(CATCH_HEADER_CODE, tag, (LispObj)regs, END_LIST), symbolValue(COMPILER_RUNTIME)));
 }
 
-void 
-popCatcher()
+void popCatcher()
 {
 	setSymbolValue(COMPILER_RUNTIME, CDR(symbolValue(COMPILER_RUNTIME)));
 }
 
-void
-establishSpecialBindings(LispObj bindings)
+void establishSpecialBindings(LispObj bindings)
 {
-	setSymbolValue(COMPILER_RUNTIME, 
-		cons(cons(SPECIAL, bindings), symbolValue(COMPILER_RUNTIME)));
+	setSymbolValue(COMPILER_RUNTIME, cons(cons(SPECIAL, bindings), symbolValue(COMPILER_RUNTIME)));
 }
 
-void 
-popSpecials()
+void popSpecials()
 {
 	LispObj temp = 0;
 	temp = symbolValue(COMPILER_RUNTIME);
@@ -2573,8 +2409,8 @@ popSpecials()
 	setSymbolValue(COMPILER_RUNTIME, CDR(temp));
 }
 
-#pragma warning (disable:4731) // frame pointer register 'ebp' 
-							   // modified by inline assembly code (we know!)
+#pragma warning(disable : 4731) // frame pointer register 'ebp'
+								// modified by inline assembly code (we know!)
 LispFunction(Throw_Exception)
 {
 	LISP_FUNC_BEGIN(3);
@@ -2614,9 +2450,8 @@ LispFunction(Throw_Exception)
 			if (CormanLispServer)
 				CormanLispServer->GetAppMainWindow(&wnd);
 
-			MessageBox(wnd, "Sorry, no global error handler was found--Corman Lisp is quitting.",
-				"Fatal Error", 
-				MB_OK|MB_SETFOREGROUND);
+			MessageBox(wnd, "Sorry, no global error handler was found--Corman Lisp is quitting.", "Fatal Error",
+					   MB_OK | MB_SETFOREGROUND);
 			if (CormanLispServer)
 				CormanLispServer->SetMessage("Corman Lisp has stopped.");
 			ExitThread((unsigned long)-1);
@@ -2631,11 +2466,10 @@ LispFunction(Throw_Exception)
 		f = CAR(runtimeInfo2);
 		if (CAR(f) == CATCH_HEADER_CODE && CAR(CDR(f)) == UNWIND_MARKER)
 		{
-			catcher = f;		// if an unwind-protect form is found, transfer control to it
+			catcher = f; // if an unwind-protect form is found, transfer control to it
 			break;
 		}
-		else
-		if (CAR(f) == SPECIAL)
+		else if (CAR(f) == SPECIAL)
 		{
 			bindings = CDR(f);
 			while (isCons(bindings))
@@ -2647,7 +2481,7 @@ LispFunction(Throw_Exception)
 		runtimeInfo2 = CDR(runtimeInfo2);
 	}
 
-	setSymbolValue(COMPILER_RUNTIME, runtimeInfo2);			// synch runtime stack
+	setSymbolValue(COMPILER_RUNTIME, runtimeInfo2); // synch runtime stack
 	regs = (unsigned long*)CAR(CDR(CDR(catcher)));
 
 	// peel off any context change entries on the stack which are no longer
@@ -2656,14 +2490,13 @@ LispFunction(Throw_Exception)
 	index = qv[STACK_MARKER_INDEX_Index] >> 2;
 	if (index > 0)
 	{
-//		if (index & 1)
-//		{
-//			// error--this shouldn't happen, because we always should be jumping
-//			// into lisp code.
-//			Error("Throw initial context was in a foreign stack context");
-//		}
-		while ((index > 0) &&
-			qv[((index - 1) * 2) + STACK_MARKERS_Index] < regs[5])
+		//		if (index & 1)
+		//		{
+		//			// error--this shouldn't happen, because we always should be jumping
+		//			// into lisp code.
+		//			Error("Throw initial context was in a foreign stack context");
+		//		}
+		while ((index > 0) && qv[((index - 1) * 2) + STACK_MARKERS_Index] < regs[5])
 		{
 			qv[((index - 1) * 2) + STACK_MARKERS_Index] = 0;
 			index--;
@@ -2678,39 +2511,31 @@ LispFunction(Throw_Exception)
 	}
 
 #ifdef _MSC_VER
-	__asm	mov		ebx, dword ptr regs
-	__asm	mov		eax, form
-	__asm	mov		ecx, numValues
-	__asm	shr		ecx, 3					; untag integer
-	__asm	mov		edx, dword ptr [ebx + 8]
-	__asm	mov		esi, dword ptr [ebx + 12]
-	__asm	mov		edi, dword ptr [ebx + 16]
-	__asm	mov		esp, dword ptr [ebx + 20]
-	__asm	mov		ebp, dword ptr [ebx + 28]
-	__asm	push	dword ptr [ebx + 24]		;; push ip
-	__asm	mov		ebx, dword ptr [ebx + 0]
-	__asm	ret
+	__asm mov ebx, dword ptr regs __asm mov eax, form __asm mov ecx, numValues __asm shr ecx, 3;
+	untag integer __asm mov edx, dword ptr[ebx + 8] __asm mov esi, dword ptr[ebx + 12] __asm mov edi,
+		dword ptr[ebx + 16] __asm mov esp, dword ptr[ebx + 20] __asm mov ebp,
+		dword ptr[ebx + 28] __asm push dword ptr[ebx + 24];
+	;
+	push ip __asm mov ebx, dword ptr[ebx + 0] __asm ret
 #else
-	asm volatile(
-		"mov %[regs], %%ebx\n\t"
-		"mov %[form], %%eax\n\t"
-		"mov %[nval], %%ecx\n\t"
-		"shr $3, %%ecx\n\t"              // untag integer
-		"mov 8(%%ebx), %%edx\n\t"
-		"mov 12(%%ebx), %%esi\n\t"
-		"mov 16(%%ebx), %%edi\n\t"
-		"mov 20(%%ebx), %%esp\n\t"
-		"mov 28(%%ebx), %%ebp\n\t"
-		"push 24(%%ebx)\n\t"             // push ip
-		"mov (%%ebx), %%ebx\n\t"
-		"ret"
-		:
-		: [regs] "m"(regs), [form] "m"(form), [nval] "m"(numValues)
-		: "eax", "ebx", "ecx", "edx", "esi", "edi", "memory"
-	);
+	asm volatile("mov %[regs], %%ebx\n\t"
+				 "mov %[form], %%eax\n\t"
+				 "mov %[nval], %%ecx\n\t"
+				 "shr $3, %%ecx\n\t" // untag integer
+				 "mov 8(%%ebx), %%edx\n\t"
+				 "mov 12(%%ebx), %%esi\n\t"
+				 "mov 16(%%ebx), %%edi\n\t"
+				 "mov 20(%%ebx), %%esp\n\t"
+				 "mov 28(%%ebx), %%ebp\n\t"
+				 "push 24(%%ebx)\n\t" // push ip
+				 "mov (%%ebx), %%ebx\n\t"
+				 "ret"
+				 :
+				 : [regs] "m"(regs), [form] "m"(form), [nval] "m"(numValues)
+				 : "eax", "ebx", "ecx", "edx", "esi", "edi", "memory");
 #endif
-	// never returns normally
-	LISP_FUNC_RETURN(ret);
+							   // never returns normally
+							   LISP_FUNC_RETURN(ret);
 }
 
 //
@@ -2718,8 +2543,7 @@ LispFunction(Throw_Exception)
 //	Expects a Lisp string, returns a new byte array with a 0 byte appended
 //	on the end.
 //
-LispObj 
-nullTerminate(LispObj str)
+LispObj nullTerminate(LispObj str)
 {
 	long len = 0;
 	long i = 0;
@@ -2732,10 +2556,9 @@ nullTerminate(LispObj str)
 		byteArrayStart(newstr)[i] = (byte)charArrayStart(str)[i];
 	byteArrayStart(newstr)[i] = 0;
 	return newstr;
-}											  
+}
 
-long 
-lispStringsEqual(LispObj str1, LispObj str2)
+long lispStringsEqual(LispObj str1, LispObj str2)
 {
 	LispObj len1 = vectorLength(str1);
 	LispObj len2 = vectorLength(str2);
@@ -2750,8 +2573,7 @@ lispStringsEqual(LispObj str1, LispObj str2)
 	return 1;
 }
 
-unsigned long 
-lispIntegerToUnsignedLong(LispObj x)
+unsigned long lispIntegerToUnsignedLong(LispObj x)
 {
 	if (isBignum(x))
 		return (unsigned long)UVECTOR(x)[BIGNUM_FIRST_CELL];
@@ -2759,8 +2581,7 @@ lispIntegerToUnsignedLong(LispObj x)
 		return (unsigned long)integer(x);
 }
 
-long 
-lispIntegerToLong(LispObj x)
+long lispIntegerToLong(LispObj x)
 {
 	if (isBignum(x))
 		return (long)UVECTOR(x)[BIGNUM_FIRST_CELL];
@@ -2776,7 +2597,7 @@ LispObj symbolValue(LispObj sym)
 		return CAR(UVECTOR(sym)[SYMBOL_VALUE]);
 }
 
-void setSymbolValue(LispObj sym, LispObj value)	
+void setSymbolValue(LispObj sym, LispObj value)
 {
 	if (UVECTOR(sym)[SYMBOL_VAR_TABLE])
 		CAR(ThreadQV()[integer(UVECTOR(sym)[SYMBOL_VAR_TABLE])]) = value;
@@ -2816,8 +2637,7 @@ LispObj setSpecialOperator(LispObj sym)
 
 LispObj pushDynamicBinding(LispObj sym, LispObj val)
 {
-	ThreadQV()[integer(symbolVarTableIndex(sym))] = 
-		cons(val, ThreadQV()[integer(symbolVarTableIndex(sym))]);
+	ThreadQV()[integer(symbolVarTableIndex(sym))] = cons(val, ThreadQV()[integer(symbolVarTableIndex(sym))]);
 	return 0;
 }
 
@@ -2828,7 +2648,7 @@ LispObj popDynamicBinding(LispObj sym)
 	if (!isCons(currBinding) || !isCons(CDR(currBinding)))
 	{
 		OutputDebugString("Error: trying to pop a dynamic binding that doesn't exist!!");
-		//DebugBreak();
+		// DebugBreak();
 		return NIL;
 	}
 	else
@@ -2842,20 +2662,19 @@ LispObj createShortFloat_foo(double d)
 {
 	long low3 = 0;
 	float x = (float)d;
-	LispObj mantissa = ((*((LispObj*)&x)) << 3) & 0x3fffff8;	// get 23-bit mantissa as wrapped integer
-	if (mantissa < 0x3fffff0)				// avoid overflow when rounding
+	LispObj mantissa = ((*((LispObj*)&x)) << 3) & 0x3fffff8; // get 23-bit mantissa as wrapped integer
+	if (mantissa < 0x3fffff0) // avoid overflow when rounding
 	{
 		// determine rounding direction (use "bankers rounding" i.e. like Common Lisp round function)
-		low3 = (mantissa & 0x38) >> 3;		// get low three bits of wrapped mantissa
+		low3 = (mantissa & 0x38) >> 3; // get low three bits of wrapped mantissa
 		if (low3 == 3 || low3 > 5)
-			return (*((LispObj*)&x) + 2) | 3;	// round up to nearest 21 bit number
+			return (*((LispObj*)&x) + 2) | 3; // round up to nearest 21 bit number
 		else
-			return *((LispObj*)&x) | 3;	// round down nearest 21 bit number
+			return *((LispObj*)&x) | 3; // round down nearest 21 bit number
 	}
 	else
-		return *((LispObj*)&x) | 3;	// round down in this case
+		return *((LispObj*)&x) | 3; // round down in this case
 }
-
 
 CL_NAKED LispObj createShortFloat(double /*d*/)
 {
@@ -2889,37 +2708,34 @@ CL_NAKED LispObj createShortFloat(double /*d*/)
 		ret
 	}
 #else
-	asm volatile(
-		"push %%ebp\n\t"
-		"mov %%esp, %%ebp\n\t"
-		"sub $4, %%esp\n\t"
-		"fldl 8(%%ebp)\n\t"
-		"fstps -4(%%ebp)\n\t"            // float x = (float)d
-		"mov -4(%%ebp), %%edx\n\t"
-		"mov %%edx, %%eax\n\t"           // untagged 32-bit float in eax, edx
-		"and $0x7FFFFF, %%edx\n\t"       // eax = 23-bit mantissa
-		"cmp $0x7FFFFE, %%edx\n\t"       // avoid overflow when rounding
-		"jae 1f\n\t"
-		"mov %%al, %%cl\n\t"             // get low three bits of mantissa
-		"and $7, %%cl\n\t"
-		"cmp $3, %%cl\n\t"
-		"je 2f\n\t"
-		"cmp $5, %%cl\n\t"
-		"jle 1f\n\t"
-		"2:\n\t"
-		"add $2, %%eax\n\t"
-		"1:\n\t"
-		"or $3, %%al\n\t"
-		"mov %%ebp, %%esp\n\t"
-		"pop %%ebp\n\t"
-		"ret"
-		:
-		:
-		: "eax", "ecx", "edx", "st", "memory"
-	);
+	asm volatile("push %%ebp\n\t"
+				 "mov %%esp, %%ebp\n\t"
+				 "sub $4, %%esp\n\t"
+				 "fldl 8(%%ebp)\n\t"
+				 "fstps -4(%%ebp)\n\t" // float x = (float)d
+				 "mov -4(%%ebp), %%edx\n\t"
+				 "mov %%edx, %%eax\n\t" // untagged 32-bit float in eax, edx
+				 "and $0x7FFFFF, %%edx\n\t" // eax = 23-bit mantissa
+				 "cmp $0x7FFFFE, %%edx\n\t" // avoid overflow when rounding
+				 "jae 1f\n\t"
+				 "mov %%al, %%cl\n\t" // get low three bits of mantissa
+				 "and $7, %%cl\n\t"
+				 "cmp $3, %%cl\n\t"
+				 "je 2f\n\t"
+				 "cmp $5, %%cl\n\t"
+				 "jle 1f\n\t"
+				 "2:\n\t"
+				 "add $2, %%eax\n\t"
+				 "1:\n\t"
+				 "or $3, %%al\n\t"
+				 "mov %%ebp, %%esp\n\t"
+				 "pop %%ebp\n\t"
+				 "ret"
+				 :
+				 :
+				 : "eax", "ecx", "edx", "st", "memory");
 #endif
 }
-
 
 CL_NAKED double shortFloat(LispObj /*d*/)
 {
@@ -2934,17 +2750,15 @@ CL_NAKED double shortFloat(LispObj /*d*/)
 		ret
 	}
 #else
-	asm volatile(
-		"push %%ebp\n\t"
-		"mov %%esp, %%ebp\n\t"
-		"andb $0xFC, 8(%%ebp)\n\t"
-		"flds 8(%%ebp)\n\t"
-		"pop %%ebp\n\t"
-		"ret"
-		:
-		:
-		: "st"
-	);
+	asm volatile("push %%ebp\n\t"
+				 "mov %%esp, %%ebp\n\t"
+				 "andb $0xFC, 8(%%ebp)\n\t"
+				 "flds 8(%%ebp)\n\t"
+				 "pop %%ebp\n\t"
+				 "ret"
+				 :
+				 :
+				 : "st");
 #endif
 }
 

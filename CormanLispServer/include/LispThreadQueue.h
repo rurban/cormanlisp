@@ -17,19 +17,24 @@
 
 struct ThreadRecord
 {
-	enum { PrimaryThread = 0, SecondaryThread = 1, BlessedThread = 2 };
+	enum
+	{
+		PrimaryThread = 0,
+		SecondaryThread = 1,
+		BlessedThread = 2
+	};
 
 	ThreadRecord();
 	~ThreadRecord();
 
 	ThreadRecord* next;
 	LispObj* QV_rec;
-	HANDLE thread;				// Win32 thread handle
-	DWORD  threadID;			// Win32 thread ID
+	HANDLE thread; // Win32 thread handle
+	DWORD threadID; // Win32 thread ID
 	unsigned long* stackStart;
 	PLEvent event;
 	int started;
-	int type;					// 0 = primary lisp, 1 = secondary lisp, 2 = blessed foreign
+	int type; // 0 = primary lisp, 1 = secondary lisp, 2 = blessed foreign
 	LONG image_loads_count;
 };
 
@@ -61,4 +66,4 @@ private:
 	HANDLE waitEvent;
 };
 
-#endif	// LISPTHREADQUEUE_H
+#endif // LISPTHREADQUEUE_H

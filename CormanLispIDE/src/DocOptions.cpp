@@ -31,14 +31,14 @@ void CDocOptions::SaveDockState(CDockState& ds, LPCTSTR lpszProfileName, LPCTSTR
 	file.SeekToBegin();
 	file.Read(p, nSize);
 	theApp.WriteProfileBinary(lpszProfileName, lpszLayout, p, nSize);
-	delete [] p;
+	delete[] p;
 }
 
 void CDocOptions::SaveOptions(LPCTSTR lpszProfileName)
 {
 	SaveDockState(m_ds1, lpszProfileName, szLayout1);
 	SaveDockState(m_ds2, lpszProfileName, szLayout2);
-	theApp.WriteProfileInt(lpszProfileName, szWrap, m_nWordWrap); 
+	theApp.WriteProfileInt(lpszProfileName, szWrap, m_nWordWrap);
 }
 
 void CDocOptions::LoadDockState(CDockState& ds, LPCTSTR lpszProfileName, LPCTSTR lpszLayout)
@@ -62,7 +62,7 @@ void CDocOptions::LoadOptions(LPCTSTR lpszProfileName)
 {
 	LoadDockState(m_ds1, lpszProfileName, szLayout1);
 	LoadDockState(m_ds2, lpszProfileName, szLayout2);
-	m_nWordWrap = theApp.GetProfileInt(lpszProfileName, szWrap, m_nDefWrap); 
+	m_nWordWrap = theApp.GetProfileInt(lpszProfileName, szWrap, m_nDefWrap);
 }
 
 const CUnit& CUnit::operator=(const CUnit& unit)
@@ -78,8 +78,7 @@ const CUnit& CUnit::operator=(const CUnit& unit)
 	return *this;
 }
 
-CUnit::CUnit(int nTPU, int nSmallDiv, int nMediumDiv, int nLargeDiv, 
-		int nMinMove, UINT nAbbrevID, BOOL bSpaceAbbrev)
+CUnit::CUnit(int nTPU, int nSmallDiv, int nMediumDiv, int nLargeDiv, int nMinMove, UINT nAbbrevID, BOOL bSpaceAbbrev)
 {
 	m_nTPU = nTPU;
 	m_nSmallDiv = nSmallDiv;

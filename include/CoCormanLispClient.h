@@ -9,36 +9,35 @@
 //
 
 #ifndef COCORMANLISPCLIENT_H
-#define	COCORMANLISPCLIENT_H
+#define COCORMANLISPCLIENT_H
 
 #include "ICormanLisp.h"
 
-class CoCormanLispClient 
-	: public ICormanLispStatusMessage
+class CoCormanLispClient : public ICormanLispStatusMessage
 {
 public:
 	CoCormanLispClient();
 	~CoCormanLispClient();
 
-// IUnknown methods
-    STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
-    STDMETHODIMP_(ULONG) AddRef();
-    STDMETHODIMP_(ULONG) Release();
+	// IUnknown methods
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
+	STDMETHODIMP_(ULONG) AddRef();
+	STDMETHODIMP_(ULONG) Release();
 
-// ICormanLisp methods
-    STDMETHODIMP OutputText(const char* text, long numChars);
-    STDMETHODIMP SetMessage(const char* text);
+	// ICormanLisp methods
+	STDMETHODIMP OutputText(const char* text, long numChars);
+	STDMETHODIMP SetMessage(const char* text);
 	STDMETHODIMP GetMessage(char* text, long maxMessageLength);
-    STDMETHODIMP SetDefaultMessage();
-    STDMETHODIMP GetAppInstance(HINSTANCE* appInstance);
-    STDMETHODIMP GetAppMainWindow(HWND* appMainWindow);
-    STDMETHODIMP OpenEditWindow(char* file, HWND* wnd);
-    STDMETHODIMP OpenURL(char* file, HWND* wnd);
-    STDMETHODIMP AddMenu(char* menuName);
-    STDMETHODIMP AddMenuItem(char* menuName, char* menuItem);
-    STDMETHODIMP ReplaceSelection(const char* text, long numChars);
+	STDMETHODIMP SetDefaultMessage();
+	STDMETHODIMP GetAppInstance(HINSTANCE* appInstance);
+	STDMETHODIMP GetAppMainWindow(HWND* appMainWindow);
+	STDMETHODIMP OpenEditWindow(char* file, HWND* wnd);
+	STDMETHODIMP OpenURL(char* file, HWND* wnd);
+	STDMETHODIMP AddMenu(char* menuName);
+	STDMETHODIMP AddMenuItem(char* menuName, char* menuItem);
+	STDMETHODIMP ReplaceSelection(const char* text, long numChars);
 
-// Helper functions
+	// Helper functions
 	STDMETHODIMP Connect(IConnectionPoint* pConnectionPoint);
 	STDMETHODIMP Disconnect(IConnectionPoint* pConnectionPoint);
 
@@ -48,22 +47,21 @@ private:
 	DWORD m_eventLoopThreadID;
 };
 
-class CoCormanLispShutdownClient 
-	: public ICormanLispShutdown
+class CoCormanLispShutdownClient : public ICormanLispShutdown
 {
 public:
 	CoCormanLispShutdownClient();
 	~CoCormanLispShutdownClient();
 
-// IUnknown methods
-    STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
-    STDMETHODIMP_(ULONG) AddRef();
-    STDMETHODIMP_(ULONG) Release();
+	// IUnknown methods
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
+	STDMETHODIMP_(ULONG) AddRef();
+	STDMETHODIMP_(ULONG) Release();
 
-// ICormanLispShutdown methods
-    STDMETHODIMP LispShutdown(const char* text, long numChars);
+	// ICormanLispShutdown methods
+	STDMETHODIMP LispShutdown(const char* text, long numChars);
 
-// Helper functions
+	// Helper functions
 	STDMETHODIMP Connect(IConnectionPoint* pConnectionPoint);
 	STDMETHODIMP Disconnect(IConnectionPoint* pConnectionPoint);
 

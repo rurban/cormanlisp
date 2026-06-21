@@ -17,12 +17,12 @@
 
 #include "Lispmath.h"
 
-#pragma warning (disable:4244)				// conversion from 'int' to 'unsigned short', possible loss of data
-#pragma warning (disable:4127)				// conditional expression is constant
-#pragma warning (disable:4505)				// unreferenced local function has been removed
+#pragma warning(disable : 4244) // conversion from 'int' to 'unsigned short', possible loss of data
+#pragma warning(disable : 4127) // conditional expression is constant
+#pragma warning(disable : 4505) // unreferenced local function has been removed
 
-#define both_fixnums(a,b)		((((a) | (b)) & 7) == 0)
-#define both_shortFloats(a,b)   ((((a) & (b)) & 3) == 3)
+#define both_fixnums(a, b) ((((a) | (b)) & 7) == 0)
+#define both_shortFloats(a, b) ((((a) & (b)) & 3) == 3)
 
 static LispObj bignumAdd(LispObj, LispObj);
 static LispObj addRatios(LispObj, LispObj);
@@ -34,20 +34,13 @@ static LispObj multiplyComplexNumbers(LispObj, LispObj);
 static LispObj bignumDivide(LispObj, LispObj);
 static LispObj divideRatios(LispObj, LispObj);
 static LispObj divideComplexNumbers(LispObj, LispObj);
-static void addBignumWords(LispObj b1, long b1Len,
-			LispObj b2, long b2Len, LispObj result);
-static void subBignumWords(LispObj b1, long b1Len,
-			LispObj b2, long b2Len, LispObj result);
-static void mulBignumWords(LispObj b1, long b1Len,
-			LispObj b2, long b2Len, LispObj result);
-static void shiftBignumWords(LispObj b, long srcLen, LispObj res,
-			long resultLen, long bits);
-static void xorBignumWords(LispObj b1, LispObj b1Len,
-			LispObj b2, LispObj b2Len, LispObj result);
-static void orBignumWords(LispObj b1, LispObj b1Len,
-			LispObj b2, LispObj b2Len, LispObj result);
-static void andBignumWords(LispObj b1, LispObj b1Len,
-			LispObj b2, LispObj b2Len, LispObj result);
+static void addBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result);
+static void subBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result);
+static void mulBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result);
+static void shiftBignumWords(LispObj b, long srcLen, LispObj res, long resultLen, long bits);
+static void xorBignumWords(LispObj b1, LispObj b1Len, LispObj b2, LispObj b2Len, LispObj result);
+static void orBignumWords(LispObj b1, LispObj b1Len, LispObj b2, LispObj b2Len, LispObj result);
+static void andBignumWords(LispObj b1, LispObj b1Len, LispObj b2, LispObj b2Len, LispObj result);
 static void notBignumWords(LispObj b, LispObj bLen, LispObj result);
 static LispObj convertToDoubleFloat(LispObj);
 static LispObj convertToSingleFloat(LispObj);
@@ -64,7 +57,7 @@ static LispObj _Round(LispObj n);
 static LispObj _Mod(LispObj n1, LispObj n2);
 static LispObj divideIntegerNumbers(LispObj n1, LispObj n2);
 static long numCompare(LispObj x, LispObj y);
-       long compareNumbers(LispObj n1, LispObj n2);
+long compareNumbers(LispObj n1, LispObj n2);
 static LispObj convertDoubleFloatToInteger(LispObj n);
 static LispObj convertSingleFloatToInteger(LispObj n);
 static LispObj convertShortFloatToInteger(LispObj n);
@@ -104,7 +97,7 @@ static void bignumReduce(LispObj b)
 {
 	int numcells = bignumNumCells(b);
 	int neg = bignumNegative(b);
-	while (numcells > 0 && bignumStart(b)[numcells-1] == 0)
+	while (numcells > 0 && bignumStart(b)[numcells - 1] == 0)
 		numcells--;
 	if (numcells == 0)
 		neg = 0;
@@ -119,35 +112,38 @@ static void bignumReduce(LispObj b)
 static LispObj convertToDoubleFloat(LispObj n)
 {
 	LispObj ret = 0;
-	if (isDoubleFloat(n))	return n;
-	if (isSingleFloat(n))	return singleToDoubleFloat(n);
-	if (isShortFloat(n))	return shortToDoubleFloat(n);
+	if (isDoubleFloat(n))
+		return n;
+	if (isSingleFloat(n))
+		return singleToDoubleFloat(n);
+	if (isShortFloat(n))
+		return shortToDoubleFloat(n);
 	if (isFixnum(n))
 	{
 		ret = doubleFloatNode(0);
 		doubleFloat(ret) = (double)integer(n);
 		return ret;
 	}
-	if (isBignum(n))		
+	if (isBignum(n))
 	{
 		ret = doubleFloatNode(0);
 		doubleFloat(ret) = bignumToDouble(n);
 		return ret;
 	}
-	if (isRatio(n))			
+	if (isRatio(n))
 	{
 		ret = doubleFloatNode(0);
 		doubleFloat(ret) = getFloat(ratioNumerator(n)) / getFloat(ratioDenominator(n));
 		return ret;
 	}
 	Error("Cannot convert to float: ~A", n);
-	return 0;	// never gets here
+	return 0; // never gets here
 }
 
-#define MostPositiveSingleFloat  3.4028235e38	// largest that can fit in a single float
-#define MostNegativeSingleFloat -3.4028235e38	// largest that can fit in a single float
-#define MostPositiveShortFloat   3.4028230e38	// largest that can fit in a short float
-#define MostNegativeShortFloat  -3.4028230e38	// largest that can fit in a short float
+#define MostPositiveSingleFloat 3.4028235e38 // largest that can fit in a single float
+#define MostNegativeSingleFloat -3.4028235e38 // largest that can fit in a single float
+#define MostPositiveShortFloat 3.4028230e38 // largest that can fit in a short float
+#define MostNegativeShortFloat -3.4028230e38 // largest that can fit in a short float
 //
 //	convertToSingleFloat()
 //
@@ -155,20 +151,21 @@ static LispObj convertToSingleFloat(LispObj n)
 {
 	LispObj temp = 0;
 	double d = 0.0;
-	if (isSingleFloat(n))	return n;
-	if (isDoubleFloat(n))	
+	if (isSingleFloat(n))
+		return n;
+	if (isDoubleFloat(n))
 	{
 		temp = singleFloatNode(0);
 		singleFloat(temp) = doubleFloat(n);
 		return temp;
 	}
-	if (isShortFloat(n))	
+	if (isShortFloat(n))
 	{
 		temp = singleFloatNode(0);
 		singleFloat(temp) = shortFloat(n);
 		return temp;
 	}
-	if (isFixnum(n))		
+	if (isFixnum(n))
 	{
 		temp = singleFloatNode(0);
 		singleFloat(temp) = (double)integer(n);
@@ -193,7 +190,7 @@ static LispObj convertToSingleFloat(LispObj n)
 		return temp;
 	}
 	Error("Cannot convert to float: ~A", n);
-	return 0;	// never gets here
+	return 0; // never gets here
 }
 
 //
@@ -203,10 +200,14 @@ static LispObj convertToShortFloat(LispObj n)
 {
 	double d = 0.0;
 
-	if (isShortFloat(n))	return n;
-	if (isSingleFloat(n))	return createShortFloat(singleFloat(n));
-	if (isDoubleFloat(n))	return createShortFloat(doubleFloat(n));
-	if (isFixnum(n))		return createShortFloat((double)integer(n));
+	if (isShortFloat(n))
+		return n;
+	if (isSingleFloat(n))
+		return createShortFloat(singleFloat(n));
+	if (isDoubleFloat(n))
+		return createShortFloat(doubleFloat(n));
+	if (isFixnum(n))
+		return createShortFloat((double)integer(n));
 	if (isBignum(n))
 	{
 		d = bignumToDouble(n);
@@ -222,7 +223,7 @@ static LispObj convertToShortFloat(LispObj n)
 		return createShortFloat(d);
 	}
 	Error("Cannot convert to float: ~A", n);
-	return 0;	// never gets her
+	return 0; // never gets her
 }
 
 LispObj fixnumToBignum(LispObj fn)
@@ -233,8 +234,7 @@ LispObj fixnumToBignum(LispObj fn)
 	bn = bignumNode(wrapInteger(1));
 	if (n == 0)
 		UVECTOR(bn)[BIGNUM_FIRST_CELL] = 0;
-	else
-    if (fn == 0x80000000)
+	else if (fn == 0x80000000)
 	{
 		UVECTOR(bn)[BIGNUM_FIRST_CELL] = 0x10000000;
 		bignumSetSign(bn, 1);
@@ -247,27 +247,34 @@ LispObj fixnumToBignum(LispObj fn)
 			n = -n;
 		}
 		UVECTOR(bn)[BIGNUM_FIRST_CELL] = integer(n);
-		if (sign) bignumSetSign(bn, sign);
+		if (sign)
+			bignumSetSign(bn, sign);
 	}
 	return bn;
 }
 
-LispObj addFixnumShort (LispObj a, LispObj b){return createShortFloat((double)integer(a)+ shortFloat(b));	 }
+LispObj addFixnumShort(LispObj a, LispObj b)
+{
+	return createShortFloat((double)integer(a) + shortFloat(b));
+}
 LispObj addFixnumSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
-	singleFloat(ret) = (double)integer(a)+ singleFloat(b);
+	singleFloat(ret) = (double)integer(a) + singleFloat(b);
 	return ret;
 }
 LispObj addFixnumDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
-	doubleFloat(ret) = (double)integer(a)+ doubleFloat(b);
+	doubleFloat(ret) = (double)integer(a) + doubleFloat(b);
 	return ret;
 }
-LispObj addShortFixnum (LispObj a, LispObj b){return createShortFloat(shortFloat(a)    + (double)integer(b));}
+LispObj addShortFixnum(LispObj a, LispObj b)
+{
+	return createShortFloat(shortFloat(a) + (double)integer(b));
+}
 LispObj addSingleFixnum(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
@@ -282,26 +289,29 @@ LispObj addDoubleFixnum(LispObj a, LispObj b)
 	doubleFloat(ret) = doubleFloat(a) + (double)integer(b);
 	return ret;
 }
-LispObj addShortShort  (LispObj a, LispObj b){return createShortFloat(shortFloat(a)    + shortFloat(b));	 }
-LispObj addShortSingle (LispObj a, LispObj b)
+LispObj addShortShort(LispObj a, LispObj b)
+{
+	return createShortFloat(shortFloat(a) + shortFloat(b));
+}
+LispObj addShortSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
 	singleFloat(ret) = shortFloat(a) + singleFloat(b);
 	return ret;
 }
-LispObj addShortDouble (LispObj a, LispObj b)
+LispObj addShortDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
 	doubleFloat(ret) = shortFloat(a) + doubleFloat(b);
 	return ret;
 }
-LispObj addSingleShort (LispObj a, LispObj b)
+LispObj addSingleShort(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
-	singleFloat(ret) = singleFloat(a)   + shortFloat(b);
+	singleFloat(ret) = singleFloat(a) + shortFloat(b);
 	return ret;
 }
 LispObj addSingleSingle(LispObj a, LispObj b)
@@ -318,7 +328,7 @@ LispObj addSingleDouble(LispObj a, LispObj b)
 	doubleFloat(ret) = singleFloat(a) + doubleFloat(b);
 	return ret;
 }
-LispObj addDoubleShort (LispObj a, LispObj b)
+LispObj addDoubleShort(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
@@ -340,22 +350,28 @@ LispObj addDoubleDouble(LispObj a, LispObj b)
 	return ret;
 }
 
-LispObj subFixnumShort (LispObj a, LispObj b){return createShortFloat((double)integer(a)- shortFloat(b));	 }
+LispObj subFixnumShort(LispObj a, LispObj b)
+{
+	return createShortFloat((double)integer(a) - shortFloat(b));
+}
 LispObj subFixnumSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
-	singleFloat(ret) = (double)integer(a)- singleFloat(b);
+	singleFloat(ret) = (double)integer(a) - singleFloat(b);
 	return ret;
 }
 LispObj subFixnumDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
-	doubleFloat(ret) = (double)integer(a)- doubleFloat(b);
+	doubleFloat(ret) = (double)integer(a) - doubleFloat(b);
 	return ret;
 }
-LispObj subShortFixnum (LispObj a, LispObj b){return createShortFloat(shortFloat(a)    - (double)integer(b));}
+LispObj subShortFixnum(LispObj a, LispObj b)
+{
+	return createShortFloat(shortFloat(a) - (double)integer(b));
+}
 LispObj subSingleFixnum(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
@@ -370,22 +386,25 @@ LispObj subDoubleFixnum(LispObj a, LispObj b)
 	doubleFloat(ret) = doubleFloat(a) - (double)integer(b);
 	return ret;
 }
-LispObj subShortShort  (LispObj a, LispObj b){return createShortFloat(shortFloat(a)    - shortFloat(b));	 }
-LispObj subShortSingle (LispObj a, LispObj b)
+LispObj subShortShort(LispObj a, LispObj b)
+{
+	return createShortFloat(shortFloat(a) - shortFloat(b));
+}
+LispObj subShortSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
 	singleFloat(ret) = shortFloat(a) - singleFloat(b);
 	return ret;
 }
-LispObj subShortDouble (LispObj a, LispObj b)
+LispObj subShortDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
 	doubleFloat(ret) = shortFloat(a) - doubleFloat(b);
 	return ret;
 }
-LispObj subSingleShort (LispObj a, LispObj b)
+LispObj subSingleShort(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
@@ -406,7 +425,7 @@ LispObj subSingleDouble(LispObj a, LispObj b)
 	doubleFloat(ret) = singleFloat(a) - doubleFloat(b);
 	return ret;
 }
-LispObj subDoubleShort (LispObj a, LispObj b)
+LispObj subDoubleShort(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
@@ -428,22 +447,28 @@ LispObj subDoubleDouble(LispObj a, LispObj b)
 	return ret;
 }
 
-LispObj mulFixnumShort (LispObj a, LispObj b){return createShortFloat((double)integer(a)* shortFloat(b));	 }
+LispObj mulFixnumShort(LispObj a, LispObj b)
+{
+	return createShortFloat((double)integer(a) * shortFloat(b));
+}
 LispObj mulFixnumSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
-	singleFloat(ret) = (double)integer(a)* singleFloat(b);
+	singleFloat(ret) = (double)integer(a) * singleFloat(b);
 	return ret;
 }
 LispObj mulFixnumDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
-	doubleFloat(ret) = (double)integer(a)* doubleFloat(b);
+	doubleFloat(ret) = (double)integer(a) * doubleFloat(b);
 	return ret;
 }
-LispObj mulShortFixnum (LispObj a, LispObj b){return createShortFloat(shortFloat(a)    * (double)integer(b));}
+LispObj mulShortFixnum(LispObj a, LispObj b)
+{
+	return createShortFloat(shortFloat(a) * (double)integer(b));
+}
 LispObj mulSingleFixnum(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
@@ -458,22 +483,25 @@ LispObj mulDoubleFixnum(LispObj a, LispObj b)
 	doubleFloat(ret) = doubleFloat(a) * (double)integer(b);
 	return ret;
 }
-LispObj mulShortShort  (LispObj a, LispObj b){return createShortFloat(shortFloat(a)    * shortFloat(b));	 }
-LispObj mulShortSingle (LispObj a, LispObj b)
+LispObj mulShortShort(LispObj a, LispObj b)
+{
+	return createShortFloat(shortFloat(a) * shortFloat(b));
+}
+LispObj mulShortSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
-	singleFloat(ret) = shortFloat(a)  * singleFloat(b);
+	singleFloat(ret) = shortFloat(a) * singleFloat(b);
 	return ret;
 }
-LispObj mulShortDouble (LispObj a, LispObj b)
+LispObj mulShortDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
 	doubleFloat(ret) = shortFloat(a) * doubleFloat(b);
 	return ret;
 }
-LispObj mulSingleShort (LispObj a, LispObj b)
+LispObj mulSingleShort(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
@@ -494,7 +522,7 @@ LispObj mulSingleDouble(LispObj a, LispObj b)
 	doubleFloat(ret) = singleFloat(a) * doubleFloat(b);
 	return ret;
 }
-LispObj mulDoubleShort (LispObj a, LispObj b)
+LispObj mulDoubleShort(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
@@ -505,7 +533,7 @@ LispObj mulDoubleSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
-	doubleFloat(ret) = doubleFloat(a)   * singleFloat(b);
+	doubleFloat(ret) = doubleFloat(a) * singleFloat(b);
 	return ret;
 }
 LispObj mulDoubleDouble(LispObj a, LispObj b)
@@ -516,7 +544,10 @@ LispObj mulDoubleDouble(LispObj a, LispObj b)
 	return ret;
 }
 
-LispObj divFixnumShort (LispObj a, LispObj b){return createShortFloat((double)integer(a)/ shortFloat(b));	 }
+LispObj divFixnumShort(LispObj a, LispObj b)
+{
+	return createShortFloat((double)integer(a) / shortFloat(b));
+}
 LispObj divFixnumSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
@@ -528,10 +559,13 @@ LispObj divFixnumDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
-	doubleFloat(ret) = (double)integer(a)/ doubleFloat(b);
+	doubleFloat(ret) = (double)integer(a) / doubleFloat(b);
 	return ret;
 }
-LispObj divShortFixnum (LispObj a, LispObj b){return createShortFloat(shortFloat(a)    / (double)integer(b));}
+LispObj divShortFixnum(LispObj a, LispObj b)
+{
+	return createShortFloat(shortFloat(a) / (double)integer(b));
+}
 LispObj divSingleFixnum(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
@@ -546,22 +580,25 @@ LispObj divDoubleFixnum(LispObj a, LispObj b)
 	doubleFloat(ret) = doubleFloat(a) / (double)integer(b);
 	return ret;
 }
-LispObj divShortShort  (LispObj a, LispObj b){return createShortFloat(shortFloat(a)    / shortFloat(b));	 }
-LispObj divShortSingle (LispObj a, LispObj b)
+LispObj divShortShort(LispObj a, LispObj b)
+{
+	return createShortFloat(shortFloat(a) / shortFloat(b));
+}
+LispObj divShortSingle(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
-	singleFloat(ret) = shortFloat(a)  / singleFloat(b);
+	singleFloat(ret) = shortFloat(a) / singleFloat(b);
 	return ret;
 }
-LispObj divShortDouble (LispObj a, LispObj b)
+LispObj divShortDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
 	doubleFloat(ret) = shortFloat(a) / doubleFloat(b);
 	return ret;
 }
-LispObj divSingleShort (LispObj a, LispObj b)
+LispObj divSingleShort(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = singleFloatNode(0);
@@ -579,10 +616,10 @@ LispObj divSingleDouble(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
-	doubleFloat(ret) = singleFloat(a)   / doubleFloat(b);
+	doubleFloat(ret) = singleFloat(a) / doubleFloat(b);
 	return ret;
 }
-LispObj divDoubleShort (LispObj a, LispObj b)
+LispObj divDoubleShort(LispObj a, LispObj b)
 {
 	LispObj ret = 0;
 	ret = doubleFloatNode(0);
@@ -613,15 +650,14 @@ LispObj _Add(LispObj n1, LispObj n2)
 	{
 		// attempt fixnum add
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n2
-		__asm add result, eax
-		__asm jo do_bignum
+		__asm mov eax, dword ptr n2 __asm add result,
+			eax __asm jo do_bignum
 #else
 		unsigned long _eax = (unsigned long)n2;
 		asm("add %%eax, %0" : "+m"(result));
-		asm goto ("jo %l[do_bignum]" : : : : do_bignum);
+		asm goto("jo %l[do_bignum]" : : : : do_bignum);
 #endif
-		return result;
+			return result;
 	}
 
 	if (both_shortFloats(n1, n2))
@@ -629,70 +665,97 @@ LispObj _Add(LispObj n1, LispObj n2)
 
 	if (isFixnum(n1))
 	{
-		if		(isDoubleFloat(n2))		return addFixnumDouble(n1, n2);
-		else if (isSingleFloat(n2))		return addFixnumSingle(n1, n2);
-		else if (isShortFloat(n2))		return addFixnumShort(n1, n2);
-		else if (isRatio(n2))			return addRatios(n1, n2);
-		else if (isBignum(n2))			return bignumAdd(fixnumToBignum(n1), n2);
-		else if (isComplex(n2))			return createComplex(_Add(n1, complexReal(n2)), complexImaginary(n2));
-		else goto error;
+		if (isDoubleFloat(n2))
+			return addFixnumDouble(n1, n2);
+		else if (isSingleFloat(n2))
+			return addFixnumSingle(n1, n2);
+		else if (isShortFloat(n2))
+			return addFixnumShort(n1, n2);
+		else if (isRatio(n2))
+			return addRatios(n1, n2);
+		else if (isBignum(n2))
+			return bignumAdd(fixnumToBignum(n1), n2);
+		else if (isComplex(n2))
+			return createComplex(_Add(n1, complexReal(n2)), complexImaginary(n2));
+		else
+			goto error;
 	}
-	else
-	if (isRatio(n1))
+	else if (isRatio(n1))
 	{
-		if		(isLispInteger(n2))		return addRatios(n1, n2);
-		else if (isRatio(n2))			return addRatios(n1, n2);
-		else if (isDoubleFloat(n2))		return addDoubleDouble(convertToDoubleFloat(n1), n2);
-		else if (isSingleFloat(n2))		return addSingleSingle(convertToSingleFloat(n1), n2);
-		else if (isShortFloat(n2))		return addShortShort(convertToShortFloat(n1), n2);
-		else if (isComplex(n2))			return createComplex(_Add(n1, complexReal(n2)), complexImaginary(n2));
-		else goto error;
+		if (isLispInteger(n2))
+			return addRatios(n1, n2);
+		else if (isRatio(n2))
+			return addRatios(n1, n2);
+		else if (isDoubleFloat(n2))
+			return addDoubleDouble(convertToDoubleFloat(n1), n2);
+		else if (isSingleFloat(n2))
+			return addSingleSingle(convertToSingleFloat(n1), n2);
+		else if (isShortFloat(n2))
+			return addShortShort(convertToShortFloat(n1), n2);
+		else if (isComplex(n2))
+			return createComplex(_Add(n1, complexReal(n2)), complexImaginary(n2));
+		else
+			goto error;
 	}
-	else
-	if (isDoubleFloat(n1))
+	else if (isDoubleFloat(n1))
 	{
-		if (isComplex(n2))				return createComplex(_Add(n1, complexReal(n2)),
-													_Add(doubleFloatNode(0.0), complexImaginary(n2)));
-		else return addDoubleDouble(n1, convertToDoubleFloat(n2));
+		if (isComplex(n2))
+			return createComplex(_Add(n1, complexReal(n2)), _Add(doubleFloatNode(0.0), complexImaginary(n2)));
+		else
+			return addDoubleDouble(n1, convertToDoubleFloat(n2));
 	}
-	else
-	if (isSingleFloat(n1))
+	else if (isSingleFloat(n1))
 	{
-		if (isComplex(n2))				return createComplex(_Add(n1, complexReal(n2)),
-													_Add(singleFloatNode(0.0), complexImaginary(n2)));
-		else if (isDoubleFloat(n2))		return addSingleDouble(n1, n2);
-		else if (isSingleFloat(n2))		return addSingleSingle(n1, n2);
-		else if (isShortFloat(n2))		return addSingleShort(n1, n2);
-		else							return addSingleSingle(n1, convertToSingleFloat(n2));
+		if (isComplex(n2))
+			return createComplex(_Add(n1, complexReal(n2)), _Add(singleFloatNode(0.0), complexImaginary(n2)));
+		else if (isDoubleFloat(n2))
+			return addSingleDouble(n1, n2);
+		else if (isSingleFloat(n2))
+			return addSingleSingle(n1, n2);
+		else if (isShortFloat(n2))
+			return addSingleShort(n1, n2);
+		else
+			return addSingleSingle(n1, convertToSingleFloat(n2));
 	}
-	else
-	if (isShortFloat(n1))
+	else if (isShortFloat(n1))
 	{
-		if (isComplex(n2))				return createComplex(_Add(n1, complexReal(n2)),
-													_Add(createShortFloat(0.0), complexImaginary(n2)));
-		else if (isDoubleFloat(n2))		return addShortDouble(n1, n2);
-		else if (isSingleFloat(n2))		return addShortSingle(n1, n2);
-		else if (isShortFloat(n2))		return addShortShort(n1, n2);
-		else							return addShortShort(n1, convertToShortFloat(n2));
+		if (isComplex(n2))
+			return createComplex(_Add(n1, complexReal(n2)), _Add(createShortFloat(0.0), complexImaginary(n2)));
+		else if (isDoubleFloat(n2))
+			return addShortDouble(n1, n2);
+		else if (isSingleFloat(n2))
+			return addShortSingle(n1, n2);
+		else if (isShortFloat(n2))
+			return addShortShort(n1, n2);
+		else
+			return addShortShort(n1, convertToShortFloat(n2));
 	}
-	else
-	if (isBignum(n1))
+	else if (isBignum(n1))
 	{
-		if		(isFixnum(n2))			return bignumAdd(n1, fixnumToBignum(n2));
-		else if (isRatio(n2))			return addRatios(n1, n2);
-		else if (isDoubleFloat(n2))		return addDoubleDouble(convertToDoubleFloat(n1), n2);
-		else if (isSingleFloat(n2))		return addSingleSingle(convertToSingleFloat(n1), n2);
-		else if (isShortFloat(n2))		return addShortShort(convertToShortFloat(n1), n2);
-		else if (isBignum(n2))			return bignumAdd(n1, n2);
-		else if (isComplex(n2))			return createComplex(_Add(n1, complexReal(n2)), complexImaginary(n2));
-		else goto error;
+		if (isFixnum(n2))
+			return bignumAdd(n1, fixnumToBignum(n2));
+		else if (isRatio(n2))
+			return addRatios(n1, n2);
+		else if (isDoubleFloat(n2))
+			return addDoubleDouble(convertToDoubleFloat(n1), n2);
+		else if (isSingleFloat(n2))
+			return addSingleSingle(convertToSingleFloat(n1), n2);
+		else if (isShortFloat(n2))
+			return addShortShort(convertToShortFloat(n1), n2);
+		else if (isBignum(n2))
+			return bignumAdd(n1, n2);
+		else if (isComplex(n2))
+			return createComplex(_Add(n1, complexReal(n2)), complexImaginary(n2));
+		else
+			goto error;
 	}
-	else
-	if (isComplex(n1))
+	else if (isComplex(n1))
 	{
-		if (isComplex(n2))				return createComplex(_Add(complexReal(n1), complexReal(n2)),
-												_Add(complexImaginary(n1), complexImaginary(n2)));
-		else							return createComplex(_Add(complexReal(n1), n2), complexImaginary(n1));
+		if (isComplex(n2))
+			return createComplex(_Add(complexReal(n1), complexReal(n2)),
+								 _Add(complexImaginary(n1), complexImaginary(n2)));
+		else
+			return createComplex(_Add(complexReal(n1), n2), complexImaginary(n1));
 	}
 error:
 	Error("Cannot call function '+' with these operands: ~A and ~A", n1, n2);
@@ -701,96 +764,114 @@ do_bignum:
 	return bignumAdd(fixnumToBignum(n1), fixnumToBignum(n2));
 }
 
-#define FixnumID		0
-#define BignumID		1
-#define RatioID			2
-#define ShortFloatID	3
-#define SingleFloatID	4
-#define DoubleFloatID	5
-#define ComplexID		6
-#define NotNumberID		7
-#define NumMaxIDs		8
+#define FixnumID 0
+#define BignumID 1
+#define RatioID 2
+#define ShortFloatID 3
+#define SingleFloatID 4
+#define DoubleFloatID 5
+#define ComplexID 6
+#define NotNumberID 7
+#define NumMaxIDs 8
 
 typedef LispObj (*SubractMethod)(LispObj n1, LispObj n2);
-extern SubractMethod subtractMethods[];	// forward declaration
+extern SubractMethod subtractMethods[]; // forward declaration
 static LispObj bignumSubtract(LispObj b1, LispObj b2);
 
-int numTypeTable[] =
-{
-	NotNumberID,	// FunctionType					0
-	NotNumberID,	// KFunctionType				1
-	NotNumberID,	// StructureType				2
-	NotNumberID,	// ArrayType					3
-	NotNumberID,	// SymbolType					4
-	NotNumberID,	// StreamType					5
-	DoubleFloatID,	// DoubleFloatType				6
-	NotNumberID,	// PackageType					7
-	NotNumberID,	// 	HashtableType				8
-	NotNumberID,	// 	ForeignType					9
-	NotNumberID,	// 	CompiledCodeType			10
-	NotNumberID,	// 	ReadTableType				11
-	ComplexID,		// 	ComplexType					12
-	RatioID,		// 	RatioType					13
-	BignumID,		// 	BignumType					14
-	NotNumberID,	// 	ForeignHeapType				15
-	NotNumberID,	// 	WeakPointerType				16
-	NotNumberID,	// 	SimpleVectorType			17
-	NotNumberID,	// 	SimpleCharVectorType		18
-	NotNumberID,	// 	SimpleByteVectorType		19
-	NotNumberID,	// 	SimpleShortVectorType		20
-	NotNumberID,	// 	SimpleDoubleFloatVectorType 21
-	NotNumberID,	// 	SimpleBitVectorType			22
-	NotNumberID,	// 	SimpleSingleFloatVectorType 23
-	SingleFloatID,	// 	SingleFloatType				24
-	NotNumberID,	// 	CLOSInstanceType			25
-	NotNumberID,	// 	ForeignStackType			26
-	NotNumberID,	// 	ForeignStackEndType			27
-	NotNumberID,	// 	Unused						28
-	NotNumberID,	// 	Unused						29
-	NotNumberID,	// 	Unused						30
-	NotNumberID,	// 	Unused						31
+int numTypeTable[] = {
+	NotNumberID, // FunctionType					0
+	NotNumberID, // KFunctionType				1
+	NotNumberID, // StructureType				2
+	NotNumberID, // ArrayType					3
+	NotNumberID, // SymbolType					4
+	NotNumberID, // StreamType					5
+	DoubleFloatID, // DoubleFloatType				6
+	NotNumberID, // PackageType					7
+	NotNumberID, // 	HashtableType				8
+	NotNumberID, // 	ForeignType					9
+	NotNumberID, // 	CompiledCodeType			10
+	NotNumberID, // 	ReadTableType				11
+	ComplexID, // 	ComplexType					12
+	RatioID, // 	RatioType					13
+	BignumID, // 	BignumType					14
+	NotNumberID, // 	ForeignHeapType				15
+	NotNumberID, // 	WeakPointerType				16
+	NotNumberID, // 	SimpleVectorType			17
+	NotNumberID, // 	SimpleCharVectorType		18
+	NotNumberID, // 	SimpleByteVectorType		19
+	NotNumberID, // 	SimpleShortVectorType		20
+	NotNumberID, // 	SimpleDoubleFloatVectorType 21
+	NotNumberID, // 	SimpleBitVectorType			22
+	NotNumberID, // 	SimpleSingleFloatVectorType 23
+	SingleFloatID, // 	SingleFloatType				24
+	NotNumberID, // 	CLOSInstanceType			25
+	NotNumberID, // 	ForeignStackType			26
+	NotNumberID, // 	ForeignStackEndType			27
+	NotNumberID, // 	Unused						28
+	NotNumberID, // 	Unused						29
+	NotNumberID, // 	Unused						30
+	NotNumberID, // 	Unused						31
 };
-#define numType2(n)											\
-	(isFixnum(n) ? FixnumID :								\
-		(isUvector(n) ? numTypeTable[uvectorType(n)] :		\
-			(isShortFloat(n) ? ShortFloatID : NotNumberID)))
+#define numType2(n)         \
+	(isFixnum(n) ? FixnumID \
+				 : (isUvector(n) ? numTypeTable[uvectorType(n)] : (isShortFloat(n) ? ShortFloatID : NotNumberID)))
 
 int numType(LispObj n)
 {
-	return
-		(isFixnum(n) ? FixnumID :
-			(isUvector(n) ? numTypeTable[uvectorType(n)] :
-				(isShortFloat(n) ? ShortFloatID : NotNumberID)));
+	return (isFixnum(n)
+				? FixnumID
+				: (isUvector(n) ? numTypeTable[uvectorType(n)] : (isShortFloat(n) ? ShortFloatID : NotNumberID)));
 }
 
-LispObj fixnumToRatio(LispObj n) { return ratioNode(n, wrapInteger(1)); }
-LispObj fixnumToShortFloat(LispObj n) { return createShortFloat((double)integer(n)); }
-LispObj fixnumToSingleFloat(LispObj n) { return singleFloatNode((double)integer(n)); }
-LispObj fixnumToDoubleFloat(LispObj n) { return doubleFloatNode((double)integer(n)); }
-LispObj fixnumToComplex(LispObj n) { return complexNode(n, wrapInteger(0)); }
-LispObj bignumToRatio(LispObj n) { return ratioNode(n, wrapInteger(1)); }
+LispObj fixnumToRatio(LispObj n)
+{
+	return ratioNode(n, wrapInteger(1));
+}
+LispObj fixnumToShortFloat(LispObj n)
+{
+	return createShortFloat((double)integer(n));
+}
+LispObj fixnumToSingleFloat(LispObj n)
+{
+	return singleFloatNode((double)integer(n));
+}
+LispObj fixnumToDoubleFloat(LispObj n)
+{
+	return doubleFloatNode((double)integer(n));
+}
+LispObj fixnumToComplex(LispObj n)
+{
+	return complexNode(n, wrapInteger(0));
+}
+LispObj bignumToRatio(LispObj n)
+{
+	return ratioNode(n, wrapInteger(1));
+}
 
-LispObj bignumToShortFloat(LispObj n) 
-{ 
+LispObj bignumToShortFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	d_temp1 = bignumToDouble(n);
-	return createShortFloat(d_temp1); 
+	return createShortFloat(d_temp1);
 }
-LispObj bignumToSingleFloat(LispObj n) 
-{ 
+LispObj bignumToSingleFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	d_temp1 = bignumToDouble(n);
-	return singleFloatNode(d_temp1); 
+	return singleFloatNode(d_temp1);
 }
-LispObj bignumToDoubleFloat(LispObj n) 
-{ 
+LispObj bignumToDoubleFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	d_temp1 = bignumToDouble(n);
-	return doubleFloatNode(d_temp1); 
+	return doubleFloatNode(d_temp1);
 }
-LispObj bignumToComplex(LispObj n) { return complexNode(n, wrapInteger(0)); }
-LispObj ratioToShortFloat(LispObj n) 
-{ 
+LispObj bignumToComplex(LispObj n)
+{
+	return complexNode(n, wrapInteger(0));
+}
+LispObj ratioToShortFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	double d_temp2 = 0.0;
 	d_temp1 = getFloat(ratioNumerator(n));
@@ -798,59 +879,75 @@ LispObj ratioToShortFloat(LispObj n)
 	d_temp1 = d_temp1 / d_temp2;
 	return createShortFloat(d_temp1);
 }
-LispObj ratioToSingleFloat(LispObj n) 
-{ 
+LispObj ratioToSingleFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	double d_temp2 = 0.0;
 	d_temp1 = getFloat(ratioNumerator(n));
 	d_temp2 = getFloat(ratioDenominator(n));
 	d_temp1 = d_temp1 / d_temp2;
-	return singleFloatNode(d_temp1); 
+	return singleFloatNode(d_temp1);
 }
-LispObj ratioToDoubleFloat(LispObj n) 
-{ 
+LispObj ratioToDoubleFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	double d_temp2 = 0.0;
 	d_temp1 = getFloat(ratioNumerator(n));
 	d_temp2 = getFloat(ratioDenominator(n));
 	d_temp1 = d_temp1 / d_temp2;
-	return doubleFloatNode(d_temp1); 
+	return doubleFloatNode(d_temp1);
 }
-LispObj ratioToComplex(LispObj n) { return complexNode(n, wrapInteger(0)); }
-LispObj shortToSingleFloat(LispObj n) 
-{ 
+LispObj ratioToComplex(LispObj n)
+{
+	return complexNode(n, wrapInteger(0));
+}
+LispObj shortToSingleFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	d_temp1 = shortFloat(n);
-	return singleFloatNode(d_temp1); 
+	return singleFloatNode(d_temp1);
 }
-LispObj shortFloatToDoubleFloat(LispObj n) 
-{ 
+LispObj shortFloatToDoubleFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	d_temp1 = shortFloat(n);
-	return doubleFloatNode(d_temp1); 
+	return doubleFloatNode(d_temp1);
 }
-LispObj shortToComplex(LispObj n) { return complexNode(n, wrapInteger(0)); }
-LispObj singleFloatToDoubleFloat(LispObj n) 
-{ 
+LispObj shortToComplex(LispObj n)
+{
+	return complexNode(n, wrapInteger(0));
+}
+LispObj singleFloatToDoubleFloat(LispObj n)
+{
 	double d_temp1 = 0.0;
 	d_temp1 = singleFloat(n);
-	return doubleFloatNode(d_temp1); 
+	return doubleFloatNode(d_temp1);
 }
-LispObj singleToComplex(LispObj n) { return complexNode(n, wrapInteger(0)); }
-LispObj doubleToComplex(LispObj n) { return complexNode(n, wrapInteger(0)); }
-LispObj anyToNotNumber(LispObj n) { return n; }
+LispObj singleToComplex(LispObj n)
+{
+	return complexNode(n, wrapInteger(0));
+}
+LispObj doubleToComplex(LispObj n)
+{
+	return complexNode(n, wrapInteger(0));
+}
+LispObj anyToNotNumber(LispObj n)
+{
+	return n;
+}
 
 typedef LispObj (*NumberPromotionMethod)(LispObj);
-NumberPromotionMethod promotionTable[NumMaxIDs][NumMaxIDs] =
-{
-	{	0,	fixnumToBignum,	fixnumToRatio, fixnumToShortFloat, fixnumToSingleFloat, fixnumToDoubleFloat, fixnumToComplex, anyToNotNumber },
-	{	0,				 0,	bignumToRatio, bignumToShortFloat, bignumToSingleFloat, bignumToDoubleFloat, bignumToComplex, anyToNotNumber },
-	{	0,				 0,			    0,  ratioToShortFloat,  ratioToSingleFloat,  ratioToDoubleFloat, ratioToComplex, anyToNotNumber },
-	{	0,				 0,			    0,					0,  shortToSingleFloat,  shortToDoubleFloat, shortToComplex, anyToNotNumber },
-	{	0,				 0,			    0,					0,					 0,  singleFloatToDoubleFloat, singleToComplex, anyToNotNumber },
-	{	0,				 0,			    0,					0,					 0,					   0, doubleToComplex, anyToNotNumber },
-	{	anyToNotNumber,	 anyToNotNumber, anyToNotNumber, anyToNotNumber, anyToNotNumber, anyToNotNumber, anyToNotNumber, anyToNotNumber }
-};
+NumberPromotionMethod promotionTable[NumMaxIDs][NumMaxIDs] = {
+	{0, fixnumToBignum, fixnumToRatio, fixnumToShortFloat, fixnumToSingleFloat, fixnumToDoubleFloat, fixnumToComplex,
+	 anyToNotNumber},
+	{0, 0, bignumToRatio, bignumToShortFloat, bignumToSingleFloat, bignumToDoubleFloat, bignumToComplex,
+	 anyToNotNumber},
+	{0, 0, 0, ratioToShortFloat, ratioToSingleFloat, ratioToDoubleFloat, ratioToComplex, anyToNotNumber},
+	{0, 0, 0, 0, shortToSingleFloat, shortToDoubleFloat, shortToComplex, anyToNotNumber},
+	{0, 0, 0, 0, 0, singleFloatToDoubleFloat, singleToComplex, anyToNotNumber},
+	{0, 0, 0, 0, 0, 0, doubleToComplex, anyToNotNumber},
+	{anyToNotNumber, anyToNotNumber, anyToNotNumber, anyToNotNumber, anyToNotNumber, anyToNotNumber, anyToNotNumber,
+	 anyToNotNumber}};
 
 LispObj promoteNumber(LispObj n, int type1, int type2)
 {
@@ -862,15 +959,14 @@ LispObj subtractFixnums(LispObj n1, LispObj n2)
 	// attempt fixnum subtract
 	LispObj result = n1;
 #ifdef _MSC_VER
-	__asm mov eax, dword ptr n2
-	__asm sub result, eax
-	__asm jo do_bignum
+	__asm mov eax, dword ptr n2 __asm sub result,
+		eax __asm jo do_bignum
 #else
 	unsigned long _eax = (unsigned long)n2;
 	asm("sub %%eax, %0" : "+m"(result));
-	asm goto ("jo %l[do_bignum]" : : : : do_bignum);
+	asm goto("jo %l[do_bignum]" : : : : do_bignum);
 #endif
-	return result;
+		return result;
 do_bignum:
 	n1 = promoteNumber(n1, FixnumID, BignumID);
 	n2 = promoteNumber(n2, FixnumID, BignumID);
@@ -914,20 +1010,12 @@ LispObj subtractComplex(LispObj n1, LispObj n2)
 LispObj subtractNonNumeric(LispObj n1, LispObj n2)
 {
 	Error("Cannot call function '-' with these operands: ~A and ~A", n1, n2);
-	return 0;		// doesn't get here
+	return 0; // doesn't get here
 }
 
-SubractMethod subtractMethods[NumMaxIDs] =
-{
-	subtractFixnums,
-	subtractBignums,
-	subtractRatios,
-	subtractShortFloats,
-	subtractSingleFloats,
-	subtractDoubleFloats,
-	subtractComplex,
-	subtractNonNumeric
-};
+SubractMethod subtractMethods[NumMaxIDs] = {subtractFixnums,	 subtractBignums,	   subtractRatios,
+											subtractShortFloats, subtractSingleFloats, subtractDoubleFloats,
+											subtractComplex,	 subtractNonNumeric};
 
 LispObj _Subtract(LispObj n1, LispObj n2)
 {
@@ -940,15 +1028,14 @@ LispObj _Subtract(LispObj n1, LispObj n2)
 	{
 		// attempt fixnum subtract
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n2
-		__asm sub result, eax
-		__asm jo do_bignum
+		__asm mov eax, dword ptr n2 __asm sub result,
+			eax __asm jo do_bignum
 #else
 		unsigned long _eax = (unsigned long)n2;
 		asm("sub %%eax, %0" : "+m"(result));
-		asm goto ("jo %l[do_bignum]" : : : : do_bignum);
+		asm goto("jo %l[do_bignum]" : : : : do_bignum);
 #endif
-		return result;
+			return result;
 	do_bignum:
 		return bignumSubtract(fixnumToBignum(n1), fixnumToBignum(n2));
 	}
@@ -1082,27 +1169,22 @@ LispObj _Multiply(LispObj n1, LispObj n2)
 	{
 		// attempt fixnum multiply — use extended asm with register variable
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n1
-		__asm shr eax, 3
-		__asm imul dword ptr n2
-		__asm jo do_bignum
-		__asm mov [result], eax
+		__asm mov eax, dword ptr n1 __asm shr eax, 3 __asm imul dword ptr n2 __asm jo do_bignum __asm mov[result],
+			eax
 #else
 		register unsigned long _eax asm("eax") = (unsigned long)n1;
-		asm volatile(
-			"shr $3, %%eax\n\t"
-			"imull %[n2]\n\t"
-			"jo do_bignum_%=\n\t"
-			"mov %%eax, %[res]\n\t"
-			"jmp done_mul_%=\n\t"
-			"do_bignum_%=:\n\t"
-			"done_mul_%=:"
-			: [res] "=m"(result)
-			: [n2] "m"(n2)
-			: "eax", "edx", "cc"
-		);
+		asm volatile("shr $3, %%eax\n\t"
+					 "imull %[n2]\n\t"
+					 "jo do_bignum_%=\n\t"
+					 "mov %%eax, %[res]\n\t"
+					 "jmp done_mul_%=\n\t"
+					 "do_bignum_%=:\n\t"
+					 "done_mul_%=:"
+					 : [res] "=m"(result)
+					 : [n2] "m"(n2)
+					 : "eax", "edx", "cc");
 #endif
-		return result;
+			return result;
 	}
 
 	if (both_shortFloats(n1, n2))
@@ -1110,63 +1192,91 @@ LispObj _Multiply(LispObj n1, LispObj n2)
 
 	if (isFixnum(n1))
 	{
-		if		(isDoubleFloat(n2)) return mulFixnumDouble(n1, n2);
-		else if (isSingleFloat(n2)) return mulFixnumSingle(n1, n2);
-		else if (isShortFloat(n2))  return mulFixnumShort (n1, n2);
-		else if (isRatio(n2))		return multiplyRatios(n1, n2);
-		else if (isBignum(n2))		return bignumMultiply(fixnumToBignum(n1), n2);
-		else if (isComplex(n2))		return multiplyComplexNumbers(n1, n2);
-		else goto error;
+		if (isDoubleFloat(n2))
+			return mulFixnumDouble(n1, n2);
+		else if (isSingleFloat(n2))
+			return mulFixnumSingle(n1, n2);
+		else if (isShortFloat(n2))
+			return mulFixnumShort(n1, n2);
+		else if (isRatio(n2))
+			return multiplyRatios(n1, n2);
+		else if (isBignum(n2))
+			return bignumMultiply(fixnumToBignum(n1), n2);
+		else if (isComplex(n2))
+			return multiplyComplexNumbers(n1, n2);
+		else
+			goto error;
 	}
-	else
-	if (isRatio(n1))
+	else if (isRatio(n1))
 	{
-		if		(isLispInteger(n2))	return multiplyRatios(n1, n2);
-		else if (isRatio(n2))		return multiplyRatios(n1, n2);
-		else if (isDoubleFloat(n2)) return mulDoubleDouble(convertToDoubleFloat(n1), n2);
-		else if (isSingleFloat(n2))	return mulSingleSingle(convertToSingleFloat(n1), n2);
-		else if (isShortFloat(n2))	return mulShortShort(convertToShortFloat(n1), n2);
-		else if (isComplex(n2))		return multiplyComplexNumbers(n1, n2);
-		else goto error;
+		if (isLispInteger(n2))
+			return multiplyRatios(n1, n2);
+		else if (isRatio(n2))
+			return multiplyRatios(n1, n2);
+		else if (isDoubleFloat(n2))
+			return mulDoubleDouble(convertToDoubleFloat(n1), n2);
+		else if (isSingleFloat(n2))
+			return mulSingleSingle(convertToSingleFloat(n1), n2);
+		else if (isShortFloat(n2))
+			return mulShortShort(convertToShortFloat(n1), n2);
+		else if (isComplex(n2))
+			return multiplyComplexNumbers(n1, n2);
+		else
+			goto error;
 	}
-	else
-	if (isDoubleFloat(n1))
+	else if (isDoubleFloat(n1))
 	{
-		if (isComplex(n2))			return multiplyComplexNumbers(n1, n2);
-		else						return mulDoubleDouble(n1, convertToDoubleFloat(n2));
+		if (isComplex(n2))
+			return multiplyComplexNumbers(n1, n2);
+		else
+			return mulDoubleDouble(n1, convertToDoubleFloat(n2));
 	}
-	else
-	if (isSingleFloat(n1))
+	else if (isSingleFloat(n1))
 	{
-		if		(isComplex(n2))			return multiplyComplexNumbers(n1, n2);
-		else if (isDoubleFloat(n2))		return mulSingleDouble(n1, n2);
-		else if (isSingleFloat(n2))		return mulSingleSingle(n1, n2);
-		else if (isShortFloat(n2))		return mulSingleShort(n1, n2);
-		else							return mulSingleSingle(n1, convertToSingleFloat(n2));
+		if (isComplex(n2))
+			return multiplyComplexNumbers(n1, n2);
+		else if (isDoubleFloat(n2))
+			return mulSingleDouble(n1, n2);
+		else if (isSingleFloat(n2))
+			return mulSingleSingle(n1, n2);
+		else if (isShortFloat(n2))
+			return mulSingleShort(n1, n2);
+		else
+			return mulSingleSingle(n1, convertToSingleFloat(n2));
 	}
-	else
-	if (isShortFloat(n1))
+	else if (isShortFloat(n1))
 	{
-		if		(isComplex(n2))			return multiplyComplexNumbers(n1, n2);
-		else if (isDoubleFloat(n2))		return mulShortDouble(n1, n2);
-		else if (isSingleFloat(n2))		return mulShortSingle(n1, n2);
-		else if (isShortFloat(n2))		return mulShortShort(n1, n2);
-		else							return mulShortShort(n1, convertToShortFloat(n2));
+		if (isComplex(n2))
+			return multiplyComplexNumbers(n1, n2);
+		else if (isDoubleFloat(n2))
+			return mulShortDouble(n1, n2);
+		else if (isSingleFloat(n2))
+			return mulShortSingle(n1, n2);
+		else if (isShortFloat(n2))
+			return mulShortShort(n1, n2);
+		else
+			return mulShortShort(n1, convertToShortFloat(n2));
 	}
-	else
-	if (isBignum(n1))
+	else if (isBignum(n1))
 	{
-		if		(isFixnum(n2))			return bignumMultiply(n1, fixnumToBignum(n2));
-		else if (isRatio(n2))			return multiplyRatios(n1, n2);
-		else if (isDoubleFloat(n2))		return mulDoubleDouble(convertToDoubleFloat(n1), n2);
-		else if (isSingleFloat(n2))		return mulSingleSingle(convertToSingleFloat(n1), n2);
-		else if (isShortFloat(n2))		return mulShortShort(convertToShortFloat(n1), n2);
-		else if (isBignum(n2))			return bignumMultiply(n1, n2);
-		else if (isComplex(n2))			return multiplyComplexNumbers(n1, n2);
-		else goto error;
+		if (isFixnum(n2))
+			return bignumMultiply(n1, fixnumToBignum(n2));
+		else if (isRatio(n2))
+			return multiplyRatios(n1, n2);
+		else if (isDoubleFloat(n2))
+			return mulDoubleDouble(convertToDoubleFloat(n1), n2);
+		else if (isSingleFloat(n2))
+			return mulSingleSingle(convertToSingleFloat(n1), n2);
+		else if (isShortFloat(n2))
+			return mulShortShort(convertToShortFloat(n1), n2);
+		else if (isBignum(n2))
+			return bignumMultiply(n1, n2);
+		else if (isComplex(n2))
+			return multiplyComplexNumbers(n1, n2);
+		else
+			goto error;
 	}
-	else
-	if (isComplex(n1))
+	else if (isComplex(n1))
 		return multiplyComplexNumbers(n1, n2);
 error:
 	Error("Cannot call function '*' with these operands: ~A and ~A", n1, n2);
@@ -1175,9 +1285,18 @@ do_bignum:
 	return bignumMultiply(fixnumToBignum(n1), fixnumToBignum(n2));
 }
 
-long isDoubleZero(LispObj d) {return (doubleFloat(d) == 0.0) ? 1 : 0;}
-long isSingleZero(LispObj d) {return (singleFloat(d) == 0.0) ? 1 : 0;}
-long isShortZero(LispObj d)  {return (shortFloat(d)  == 0.0) ? 1 : 0;}
+long isDoubleZero(LispObj d)
+{
+	return (doubleFloat(d) == 0.0) ? 1 : 0;
+}
+long isSingleZero(LispObj d)
+{
+	return (singleFloat(d) == 0.0) ? 1 : 0;
+}
+long isShortZero(LispObj d)
+{
+	return (shortFloat(d) == 0.0) ? 1 : 0;
+}
 
 LispObj _Divide(LispObj n1, LispObj n2)
 {
@@ -1186,28 +1305,41 @@ LispObj _Divide(LispObj n1, LispObj n2)
 		if (n2 == 0)
 			Error("Divide by zero error: ~A / ~A", n1, n2);
 
-		if		(isFixnum(n1))		return simplifyRatio(n1, n2);
-		else if (isDoubleFloat(n1)) return divDoubleFixnum(n1, n2);
-		else if (isSingleFloat(n1)) return divSingleFixnum(n1, n2);
-		else if (isShortFloat(n1))	return divShortFixnum(n1, n2);
-		else if (isRatio(n1))		return divideRatios(n1, n2);
-		else if (isBignum(n1))		return simplifyRatio(n1, n2);
-		else if (isComplex(n1))		return divideComplexNumbers(n1, n2);
-		else goto error;
+		if (isFixnum(n1))
+			return simplifyRatio(n1, n2);
+		else if (isDoubleFloat(n1))
+			return divDoubleFixnum(n1, n2);
+		else if (isSingleFloat(n1))
+			return divSingleFixnum(n1, n2);
+		else if (isShortFloat(n1))
+			return divShortFixnum(n1, n2);
+		else if (isRatio(n1))
+			return divideRatios(n1, n2);
+		else if (isBignum(n1))
+			return simplifyRatio(n1, n2);
+		else if (isComplex(n1))
+			return divideComplexNumbers(n1, n2);
+		else
+			goto error;
 	}
-	else
-	if (isRatio(n2))
+	else if (isRatio(n2))
 	{
-		if		(isLispInteger(n1))	return divideRatios(n1, n2);
-		else if (isRatio(n1))		return divideRatios(n1, n2);
-		else if (isDoubleFloat(n1))	return divDoubleDouble(n1, convertToDoubleFloat(n2));
-		else if (isSingleFloat(n1))	return divSingleSingle(n1, convertToSingleFloat(n2));
-		else if (isShortFloat(n1))	return divShortShort(n1, convertToShortFloat(n2));
-		else if (isComplex(n1))		return divideComplexNumbers(n1, n2);
-		else goto error;
+		if (isLispInteger(n1))
+			return divideRatios(n1, n2);
+		else if (isRatio(n1))
+			return divideRatios(n1, n2);
+		else if (isDoubleFloat(n1))
+			return divDoubleDouble(n1, convertToDoubleFloat(n2));
+		else if (isSingleFloat(n1))
+			return divSingleSingle(n1, convertToSingleFloat(n2));
+		else if (isShortFloat(n1))
+			return divShortShort(n1, convertToShortFloat(n2));
+		else if (isComplex(n1))
+			return divideComplexNumbers(n1, n2);
+		else
+			goto error;
 	}
-	else
-	if (isDoubleFloat(n2))
+	else if (isDoubleFloat(n2))
 	{
 		if (isDoubleZero(n2))
 			Error("Divide by zero error: ~A / ~A", n1, n2);
@@ -1216,53 +1348,66 @@ LispObj _Divide(LispObj n1, LispObj n2)
 		else
 			return divDoubleDouble(convertToDoubleFloat(n1), n2);
 	}
-	else
-	if (isSingleFloat(n2))
+	else if (isSingleFloat(n2))
 	{
 		if (isSingleZero(n2))
 			Error("Divide by zero error: ~A / ~A", n1, n2);
 
-		if		(isComplex(n1))		return divideComplexNumbers(n1, n2);
-		else if (isDoubleFloat(n1))	return divDoubleSingle(n1, n2);
-		else if (isSingleFloat(n1))	return divSingleSingle(n1, n2);
-		else if (isShortFloat(n1))	return divShortSingle(n1, n2);
-		else						return divSingleSingle(convertToSingleFloat(n1), n2);
+		if (isComplex(n1))
+			return divideComplexNumbers(n1, n2);
+		else if (isDoubleFloat(n1))
+			return divDoubleSingle(n1, n2);
+		else if (isSingleFloat(n1))
+			return divSingleSingle(n1, n2);
+		else if (isShortFloat(n1))
+			return divShortSingle(n1, n2);
+		else
+			return divSingleSingle(convertToSingleFloat(n1), n2);
 	}
-	else
-	if (isShortFloat(n2))
+	else if (isShortFloat(n2))
 	{
 		if (isShortZero(n2))
 			Error("Divide by zero error: ~A / ~A", n1, n2);
 
-		if		(isComplex(n1))		return divideComplexNumbers(n1, n2);
-		else if (isDoubleFloat(n1))	return divDoubleShort(n1, n2);
-		else if (isSingleFloat(n1))	return divSingleShort(n1, n2);
-		else if (isShortFloat(n1))	return divShortShort(n1, n2);
-		else return divShortShort(convertToShortFloat(n1), n2);
+		if (isComplex(n1))
+			return divideComplexNumbers(n1, n2);
+		else if (isDoubleFloat(n1))
+			return divDoubleShort(n1, n2);
+		else if (isSingleFloat(n1))
+			return divSingleShort(n1, n2);
+		else if (isShortFloat(n1))
+			return divShortShort(n1, n2);
+		else
+			return divShortShort(convertToShortFloat(n1), n2);
 	}
-	else
-	if (isBignum(n2))
+	else if (isBignum(n2))
 	{
-		if		(isFixnum(n1))		return simplifyRatio(n1, n2);
-		else if (isRatio(n1))		return divideRatios(n1, n2);
-		else if (isDoubleFloat(n1))	return divDoubleDouble(n1, convertToDoubleFloat(n2));
-		else if (isSingleFloat(n1))	return divSingleSingle(n1, convertToSingleFloat(n2));
-		else if (isShortFloat(n1))	return divShortShort(n1, convertToShortFloat(n2));
-		else if (isBignum(n1))		return simplifyRatio(n1, n2);
-		else if (isComplex(n1))		return divideComplexNumbers(n1, n2);
-		else goto error;
+		if (isFixnum(n1))
+			return simplifyRatio(n1, n2);
+		else if (isRatio(n1))
+			return divideRatios(n1, n2);
+		else if (isDoubleFloat(n1))
+			return divDoubleDouble(n1, convertToDoubleFloat(n2));
+		else if (isSingleFloat(n1))
+			return divSingleSingle(n1, convertToSingleFloat(n2));
+		else if (isShortFloat(n1))
+			return divShortShort(n1, convertToShortFloat(n2));
+		else if (isBignum(n1))
+			return simplifyRatio(n1, n2);
+		else if (isComplex(n1))
+			return divideComplexNumbers(n1, n2);
+		else
+			goto error;
 	}
-	else
-	if (isComplex(n2))
+	else if (isComplex(n2))
 		return divideComplexNumbers(n1, n2);
 error:
 	Error("Cannot call function '/' with these operands: ~A and ~A", n1, n2);
 
-	return 0;	// never gets here
+	return 0; // never gets here
 }
 
-static LispObj
-_Mod(LispObj n1, LispObj n2)
+static LispObj _Mod(LispObj n1, LispObj n2)
 {
 	long t1 = 0;
 	long t2 = 0;
@@ -1302,56 +1447,75 @@ LispObj lispNumericEqual(LispObj n1, LispObj n2)
 	long ret = 0;
 	if (isFixnum(n1))
 	{
-			 if (isFixnum(n2))		ret = (n1 == n2);
-		else if (isRatio(n2))		ret = compareRatios(n1, n2) == 0;
-		else if (isDoubleFloat(n2))	ret = (((double)integer(n1)) == doubleFloat(n2));
-		else if (isSingleFloat(n2))	ret = (((double)integer(n1)) == singleFloat(n2));
-		else if (isShortFloat(n2))	ret = (((double)integer(n1)) == shortFloat(n2));
-		else if (isBignum(n2))		ret = (bignumCompare(fixnumToBignum(n1), n2) == 0);
-		else if (isComplex(n2))		ret = equalComplexNumbers(n1, n2);
-		else						Error("Invalid number: ~A", n2);
+		if (isFixnum(n2))
+			ret = (n1 == n2);
+		else if (isRatio(n2))
+			ret = compareRatios(n1, n2) == 0;
+		else if (isDoubleFloat(n2))
+			ret = (((double)integer(n1)) == doubleFloat(n2));
+		else if (isSingleFloat(n2))
+			ret = (((double)integer(n1)) == singleFloat(n2));
+		else if (isShortFloat(n2))
+			ret = (((double)integer(n1)) == shortFloat(n2));
+		else if (isBignum(n2))
+			ret = (bignumCompare(fixnumToBignum(n1), n2) == 0);
+		else if (isComplex(n2))
+			ret = equalComplexNumbers(n1, n2);
+		else
+			Error("Invalid number: ~A", n2);
 	}
-	else
-	if (isRatio(n1))
+	else if (isRatio(n1))
 	{
-			 if (isLispInteger(n2) || isRatio(n2))
-									ret = compareRatios(n1, n2) == 0;
-		else if (isDoubleFloat(n2))	ret = (getFloat(n1) == doubleFloat(n2));
-		else if (isSingleFloat(n2))	ret = (getFloat(n1) == singleFloat(n2));
-		else if (isShortFloat(n2))	ret = (getFloat(n1) == shortFloat(n2));
-		else if (isComplex(n2))		ret = equalComplexNumbers(n1, n2);
-		else						Error("Invalid number: ~A", n2);
+		if (isLispInteger(n2) || isRatio(n2))
+			ret = compareRatios(n1, n2) == 0;
+		else if (isDoubleFloat(n2))
+			ret = (getFloat(n1) == doubleFloat(n2));
+		else if (isSingleFloat(n2))
+			ret = (getFloat(n1) == singleFloat(n2));
+		else if (isShortFloat(n2))
+			ret = (getFloat(n1) == shortFloat(n2));
+		else if (isComplex(n2))
+			ret = equalComplexNumbers(n1, n2);
+		else
+			Error("Invalid number: ~A", n2);
 	}
-	else
-	if (isDoubleFloat(n1))
+	else if (isDoubleFloat(n1))
 	{
-		if (isComplex(n2))			ret = equalComplexNumbers(n1, n2);
-		else						ret = doubleFloat(n1) == getFloat(n2);
+		if (isComplex(n2))
+			ret = equalComplexNumbers(n1, n2);
+		else
+			ret = doubleFloat(n1) == getFloat(n2);
 	}
-	else
-	if (isSingleFloat(n1))
+	else if (isSingleFloat(n1))
 	{
-		if (isComplex(n2))			ret = equalComplexNumbers(n1, n2);
-		else						ret = singleFloat(n1) == getFloat(n2);
+		if (isComplex(n2))
+			ret = equalComplexNumbers(n1, n2);
+		else
+			ret = singleFloat(n1) == getFloat(n2);
 	}
-	else
-	if (isShortFloat(n1))
+	else if (isShortFloat(n1))
 	{
-		if (isComplex(n2))			ret = equalComplexNumbers(n1, n2);
-		else						ret = shortFloat(n1) == getFloat(n2);
+		if (isComplex(n2))
+			ret = equalComplexNumbers(n1, n2);
+		else
+			ret = shortFloat(n1) == getFloat(n2);
 	}
-	else
-	if (isBignum(n1))
+	else if (isBignum(n1))
 	{
-			 if (isFixnum(n2))		ret = (bignumCompare(n1, fixnumToBignum(n2)) == 0);
-		else if (isRatio(n2))		ret = compareRatios(n1, n2) == 0;
-		else if (isDoubleFloat(n2)) ret = (bignumToDouble(n1) == doubleFloat(n2));
-		else if (isSingleFloat(n2))	ret = (bignumToDouble(n1) == singleFloat(n2));
-		else if (isShortFloat(n2))	ret = (bignumToDouble(n1) == shortFloat(n2));
-		else if (isBignum(n2))		ret = (bignumCompare(n1, n2) == 0);
+		if (isFixnum(n2))
+			ret = (bignumCompare(n1, fixnumToBignum(n2)) == 0);
+		else if (isRatio(n2))
+			ret = compareRatios(n1, n2) == 0;
+		else if (isDoubleFloat(n2))
+			ret = (bignumToDouble(n1) == doubleFloat(n2));
+		else if (isSingleFloat(n2))
+			ret = (bignumToDouble(n1) == singleFloat(n2));
+		else if (isShortFloat(n2))
+			ret = (bignumToDouble(n1) == shortFloat(n2));
+		else if (isBignum(n2))
+			ret = (bignumCompare(n1, n2) == 0);
 	}
-	else
-	if (isComplex(n1))
+	else if (isComplex(n1))
 	{
 		ret = equalComplexNumbers(n1, n2);
 	}
@@ -1792,8 +1956,7 @@ LispFunction(Gcd)
 	long i = 0;
 	if (ARG_COUNT == 0)
 		ret = 0;
-	else
-	if (ARG_COUNT == 1)
+	else if (ARG_COUNT == 1)
 		ret = _Abs(LISP_ARG(0));
 	else
 	{
@@ -1810,8 +1973,7 @@ LispFunction(Gcd)
 //	Returns the number of 32-bit significant words.
 //
 typedef unsigned long BignumWord;
-static long
-bignumLength(LispObj bn)
+static long bignumLength(LispObj bn)
 {
 	BignumWord* buf = 0;
 	BignumWord* p = 0;
@@ -1820,7 +1982,8 @@ bignumLength(LispObj bn)
 		return 0;
 	buf = bignumStart(bn);
 	for (p = buf + len - 1; p > buf; p--)
-		if (*p) break;
+		if (*p)
+			break;
 	return (p - buf) + 1;
 }
 
@@ -1829,8 +1992,7 @@ bignumLength(LispObj bn)
 //	of 32-bit words by adding zeros to the beginning. Assumes the passed
 //	word is smaller or the same size as the requested length.
 //
-LispObj
-bignumExpand(LispObj bn, LispObj length)
+LispObj bignumExpand(LispObj bn, LispObj length)
 {
 	LispObj ret = 0;
 	BignumWord* b1 = 0;
@@ -1848,8 +2010,7 @@ bignumExpand(LispObj bn, LispObj length)
 	return ret;
 }
 
-static LispObj
-bignumAdd(LispObj b1, LispObj b2)
+static LispObj bignumAdd(LispObj b1, LispObj b2)
 {
 	long resSign = 0;
 	long b1Length = bignumLength(b1);
@@ -1869,8 +2030,7 @@ bignumAdd(LispObj b1, LispObj b2)
 			return result;
 		}
 	}
-	else
-	if (bignumNegative(b2))
+	else if (bignumNegative(b2))
 	{
 		bignumNegate(b2);
 		result = bignumSubtract(b1, b2);
@@ -1889,8 +2049,7 @@ bignumAdd(LispObj b1, LispObj b2)
 	return normalizeBignum(result);
 }
 
-static LispObj
-bignumSubtract(LispObj b1, LispObj b2)
+static LispObj bignumSubtract(LispObj b1, LispObj b2)
 {
 	long resSign = 0;
 	long b1Length = bignumLength(b1);
@@ -1933,8 +2092,7 @@ bignumSubtract(LispObj b1, LispObj b2)
 	return normalizeBignum(result);
 }
 
-static LispObj
-bignumMultiply(LispObj b1, LispObj b2)
+static LispObj bignumMultiply(LispObj b1, LispObj b2)
 {
 	long resSign = 0;
 	long b1Length = bignumLength(b1);
@@ -1962,14 +2120,12 @@ bignumMultiply(LispObj b1, LispObj b2)
 	return normalizeBignum(result);
 }
 
-static LispObj
-bignumDivide(LispObj b1, LispObj b2)
+static LispObj bignumDivide(LispObj b1, LispObj b2)
 {
 	return divideBignums(b1, b2, 0);
 }
 
-static LispObj
-bignumMod(LispObj b1, LispObj b2)
+static LispObj bignumMod(LispObj b1, LispObj b2)
 {
 	return CDR(divideBignums(b1, b2, 1));
 }
@@ -1978,14 +2134,13 @@ bignumMod(LispObj b1, LispObj b2)
 //	addBignumWords()
 //	Assumes b2Len <= b1Len.
 //
-static void
-addBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result)
+static void addBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result)
 {
 	BignumWord* b1ptr = bignumStart(b1);
 	BignumWord* b2ptr = bignumStart(b2);
 	BignumWord* rptr = bignumStart(result);
 
-	#if 0 // __asm port pending
+#if 0 // __asm port pending
 	{
 		push ecx
 		push edi
@@ -2032,14 +2187,13 @@ addBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result)
 //	subBignumWords()
 //	Assumes b2Len <= b1Len.
 //
-static void
-subBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result)
+static void subBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result)
 {
 	BignumWord* b1ptr = bignumStart(b1);
 	BignumWord* b2ptr = bignumStart(b2);
 	BignumWord* rptr = bignumStart(result);
 
-	#if 0 // __asm port pending
+#if 0 // __asm port pending
 	{
 		push ecx
 		push edi
@@ -2091,15 +2245,14 @@ subBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result)
 //	mulBignumWords()
 //	Assumes b2Len <= b1Len.
 //
-static void
-mulBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result)
+static void mulBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len, LispObj result)
 {
 	long i = 0;
 	b1Len <<= 2;
 	b2Len <<= 2;
 	for (i = 0; i < b2Len; i += 4)
 	{
-		#if 0 // __asm port pending
+#if 0 // __asm port pending
 		{
 			push	edi
 			push	ebx
@@ -2208,13 +2361,16 @@ divBignumWords(LispObj b1, long b1Len, LispObj b2, long b2Len,
 }
 #endif
 
-static void
-shiftBignumWords(LispObj b, long srcLen, LispObj res, long resultLen, long bits)
+static void shiftBignumWords(LispObj b, long srcLen, LispObj res, long resultLen, long bits)
 {
 	long shiftDir = 0;
 	long wordShift = 0;
 	long bitShift = 0;
-	enum { Left, Right };
+	enum
+	{
+		Left,
+		Right
+	};
 	long i = 0;
 	unsigned long n = 0;
 
@@ -2276,12 +2432,9 @@ shiftBignumWords(LispObj b, long srcLen, LispObj res, long resultLen, long bits)
 //	Assumes b2Len <= b1Len.
 //	Assumes both bignums are in signed magnitude format.
 //
-#define TWOS_COMP_WORD(x, tcword, carry) ((tcword) = ~(x) + (carry),	\
-	(carry) = ((carry) && !(tcword)),									\
-	tcword)
+#define TWOS_COMP_WORD(x, tcword, carry) ((tcword) = ~(x) + (carry), (carry) = ((carry) && !(tcword)), tcword)
 
-static void
-xorBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispObj result)
+static void xorBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispObj result)
 {
 	BignumWord* b1ptr = 0;
 	BignumWord* b2ptr = 0;
@@ -2317,14 +2470,14 @@ xorBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispO
 
 	if (b1Sign == 0)
 	{
-		if (b2Sign == 0)		// b1 >=0, b2 >= 0
+		if (b2Sign == 0) // b1 >=0, b2 >= 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = b1ptr[i] ^ b2ptr[i];
 			for (; i < b1Len; i++)
 				rptr[i] = b1ptr[i];
 		}
-		else					// b1 >= 0, b2 < 0
+		else // b1 >= 0, b2 < 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = b1ptr[i] ^ TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
@@ -2335,7 +2488,7 @@ xorBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispO
 	}
 	else
 	{
-		if (b2Sign == 0)		// b1 < 0, b2 >= 0
+		if (b2Sign == 0) // b1 < 0, b2 >= 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1) ^ b2ptr[i];
@@ -2343,11 +2496,10 @@ xorBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispO
 				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1);
 			Bignum_2CtoSM(result);
 		}
-		else					// b1 < 0, b2 < 0
+		else // b1 < 0, b2 < 0
 		{
 			for (i = 0; i < b2Len; i++)
-				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1)
-						^ TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
+				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1) ^ TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
 			for (; i < b1Len; i++)
 				rptr[i] = ~TWOS_COMP_WORD(b1ptr[i], tcword1, carry1);
 			Bignum_2CtoSM(result);
@@ -2359,8 +2511,7 @@ xorBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispO
 //	orBignumWords()
 //	Assumes b2Len <= b1Len.
 //
-static void
-orBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispObj result)
+static void orBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispObj result)
 {
 	BignumWord* b1ptr = 0;
 	BignumWord* b2ptr = 0;
@@ -2396,14 +2547,14 @@ orBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispOb
 
 	if (b1Sign == 0)
 	{
-		if (b2Sign == 0)		// b1 >=0, b2 >= 0
+		if (b2Sign == 0) // b1 >=0, b2 >= 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = b1ptr[i] | b2ptr[i];
 			for (; i < b1Len; i++)
 				rptr[i] = b1ptr[i];
 		}
-		else					// b1 >= 0, b2 < 0
+		else // b1 >= 0, b2 < 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = b1ptr[i] | TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
@@ -2414,7 +2565,7 @@ orBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispOb
 	}
 	else
 	{
-		if (b2Sign == 0)		// b1 < 0, b2 >= 0
+		if (b2Sign == 0) // b1 < 0, b2 >= 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1) | b2ptr[i];
@@ -2422,11 +2573,10 @@ orBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispOb
 				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1);
 			Bignum_2CtoSM(result);
 		}
-		else					// b1 < 0, b2 < 0
+		else // b1 < 0, b2 < 0
 		{
 			for (i = 0; i < b2Len; i++)
-				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1)
-						| TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
+				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1) | TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
 			for (; i < b1Len; i++)
 				rptr[i] = (LispObj)-1;
 			Bignum_2CtoSM(result);
@@ -2438,8 +2588,7 @@ orBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispOb
 //	andBignumWords()
 //	Assumes b2Len <= b1Len.
 //
-static void
-andBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispObj result)
+static void andBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispObj result)
 {
 	BignumWord* b1ptr = 0;
 	BignumWord* b2ptr = 0;
@@ -2475,37 +2624,36 @@ andBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispO
 
 	if (b1Sign == 0)
 	{
-		if (b2Sign == 0)		// b1 >=0, b2 >= 0
+		if (b2Sign == 0) // b1 >=0, b2 >= 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = b1ptr[i] & b2ptr[i];
 			for (; i < b1Len; i++)
 				rptr[i] = 0;
 		}
-		else					// b1 >= 0, b2 < 0
+		else // b1 >= 0, b2 < 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = b1ptr[i] & TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
 			for (; i < b1Len; i++)
 				rptr[i] = b1ptr[i];
-			//Bignum_2CtoSM(result); // result should always be positive
+			// Bignum_2CtoSM(result); // result should always be positive
 		}
 	}
 	else
 	{
-		if (b2Sign == 0)		// b1 < 0, b2 >= 0
+		if (b2Sign == 0) // b1 < 0, b2 >= 0
 		{
 			for (i = 0; i < b2Len; i++)
 				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1) & b2ptr[i];
 			for (; i < b1Len; i++)
 				rptr[i] = 0;
-			//Bignum_2CtoSM(result); // result should always be positive
+			// Bignum_2CtoSM(result); // result should always be positive
 		}
-		else					// b1 < 0, b2 < 0
+		else // b1 < 0, b2 < 0
 		{
 			for (i = 0; i < b2Len; i++)
-				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1)
-						& TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
+				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1) & TWOS_COMP_WORD(b2ptr[i], tcword2, carry2);
 			for (; i < b1Len; i++)
 				rptr[i] = TWOS_COMP_WORD(b1ptr[i], tcword1, carry1);
 			Bignum_2CtoSM(result);
@@ -2516,8 +2664,7 @@ andBignumWords(LispObj b1, LispObj b1Length, LispObj b2, LispObj b2Length, LispO
 //
 //	notBignumWords()
 //
-static void
-notBignumWords(LispObj b, LispObj bLength, LispObj result)
+static void notBignumWords(LispObj b, LispObj bLength, LispObj result)
 {
 	BignumWord* bptr = 0;
 	BignumWord* rptr = 0;
@@ -2533,12 +2680,12 @@ notBignumWords(LispObj b, LispObj bLength, LispObj result)
 	bptr = bignumStart(b);
 	bLen = integer(bLength);
 
-	if (bSign == 0)				// b >= 0
+	if (bSign == 0) // b >= 0
 	{
 		for (i = 0; i < bLen; i++)
 			rptr[i] = ~bptr[i];
 	}
-	else						// b < 0
+	else // b < 0
 	{
 		for (i = 0; i < bLen; i++)
 			rptr[i] = ~TWOS_COMP_WORD(bptr[i], tcword1, carry1);
@@ -2551,8 +2698,7 @@ notBignumWords(LispObj b, LispObj bLength, LispObj result)
 //	modified. It is assumed that the top-most bit of the signed magnitude
 //	is free to hold the sign bit in the twos complement representation.
 //
-void
-Bignum_SMto2C(LispObj bn)
+void Bignum_SMto2C(LispObj bn)
 {
 	long sign = bignumNegative(bn);
 	BignumWord* b = 0;
@@ -2582,8 +2728,7 @@ Bignum_SMto2C(LispObj bn)
 //	Bignum_2CtoSM() converts (in place) a twos complement bignum
 //	to a signed magnitude representation.
 //
-void
-Bignum_2CtoSM(LispObj bn)
+void Bignum_2CtoSM(LispObj bn)
 {
 	long len = bignumNumCells(bn);
 	BignumWord* b = bignumStart(bn);
@@ -2609,12 +2754,10 @@ Bignum_2CtoSM(LispObj bn)
 	bignumSetSign(bn, negative);
 }
 
-
 //
 //	This is currently only correct for unsigned integers
 //
-static LispObj
-bignumXor(LispObj b1, LispObj b2)
+static LispObj bignumXor(LispObj b1, LispObj b2)
 {
 	long b1Length = bignumLength(b1);
 	long b2Length = bignumLength(b2);
@@ -2629,8 +2772,7 @@ bignumXor(LispObj b1, LispObj b2)
 //
 //	This is currently only correct for unsigned integers
 //
-static LispObj
-bignumIor(LispObj b1, LispObj b2)
+static LispObj bignumIor(LispObj b1, LispObj b2)
 {
 	long b1Length = bignumLength(b1);
 	long b2Length = bignumLength(b2);
@@ -2642,8 +2784,7 @@ bignumIor(LispObj b1, LispObj b2)
 	return normalizeBignum(result);
 }
 
-static LispObj
-bignumAnd(LispObj b1, LispObj b2)
+static LispObj bignumAnd(LispObj b1, LispObj b2)
 {
 	long b1Length = bignumLength(b1);
 	long b2Length = bignumLength(b2);
@@ -2655,22 +2796,20 @@ bignumAnd(LispObj b1, LispObj b2)
 	return normalizeBignum(result);
 }
 
-static LispObj
-bignumNot(LispObj b)
+static LispObj bignumNot(LispObj b)
 {
 	long bLength = bignumLength(b);
 	long destSize = bLength;
 	LispObj result = 0;
 
-	destSize += 1;		// need to make sure there is an extra high-order bit
+	destSize += 1; // need to make sure there is an extra high-order bit
 	b = bignumExpand(b, wrapInteger(destSize));
- 	result = bignumNode(wrapInteger(destSize));
+	result = bignumNode(wrapInteger(destSize));
 	notBignumWords(b, wrapInteger(destSize), result);
 	return normalizeBignum(result);
 }
 
-static LispObj
-addRatios(LispObj n1, LispObj n2)
+static LispObj addRatios(LispObj n1, LispObj n2)
 {
 	LispObj num1 = ratioNumerator(n1);
 	LispObj den1 = ratioDenominator(n1);
@@ -2683,8 +2822,7 @@ addRatios(LispObj n1, LispObj n2)
 	return simplifyRatio(newNum, newDenom);
 }
 
-static LispObj
-subtractRatios(LispObj n1, LispObj n2)
+static LispObj subtractRatios(LispObj n1, LispObj n2)
 {
 	LispObj num1 = ratioNumerator(n1);
 	LispObj den1 = ratioDenominator(n1);
@@ -2697,8 +2835,7 @@ subtractRatios(LispObj n1, LispObj n2)
 	return simplifyRatio(newNum, newDenom);
 }
 
-static LispObj
-multiplyRatios(LispObj n1, LispObj n2)
+static LispObj multiplyRatios(LispObj n1, LispObj n2)
 {
 	LispObj num1 = ratioNumerator(n1);
 	LispObj den1 = ratioDenominator(n1);
@@ -2711,8 +2848,7 @@ multiplyRatios(LispObj n1, LispObj n2)
 	return simplifyRatio(newNum, newDenom);
 }
 
-static LispObj
-divideRatios(LispObj n1, LispObj n2)
+static LispObj divideRatios(LispObj n1, LispObj n2)
 {
 	LispObj num1 = ratioNumerator(n1);
 	LispObj den1 = ratioDenominator(n1);
@@ -2725,9 +2861,7 @@ divideRatios(LispObj n1, LispObj n2)
 	return simplifyRatio(newNum, newDenom);
 }
 
-
-static LispObj
-multiplyComplexNumbers(LispObj n1, LispObj n2)
+static LispObj multiplyComplexNumbers(LispObj n1, LispObj n2)
 {
 	LispObj a = 0;
 	LispObj b = 0;
@@ -2739,12 +2873,9 @@ multiplyComplexNumbers(LispObj n1, LispObj n2)
 	LispObj bc = 0;
 
 	if (!isComplex(n1))
-		return createComplex(_Multiply(n1, complexReal(n2)),
-								 _Multiply(n1, complexImaginary(n2)));
-	else
-	if (!isComplex(n2))
-		return createComplex(_Multiply(n2, complexReal(n1)),
-								 _Multiply(n2, complexImaginary(n1)));
+		return createComplex(_Multiply(n1, complexReal(n2)), _Multiply(n1, complexImaginary(n2)));
+	else if (!isComplex(n2))
+		return createComplex(_Multiply(n2, complexReal(n1)), _Multiply(n2, complexImaginary(n1)));
 	else
 	{
 		// (a + bi) * (c + di) == ac - bd + (bc + ad)i
@@ -2758,13 +2889,11 @@ multiplyComplexNumbers(LispObj n1, LispObj n2)
 		ad = _Multiply(a, d);
 		bc = _Multiply(b, c);
 
-		return createComplex(_Subtract(_Multiply(a, c), _Multiply(b, d)),
-						_Add(_Multiply(a, d), _Multiply(b, c)));
+		return createComplex(_Subtract(_Multiply(a, c), _Multiply(b, d)), _Add(_Multiply(a, d), _Multiply(b, c)));
 	}
 }
 
-static LispObj
-divideComplexNumbers(LispObj n1, LispObj n2)
+static LispObj divideComplexNumbers(LispObj n1, LispObj n2)
 {
 	// (a + bi) / (c + di) == (ac + bd)/(cc + dd) + ((bc - ad)/(cc + dd))i
 	LispObj a = 0;
@@ -2776,8 +2905,7 @@ divideComplexNumbers(LispObj n1, LispObj n2)
 	LispObj imagResult = 0;
 
 	if (!isComplex(n2))
-		return createComplex(_Divide(complexReal(n1), n2),
-								 _Divide(complexImaginary(n1), n2));
+		return createComplex(_Divide(complexReal(n1), n2), _Divide(complexImaginary(n1), n2));
 
 	c = complexReal(n2);
 	d = complexImaginary(n2);
@@ -2803,16 +2931,14 @@ divideComplexNumbers(LispObj n1, LispObj n2)
 	return createComplex(realResult, imagResult);
 }
 
-static void
-bignumSetBit(LispObj bn, long bit)
+static void bignumSetBit(LispObj bn, long bit)
 {
 	long word = bit / 32;
 	long b = bit % 32;
 	bignumStart(bn)[word] |= (1 << b);
 }
 
-static long
-bignumHighBit(LispObj b)
+static long bignumHighBit(LispObj b)
 {
 	BignumWord* p = bignumStart(b) + bignumLength(b) - 1;
 	long high = 0;
@@ -2832,8 +2958,7 @@ bignumHighBit(LispObj b)
 	return high + ((p - bignumStart(b)) * 32);
 }
 
-static long
-bignumAbsCompare(LispObj b1, LispObj b2)
+static long bignumAbsCompare(LispObj b1, LispObj b2)
 {
 	long len1 = bignumLength(b1);
 	long len2 = bignumLength(b2);
@@ -2841,23 +2966,20 @@ bignumAbsCompare(LispObj b1, LispObj b2)
 
 	if (len1 > len2)
 		return 1;
-	else
-	if (len1 < len2)
+	else if (len1 < len2)
 		return -1;
 
 	for (i = len1 - 1; i >= 0; i--)
 	{
 		if (bignumStart(b1)[i] > bignumStart(b2)[i])
 			return 1;
-		else
-		if (bignumStart(b1)[i] < bignumStart(b2)[i])
+		else if (bignumStart(b1)[i] < bignumStart(b2)[i])
 			return -1;
 	}
 	return 0;
 }
 
-static LispObj
-simplifyRatio(LispObj num, LispObj denom)
+static LispObj simplifyRatio(LispObj num, LispObj denom)
 {
 	LispObj temp = 0;
 	if (num == 0)
@@ -2878,8 +3000,7 @@ simplifyRatio(LispObj num, LispObj denom)
 	return (denom == wrapInteger(1) ? num : ratioNode(num, denom));
 }
 
-static LispObj
-normalizeBignum(LispObj b)
+static LispObj normalizeBignum(LispObj b)
 {
 	unsigned long word = 0;
 	long n = 0;
@@ -2905,8 +3026,7 @@ normalizeBignum(LispObj b)
 }
 
 // does not handle complex
-static LispObj
-_Floor(LispObj n)
+static LispObj _Floor(LispObj n)
 {
 	LispObj res = 0;
 
@@ -2939,8 +3059,7 @@ _Floor(LispObj n)
 }
 
 // does not handle complex
-static LispObj
-_Ceiling(LispObj n)
+static LispObj _Ceiling(LispObj n)
 {
 	LispObj res = 0;
 
@@ -2973,8 +3092,7 @@ _Ceiling(LispObj n)
 }
 
 // does not handle complex
-static LispObj
-_Truncate(LispObj n)
+static LispObj _Truncate(LispObj n)
 {
 	LispObj res = 0;
 	if (isLispInteger(n))
@@ -3026,8 +3144,7 @@ _Truncate(LispObj n)
 }
 
 // does not handle complex
-static LispObj
-_Round(LispObj n)
+static LispObj _Round(LispObj n)
 {
 	LispObj res = 0;
 	long odd = 0;
@@ -3049,8 +3166,7 @@ _Round(LispObj n)
 }
 
 //	divide and truncate
-static LispObj
-divideIntegerNumbers(LispObj n1, LispObj n2)
+static LispObj divideIntegerNumbers(LispObj n1, LispObj n2)
 {
 	if (both_fixnums(n1, n2))
 		return wrapInteger((long)(((long)integer(n1)) / ((long)integer(n2))));
@@ -3063,8 +3179,7 @@ divideIntegerNumbers(LispObj n1, LispObj n2)
 //		Returns -1 if first number < second number, 0 if they are the equal,
 //		and 1 if the second number is greater than the first.
 //
-static long
-numCompare(LispObj x, LispObj y)
+static long numCompare(LispObj x, LispObj y)
 {
 	checkNumber(x);
 	checkNumber(y);
@@ -3078,8 +3193,7 @@ numCompare(LispObj x, LispObj y)
 //	Does not handle complex numbers.
 //	Assumes both arguments are real numbers.
 //
-long
-compareNumbers(LispObj n1, LispObj n2)
+long compareNumbers(LispObj n1, LispObj n2)
 {
 	double d = 0.0;
 
@@ -3087,32 +3201,44 @@ compareNumbers(LispObj n1, LispObj n2)
 	{
 		if (isFixnum(n2))
 		{
-			if (((long)n1) < ((long)n2)) return -1;
-			if (((long)n1) == ((long)n2)) return 0;
-			if (((long)n1) > ((long)n2)) return 1;
+			if (((long)n1) < ((long)n2))
+				return -1;
+			if (((long)n1) == ((long)n2))
+				return 0;
+			if (((long)n1) > ((long)n2))
+				return 1;
 		}
 		if (isRatio(n2))
 			return compareRatios(n1, n2);
 		if (isDoubleFloat(n2))
 		{
 			d = (double)(integer(n1)) - doubleFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 		if (isSingleFloat(n2))
 		{
 			d = (double)(integer(n1)) - singleFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 		if (isShortFloat(n2))
 		{
 			d = (double)(integer(n1)) - shortFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 		if (isBignum(n2))
 			return bignumCompare(convertToBignum(n1), n2);
@@ -3124,45 +3250,63 @@ compareNumbers(LispObj n1, LispObj n2)
 		if (isDoubleFloat(n2))
 		{
 			d = getFloat(n1) - doubleFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 		if (isSingleFloat(n2))
 		{
 			d = getFloat(n1) - singleFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 		if (isShortFloat(n2))
 		{
 			d = getFloat(n1) - shortFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 	}
 	if (isDoubleFloat(n1))
 	{
 		d = doubleFloat(n1) - getFloat(n2);
-		if (d < 0) return -1;
-		if (d == 0) return 0;
-		if (d > 0) return 1;
+		if (d < 0)
+			return -1;
+		if (d == 0)
+			return 0;
+		if (d > 0)
+			return 1;
 	}
 	if (isSingleFloat(n1))
 	{
 		d = singleFloat(n1) - getFloat(n2);
-		if (d < 0) return -1;
-		if (d == 0) return 0;
-		if (d > 0) return 1;
+		if (d < 0)
+			return -1;
+		if (d == 0)
+			return 0;
+		if (d > 0)
+			return 1;
 	}
 	if (isShortFloat(n1))
 	{
 		d = shortFloat(n1) - getFloat(n2);
-		if (d < 0) return -1;
-		if (d == 0) return 0;
-		if (d > 0) return 1;
+		if (d < 0)
+			return -1;
+		if (d == 0)
+			return 0;
+		if (d > 0)
+			return 1;
 	}
 	if (isBignum(n1))
 	{
@@ -3173,23 +3317,32 @@ compareNumbers(LispObj n1, LispObj n2)
 		if (isDoubleFloat(n2))
 		{
 			d = getFloat(n1) - doubleFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 		if (isSingleFloat(n2))
 		{
 			d = getFloat(n1) - singleFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 		if (isShortFloat(n2))
 		{
 			d = getFloat(n1) - shortFloat(n2);
-			if (d < 0) return -1;
-			if (d == 0) return 0;
-			if (d > 0) return 1;
+			if (d < 0)
+				return -1;
+			if (d == 0)
+				return 0;
+			if (d > 0)
+				return 1;
 		}
 		if (isBignum(n2))
 			return bignumCompare(n1, n2);
@@ -3197,8 +3350,7 @@ compareNumbers(LispObj n1, LispObj n2)
 	return 0;
 }
 
-static LispObj
-convertDoubleFloatToInteger(LispObj n)
+static LispObj convertDoubleFloatToInteger(LispObj n)
 {
 	double d = doubleFloat(n);
 	if (d >= ((double)FixnumMin) && d <= ((double)FixnumMax))
@@ -3206,8 +3358,7 @@ convertDoubleFloatToInteger(LispObj n)
 	return convertToBignum(n);
 }
 
-static LispObj
-convertSingleFloatToInteger(LispObj n)
+static LispObj convertSingleFloatToInteger(LispObj n)
 {
 	double d = singleFloat(n);
 	if (d >= ((double)FixnumMin) && d <= ((double)FixnumMax))
@@ -3215,8 +3366,7 @@ convertSingleFloatToInteger(LispObj n)
 	return convertToBignum(n);
 }
 
-static LispObj
-convertShortFloatToInteger(LispObj n)
+static LispObj convertShortFloatToInteger(LispObj n)
 {
 	double d = shortFloat(n);
 	if (d >= ((double)FixnumMin) && d <= ((double)FixnumMax))
@@ -3224,8 +3374,7 @@ convertShortFloatToInteger(LispObj n)
 	return convertToBignum(n);
 }
 
-static LispObj
-convertToBignum(LispObj n)
+static LispObj convertToBignum(LispObj n)
 {
 	LispObj x = wrapInteger(1);
 	double d = 0.0;
@@ -3239,8 +3388,7 @@ convertToBignum(LispObj n)
 	{
 		if (isSingleFloat(n))
 			d = singleFloat(n);
-		else
-		if (isShortFloat(n))
+		else if (isShortFloat(n))
 			d = shortFloat(n);
 		else
 			d = doubleFloat(n);
@@ -3249,7 +3397,7 @@ convertToBignum(LispObj n)
 		UVECTOR(x)[BIGNUM_FIRST_CELL] = p[0];
 		UVECTOR(x)[BIGNUM_FIRST_CELL + 1] = (p[1] & 0xfffff) + 0x100000;
 		x = bignumShift(x, wrapInteger(((p[1] >> 20) & 0x7ff) - 0x3ff - 52), NIL);
-		if (p[1] & 0x80000000)	// if (d < 0)
+		if (p[1] & 0x80000000) // if (d < 0)
 			UVECTOR(x)[BIGNUM_LENGTH] |= wrapInteger(1);
 
 #if 0
@@ -3268,8 +3416,7 @@ convertToBignum(LispObj n)
 	return 0;
 }
 
-static long
-compareRatios(LispObj n1, LispObj n2)
+static long compareRatios(LispObj n1, LispObj n2)
 {
 	LispObj t1 = 0;
 	LispObj t2 = 0;
@@ -3284,8 +3431,7 @@ compareRatios(LispObj n1, LispObj n2)
 //	Compares two bignums. Returns -1 if the first is less,
 //	0 if equal, or 1 if the first is greater.
 //
-static long
-bignumCompare(LispObj b1, LispObj b2)
+static long bignumCompare(LispObj b1, LispObj b2)
 {
 	if (!bignumNegative(b1))
 	{
@@ -3294,7 +3440,7 @@ bignumCompare(LispObj b1, LispObj b2)
 		else
 			return 1;
 	}
-	else	// b1 is negative
+	else // b1 is negative
 	{
 		if (bignumNegative(b2))
 			return bignumAbsCompare(b2, b1);
@@ -3308,8 +3454,7 @@ bignumCompare(LispObj b1, LispObj b2)
 //	This is designed to be a fast number to float promotion for
 //	use by the math library routines. Returns a C++ double.
 //
-static double
-getFloat(LispObj n)
+static double getFloat(LispObj n)
 {
 	checkNumber(n);
 	if (isDoubleFloat(n))
@@ -3332,8 +3477,7 @@ static const double power_48 = 65536.0 * 65536.0 * 65536.0;
 static const double power_32 = 65536.0 * 65536.0;
 static const double power_16 = 65536.0;
 
-static double
-bignumToDouble(LispObj n)
+static double bignumToDouble(LispObj n)
 {
 	// return the upper 64 bits as a floating point number
 	long max = bignumLength(n) - 1;
@@ -3375,26 +3519,21 @@ LispObj shortToDoubleFloat(LispObj d)
 //
 //	does not handle complex numbers
 //
-static long
-isZero(LispObj n)
+static long isZero(LispObj n)
 {
 	if (n == 0)
 		return 1;
-	else
-	if (isDoubleFloat(n))
+	else if (isDoubleFloat(n))
 		return doubleFloat(n) == 0.0;
-	else
-	if (isSingleFloat(n))
+	else if (isSingleFloat(n))
 		return singleFloat(n) == 0.0;
-	else
-	if (isShortFloat(n))
+	else if (isShortFloat(n))
 		return shortFloat(n) == 0.0;
 	else
 		return 0;
 }
 
-static long
-equalComplexNumbers(LispObj n1, LispObj n2)
+static long equalComplexNumbers(LispObj n1, LispObj n2)
 {
 	if (!isComplex(n1))
 	{
@@ -3403,8 +3542,7 @@ equalComplexNumbers(LispObj n1, LispObj n2)
 		else
 			return 0;
 	}
-	else
-	if (!isComplex(n2))
+	else if (!isComplex(n2))
 	{
 		if (isZero(complexImaginary(n1)) && (lispNumericEqual(n2, complexReal(n1)) != NIL))
 			return 1;
@@ -3413,8 +3551,8 @@ equalComplexNumbers(LispObj n1, LispObj n2)
 	}
 	else
 	{
-		if ((lispNumericEqual(complexReal(n1), complexReal(n2)) != NIL)
-			&& (lispNumericEqual(complexImaginary(n1), complexImaginary(n2)) != NIL))
+		if ((lispNumericEqual(complexReal(n1), complexReal(n2)) != NIL) &&
+			(lispNumericEqual(complexImaginary(n1), complexImaginary(n2)) != NIL))
 			return 1;
 		else
 			return 0;
@@ -3424,8 +3562,7 @@ equalComplexNumbers(LispObj n1, LispObj n2)
 //
 //	_Abs()
 //
-static LispObj
-_Abs(LispObj n)
+static LispObj _Abs(LispObj n)
 {
 	if (isComplex(n))
 		return absComplex(n);
@@ -3438,16 +3575,14 @@ _Abs(LispObj n)
 //		gcdNumbers()
 //		Returns 0 if either number is zero.
 //
-static LispObj
-gcdNumbers(LispObj n1, LispObj n2)
+static LispObj gcdNumbers(LispObj n1, LispObj n2)
 {
 	LispObj temp = 0;
 	n1 = _Abs(n1);
 	n2 = _Abs(n2);
 	if (n1 == 0)
 		return n2;
-	else
-	if (n2 == 0)
+	else if (n2 == 0)
 		return n1;
 	while (1)
 	{
@@ -3455,8 +3590,7 @@ gcdNumbers(LispObj n1, LispObj n2)
 			return wrapInteger(gcdIntegers(integer(n1), integer(n2)));
 		if (isFixnum(n1))
 			temp = bignumMod(fixnumToBignum(n1), n2);
-		else
-		if (isFixnum(n2))
+		else if (isFixnum(n2))
 			temp = bignumMod(n1, fixnumToBignum(n2));
 		else
 			temp = bignumMod(n1, n2);
@@ -3467,8 +3601,7 @@ gcdNumbers(LispObj n1, LispObj n2)
 	}
 }
 
-static long
-gcdIntegers(long n1, long n2)
+static long gcdIntegers(long n1, long n2)
 {
 	if (!n1)
 		return n2 < 0 ? -n2 : n2;
@@ -3500,8 +3633,7 @@ static LispObj lcmNumbers(LispObj n1, LispObj n2)
 //
 //	absComplex()
 //
-static LispObj
-absComplex(LispObj n)
+static LispObj absComplex(LispObj n)
 {
 	LispObj temp = 0;
 	double x = 0.0;
@@ -3514,18 +3646,17 @@ absComplex(LispObj n)
 	x = getFloat(complexReal(n));
 	y = getFloat(complexImaginary(n));
 
-  	if (x == 0)
-    	ret = y;
-  	else
-	if (y == 0)
-    	ret = x;
-  	else
+	if (x == 0)
+		ret = y;
+	else if (y == 0)
+		ret = x;
+	else
 	{
 		if (x > y)
-			ret = x * sqrt(1 + pow(y/x, 2));
-      	else
-			ret = y * sqrt(1 + pow(x/y, 2));
-    }
+			ret = x * sqrt(1 + pow(y / x, 2));
+		else
+			ret = y * sqrt(1 + pow(x / y, 2));
+	}
 	temp = doubleFloatNode(0);
 	doubleFloat(temp) = ret;
 	return temp;
@@ -3536,8 +3667,7 @@ absComplex(LispObj n)
 //	Assumes the passed number is complex.
 //	Always returns a floating point complex number.
 //
-static LispObj
-complexSqrt(LispObj n)
+static LispObj complexSqrt(LispObj n)
 {
 	LispObj realResult = 0;
 	LispObj imagResult = 0;
@@ -3587,8 +3717,7 @@ complexSqrt(LispObj n)
 //	TDE: This currently always returns floating point results, even if
 //	an integer complex number is passed to it.
 //
-static LispObj
-complexExpt(LispObj base, LispObj power)
+static LispObj complexExpt(LispObj base, LispObj power)
 {
 	LispObj temp1 = 0;
 	LispObj temp2 = 0;
@@ -3600,7 +3729,7 @@ complexExpt(LispObj base, LispObj power)
 	double imagbase = 0.0;
 	double realpower = 0.0;
 	double imagpower = 0.0;
-    double logfReal = 0.0;
+	double logfReal = 0.0;
 	double logfImag = 0.0;
 	double phaseReal = 0.0;
 	double phaseImag = 0.0;
@@ -3629,23 +3758,22 @@ complexExpt(LispObj base, LispObj power)
 	}
 
 	// calculate complex absolute value of base
-  	if (realbase == 0)
-    	absVal = -fabs(imagbase);
-  	else
-	if (imagbase == 0)
-    	absVal = fabs(realbase);
-  	else
+	if (realbase == 0)
+		absVal = -fabs(imagbase);
+	else if (imagbase == 0)
+		absVal = fabs(realbase);
+	else
 	{
 		if (realbase > imagbase)
 			absVal = realbase * sqrt(1 + pow(imagbase / realbase, 2));
-      	else
+		else
 			absVal = imagbase * sqrt(1 + pow(realbase / imagbase, 2));
-    }
+	}
 
-    logfReal = log(absVal);
-    logfImag = atan2(imagbase, realbase);
-    phaseReal = exp(logfReal * realpower - logfImag * imagpower);
-    phaseImag = logfReal * imagpower + logfImag * realpower;
+	logfReal = log(absVal);
+	logfImag = atan2(imagbase, realbase);
+	phaseReal = exp(logfReal * realpower - logfImag * imagpower);
+	phaseImag = logfReal * imagpower + logfImag * realpower;
 	temp1 = doubleFloatNode(0);
 	temp2 = doubleFloatNode(0);
 	doubleFloat(temp1) = phaseReal * cos(phaseImag);
@@ -3657,8 +3785,7 @@ complexExpt(LispObj base, LispObj power)
 //	complexLog()
 //	Computes the natural log (log bas e) of the passed, complex argument.
 //
-static LispObj
-complexLog(LispObj n)
+static LispObj complexLog(LispObj n)
 {
 	LispObj abs = 0;
 	LispObj temp1 = 0;
@@ -3692,8 +3819,7 @@ complexLog(LispObj n)
 //	_Log()
 //	Computes the natural log (log bas e) of the passed argument.
 //
-static LispObj
-_Log(LispObj n)
+static LispObj _Log(LispObj n)
 {
 	LispObj temp = 0;
 	double d = 0.0;
@@ -3722,25 +3848,25 @@ LispFunction(Sqrt)
 	if (isComplex(n))
 		ret = complexSqrt(n);
 	else
-	// as a special case, handle (sqrt -1)
-	if (n == wrapInteger(-1))
-		ret = createComplex(0, wrapInteger(1));
-	else
-	{
-		d = getFloat(n);
-		if (d < 0.0)
-		{
-			temp1 = doubleFloatNode(0);
-			doubleFloat(temp1) = d;
-			ret = complexSqrt(complexNode(temp1, doubleFloatNode(0.0)));
-		}
+		// as a special case, handle (sqrt -1)
+		if (n == wrapInteger(-1))
+			ret = createComplex(0, wrapInteger(1));
 		else
 		{
-			temp1 = doubleFloatNode(0);
-			doubleFloat(temp1) = sqrt(d);
-			ret = temp1;
+			d = getFloat(n);
+			if (d < 0.0)
+			{
+				temp1 = doubleFloatNode(0);
+				doubleFloat(temp1) = d;
+				ret = complexSqrt(complexNode(temp1, doubleFloatNode(0.0)));
+			}
+			else
+			{
+				temp1 = doubleFloatNode(0);
+				doubleFloat(temp1) = sqrt(d);
+				ret = temp1;
+			}
 		}
-	}
 
 	LISP_FUNC_RETURN(ret);
 }
@@ -3752,7 +3878,7 @@ LispFunction(Isqrt)
 {
 	LISP_FUNC_BEGIN(1);
 	LispObj n = LISP_ARG(0);
-    LispObj len = 0;
+	LispObj len = 0;
 	unsigned long x = 0;
 	unsigned long r = 0;
 	unsigned long m = 0;
@@ -3765,7 +3891,7 @@ LispFunction(Isqrt)
 		if (integer(n) < 0)
 			Error("Negative integer passed to ISQRT: ~A", n);
 		x = (unsigned long)(integer(n));
- 		r = 0;
+		r = 0;
 		m = 0x40000000;
 		do
 		{
@@ -3786,10 +3912,10 @@ LispFunction(Isqrt)
 		if (bignumNegative(n))
 			Error("Negative integer passed to ISQRT: ~A", n);
 		x = n;
- 		r = 0;
+		r = 0;
 		m = fixnumToBignum(wrapInteger(1));
-        len = bignumIntegerLength(n);
-        // if the integer length is odd, round up to next even length
+		len = bignumIntegerLength(n);
+		// if the integer length is odd, round up to next even length
 		m = bignumShift(m, (len & wrapInteger(1)) ? (len + wrapInteger(1)) : len, T);
 		do
 		{
@@ -3813,8 +3939,7 @@ LispFunction(Isqrt)
 	LISP_FUNC_RETURN(ret);
 }
 
-LispObj
-bignumShift(LispObj b, LispObj shift, LispObj signedShift)
+LispObj bignumShift(LispObj b, LispObj shift, LispObj signedShift)
 {
 	long wordLength = bignumLength(b);
 	long bitLength = wordLength * 32;
@@ -3824,13 +3949,13 @@ bignumShift(LispObj b, LispObj shift, LispObj signedShift)
 	long negative = bignumNegative(b);
 
 	result = bignumNode(wrapInteger(newWordLength));
-//	if (negative)
-//		Bignum_SMto2C(b);
+	//	if (negative)
+	//		Bignum_SMto2C(b);
 	shiftBignumWords(b, wordLength, result, newWordLength, integer(shift));
 	if (negative && signedShift != NIL)
 	{
-//		Bignum_2CtoSM(b);
-//		Bignum_2CtoSM(result);
+		//		Bignum_2CtoSM(b);
+		//		Bignum_2CtoSM(result);
 		result = bignumAdd(result, fixnumToBignum(wrapInteger(1)));
 		if (isBignum(result))
 		{
@@ -3839,7 +3964,7 @@ bignumShift(LispObj b, LispObj shift, LispObj signedShift)
 		}
 		else
 		{
-			result = (LispObj)-(long)result;
+			result = (LispObj) - (long)result;
 			return result;
 		}
 	}
@@ -3847,17 +3972,36 @@ bignumShift(LispObj b, LispObj shift, LispObj signedShift)
 	return normalizeBignum(result);
 }
 
-LispObj
-bignumIntegerLength(LispObj b)
+LispObj bignumIntegerLength(LispObj b)
 {
 	long highIndex = bignumLength(b) - 1;
 	BignumWord highword = bignumStart(b)[highIndex];
 	long res = (highIndex * 32);
-	if (highword & 0xffff0000)	{ res += 16;	highword >>= 16;	}
-	if (highword & 0x0000ff00)	{ res += 8;		highword >>= 8;	}
-	if (highword & 0x000000f0) 	{ res += 4;		highword >>= 4;	}
-	if (highword & 0x0000000c) 	{ res += 2;		highword >>= 2;	}
-	if (highword & 0x00000002) 	{ res += 1;		highword >>= 1;	}
+	if (highword & 0xffff0000)
+	{
+		res += 16;
+		highword >>= 16;
+	}
+	if (highword & 0x0000ff00)
+	{
+		res += 8;
+		highword >>= 8;
+	}
+	if (highword & 0x000000f0)
+	{
+		res += 4;
+		highword >>= 4;
+	}
+	if (highword & 0x0000000c)
+	{
+		res += 2;
+		highword >>= 2;
+	}
+	if (highword & 0x00000002)
+	{
+		res += 1;
+		highword >>= 1;
+	}
 	res++;
 	return wrapInteger(res);
 }
@@ -3916,13 +4060,13 @@ LispFunction(Expt)
 	checkNumber(power);
 
 	if ((isRational(base) ||
-		(isComplex(base) && isRational(complexReal(base))
-			&& isRational(complexImaginary(base)))) && isFixnum(power))
+		 (isComplex(base) && isRational(complexReal(base)) && isRational(complexImaginary(base)))) &&
+		isFixnum(power))
 	{
 		// calculate exact result
 		p = integer(power);
 		res = wrapInteger(1);
-		if (p < 0)	// handle negative exponent
+		if (p < 0) // handle negative exponent
 		{
 			for (i = 0; i > p; i--)
 				res = _Multiply(res, base);
@@ -3935,14 +4079,13 @@ LispFunction(Expt)
 			ret = res;
 		}
 	}
-	else
-	if (isComplex(base) || isComplex(power))
+	else if (isComplex(base) || isComplex(power))
 		ret = complexExpt(base, power);
 	else
 	{
 		b = getFloat(base);
 		pd = getFloat(power);
-		if (b < 0.0 && !isFixnum(power))		// result will be complex
+		if (b < 0.0 && !isFixnum(power)) // result will be complex
 		{
 			ret = complexExpt(base, power);
 		}
@@ -4040,16 +4183,14 @@ static LispObj _Logxor(LispObj n1, LispObj n2)
 	if (both_fixnums(n1, n2))
 	{
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n2
-		__asm xor result, eax
+		__asm mov eax, dword ptr n2 __asm xor result, eax
 #else
 		unsigned long _eax = (unsigned long)n2;
 		asm("xor %%eax, %0" : "+m"(result));
 #endif
 	}
 	else
-		result = bignumXor(isInteger(n1) ? fixnumToBignum(n1) : n1,
-						   isInteger(n2) ? fixnumToBignum(n2) : n2);
+		result = bignumXor(isInteger(n1) ? fixnumToBignum(n1) : n1, isInteger(n2) ? fixnumToBignum(n2) : n2);
 	return result;
 }
 
@@ -4061,16 +4202,14 @@ static LispObj _Logior(LispObj n1, LispObj n2)
 	if (both_fixnums(n1, n2))
 	{
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n2
-		__asm or result, eax
+		__asm mov eax, dword ptr n2 __asm or result, eax
 #else
 		unsigned long _eax = (unsigned long)n2;
 		asm("or %%eax, %0" : "+m"(result));
 #endif
 	}
 	else
-		result = bignumIor(isInteger(n1) ? fixnumToBignum(n1) : n1,
-						   isInteger(n2) ? fixnumToBignum(n2) : n2);
+		result = bignumIor(isInteger(n1) ? fixnumToBignum(n1) : n1, isInteger(n2) ? fixnumToBignum(n2) : n2);
 	return result;
 }
 
@@ -4082,16 +4221,14 @@ static LispObj _Logand(LispObj n1, LispObj n2)
 	if (both_fixnums(n1, n2))
 	{
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n2
-		__asm and result, eax
+		__asm mov eax, dword ptr n2 __asm and result, eax
 #else
 		unsigned long _eax = (unsigned long)n2;
 		asm("and %%eax, %0" : "+m"(result));
 #endif
 	}
 	else
-		result = bignumAnd(isInteger(n1) ? fixnumToBignum(n1) : n1,
-						   isInteger(n2) ? fixnumToBignum(n2) : n2);
+		result = bignumAnd(isInteger(n1) ? fixnumToBignum(n1) : n1, isInteger(n2) ? fixnumToBignum(n2) : n2);
 	return result;
 }
 
@@ -4102,20 +4239,15 @@ static LispObj _Lognot(LispObj n)
 	if (isFixnum(n))
 	{
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n
-		__asm not eax
-		__asm and eax, -8
-		__asm mov dword ptr result, eax
+		__asm mov eax, dword ptr n __asm not eax __asm and eax, -8 __asm mov dword ptr result, eax
 #else
 		register unsigned long _eax asm("eax") = (unsigned long)n;
-		asm volatile(
-			"not %%eax\n\t"
-			"and $-8, %%eax\n\t"
-			"mov %%eax, %[res]"
-			: [res] "=m"(result)
-			:
-			: "eax", "cc"
-		);
+		asm volatile("not %%eax\n\t"
+					 "and $-8, %%eax\n\t"
+					 "mov %%eax, %[res]"
+					 : [res] "=m"(result)
+					 :
+					 : "eax", "cc");
 #endif
 	}
 	else
@@ -4312,16 +4444,14 @@ LispFunction(Float)
 	LispObj prototype = (ARG_COUNT > 1) ? LISP_ARG(1) : NIL;
 	if (prototype == NIL || isSingleFloat(prototype))
 		ret = convertToSingleFloat(number);
-	else
-	if (isShortFloat(prototype))
+	else if (isShortFloat(prototype))
 		ret = convertToShortFloat(number);
 	else
 		ret = convertToDoubleFloat(number);
 	LISP_FUNC_RETURN(ret);
 }
 
-LispObj
-createLispInteger(long num)
+LispObj createLispInteger(long num)
 {
 	long tag = 0;
 	if (num >= FixnumMin && num <= FixnumMax)
@@ -4331,8 +4461,7 @@ createLispInteger(long num)
 	return _Add(_Multiply(num, wrapInteger(8)), wrapInteger(tag));
 }
 
-LispObj
-createUnsignedLispInteger(unsigned long num)
+LispObj createUnsignedLispInteger(unsigned long num)
 {
 	return _Add(_Multiply(createLispInteger((long)(num >> 1)), wrapInteger(2)), wrapInteger(num & 1));
 }
@@ -4359,21 +4488,18 @@ static LispObj createComplexNode(LispObj real, LispObj imag)
 	{
 		ret = complexNode(real, convertToDoubleFloat(imag));
 	}
-	else
-	if (isSingleFloat(real))
+	else if (isSingleFloat(real))
 	{
 		if (isDoubleFloat(imag))
 			ret = complexNode(convertToDoubleFloat(real), imag);
 		else
 			ret = complexNode(real, convertToSingleFloat(imag));
 	}
-	else
-	if (isShortFloat(real))
+	else if (isShortFloat(real))
 	{
 		if (isDoubleFloat(imag))
 			ret = complexNode(convertToDoubleFloat(real), imag);
-		else
-		if (isSingleFloat(imag))
+		else if (isSingleFloat(imag))
 			ret = complexNode(convertToSingleFloat(real), imag);
 		else
 			ret = complexNode(real, convertToShortFloat(imag));
@@ -4382,11 +4508,9 @@ static LispObj createComplexNode(LispObj real, LispObj imag)
 	{
 		if (isDoubleFloat(imag))
 			ret = complexNode(convertToDoubleFloat(real), imag);
-		else
-		if (isSingleFloat(imag))
+		else if (isSingleFloat(imag))
 			ret = complexNode(convertToSingleFloat(real), imag);
-		else
-		if (isShortFloat(imag))
+		else if (isShortFloat(imag))
 			ret = complexNode(convertToShortFloat(real), imag);
 		else
 			ret = complexNode(real, imag);
@@ -4406,14 +4530,12 @@ LispFunction(Complex)
 		checkReal(imag);
 	}
 	else
-	{	// make sure imaginary part is the same type as the real part
+	{ // make sure imaginary part is the same type as the real part
 		if (isSingleFloat(real))
 			imag = convertToSingleFloat(imag);
-		else
-		if (isShortFloat(real))
+		else if (isShortFloat(real))
 			imag = convertToShortFloat(imag);
-		else
-		if (isDoubleFloat(real))
+		else if (isDoubleFloat(real))
 			imag = convertToDoubleFloat(imag);
 	}
 	if (isRational(real) && imag == 0)
@@ -4431,11 +4553,11 @@ LispFunction(Complex)
 
 typedef unsigned int uint;
 const uint uintmax = UINT_MAX;
-const int wLen = sizeof(uint) * 8;			// wLen  = 32
-const int hLen = wLen/2;					// hLen  = 16
-const uint rMask = (1 << hLen) - 1;			// rMask = 0x0000ffff
-const uint lMask = uintmax - rMask;			// lMask = 0xffff0000
-const uint lBit = uintmax - (uintmax >> 1);	// lBit  = 0x80000000
+const int wLen = sizeof(uint) * 8; // wLen  = 32
+const int hLen = wLen / 2; // hLen  = 16
+const uint rMask = (1 << hLen) - 1; // rMask = 0x0000ffff
+const uint lMask = uintmax - rMask; // lMask = 0xffff0000
+const uint lBit = uintmax - (uintmax >> 1); // lBit  = 0x80000000
 
 // b2 must be at least big enough to hold b1
 void copyBignum(LispObj b1, LispObj b2)
@@ -4449,18 +4571,20 @@ void copyBignum(LispObj b1, LispObj b2)
 }
 
 // Double-digit product (Hi, Lo) = A * B:
-static void DDproduct(uint A, uint B, uint &Hi, uint &Lo)
+static void DDproduct(uint A, uint B, uint& Hi, uint& Lo)
 {
 	uint hiA = A >> hLen;
 	uint loA = A & rMask;
-    uint hiB = B >> hLen;
+	uint hiB = B >> hLen;
 	uint loB = B & rMask;
 	uint mid1;
 	uint mid2;
 	uint old;
 
-	Lo = loA * loB; Hi = hiA * hiB;
-	mid1 = loA * hiB; mid2 = hiA * loB;
+	Lo = loA * loB;
+	Hi = hiA * hiB;
+	mid1 = loA * hiB;
+	mid2 = hiA * loB;
 	old = Lo;
 	Lo += mid1 << hLen;
 	Hi += (Lo < old) + (mid1 >> hLen);
@@ -4479,7 +4603,7 @@ static uint DDquotient(uint A, uint B, uint d)
 	uint qLo;
 	uint x;
 	uint dLo1;
-    uint dHi = d >> hLen;
+	uint dHi = d >> hLen;
 	uint dLo = d & rMask;
 	qHi = A / (dHi + 1);
 
@@ -4487,7 +4611,8 @@ static uint DDquotient(uint A, uint B, uint d)
 	middle = qHi * dLo;
 	left = qHi * dHi;
 	x = B - (middle << hLen);
-	A -= (middle >> hLen) + left + (x > B); B = x;
+	A -= (middle >> hLen) + left + (x > B);
+	B = x;
 	dLo1 = dLo << hLen;
 
 	// Increase qHi if necessary:
@@ -4499,10 +4624,11 @@ static uint DDquotient(uint A, uint B, uint d)
 		qHi++;
 	}
 
-	qLo = ((A << hLen) | (B >> hLen))/(dHi + 1);
+	qLo = ((A << hLen) | (B >> hLen)) / (dHi + 1);
 
 	// This initial guess of qLo may be too small.
-	right = qLo * dLo; middle = qLo * dHi;
+	right = qLo * dLo;
+	middle = qLo * dHi;
 	x = B - right;
 	A -= (x > B);
 	B = x;
@@ -4527,7 +4653,7 @@ static uint DDquotient(uint A, uint B, uint d)
 // The latter condition may require q to be
 // decreased by 1:
 
-static void subtractmul(uint *a, uint *b, int n, uint &q)
+static void subtractmul(uint* a, uint* b, int n, uint& q)
 {
 	uint Hi;
 	uint Lo;
@@ -4562,7 +4688,10 @@ static void subtractmul(uint *a, uint *b, int n, uint &q)
 }
 
 // force 8-byte packing by using a struct
-static struct { unsigned long n[4]; } uintMax = { 0, 0x10, 0xffffffff, 0 };
+static struct
+{
+	unsigned long n[4];
+} uintMax = {0, 0x10, 0xffffffff, 0};
 static LispObj uintMaxBignum = (LispObj)(((char*)(&uintMax)) + UvectorTag);
 
 static LispObj divideBignums(LispObj num, LispObj denom, long RemDesired)
@@ -4582,7 +4711,7 @@ static LispObj divideBignums(LispObj num, LispObj denom, long RemDesired)
 	int n = 0;
 	int SecondDone = 0;
 	unsigned int q = 0;
-	unsigned long d =0;
+	unsigned long d = 0;
 	unsigned long divisor = 0;
 	unsigned long dHi = 0;
 	unsigned long q1 = 0;
@@ -4619,8 +4748,7 @@ static LispObj divideBignums(LispObj num, LispObj denom, long RemDesired)
 		if (RemDesired)
 		{
 			bignumSetSign(remainder, RemNeg);
-			return cons(normalizeBignum(quotient),
-						normalizeBignum(remainder));
+			return cons(normalizeBignum(quotient), normalizeBignum(remainder));
 		}
 		else
 			return normalizeBignum(quotient);
@@ -4653,11 +4781,10 @@ static LispObj divideBignums(LispObj num, LispObj denom, long RemDesired)
 		bignumSetSign(remainder, RemNeg);
 
 		if (RemDesired)
-			return cons(normalizeBignum(quotient),
-						normalizeBignum(remainder));
+			return cons(normalizeBignum(quotient), normalizeBignum(remainder));
 		else
 			return normalizeBignum(quotient);
-   }
+	}
 
 	r = denomLen - 1;
 	y = bignumStart(denom)[r];
@@ -4668,7 +4795,7 @@ static LispObj divideBignums(LispObj num, LispObj denom, long RemDesired)
 		x++;
 	}
 	denom = bignumShift(denom, wrapInteger(x), NIL);
-	num   = bignumShift(num,   wrapInteger(x), NIL);
+	num = bignumShift(num, wrapInteger(x), NIL);
 
 	// Possibly second action according to C. J. Mifsud
 	if (r > 0 && bignumStart(denom)[r] < bignumStart(denom)[r - 1])
@@ -4705,13 +4832,8 @@ static LispObj divideBignums(LispObj num, LispObj denom, long RemDesired)
 	d = bignumStart(denom)[r];
 	for (k = n; k > r; k--)
 	{
-		q = DDquotient(bignumStart(remainder)[k],
-					   bignumStart(remainder)[k - 1],
-					   d);
-		subtractmul((uint*)&bignumStart(remainder)[k - r - 1],
-					(uint*)&bignumStart(denom)[0],
-					r + 1,
-					q);
+		q = DDquotient(bignumStart(remainder)[k], bignumStart(remainder)[k - 1], d);
+		subtractmul((uint*)&bignumStart(remainder)[k - r - 1], (uint*)&bignumStart(denom)[0], r + 1, q);
 		bignumStart(quotient)[k - r - 1] = q;
 	}
 
@@ -4726,8 +4848,7 @@ static LispObj divideBignums(LispObj num, LispObj denom, long RemDesired)
 			if (isBignum(remainder))
 				remainder = bignumShift(remainder, wrapInteger(-x), NIL);
 		}
-		else
-		if (isBignum(remainder))
+		else if (isBignum(remainder))
 			bignumReduce(remainder);
 		if (isBignum(remainder))
 		{
@@ -4787,7 +4908,7 @@ LispFunction(Mod_Bignums)
 
 LispObj addShortFloats(LispObj /*n1*/, LispObj /*n2*/)
 {
-	#if 0 // __asm port pending
+#if 0 // __asm port pending
 	{
 		push		ebp
 		mov			ebp, esp

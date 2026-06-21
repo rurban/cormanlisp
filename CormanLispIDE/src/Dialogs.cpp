@@ -7,7 +7,7 @@
 //		Contents:	Corman Lisp application source file
 //		History:	10/13/98  RGC  Created.
 //					10/01/16  Artem Boldarev
-//					           
+//
 //
 #include "stdafx.h"
 #include "../resource.h"
@@ -21,23 +21,19 @@
 CString getCormanLispDirectory();
 
 BEGIN_MESSAGE_MAP(AboutDialog, CDialog)
-	ON_COMMAND(ID_CREDITS,		OnCreditsInfo)
-	ON_COMMAND(ID_CORMAN_NET,	OnCormanNet)
+ON_COMMAND(ID_CREDITS, OnCreditsInfo)
+ON_COMMAND(ID_CORMAN_NET, OnCormanNet)
 END_MESSAGE_MAP()
 
-AboutDialog::AboutDialog(UINT nIDTemplate)
-: CDialog(nIDTemplate)
-{
-}
+AboutDialog::AboutDialog(UINT nIDTemplate) : CDialog(nIDTemplate) {}
 
 BOOL AboutDialog::OnInitDialog()
 {
 	CStatic* name = (CStatic*)GetDlgItem(IDC_ABOUTNAME);
-    CStatic* version = (CStatic*)GetDlgItem(IDC_REGVERSION);
+	CStatic* version = (CStatic*)GetDlgItem(IDC_REGVERSION);
 
-	
-    char* versionCaption = getVersionCaption();
-    if (versionCaption)
+	char* versionCaption = getVersionCaption();
+	if (versionCaption)
 		version->SetWindowText(versionCaption);
 
 	name->SetWindowText("");
@@ -46,7 +42,7 @@ BOOL AboutDialog::OnInitDialog()
 		size_t user_name_len = 0;
 		if (pCormanLisp->GetCurrentUserName(NULL, &user_name_len) == S_OK)
 		{
-			char *username = new char[user_name_len + 1];
+			char* username = new char[user_name_len + 1];
 			pCormanLisp->GetCurrentUserName(username, &user_name_len);
 			name->SetWindowText(username);
 			delete[] username;
@@ -54,7 +50,6 @@ BOOL AboutDialog::OnInitDialog()
 	}
 	catch (...)
 	{
-
 	}
 
 	CWnd* item = GetDlgItem(IDOK);
@@ -73,8 +68,8 @@ void AboutDialog::OnCreditsInfo()
 void AboutDialog::OnCormanNet()
 {
 	/*
-	HINSTANCE result = ShellExecute(theApp.GetMainWnd()->m_hWnd, 
-		"open", 
+	HINSTANCE result = ShellExecute(theApp.GetMainWnd()->m_hWnd,
+		"open",
 		"http://www.cormanlisp.com/index.html",
 		"", "", SW_NORMAL);
 	*/
@@ -94,10 +89,7 @@ void AboutDialog::OnCormanNet()
 BEGIN_MESSAGE_MAP(LegalDialog, CDialog)
 END_MESSAGE_MAP()
 
-LegalDialog::LegalDialog(UINT nIDTemplate)
-: CDialog(nIDTemplate), mappedFile(0)
-{
-}
+LegalDialog::LegalDialog(UINT nIDTemplate) : CDialog(nIDTemplate), mappedFile(0) {}
 
 BOOL LegalDialog::OnInitDialog()
 {
@@ -150,10 +142,7 @@ CString getCormanLispDirectory()
 BEGIN_MESSAGE_MAP(CreditsDialog, CDialog)
 END_MESSAGE_MAP()
 
-CreditsDialog::CreditsDialog(UINT nIDTemplate)
-: CDialog(nIDTemplate), mappedFile(0)
-{
-}
+CreditsDialog::CreditsDialog(UINT nIDTemplate) : CDialog(nIDTemplate), mappedFile(0) {}
 
 BOOL CreditsDialog::OnInitDialog()
 {
@@ -194,15 +183,12 @@ CreditsDialog::~CreditsDialog()
 BEGIN_MESSAGE_MAP(GotoLineDialog, CDialog)
 END_MESSAGE_MAP()
 
-GotoLineDialog::GotoLineDialog(UINT nIDTemplate)
-: CDialog(nIDTemplate), lineNumberEdit(0), lineNumber_(0)
-{
-}
+GotoLineDialog::GotoLineDialog(UINT nIDTemplate) : CDialog(nIDTemplate), lineNumberEdit(0), lineNumber_(0) {}
 
 BOOL GotoLineDialog::OnInitDialog()
 {
 	lineNumberEdit = (CEdit*)GetDlgItem(IDC_GOTO_LINE_NUMBER);
-	GotoDlgCtrl(lineNumberEdit);	
+	GotoDlgCtrl(lineNumberEdit);
 	return FALSE;
 }
 
@@ -216,4 +202,3 @@ void GotoLineDialog::OnOK()
 	lineNumber_ = (int)GetDlgItemInt(IDC_GOTO_LINE_NUMBER);
 	CDialog::OnOK();
 }
-

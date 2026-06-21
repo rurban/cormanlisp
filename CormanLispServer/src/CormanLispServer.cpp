@@ -35,62 +35,65 @@ static const CormanLispCallbacks* g_callbacks = NULL;
 // and a byte count. Convert it to UTF-8 for the char-based Linux callback.
 static void output_text_adapter(wchar_t* text, long numBytes)
 {
-    if (!g_callbacks || !g_callbacks->output_text || numBytes <= 0)
-        return;
-    const uint16_t* w = (const uint16_t*)text;
-    long wlen = numBytes / 2;
-    if (wlen <= 0)
-        return;
-    char* out = new char[wlen * 3 + 1];
-    long op = 0;
-    for (long i = 0; i < wlen; i++) {
-        uint16_t c = w[i];
-        if (c < 0x80) {
-            out[op++] = (char)c;
-        } else if (c < 0x800) {
-            out[op++] = (char)(0xc0 | (c >> 6));
-            out[op++] = (char)(0x80 | (c & 0x3f));
-        } else {
-            out[op++] = (char)(0xe0 | (c >> 12));
-            out[op++] = (char)(0x80 | ((c >> 6) & 0x3f));
-            out[op++] = (char)(0x80 | (c & 0x3f));
-        }
-    }
-    g_callbacks->output_text(out, op);
-    delete[] out;
+	if (!g_callbacks || !g_callbacks->output_text || numBytes <= 0)
+		return;
+	const uint16_t* w = (const uint16_t*)text;
+	long wlen = numBytes / 2;
+	if (wlen <= 0)
+		return;
+	char* out = new char[wlen * 3 + 1];
+	long op = 0;
+	for (long i = 0; i < wlen; i++)
+	{
+		uint16_t c = w[i];
+		if (c < 0x80)
+		{
+			out[op++] = (char)c;
+		}
+		else if (c < 0x800)
+		{
+			out[op++] = (char)(0xc0 | (c >> 6));
+			out[op++] = (char)(0x80 | (c & 0x3f));
+		}
+		else
+		{
+			out[op++] = (char)(0xe0 | (c >> 12));
+			out[op++] = (char)(0x80 | ((c >> 6) & 0x3f));
+			out[op++] = (char)(0x80 | (c & 0x3f));
+		}
+	}
+	g_callbacks->output_text(out, op);
+	delete[] out;
 }
 #endif
-IUnknown*				 ClientUnknown		= 0;
-ICormanLispTextOutput*	 ClientTextOutput	= 0;
-ICormanLispStatusMessage* ClientMessage		= 0;
-ICormanLispShutdown*     ClientShutdown		= 0;
-const UserInfo*          CurrentUserInfo    = 0;
-
+IUnknown* ClientUnknown = 0;
+ICormanLispTextOutput* ClientTextOutput = 0;
+ICormanLispStatusMessage* ClientMessage = 0;
+ICormanLispShutdown* ClientShutdown = 0;
+const UserInfo* CurrentUserInfo = 0;
 
 TextOutputFuncType TextOutputFuncPtr = 0;
 HINSTANCE gAppInstance = 0;
-HWND      gAppMainWindow = 0;
+HWND gAppMainWindow = 0;
 
 OSVERSIONINFO gOsVersionInfo;
 TCHAR g_szFileName[MAX_PATH];
-char CormanLispServerDirectory[MAX_PATH+1];
+char CormanLispServerDirectory[MAX_PATH + 1];
 
 CharBuf TerminalInputBuf(0x8000);
 
 static void RunLispThread(HANDLE* thread);
 
-const TCHAR *const g_szRegKeyValues[][2] =
-{
-  { __TEXT("CormanLisp.Lisp"), __TEXT("Lisp") },
-  { __TEXT("CormanLisp.Lisp\\CLSID"), __TEXT("{99AA27B3-0EAE-11d1-ACB9-00A024803258}") },
-  { __TEXT("CLSID\\{99AA27B3-0EAE-11d1-ACB9-00A024803258}"), __TEXT("Lisp") },
-  { __TEXT("CLSID\\{99AA27B3-0EAE-11d1-ACB9-00A024803258}\\InprocServer32"), g_szFileName },
-  { __TEXT("CLSID\\{99AA27B3-0EAE-11d1-ACB9-00A024803258}\\ProgID"), __TEXT("CormanLisp.Lisp") },
+const TCHAR* const g_szRegKeyValues[][2] = {
+	{__TEXT("CormanLisp.Lisp"), __TEXT("Lisp")},
+	{__TEXT("CormanLisp.Lisp\\CLSID"), __TEXT("{99AA27B3-0EAE-11d1-ACB9-00A024803258}")},
+	{__TEXT("CLSID\\{99AA27B3-0EAE-11d1-ACB9-00A024803258}"), __TEXT("Lisp")},
+	{__TEXT("CLSID\\{99AA27B3-0EAE-11d1-ACB9-00A024803258}\\InprocServer32"), g_szFileName},
+	{__TEXT("CLSID\\{99AA27B3-0EAE-11d1-ACB9-00A024803258}\\ProgID"), __TEXT("CormanLisp.Lisp")},
 };
 
-const int g_cRegKeyValues = sizeof(g_szRegKeyValues)
-                            /sizeof(*g_szRegKeyValues);
-int DLL_Loaded = false;		// we may get run when statically linked
+const int g_cRegKeyValues = sizeof(g_szRegKeyValues) / sizeof(*g_szRegKeyValues);
+int DLL_Loaded = false; // we may get run when statically linked
 
 #ifdef _WIN32
 
@@ -118,8 +121,7 @@ void processAttach(HINSTANCE hInstance)
 		CormanLispServerDirectory[0] = 0;
 }
 
-extern "C" int __declspec( dllexport ) __stdcall
-DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
+extern "C" int __declspec(dllexport) __stdcall DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch (dwReason)
 	{
@@ -143,7 +145,7 @@ DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			TlsSetValue(Thread_Index, 0);
 			break;
 	}
-	return 1;   // ok
+	return 1; // ok
 }
 
 #else // !_WIN32 (Linux): a shared library has no DllMain, use ctor/dtor attrs
@@ -186,11 +188,10 @@ __attribute__((destructor)) static void _fini_cormanlisp()
 
 // ---- Public C API (replaces COM ICormanLisp) ----
 
-
 bool g_lisp_bootstrapping = true;
 // Set by batch clients after loading all input; consoleUnderflow returns EOF when drained.
 bool g_batch_input_done = false;
-extern void initLisp();  // in Lisp.cpp
+extern void initLisp(); // in Lisp.cpp
 
 // The cl_* direct-link C API is the Linux replacement for COM; the Windows
 // path never calls it (it still goes through Initialize()/
@@ -200,209 +201,230 @@ extern void initLisp();  // in Lisp.cpp
 // Matches the extern "C" declarations in cormanlisp_api.h; MSVC (unlike
 // GCC) requires the definitions to restate the linkage explicitly rather
 // than inheriting it from the earlier header declaration.
-extern "C" {
-
-CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
+extern "C"
 {
-	// Ensure TLS keys are initialized (defensive — constructor should have done this)
-	if (QV_Index == 0) QV_Index = TlsAlloc();
-	if (Thread_Index == 0) Thread_Index = TlsAlloc();
+	CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
+	{
+		// Ensure TLS keys are initialized (defensive — constructor should have done this)
+		if (QV_Index == 0)
+			QV_Index = TlsAlloc();
+		if (Thread_Index == 0)
+			Thread_Index = TlsAlloc();
 
-	g_callbacks = cb;
-	TextOutputFuncPtr = (cb && cb->output_text) ? output_text_adapter : 0;
-	// Store image name
-	if (imageName && *imageName)
-		strncpy(LispImageName, imageName, MAX_PATH);
+		g_callbacks = cb;
+		TextOutputFuncPtr = (cb && cb->output_text) ? output_text_adapter : 0;
+		// Store image name
+		if (imageName && *imageName)
+			strncpy(LispImageName, imageName, MAX_PATH);
 
-	// Init COM globals for backward compat in existing code
-	ClientUnknown = (IUnknown*)(cb ? (void*)1 : 0);
-	ClientTextOutput = (ICormanLispTextOutput*)(cb ? (void*)1 : 0);
-	ClientMessage = (ICormanLispStatusMessage*)(cb ? (void*)1 : 0);
-	ClientShutdown = (ICormanLispShutdown*)(cb ? (void*)1 : 0);
+		// Init COM globals for backward compat in existing code
+		ClientUnknown = (IUnknown*)(cb ? (void*)1 : 0);
+		ClientTextOutput = (ICormanLispTextOutput*)(cb ? (void*)1 : 0);
+		ClientMessage = (ICormanLispStatusMessage*)(cb ? (void*)1 : 0);
+		ClientShutdown = (ICormanLispShutdown*)(cb ? (void*)1 : 0);
 
-	TlsSetValue(QV_Index, QV);
-	initLisp();
-	g_lisp_bootstrapping = false;
-	return 0;
-}
+		TlsSetValue(QV_Index, QV);
+		initLisp();
+		g_lisp_bootstrapping = false;
+		return 0;
+	}
 
-CL_API int cl_initialize_ex(const CormanLispCallbacks* cb, const char* imageName,
-	int clientType, int heapReserve, int heapInitialSize,
-	int ephemeralHeap1Size, int ephemeralHeap2Size)
-{
-	// Extended init with custom heap sizes — heap sizing is Phase 4 cleanup
-	(void)heapReserve; (void)heapInitialSize;
-	(void)ephemeralHeap1Size; (void)ephemeralHeap2Size;
-	return cl_initialize(cb, imageName, clientType);
-}
+	CL_API int cl_initialize_ex(const CormanLispCallbacks* cb, const char* imageName, int clientType, int heapReserve,
+								int heapInitialSize, int ephemeralHeap1Size, int ephemeralHeap2Size)
+	{
+		// Extended init with custom heap sizes — heap sizing is Phase 4 cleanup
+		(void)heapReserve;
+		(void)heapInitialSize;
+		(void)ephemeralHeap1Size;
+		(void)ephemeralHeap2Size;
+		return cl_initialize(cb, imageName, clientType);
+	}
 
-CL_API void cl_run(void)
-{
-	lispmain();
-}
+	CL_API void cl_run(void)
+	{
+		lispmain();
+	}
 
-CL_API void cl_process_source(const char* text, long numChars)
-{
-	ProcessLispSource((char*)text, numChars);
-}
+	CL_API void cl_process_source(const char* text, long numChars)
+	{
+		ProcessLispSource((char*)text, numChars);
+	}
 
-CL_API long cl_get_num_threads(void)
-{
-	return NumLispThreads;
-}
+	CL_API long cl_get_num_threads(void)
+	{
+		return NumLispThreads;
+	}
 
-CL_API void cl_user_exception(void)
-{
-	ThrowUserException();
-}
+	CL_API void cl_user_exception(void)
+	{
+		ThrowUserException();
+	}
 
-CL_API void cl_abort_thread(void)
-{
-	AbortLispThread();
-}
+	CL_API void cl_abort_thread(void)
+	{
+		AbortLispThread();
+	}
 
-CL_API void cl_bless_thread(void)
-{
-	// BlessThread is a Lisp-level function; deferred until image is loaded
-}
+	CL_API void cl_bless_thread(void)
+	{
+		// BlessThread is a Lisp-level function; deferred until image is loaded
+	}
 
-CL_API void cl_unbless_thread(void)
-{
-	// UnblessThread is a Lisp-level function; deferred until image is loaded
-}
-CL_API int cl_get_function_address(const wchar_t* functionName, const wchar_t* packageName, void** funcptr)
-{
-	void* result = GetCallbackFunctionPointer((wchar_t*)functionName, (wchar_t*)packageName);
-	if (funcptr) *funcptr = result;
-	return result ? 0 : -1;
-}
+	CL_API void cl_unbless_thread(void)
+	{
+		// UnblessThread is a Lisp-level function; deferred until image is loaded
+	}
+	CL_API int cl_get_function_address(const wchar_t* functionName, const wchar_t* packageName, void** funcptr)
+	{
+		void* result = GetCallbackFunctionPointer((wchar_t*)functionName, (wchar_t*)packageName);
+		if (funcptr)
+			*funcptr = result;
+		return result ? 0 : -1;
+	}
 
-CL_API int cl_handle_structured_exception(long exception, void* info, long* result)
-{
-	long r = handleStructuredException(exception, (LPEXCEPTION_POINTERS)info);
-	if (result) *result = r;
-	return 0;
-}
+	CL_API int cl_handle_structured_exception(long exception, void* info, long* result)
+	{
+		long r = handleStructuredException(exception, (LPEXCEPTION_POINTERS)info);
+		if (result)
+			*result = r;
+		return 0;
+	}
 
-CL_API int cl_get_current_user_name(char* buf, size_t* len)
-{
-	// Linux: use $USER or getpwuid
-	const char* user = getenv("USER");
-	if (!user) user = "unknown";
-	size_t n = strlen(user);
-	if (buf) { strncpy(buf, user, *len); buf[min(n, *len - 1)] = 0; }
-	*len = n + 1;
-	return 0;
-}
+	CL_API int cl_get_current_user_name(char* buf, size_t* len)
+	{
+		// Linux: use $USER or getpwuid
+		const char* user = getenv("USER");
+		if (!user)
+			user = "unknown";
+		size_t n = strlen(user);
+		if (buf)
+		{
+			strncpy(buf, user, *len);
+			buf[min(n, *len - 1)] = 0;
+		}
+		*len = n + 1;
+		return 0;
+	}
 
-CL_API int cl_get_current_user_profile_directory(char* buf, size_t* len)
-{
-	const char* home = getenv("HOME");
-	if (!home) home = "/tmp";
-	size_t n = strlen(home);
-	if (buf) { strncpy(buf, home, *len); buf[min(n, *len - 1)] = 0; }
-	*len = n + 1;
-	return 0;
-}
+	CL_API int cl_get_current_user_profile_directory(char* buf, size_t* len)
+	{
+		const char* home = getenv("HOME");
+		if (!home)
+			home = "/tmp";
+		size_t n = strlen(home);
+		if (buf)
+		{
+			strncpy(buf, home, *len);
+			buf[min(n, *len - 1)] = 0;
+		}
+		*len = n + 1;
+		return 0;
+	}
 
-CL_API int cl_get_current_user_personal_directory(char* buf, size_t* len)
-{
-	return cl_get_current_user_profile_directory(buf, len);
-}
+	CL_API int cl_get_current_user_personal_directory(char* buf, size_t* len)
+	{
+		return cl_get_current_user_profile_directory(buf, len);
+	}
 
-CL_API long cl_get_image_loads_count(void)
-{
-	return getImageLoadsCount();
-}
+	CL_API long cl_get_image_loads_count(void)
+	{
+		return getImageLoadsCount();
+	}
 
 } // extern "C"
 
 #endif // !_WIN32
 
 LONG g_cLocks = 0;
-void SvcLock()	{ InterlockedIncrement(&g_cLocks); }
-void SvcUnlock(){ InterlockedDecrement(&g_cLocks); }
+void SvcLock()
+{
+	InterlockedIncrement(&g_cLocks);
+}
+void SvcUnlock()
+{
+	InterlockedDecrement(&g_cLocks);
+}
 
 class CoCormanLispClassFactory : public IClassFactory
 {
 public:
-    STDMETHODIMP QueryInterface(REFIID riid, void**ppv)
-    {
-        if (riid == IID_IUnknown)
-            *ppv = (IClassFactory*)this;
-        else if (riid == IID_IClassFactory)
-            *ppv = (IClassFactory*)this;
-        else 
-            *ppv = 0;
-        if (*ppv)
-            ((IUnknown *)*ppv)->AddRef();
-        return *ppv ? S_OK : E_NOINTERFACE;
-    }
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv)
+	{
+		if (riid == IID_IUnknown)
+			*ppv = (IClassFactory*)this;
+		else if (riid == IID_IClassFactory)
+			*ppv = (IClassFactory*)this;
+		else
+			*ppv = 0;
+		if (*ppv)
+			((IUnknown*)*ppv)->AddRef();
+		return *ppv ? S_OK : E_NOINTERFACE;
+	}
 
-    STDMETHODIMP_(ULONG) AddRef(void)
-    {
-        SvcLock();
-        return 2;
-    }
+	STDMETHODIMP_(ULONG) AddRef(void)
+	{
+		SvcLock();
+		return 2;
+	}
 
-    STDMETHODIMP_(ULONG) Release(void)
-    {
-        SvcUnlock();
-        return 1;
-    }
+	STDMETHODIMP_(ULONG) Release(void)
+	{
+		SvcUnlock();
+		return 1;
+	}
 
-    STDMETHODIMP CreateInstance(IUnknown *pUnkOuter, REFIID riid, void **ppv)
-    {
-        *ppv = 0;
-        if (pUnkOuter)
-            return CLASS_E_NOAGGREGATION;
+	STDMETHODIMP CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppv)
+	{
+		*ppv = 0;
+		if (pUnkOuter)
+			return CLASS_E_NOAGGREGATION;
 
-        CoCormanLisp *p = new CoCormanLisp;
+		CoCormanLisp* p = new CoCormanLisp;
 
-        if (!p)
-            return E_OUTOFMEMORY;
+		if (!p)
+			return E_OUTOFMEMORY;
 
-        p->AddRef();
-        HRESULT hr = p->QueryInterface(riid, ppv);
-        p->Release();
-        return hr;
-    }
+		p->AddRef();
+		HRESULT hr = p->QueryInterface(riid, ppv);
+		p->Release();
+		return hr;
+	}
 
-    STDMETHODIMP LockServer(BOOL bLock)
-    {
-        if (bLock)
-            SvcLock();
-        else
-            SvcUnlock();
-        return S_OK;
-    }
+	STDMETHODIMP LockServer(BOOL bLock)
+	{
+		if (bLock)
+			SvcLock();
+		else
+			SvcUnlock();
+		return S_OK;
+	}
 };
 
 // TODO-Declare an instance of your class factory at global scope.
 CoCormanLispClassFactory g_classFactory;
 
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void**ppv)
+STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
 {
-    *ppv = 0;
-    if (rclsid == CLSID_CormanLisp)
-        return g_classFactory.QueryInterface(riid, ppv);
-    else
-        return CLASS_E_CLASSNOTAVAILABLE;
+	*ppv = 0;
+	if (rclsid == CLSID_CormanLisp)
+		return g_classFactory.QueryInterface(riid, ppv);
+	else
+		return CLASS_E_CLASSNOTAVAILABLE;
 }
 
 // for static linking
-__declspec(dllexport) HRESULT StaticGetClassObject(REFCLSID rclsid, REFIID riid, void**ppv)
+__declspec(dllexport) HRESULT StaticGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
 {
-    *ppv = 0;
-    if (rclsid == CLSID_CormanLisp)
-        return g_classFactory.QueryInterface(riid, ppv);
-    else
-        return CLASS_E_CLASSNOTAVAILABLE;
+	*ppv = 0;
+	if (rclsid == CLSID_CormanLisp)
+		return g_classFactory.QueryInterface(riid, ppv);
+	else
+		return CLASS_E_CLASSNOTAVAILABLE;
 }
 
 STDAPI DllCanUnloadNow()
 {
-    return g_cLocks ? S_FALSE : S_OK;
+	return g_cLocks ? S_FALSE : S_OK;
 }
 
 STDAPI DllUnregisterServer();
@@ -411,74 +433,68 @@ STDAPI DllRegisterServer()
 {
 	if (*g_szFileName == 0)
 		strcpy_s(g_szFileName, sizeof(g_szFileName), "CormanLispServer.dll");
-    LONG r = ERROR_SUCCESS;
-    for (int i = 0; 
-         r == ERROR_SUCCESS && i < g_cRegKeyValues; 
-         i++)
-        r = RegSetValue(HKEY_CLASSES_ROOT,
-                        g_szRegKeyValues[i][0], 
-                        REG_SZ,
-                        g_szRegKeyValues[i][1],
-                        lstrlen(g_szRegKeyValues[i][1]));
-    if (r != ERROR_SUCCESS)
-        DllUnregisterServer();
-    return (r == ERROR_SUCCESS) ? S_OK : E_FAIL;
+	LONG r = ERROR_SUCCESS;
+	for (int i = 0; r == ERROR_SUCCESS && i < g_cRegKeyValues; i++)
+		r = RegSetValue(HKEY_CLASSES_ROOT, g_szRegKeyValues[i][0], REG_SZ, g_szRegKeyValues[i][1],
+						lstrlen(g_szRegKeyValues[i][1]));
+	if (r != ERROR_SUCCESS)
+		DllUnregisterServer();
+	return (r == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
 
 STDAPI DllUnregisterServer()
 {
-    HRESULT result = S_OK;
-    for (int i = g_cRegKeyValues - 1; i >= 0; i--)
-    {
-        LONG r = RegDeleteKey(HKEY_CLASSES_ROOT,
-                              g_szRegKeyValues[i][0]);
-        if (r != ERROR_SUCCESS)
-            result = S_FALSE;
-    }
-    return result;
+	HRESULT result = S_OK;
+	for (int i = g_cRegKeyValues - 1; i >= 0; i--)
+	{
+		LONG r = RegDeleteKey(HKEY_CLASSES_ROOT, g_szRegKeyValues[i][0]);
+		if (r != ERROR_SUCCESS)
+			result = S_FALSE;
+	}
+	return result;
 }
 
-extern "C" long Initialize(const wchar_t* imageName, int clientType, HINSTANCE appInstance,
-			   HANDLE* thread, HWND mainWindow, TextOutputFuncType TextOutputFunc)
+extern "C" long Initialize(const wchar_t* imageName, int clientType, HINSTANCE appInstance, HANDLE* thread,
+						   HWND mainWindow, TextOutputFuncType TextOutputFunc)
 {
-    static int initFlag = 0;
-    static CriticalSection initSect;
+	static int initFlag = 0;
+	static CriticalSection initSect;
 
-    initSect.Enter();
-    if (initFlag == 0)      // only want to initialize once
-    {
-        initFlag++;
-	    const wchar_t* ch = 0;
-	    int i = 0;
-	    InitializationEvent.ResetEvent();
+	initSect.Enter();
+	if (initFlag == 0) // only want to initialize once
+	{
+		initFlag++;
+		const wchar_t* ch = 0;
+		int i = 0;
+		InitializationEvent.ResetEvent();
 
-	    // constructor _init_cormanlisp() already handled processAttach
-	    DLL_Loaded = true;
-	    TextOutputFuncPtr = TextOutputFunc;
-	    gAppInstance = appInstance;
-	    gAppMainWindow = mainWindow;
-	    if (imageName)
-	    {
-		    for (ch = imageName; *ch && i < LispImageNameMax - 1; ch++, i++)
-			    LispImageName[i] = (unsigned char)(*ch & 0xff);		// just copy low byte
-	    }
-	    LispImageName[i] = 0;
+		// constructor _init_cormanlisp() already handled processAttach
+		DLL_Loaded = true;
+		TextOutputFuncPtr = TextOutputFunc;
+		gAppInstance = appInstance;
+		gAppMainWindow = mainWindow;
+		if (imageName)
+		{
+			for (ch = imageName; *ch && i < LispImageNameMax - 1; ch++, i++)
+				LispImageName[i] = (unsigned char)(*ch & 0xff); // just copy low byte
+		}
+		LispImageName[i] = 0;
 
-	    // initialize lisp system
-	    TlsSetValue(QV_Index, QV);	// store global QV as the QV for this thread
-	    TlsGetValue(QV_Index);
+		// initialize lisp system
+		TlsSetValue(QV_Index, QV); // store global QV as the QV for this thread
+		TlsGetValue(QV_Index);
 
-	    initLisp();
-	    TlsSetValue(QV_Index, 0);
-	    CormanLispClientType = clientType;
-	    RunLispThread(thread);		// start 'er up
-    }
-    initSect.Leave();
+		initLisp();
+		TlsSetValue(QV_Index, 0);
+		CormanLispClientType = clientType;
+		RunLispThread(thread); // start 'er up
+	}
+	initSect.Leave();
 
-	return 1;		// success
+	return 1; // success
 }
 
-void InitializeCormanLisp(IUnknown* client, const UserInfo *user_info)
+void InitializeCormanLisp(IUnknown* client, const UserInfo* user_info)
 {
 	HRESULT hr = 0;
 	ClientUnknown = client;
@@ -499,7 +515,7 @@ void InitializeCormanLisp(IUnknown* client, const UserInfo *user_info)
 	}
 
 	// initialize lisp system
-	TlsSetValue(QV_Index, QV);	// store global QV as the QV for this thread
+	TlsSetValue(QV_Index, QV); // store global QV as the QV for this thread
 	TlsGetValue(QV_Index);
 
 	initLisp();
@@ -511,8 +527,7 @@ void RunCormanLisp(HANDLE* thread)
 	RunLispThread(thread);
 }
 
-void
-ProcessLispSource(char* text, long numChars)
+void ProcessLispSource(char* text, long numChars)
 {
 	long i = 0;
 	long added = 0;
@@ -524,13 +539,11 @@ ProcessLispSource(char* text, long numChars)
 	}
 }
 
-//#define NTONLY 1
-//#define WIN98ONLY 1
+// #define NTONLY 1
+// #define WIN98ONLY 1
 
 #ifdef NTONLY
-__declspec(naked)
-LispObj*
-ThreadQV()
+__declspec(naked) LispObj* ThreadQV()
 {
 	__asm
 	{
@@ -544,9 +557,7 @@ ThreadQV()
 	}
 }
 #elif WIN98ONLY
-__declspec(naked)
-LispObj*
-ThreadQV()
+__declspec(naked) LispObj* ThreadQV()
 {
 	__asm
 	{
@@ -581,13 +592,13 @@ UINT LispMainProc(LPVOID /*pParam*/)
 	WSADATA wsd;
 
 #ifdef _MSC_VER
-	__asm	mov  dummy, ebp
+	__asm mov dummy, ebp
 #else
 	asm volatile("mov %%ebp, %0" : "=r"(dummy));
 #endif
 
-	// find our thread record
-	th = ThreadList.getList();
+						 // find our thread record
+						 th = ThreadList.getList();
 	while (th)
 	{
 		if (th->threadID == currThreadID)
@@ -598,7 +609,7 @@ UINT LispMainProc(LPVOID /*pParam*/)
 	th->stackStart = (unsigned long*)dummy;
 	TlsSetValue(Thread_Index, th);
 	TlsSetValue(QV_Index, th->QV_rec);
-	TlsGetValue(QV_Index);	// force NT to allocate the block
+	TlsGetValue(QV_Index); // force NT to allocate the block
 	CoInitialize(0);
 
 	pushDynamicBinding(COMPILER_RUNTIME, NIL);
@@ -625,8 +636,7 @@ end:
 
 //	RunLispThread()
 //	Starts up a new lisp thread.
-static void
-RunLispThread(HANDLE* thread)
+static void RunLispThread(HANDLE* thread)
 {
 	ThreadRecord* th = new ThreadRecord;
 	auto sz = sizeof(*th);
@@ -637,19 +647,18 @@ RunLispThread(HANDLE* thread)
 	th->started = 1;
 
 	// create the thread
-	th->thread = (HANDLE)_beginthreadex(
-			0,		// security
-			0,		// stack size (0 = use default)
-			(unsigned(__stdcall*)(void*))LispMainProc, // thread proc
-			0,		// arglist
-			CREATE_SUSPENDED,		// init flags
-			(UINT*)&th->threadID);
+	th->thread = (HANDLE)_beginthreadex(0, // security
+										0, // stack size (0 = use default)
+										(unsigned(__stdcall*)(void*))LispMainProc, // thread proc
+										0, // arglist
+										CREATE_SUSPENDED, // init flags
+										(UINT*)&th->threadID);
 	if (thread)
 		*thread = th->thread;
 
 	if (!th->thread)
 	{
-	//	AfxMessageBox("Could not start main lisp thread.");
+		//	AfxMessageBox("Could not start main lisp thread.");
 		return;
 	}
 	SetThreadPriority(th->thread, THREAD_PRIORITY_NORMAL);
@@ -675,8 +684,7 @@ unsigned long* getStackStart()
 // This is the thread procedure for all non-primary lisp threads
 // i.e. any lisp thread which is explicitly created from lisp code.
 //
-UINT
-SecondaryThreadProc(LPVOID func)
+UINT SecondaryThreadProc(LPVOID func)
 {
 	ThreadRecord* thisThread = 0;
 	DWORD currThreadID = GetCurrentThreadId();
@@ -695,20 +703,20 @@ SecondaryThreadProc(LPVOID func)
 	}
 	if (thisThread->threadID != currThreadID)
 	{
-//		AfxMessageBox("Can't find our thread ID in the active thread list");
+		//		AfxMessageBox("Can't find our thread ID in the active thread list");
 		return 0;
 	}
 
 #ifdef _MSC_VER
-	__asm	mov  dummy, ebp
+	__asm mov dummy, ebp
 #else
 	asm volatile("mov %%ebp, %0" : "=r"(dummy));
 #endif
 
-	thisThread->stackStart = (unsigned long*)dummy;
+						 thisThread->stackStart = (unsigned long*)dummy;
 	TlsSetValue(Thread_Index, thisThread);
 	TlsSetValue(QV_Index, thisThread->QV_rec);
-	TlsGetValue(QV_Index);	// force NT to allocate the block
+	TlsGetValue(QV_Index); // force NT to allocate the block
 	thisThread->event.SetEvent();
 
 	pushDynamicBinding(COMPILER_RUNTIME, NIL);
@@ -726,7 +734,7 @@ SecondaryThreadProc(LPVOID func)
 
 	// remove the thread record
 	ThreadList.remove(thisThread);
- 	NumLispThreads--;
+	NumLispThreads--;
 
 	_endthreadex(0);
 	CloseHandle(currThreadHandle);
@@ -736,8 +744,7 @@ SecondaryThreadProc(LPVOID func)
 
 //	RunSecondaryThread()
 //	Starts up a new lisp thread.
-LispObj
-RunSecondaryThread(LispObj func)
+LispObj RunSecondaryThread(LispObj func)
 {
 	ThreadRecord* th = new ThreadRecord;
 	th->QV_rec = createNewQV();
@@ -750,29 +757,28 @@ RunSecondaryThread(LispObj func)
 	//
 	GCCriticalSection.Enter();
 
-    th->type = ThreadRecord::SecondaryThread;
-    th->started = 1;
+	th->type = ThreadRecord::SecondaryThread;
+	th->started = 1;
 
-    // create the thread
-    th->thread = (HANDLE)_beginthreadex(
-		    0,		// security
-		    0,		// stack size (0 = use default)
-		    (unsigned(__stdcall*)(void*))SecondaryThreadProc, // thread proc
-		    (void*)func,	// arglist
-		    CREATE_SUSPENDED,		// init flags
-		    (UINT*)&th->threadID);
+	// create the thread
+	th->thread = (HANDLE)_beginthreadex(0, // security
+										0, // stack size (0 = use default)
+										(unsigned(__stdcall*)(void*))SecondaryThreadProc, // thread proc
+										(void*)func, // arglist
+										CREATE_SUSPENDED, // init flags
+										(UINT*)&th->threadID);
 
-    if (!th->thread)
-    {
-	    return 0;
-    }
+	if (!th->thread)
+	{
+		return 0;
+	}
 
-    SetThreadPriority(th->thread, THREAD_PRIORITY_NORMAL);
-    ResumeThread(th->thread);
-    WaitForSingleObject(th->event.m_hObject, INFINITE); // timeout after 5 seconds
-    th->event.ResetEvent();
+	SetThreadPriority(th->thread, THREAD_PRIORITY_NORMAL);
+	ResumeThread(th->thread);
+	WaitForSingleObject(th->event.m_hObject, INFINITE); // timeout after 5 seconds
+	th->event.ResetEvent();
 
-	GCCriticalSection.Leave();	// don't enable GC until the thread
+	GCCriticalSection.Leave(); // don't enable GC until the thread
 	return createUnsignedLispInteger(th->threadID);
 }
 
@@ -794,66 +800,59 @@ extern "C" __declspec(dllexport) void BlessThread()
 	// It will timeout after 10 seconds.
 	WaitForSingleObject(InitializationEvent, INFINITE);
 
-	GCCriticalSection.Enter();	// make sure garbage collection is not running
-//    __try
-//    {
-	    if (TlsGetValue(QV_Index) == 0)
-	    {
-		    ThreadRecord* th = new ThreadRecord;
-		    LispObj fp = 0;
-		    HANDLE threadHandle = 0;
-		    BOOL ret = FALSE;
+	GCCriticalSection.Enter(); // make sure garbage collection is not running
+	//    __try
+	//    {
+	if (TlsGetValue(QV_Index) == 0)
+	{
+		ThreadRecord* th = new ThreadRecord;
+		LispObj fp = 0;
+		HANDLE threadHandle = 0;
+		BOOL ret = FALSE;
 
-		    th->QV_rec = createNewQV();
-		    th->stackStart = getStackStart();
-		    th->threadID = GetCurrentThreadId();
-		    ret = DuplicateHandle(
-			    GetCurrentProcess(),
-			    GetCurrentThread(),
-			    GetCurrentProcess(),
-			    &threadHandle,
-			    0,
-			    TRUE,
-			    DUPLICATE_SAME_ACCESS);
+		th->QV_rec = createNewQV();
+		th->stackStart = getStackStart();
+		th->threadID = GetCurrentThreadId();
+		ret = DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &threadHandle, 0, TRUE,
+							  DUPLICATE_SAME_ACCESS);
 
-		    th->thread = threadHandle;
+		th->thread = threadHandle;
 
-		    //th->thread = OpenThread(THREAD_ALL_ACCESS, FALSE, th->threadID);
-		    th->type = ThreadRecord::BlessedThread;
-		    th->started = true;
-			th->image_loads_count = getImageLoadsCount();
+		// th->thread = OpenThread(THREAD_ALL_ACCESS, FALSE, th->threadID);
+		th->type = ThreadRecord::BlessedThread;
+		th->started = true;
+		th->image_loads_count = getImageLoadsCount();
 
-		    NumLispThreads++;
-		    ThreadList.insert(th);
-		    TlsSetValue(Thread_Index, th);
-		    TlsSetValue(QV_Index, th->QV_rec);
-		    TlsGetValue(QV_Index);	// force NT to allocate the block
-		    pushDynamicBinding(COMPILER_RUNTIME, NIL);
+		NumLispThreads++;
+		ThreadList.insert(th);
+		TlsSetValue(Thread_Index, th);
+		TlsSetValue(QV_Index, th->QV_rec);
+		TlsGetValue(QV_Index); // force NT to allocate the block
+		pushDynamicBinding(COMPILER_RUNTIME, NIL);
 
-		    // bind ccl:*current-thread-id*, ccl:*current-thread-handle*
-		    pushDynamicBinding(CURRENT_THREAD_ID, createUnsignedLispInteger(GetCurrentThreadId()));
-		    fp = foreignNode();
-		    UVECTOR(fp)[FOREIGN_PTR] = (LispObj)th->thread;
-		    pushDynamicBinding(CURRENT_THREAD_HANDLE, fp);
+		// bind ccl:*current-thread-id*, ccl:*current-thread-handle*
+		pushDynamicBinding(CURRENT_THREAD_ID, createUnsignedLispInteger(GetCurrentThreadId()));
+		fp = foreignNode();
+		UVECTOR(fp)[FOREIGN_PTR] = (LispObj)th->thread;
+		pushDynamicBinding(CURRENT_THREAD_HANDLE, fp);
 
-			// set marker for foreign code transition
-			th->QV_rec[STACK_MARKER_INDEX_Index] = 4;	// start at 1st transition (foreign code)
-		    th->QV_rec[STACK_MARKERS_Index] = (LispObj)(th->stackStart);
-		    th->QV_rec[STACK_MARKERS_Index + 1] = 0;
-
-	    }
-//    }
-//    __finally
-//    {
-	    GCCriticalSection.Leave();
-//    }
+		// set marker for foreign code transition
+		th->QV_rec[STACK_MARKER_INDEX_Index] = 4; // start at 1st transition (foreign code)
+		th->QV_rec[STACK_MARKERS_Index] = (LispObj)(th->stackStart);
+		th->QV_rec[STACK_MARKERS_Index + 1] = 0;
+	}
+	//    }
+	//    __finally
+	//    {
+	GCCriticalSection.Leave();
+	//    }
 }
 
-// 
+//
 // The reverse operation of BlessThread.
 // Removes the thread from the lisp thread queue, and it may no
 // longer be used to call directly into lisp function.
-// It will know longer be checked by the garbage collector for 
+// It will know longer be checked by the garbage collector for
 // references. It generally shouldn't be necessary to call this function
 // unless an application is creating and destroying threads. It should
 // be called prior to any "blessed" thread being terminated by the
@@ -863,35 +862,36 @@ extern "C" __declspec(dllexport) void BlessThread()
 //
 extern "C" __declspec(dllexport) void UnblessThread()
 {
-	GCCriticalSection.Enter();	// make sure garbage collection is not running
+	GCCriticalSection.Enter(); // make sure garbage collection is not running
 	ThreadRecord* th = (ThreadRecord*)TlsGetValue(Thread_Index);
 	TlsSetValue(Thread_Index, 0);
 	TlsSetValue(QV_Index, 0);
-    __try
-    {
-	    if (th)
-	    {
+	__try
+	{
+		if (th)
+		{
 			if (th->image_loads_count == getImageLoadsCount())
 			{
 				popDynamicBinding(CURRENT_THREAD_ID);
 				popDynamicBinding(CURRENT_THREAD_HANDLE);
 			}
-		    CloseHandle(th->thread);
-		    ThreadList.remove(th);
-		    th = 0;
- 		    NumLispThreads--;
-	    }
-    }
-    __except(EXCEPTION_EXECUTE_HANDLER) {}
-    GCCriticalSection.Leave();
+			CloseHandle(th->thread);
+			ThreadList.remove(th);
+			th = 0;
+			NumLispThreads--;
+		}
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+	}
+	GCCriticalSection.Leave();
 }
 
 //
 // Returns a direct callback function pointer to be called
 // by foreign code (from a blessed thread).
 //
-extern "C" __declspec(dllexport) 
-void* GetCallbackFunctionPointer(wchar_t* functionName, wchar_t* package)
+extern "C" __declspec(dllexport) void* GetCallbackFunctionPointer(wchar_t* functionName, wchar_t* package)
 {
 	LispObj s = 0;
 	LispObj sym = 0;
@@ -909,7 +909,7 @@ void* GetCallbackFunctionPointer(wchar_t* functionName, wchar_t* package)
 
 		s = wstringNode(functionName);
 		if (!package)
-			sym = s;	// just use string
+			sym = s; // just use string
 		else
 		{
 			// if INTERN is not defined, probably because the lisp image did not
@@ -951,8 +951,9 @@ static CONTEXT lispContext;
 CL_NAKED void CallThrowUserExceptionStub()
 {
 #ifdef _MSC_VER
-	__asm push eax  ;; push return address
-	__asm jmp ThrowUserException;
+	__asm push eax;
+	;
+	push return address __asm jmp ThrowUserException;
 #else
 	asm volatile("jmp ThrowUserException");
 #endif
@@ -967,32 +968,34 @@ void AbortLispThread()
 
 	// make sure we don't abort a thread while it is performing a garbage collection!
 	GCCriticalSection.Enter();
-    __try
-    {
-	    tr = ThreadList.getPrimaryThread();
-	    if (!tr)
-		    return;
-	    th = tr->thread;
-	    user_abort = 1;
-	    SuspendThread(th);
-	    ThreadList.ensureSafeState(tr);
-	    lispContext.ContextFlags = CONTEXT_FULL;
-	    GetThreadContext(th, &lispContext);
-	    if (!((tr->QV_rec[STACK_MARKER_INDEX_Index] >> 2) & 1))
-	    {
-		    lispContext.Eax = lispContext.Eip;
-		    lispContext.Eip = (long)CallThrowUserExceptionStub;
-		    lispContext.ContextFlags = CONTEXT_FULL;
-		    SetThreadContext(th, &lispContext);
-	    }
-	    else
-	    {
-		    // cannot abort--executing in foreign code
-	    }
-	    ResumeThread(th);
-    }
-    __except(EXCEPTION_EXECUTE_HANDLER) {}
-    GCCriticalSection.Leave();
+	__try
+	{
+		tr = ThreadList.getPrimaryThread();
+		if (!tr)
+			return;
+		th = tr->thread;
+		user_abort = 1;
+		SuspendThread(th);
+		ThreadList.ensureSafeState(tr);
+		lispContext.ContextFlags = CONTEXT_FULL;
+		GetThreadContext(th, &lispContext);
+		if (!((tr->QV_rec[STACK_MARKER_INDEX_Index] >> 2) & 1))
+		{
+			lispContext.Eax = lispContext.Eip;
+			lispContext.Eip = (long)CallThrowUserExceptionStub;
+			lispContext.ContextFlags = CONTEXT_FULL;
+			SetThreadContext(th, &lispContext);
+		}
+		else
+		{
+			// cannot abort--executing in foreign code
+		}
+		ResumeThread(th);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+	}
+	GCCriticalSection.Leave();
 }
 
 static CONTEXT terminateContext;
@@ -1005,8 +1008,8 @@ CL_NAKED void TerminateLispThreadException()
 #else
 	asm volatile("mov %%edi, %0" : "=r"(result));
 #endif
-	// LispCall4 deferred to Phase 5
-	(void)result;
+		// LispCall4 deferred to Phase 5
+		(void) result;
 #ifdef _MSC_VER
 	LispCall4(Funcall, THROW_EXCEPTION, EXIT_THREAD_TAG, result, wrapInteger(1));
 #else

@@ -10,24 +10,24 @@
 //
 //		-----------------------------------------------------------------
 //		Usage Notes:
-//		---------------------		
+//		---------------------
 //		This class is designed to allow easy encryption/decryption
 //		of a binary block of data using standard DES encryption.
 //		The EncryptDES class can be thought of as a buffer
 //		which holds encrypted data only. When you create one,
-//		it is empty. 
+//		it is empty.
 //
-//		Use the encrypt() member function to encrypt a block of 
+//		Use the encrypt() member function to encrypt a block of
 //		data and load that encrypted data into its internal buffer.
 //		You need to pass this function an ascii, null-terminated
 //		string of 1-8 characters to use as a key. If the string is
 //		longer than 8 characters the call will fail.
-//		
+//
 //		The decrypt() member function is the mirror equivalent to
 //		encrypt(), causing the encrypted data in the object's
 //		internal buffer to be decrypted into a buffer.
-//		As with the encrypt() function, you need to pass this function 
-//		an ascii, null-terminated string of 1-8 characters to use as a 
+//		As with the encrypt() function, you need to pass this function
+//		an ascii, null-terminated string of 1-8 characters to use as a
 //		key. Of course, this must be the same key that was used to encrypt the
 //		data, or the decryption will fail. Note: the function may or may
 //		not fail if the key is wrong. However, in either case the data
@@ -47,13 +47,13 @@
 //
 //		-----------------------------------------------------------------
 //		Example 1:
-//		---------------------		
+//		---------------------
 //
 //		CString persist;
 //
 //		{
 //			EncryptDES des;
-//			CString s("this is a test"); 
+//			CString s("this is a test");
 //			printf("Original string: %s\n", (const char*)s);
 //
 //			CString key("mykey");
@@ -64,7 +64,7 @@
 //			persist = encryptedData;
 //		}
 //		printf("Persistent storage contains: %s\n", (const char*)persist);
-//	
+//
 //		//	Later to unencrypt:
 //		// .. retrieve the encrypted data
 //		{
@@ -73,7 +73,7 @@
 //			des.importHex(encryptedData);
 //			CString s;
 //			CString key("mykey");
-//			int decryptedLength = 
+//			int decryptedLength =
 //				des.decrypt(key, (LPBYTE)s.GetBuffer(des.getBinaryLength()),
 //							des.getBinaryLength());
 //			s.ReleaseBuffer(decryptedLength);
@@ -81,21 +81,21 @@
 //			printf("Result string: %s\n", (const char*)s);
 //		}
 //
-//		---------------------		
+//		---------------------
 //		Example 2:
-//		---------------------		
+//		---------------------
 //		If you are dealing with only text strings, you can just use the
 //		static member functions below, for convenience.
 //
 //		CString s("Microsoft loves Java, Microsoft loves Java not,...");
 //		CString encrypted = EncryptDES::EncryptCString("pablo", s);
 //		CString decrypted = EncryptDES::DecryptCString("pablo", encrypted);
-//		printf("src = %s\n, encrypted = %s\n, decrypted = %s\n", 
+//		printf("src = %s\n, encrypted = %s\n, decrypted = %s\n",
 //				s, encrypted, decrypted);
 //
 //		-----------------------------------------------------------------
 //		Implementation Notes:
-//		---------------------		
+//		---------------------
 //		The implementation of this class uses a public
 //		domain version of the DES encryption standard algorithm,
 //		implemented by Richard Outerbridge. This implementation currently
@@ -106,8 +106,8 @@
 //
 //		I have modified the encryption code to allow reentrancy
 //		(and therefore multiple threads may use it). I also rewrote
-//		it somewhat from the original K&R C code to fit into a C++ 
-//		class, and to optimize it a bit (and eliminate some non-optimizations 
+//		it somewhat from the original K&R C code to fit into a C++
+//		class, and to optimize it a bit (and eliminate some non-optimizations
 //		that, in my opinion, muddled the code).
 //
 
@@ -130,15 +130,15 @@ struct DESBlock
 class EncryptDES
 {
 public:
-	EncryptDES();		// create an empty object
+	EncryptDES(); // create an empty object
 	~EncryptDES();
 
 	// encryption/decryption of binary data
 	int encrypt(const char* key, const unsigned char* srcbuf, unsigned int srclen);
 	int decrypt(const char* key, unsigned char* destbuf, unsigned int destlen);
 
-	int	getBinaryLength();		// length of binary encrypted data
-	int	getHexStringLength();	// length of hex-ascii encoded encrypted data
+	int getBinaryLength(); // length of binary encrypted data
+	int getHexStringLength(); // length of hex-ascii encoded encrypted data
 
 	// import/export binary (for use by persistence mechanism)
 	void importBinary(unsigned char* srcbuf, unsigned int srclen);
@@ -162,7 +162,7 @@ private:
 
 	// Copy constructor, assignment operator are private to prevent use
 	EncryptDES(const EncryptDES&);
-	EncryptDES& operator =(const EncryptDES&);
+	EncryptDES& operator=(const EncryptDES&);
 
 	// data members
 	unsigned char* buf;
@@ -185,5 +185,4 @@ private:
 	static const unsigned long SP8[64];
 };
 
-
-#endif	// ENCRYPTDES_H
+#endif // ENCRYPTDES_H

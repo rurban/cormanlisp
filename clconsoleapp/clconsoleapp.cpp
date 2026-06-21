@@ -13,7 +13,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <ocidl.h>
-//#include <initguid.h>
+// #include <initguid.h>
 #include <conio.h>
 #include <fcntl.h>
 #include <io.h>
@@ -23,12 +23,12 @@
 #include "ICormanLisp.h"
 
 static char gModuleName[MAX_PATH];
-static char gImageName [MAX_PATH];
+static char gImageName[MAX_PATH];
 bool isTemplateApp = false;
 
 const char SERVER_TITLE[] = "CormanLispServer.dll";
 char LispServerPath[MAX_PATH + 1 + sizeof(SERVER_TITLE)];
-typedef HRESULT (WINAPI *GETCLASSOBJECTFUNC)(REFCLSID rclsid, REFIID riid, void**ppv);
+typedef HRESULT(WINAPI* GETCLASSOBJECTFUNC)(REFCLSID rclsid, REFIID riid, void** ppv);
 
 static void outputConsoleText(char* text);
 static char* getConsoleText();
@@ -37,32 +37,31 @@ static IClassFactory* getCormanLispClassFactory();
 static IClassFactory* getCormanLispRegisteredClassFactory();
 static void LoadFile(char* filename);
 
-class ConsoleCormanLispClient 
-	: public ICormanLispStatusMessage
+class ConsoleCormanLispClient : public ICormanLispStatusMessage
 {
 public:
 	ConsoleCormanLispClient();
 	~ConsoleCormanLispClient();
 
-// IUnknown methods
-    STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
-    STDMETHODIMP_(ULONG) AddRef();
-    STDMETHODIMP_(ULONG) Release();
+	// IUnknown methods
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
+	STDMETHODIMP_(ULONG) AddRef();
+	STDMETHODIMP_(ULONG) Release();
 
-// ICormanLisp methods
-    STDMETHODIMP OutputText(char* text, long numChars);
-    STDMETHODIMP SetMessage(char* text);
+	// ICormanLisp methods
+	STDMETHODIMP OutputText(char* text, long numChars);
+	STDMETHODIMP SetMessage(char* text);
 	STDMETHODIMP GetMessage(char* text, long maxMessageLength);
-    STDMETHODIMP SetDefaultMessage();
-    STDMETHODIMP GetAppInstance(HINSTANCE* appInstance);
-    STDMETHODIMP GetAppMainWindow(HWND* appMainWindow);
-    STDMETHODIMP OpenEditWindow(char* file, HWND* wnd);
-    STDMETHODIMP AddMenu(char* menuName);
-    STDMETHODIMP AddMenuItem(char* menuName, char* menuItem);
-    STDMETHODIMP OpenURL(char* file, HWND* wnd);
-    STDMETHODIMP ReplaceSelection(char* text, long numChars);
+	STDMETHODIMP SetDefaultMessage();
+	STDMETHODIMP GetAppInstance(HINSTANCE* appInstance);
+	STDMETHODIMP GetAppMainWindow(HWND* appMainWindow);
+	STDMETHODIMP OpenEditWindow(char* file, HWND* wnd);
+	STDMETHODIMP AddMenu(char* menuName);
+	STDMETHODIMP AddMenuItem(char* menuName, char* menuItem);
+	STDMETHODIMP OpenURL(char* file, HWND* wnd);
+	STDMETHODIMP ReplaceSelection(char* text, long numChars);
 
-// Helper functions
+	// Helper functions
 	STDMETHODIMP Connect(IConnectionPoint* pConnectionPoint);
 	STDMETHODIMP Disconnect(IConnectionPoint* pConnectionPoint);
 
@@ -71,22 +70,21 @@ private:
 	DWORD m_dwCookie;
 };
 
-class ConsoleCormanLispShutdownClient 
-	: public ICormanLispShutdown
+class ConsoleCormanLispShutdownClient : public ICormanLispShutdown
 {
 public:
 	ConsoleCormanLispShutdownClient();
 	~ConsoleCormanLispShutdownClient();
 
-// IUnknown methods
-    STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
-    STDMETHODIMP_(ULONG) AddRef();
-    STDMETHODIMP_(ULONG) Release();
+	// IUnknown methods
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
+	STDMETHODIMP_(ULONG) AddRef();
+	STDMETHODIMP_(ULONG) Release();
 
-// ICormanLispShutdown methods
-    STDMETHODIMP LispShutdown(char* text, long numChars);
+	// ICormanLispShutdown methods
+	STDMETHODIMP LispShutdown(char* text, long numChars);
 
-// Helper functions
+	// Helper functions
 	STDMETHODIMP Connect(IConnectionPoint* pConnectionPoint);
 	STDMETHODIMP Disconnect(IConnectionPoint* pConnectionPoint);
 
@@ -95,7 +93,7 @@ private:
 	DWORD m_dwCookie;
 };
 
-typedef void (WINAPI *LOADLIBRARYFUNC)();
+typedef void(WINAPI* LOADLIBRARYFUNC)();
 
 ICormanLisp* pCormanLisp = 0;
 char* execFile = 0;
@@ -104,14 +102,14 @@ int mainx(int argc, char* argv[])
 {
 	IConnectionPoint* pConnectionPoint = 0;
 	IConnectionPoint* pShutdownConnectionPoint = 0;
-    HRESULT hr = E_FAIL;
+	HRESULT hr = E_FAIL;
 
 	CoInitialize(0);
 
 	//  Get the CormanLisp class factory
 	IClassFactory* pcf = getCormanLispClassFactory();
 	IUnknown* pUnk = 0;
-    hr = pcf->CreateInstance(0, IID_IUnknown, (void**)&pUnk);
+	hr = pcf->CreateInstance(0, IID_IUnknown, (void**)&pUnk);
 	if (FAILED(hr))
 	{
 		ErrorMessage(__TEXT("QueryInterface() did not return IID_IUnknown"), hr);
@@ -129,8 +127,7 @@ int mainx(int argc, char* argv[])
 
 	// Connect the ICormanLispClient Sink
 	IConnectionPointContainer* pConnectionPointContainer = 0;
-	hr = pCormanLisp->QueryInterface(IID_IConnectionPointContainer,
-		(void**)&pConnectionPointContainer);
+	hr = pCormanLisp->QueryInterface(IID_IConnectionPointContainer, (void**)&pConnectionPointContainer);
 
 	if (FAILED(hr))
 	{
@@ -138,13 +135,11 @@ int mainx(int argc, char* argv[])
 		return FALSE;
 	}
 
-	hr = pConnectionPointContainer->FindConnectionPoint(IID_ICormanLispTextOutput, 
-		&pConnectionPoint);
+	hr = pConnectionPointContainer->FindConnectionPoint(IID_ICormanLispTextOutput, &pConnectionPoint);
 	if (FAILED(hr))
 	{
 		pConnectionPointContainer->Release();
-		ErrorMessage(__TEXT("FindConnectionPoint() did not return IID_ICormanLispStatusMessage"), 
-			hr);
+		ErrorMessage(__TEXT("FindConnectionPoint() did not return IID_ICormanLispStatusMessage"), hr);
 		return FALSE;
 	}
 
@@ -160,13 +155,11 @@ int mainx(int argc, char* argv[])
 		fprintf(stderr, "Connection failed");
 	}
 
-	hr = pConnectionPointContainer->FindConnectionPoint(IID_ICormanLispShutdown, 
-		&pShutdownConnectionPoint);
+	hr = pConnectionPointContainer->FindConnectionPoint(IID_ICormanLispShutdown, &pShutdownConnectionPoint);
 	pConnectionPointContainer->Release();
 	if (FAILED(hr))
 	{
-		ErrorMessage(__TEXT("FindConnectionPoint() did not return IID_ICormanLispShutdowne"), 
-			hr);
+		ErrorMessage(__TEXT("FindConnectionPoint() did not return IID_ICormanLispShutdowne"), hr);
 		return FALSE;
 	}
 
@@ -208,8 +201,7 @@ int mainx(int argc, char* argv[])
 				if (!quitting)
 					pCormanLisp->ProcessSource(input, strlen(input));
 			}
-			else
-			if (!quitting)
+			else if (!quitting)
 			{
 				// construct this so normally the first expression will be
 				// read and executed. However, if the reader was in the middle
@@ -238,11 +230,11 @@ int mainx(int argc, char* argv[])
 //
 static HINSTANCE getLocalCormanLispServer()
 {
- 	DWORD chars = GetModuleFileName(0, LispServerPath, sizeof(LispServerPath));
+	DWORD chars = GetModuleFileName(0, LispServerPath, sizeof(LispServerPath));
 	int index = chars - 1;
 	while (index >= 0 && LispServerPath[index] != '\\')
 		index--;
-	LispServerPath[index] = 0;	// get rid of file name, just leave the path
+	LispServerPath[index] = 0; // get rid of file name, just leave the path
 	if (chars > 0)
 		strcat_s(LispServerPath, sizeof(LispServerPath), "\\");
 	strcat_s(LispServerPath, sizeof(LispServerPath), SERVER_TITLE);
@@ -250,15 +242,12 @@ static HINSTANCE getLocalCormanLispServer()
 	return LoadLibrary(LispServerPath);
 }
 
-__declspec(dllexport) 
-HRESULT StaticGetClassObject(REFCLSID rclsid, REFIID riid, void**ppv);
+__declspec(dllexport) HRESULT StaticGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv);
 
 static IClassFactory* getCormanLispClassFactory()
 {
 	IClassFactory* pcf = 0;
-	HRESULT hr = StaticGetClassObject(CLSID_CormanLisp,
-					  IID_IClassFactory,
-					  (void**)&pcf);
+	HRESULT hr = StaticGetClassObject(CLSID_CormanLisp, IID_IClassFactory, (void**)&pcf);
 
 	if (FAILED(hr))
 	{
@@ -273,11 +262,7 @@ static IClassFactory* getCormanLispRegisteredClassFactory()
 	IClassFactory* pcf = 0;
 
 	// see if the class is registered
-	HRESULT hr = CoGetClassObject(CLSID_CormanLisp,
-						  CLSCTX_INPROC_SERVER,
-						  0,
-						  IID_IClassFactory,
-						  (void**)&pcf);
+	HRESULT hr = CoGetClassObject(CLSID_CormanLisp, CLSCTX_INPROC_SERVER, 0, IID_IClassFactory, (void**)&pcf);
 	if (FAILED(hr))
 	{
 		if (hr == REGDB_E_CLASSNOTREG)
@@ -297,14 +282,10 @@ static IClassFactory* getCormanLispRegisteredClassFactory()
 				return 0;
 			}
 			LOADLIBRARYFUNC func = (LOADLIBRARYFUNC)proc;
-			func();				// calls DllRegisterServer()
+			func(); // calls DllRegisterServer()
 
 			// now try again
-			hr = CoGetClassObject(CLSID_CormanLisp,
-						  CLSCTX_INPROC_SERVER,
-						  0,
-						  IID_IClassFactory,
-						  (void**)&pcf);
+			hr = CoGetClassObject(CLSID_CormanLisp, CLSCTX_INPROC_SERVER, 0, IID_IClassFactory, (void**)&pcf);
 
 			if (FAILED(hr))
 			{
@@ -328,30 +309,27 @@ BOOL __stdcall HandlerRoutine(DWORD dwCtrlType)
 	BOOL handled = FALSE;
 	switch (dwCtrlType)
 	{
-	case CTRL_C_EVENT:
-		if (pCormanLisp)
-		{
-			pCormanLisp->GetNumThreads(&numThreads);
-			if (numThreads > 0)
-				pCormanLisp->AbortThread();
-		}
-		handled = TRUE;
-		break;
-	case CTRL_BREAK_EVENT:
-		if (pCormanLisp)
-		{
-			pCormanLisp->GetNumThreads(&numThreads);
-			if (numThreads > 0)
-				pCormanLisp->AbortThread();
-		}
-		handled = TRUE;
-		break;
-	case CTRL_CLOSE_EVENT:
-		break;
-	case CTRL_LOGOFF_EVENT:
-		break;
-	case CTRL_SHUTDOWN_EVENT:
-		break;
+		case CTRL_C_EVENT:
+			if (pCormanLisp)
+			{
+				pCormanLisp->GetNumThreads(&numThreads);
+				if (numThreads > 0)
+					pCormanLisp->AbortThread();
+			}
+			handled = TRUE;
+			break;
+		case CTRL_BREAK_EVENT:
+			if (pCormanLisp)
+			{
+				pCormanLisp->GetNumThreads(&numThreads);
+				if (numThreads > 0)
+					pCormanLisp->AbortThread();
+			}
+			handled = TRUE;
+			break;
+		case CTRL_CLOSE_EVENT: break;
+		case CTRL_LOGOFF_EVENT: break;
+		case CTRL_SHUTDOWN_EVENT: break;
 	}
 	return handled;
 }
@@ -363,52 +341,51 @@ int main(int argc, char* argv[])
 	// use binary mode
 	int result = _setmode(_fileno(stdout), _O_BINARY);
 	result = _setmode(_fileno(stdin), _O_BINARY);
-   
+
 	BOOL ret = SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 	SetConsoleTitle("Corman Lisp Console");
 #ifdef SET_CONSOLE_SCREEN_BUFFER_SIZE
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	COORD coord;
 	coord.X = 100;
-	coord.Y = 100;		// default console size if 100 x 100
+	coord.Y = 100; // default console size if 100 x 100
 	SetConsoleScreenBufferSize(handle, coord);
 #endif // SET_CONSOLE_SCREEN_BUFFER_SIZE
 	GetModuleFileName(0, gModuleName, sizeof(gModuleName));
 
-	isTemplateApp = _stricmp(argv[0], "clconsole") != 0;	// see if this app is being used
-															// as a template
+	isTemplateApp = _stricmp(argv[0], "clconsole") != 0; // see if this app is being used
+														 // as a template
 
 	char* imageName = 0;
 	for (int i = 1; i < argc; i++)
 	{
 		if (!_stricmp(argv[i], "-image") && (i + 1) < argc)
 		{
-			imageName = argv[i+1];
+			imageName = argv[i + 1];
 		}
 		if (!_stricmp(argv[i], "-execute") && (i + 1) < argc)
 		{
-			execFile = argv[i+1];
+			execFile = argv[i + 1];
 		}
 	}
 	if (imageName)
 		strcpy_s(gImageName, sizeof(gImageName), imageName);
 	else
-		// default to the image has the same name as the executable,
-		// but with a .img extension.
+	// default to the image has the same name as the executable,
+	// but with a .img extension.
 	{
-		// as a special case, if this is the clconsole application 
+		// as a special case, if this is the clconsole application
 		// default to CormanLisp.img
 		unsigned int moduleNameLength = strlen(gModuleName);
-		if (moduleNameLength >= strlen(consoleAppName)
-			&& !_stricmp(gModuleName + (moduleNameLength - strlen(consoleAppName)), 
-					consoleAppName))
-        {
-            // copy entire exe path and name
-            strcpy_s(gImageName, sizeof(gImageName), gModuleName);
-            // replace clconsole.exe with CormanLisp.img
-			strcpy_s(gImageName  + (moduleNameLength - strlen(consoleAppName)), sizeof(gImageName), "CormanLisp.img");
-        }
-	else
+		if (moduleNameLength >= strlen(consoleAppName) &&
+			!_stricmp(gModuleName + (moduleNameLength - strlen(consoleAppName)), consoleAppName))
+		{
+			// copy entire exe path and name
+			strcpy_s(gImageName, sizeof(gImageName), gModuleName);
+			// replace clconsole.exe with CormanLisp.img
+			strcpy_s(gImageName + (moduleNameLength - strlen(consoleAppName)), sizeof(gImageName), "CormanLisp.img");
+		}
+		else
 		{
 			strcpy_s(gImageName, sizeof(gImageName), gModuleName);
 		}
@@ -440,16 +417,15 @@ static char* getConsoleText()
 		int c = getchar();
 		if (c == EOF)
 		{
-		//	*s++ = 0;
-		//	s = ConsoleTextBuf; 
-		//	return s;
+			//	*s++ = 0;
+			//	s = ConsoleTextBuf;
+			//	return s;
 		}
-		else
-		if (c == 10)
+		else if (c == 10)
 		{
 			*s++ = (char)c;
 			*s++ = 0;
-			s = ConsoleTextBuf; 
+			s = ConsoleTextBuf;
 			return s;
 		}
 		else
@@ -465,40 +441,37 @@ ConsoleCormanLispClient::ConsoleCormanLispClient()
 	m_dwCookie = (unsigned long)-1;
 }
 
-ConsoleCormanLispClient::~ConsoleCormanLispClient()
-{
-}
-
+ConsoleCormanLispClient::~ConsoleCormanLispClient() {}
 
 //////////////////////////////////////////////////////////////////////
 // IUnknown interfaces
 
 STDMETHODIMP ConsoleCormanLispClient::QueryInterface(REFIID riid, void** ppv)
 {
-    if (riid == IID_IUnknown)
-        *ppv = (ICormanLisp*)this;
-    else if (riid == IID_ICormanLispTextOutput)
-        *ppv = (ICormanLispTextOutput*)this;
-    else if (riid == IID_ICormanLispStatusMessage)
-        *ppv = (ICormanLispStatusMessage*)this;
-    else
-        *ppv = 0;
-    if (*ppv)
-        ((IUnknown*)*ppv)->AddRef();
-    return *ppv ? S_OK : E_NOINTERFACE;
+	if (riid == IID_IUnknown)
+		*ppv = (ICormanLisp*)this;
+	else if (riid == IID_ICormanLispTextOutput)
+		*ppv = (ICormanLispTextOutput*)this;
+	else if (riid == IID_ICormanLispStatusMessage)
+		*ppv = (ICormanLispStatusMessage*)this;
+	else
+		*ppv = 0;
+	if (*ppv)
+		((IUnknown*)*ppv)->AddRef();
+	return *ppv ? S_OK : E_NOINTERFACE;
 }
 
 STDMETHODIMP_(ULONG) ConsoleCormanLispClient::AddRef()
 {
-    return InterlockedIncrement(&m_cRef);
+	return InterlockedIncrement(&m_cRef);
 }
 
 STDMETHODIMP_(ULONG) ConsoleCormanLispClient::Release()
 {
-    if (InterlockedDecrement(&m_cRef) != 0)
-        return m_cRef;
-    delete this;
-    return 0;
+	if (InterlockedDecrement(&m_cRef) != 0)
+		return m_cRef;
+	delete this;
+	return 0;
 }
 
 STDMETHODIMP ConsoleCormanLispClient::OutputText(char* text, long numBytes)
@@ -555,7 +528,7 @@ STDMETHODIMP ConsoleCormanLispClient::OpenEditWindow(char* /*file*/, HWND* /*wnd
 
 STDMETHODIMP ConsoleCormanLispClient::OpenURL(char* file, HWND* /*wnd*/)
 {
-	return(ShellExecuteA(NULL, "open", file, NULL, NULL, SW_SHOWNORMAL) > (HINSTANCE)32 ? S_OK : E_FAIL);
+	return (ShellExecuteA(NULL, "open", file, NULL, NULL, SW_SHOWNORMAL) > (HINSTANCE)32 ? S_OK : E_FAIL);
 }
 
 STDMETHODIMP ConsoleCormanLispClient::AddMenu(char* /*menuName*/)
@@ -575,13 +548,7 @@ STDMETHODIMP ConsoleCormanLispClient::ReplaceSelection(char* /*text*/, long /*nu
 
 BYTE* MapFile(const char* path, DWORD* length)
 {
-	HANDLE hfile = CreateFile(path,
-						GENERIC_READ,
-						FILE_SHARE_READ,
-						NULL,
-						OPEN_EXISTING,
-						FILE_ATTRIBUTE_NORMAL,
-						NULL);
+	HANDLE hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hfile == INVALID_HANDLE_VALUE)
 		return 0;
 	*length = GetFileSize(hfile, 0);
@@ -591,11 +558,7 @@ BYTE* MapFile(const char* path, DWORD* length)
 		return 0;
 	}
 
-	HANDLE hfilemap = CreateFileMapping(hfile,
-						0,
-						PAGE_READONLY,
-						0, 0,
-						0);
+	HANDLE hfilemap = CreateFileMapping(hfile, 0, PAGE_READONLY, 0, 0, 0);
 
 	CloseHandle(hfile);
 	if (!hfilemap)
@@ -651,38 +614,35 @@ ConsoleCormanLispShutdownClient::ConsoleCormanLispShutdownClient()
 	m_dwCookie = (unsigned long)-1;
 }
 
-ConsoleCormanLispShutdownClient::~ConsoleCormanLispShutdownClient()
-{
-}
-
+ConsoleCormanLispShutdownClient::~ConsoleCormanLispShutdownClient() {}
 
 //////////////////////////////////////////////////////////////////////
 // IUnknown interfaces
 
 STDMETHODIMP ConsoleCormanLispShutdownClient::QueryInterface(REFIID riid, void** ppv)
 {
-    if (riid == IID_IUnknown)
-        *ppv = this;
-    else if (riid == IID_ICormanLispShutdown)
-        *ppv = (ICormanLispShutdown*)this;
-    else
-        *ppv = 0;
-    if (*ppv)
-        ((IUnknown*)*ppv)->AddRef();
-    return *ppv ? S_OK : E_NOINTERFACE;
+	if (riid == IID_IUnknown)
+		*ppv = this;
+	else if (riid == IID_ICormanLispShutdown)
+		*ppv = (ICormanLispShutdown*)this;
+	else
+		*ppv = 0;
+	if (*ppv)
+		((IUnknown*)*ppv)->AddRef();
+	return *ppv ? S_OK : E_NOINTERFACE;
 }
 
 STDMETHODIMP_(ULONG) ConsoleCormanLispShutdownClient::AddRef()
 {
-    return InterlockedIncrement(&m_cRef);
+	return InterlockedIncrement(&m_cRef);
 }
 
 STDMETHODIMP_(ULONG) ConsoleCormanLispShutdownClient::Release()
 {
-    if (InterlockedDecrement(&m_cRef) != 0)
-        return m_cRef;
-    delete this;
-    return 0;
+	if (InterlockedDecrement(&m_cRef) != 0)
+		return m_cRef;
+	delete this;
+	return 0;
 }
 
 STDMETHODIMP ConsoleCormanLispShutdownClient::LispShutdown(char* text, long numBytes)
@@ -695,7 +655,6 @@ STDMETHODIMP ConsoleCormanLispShutdownClient::LispShutdown(char* text, long numB
 	exit(0);
 	return S_OK;
 }
-
 
 STDMETHODIMP ConsoleCormanLispShutdownClient::Connect(IConnectionPoint* pConnectionPoint)
 {

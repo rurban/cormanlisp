@@ -23,12 +23,12 @@ public:
 	CoEnumConnections(IUnknown* pUnk, ULONG cConnections, LPCONNECTDATA prgConnectData);
 	virtual ~CoEnumConnections();
 
-// IUnknown methods
-    STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
-    STDMETHODIMP_(ULONG) AddRef(void);
-    STDMETHODIMP_(ULONG) Release(void);
+	// IUnknown methods
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
+	STDMETHODIMP_(ULONG) AddRef(void);
+	STDMETHODIMP_(ULONG) Release(void);
 
-// IEnumConnections methods
+	// IEnumConnections methods
 	STDMETHODIMP Next(ULONG cConnections, CONNECTDATA* rgpConnectData, ULONG* pcFetched);
 	STDMETHODIMP Skip(ULONG cConnections);
 	STDMETHODIMP Reset();

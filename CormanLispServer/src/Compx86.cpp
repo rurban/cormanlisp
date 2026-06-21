@@ -23,9 +23,9 @@
 //					10/10/01 RGC  Fixed a problem with OPTIMIZE declarations.
 //								  Added support for LOCALLY, LOAD-TIME-VALUE.
 //                  02/27/03 RGC  Fixed incorrect implementation of LOAD-TIME-VALUE.
-//					09/21/03 RGC  Fixed a bug in the compiler when multiple blocks with the same 
+//					09/21/03 RGC  Fixed a bug in the compiler when multiple blocks with the same
 //                                name are used in a function.
-//                  
+//
 //
 //
 #include "Stdafx.h"
@@ -45,53 +45,71 @@ static int ExpandMacrosInline = 1;
 // Debugging helper: print a terse representation of a Lisp object to a C stream.
 static void describeForm(LispObj x, FILE* f, int depth = 0)
 {
-    if (x == NIL) {
-        fprintf(f, "NIL");
-    } else if (isSymbol(x)) {
-        LispObj name = symbolName(x);
-        long len = integer(vectorLength(name));
-        LISP_CHAR* p = charArrayStart(name);
-        for (long i = 0; i < len; i++) {
-            LISP_CHAR c = p[i];
-            if (c < 128) fputc((char)c, f);
-            else fprintf(f, "\\u%04x", (unsigned)c);
-        }
-    } else if (isCons(x)) {
-        if (depth > 10) {
-            fprintf(f, "(...)");
-            return;
-        }
-        fprintf(f, "(");
-        describeForm(CAR(x), f, depth + 1);
-        LispObj rest = CDR(x);
-        while (isCons(rest)) {
-            fprintf(f, " ");
-            describeForm(CAR(rest), f, depth + 1);
-            rest = CDR(rest);
-        }
-        if (rest != NIL) {
-            fprintf(f, " . ");
-            describeForm(rest, f, depth + 1);
-        }
-        fprintf(f, ")");
-    } else if (isImmediate(x)) {
-        if (isCharacter(x))
-            fprintf(f, "#\\%c", (char)character(x));
-        else
-            fprintf(f, "#<immediate %p>", (void*)x);
-    } else if (gettag(x) == FixnumTag) {
-        fprintf(f, "%ld", integer(x));
-    } else if (isUvector(x)) {
-        int ut = uvectorType(x);
-        fprintf(f, "#<uvector %p type=%d>", (void*)x, ut);
-    } else {
-        fprintf(f, "#<%p tag=%ld>", (void*)x, (long)gettag(x));
-    }
+	if (x == NIL)
+	{
+		fprintf(f, "NIL");
+	}
+	else if (isSymbol(x))
+	{
+		LispObj name = symbolName(x);
+		long len = integer(vectorLength(name));
+		LISP_CHAR* p = charArrayStart(name);
+		for (long i = 0; i < len; i++)
+		{
+			LISP_CHAR c = p[i];
+			if (c < 128)
+				fputc((char)c, f);
+			else
+				fprintf(f, "\\u%04x", (unsigned)c);
+		}
+	}
+	else if (isCons(x))
+	{
+		if (depth > 10)
+		{
+			fprintf(f, "(...)");
+			return;
+		}
+		fprintf(f, "(");
+		describeForm(CAR(x), f, depth + 1);
+		LispObj rest = CDR(x);
+		while (isCons(rest))
+		{
+			fprintf(f, " ");
+			describeForm(CAR(rest), f, depth + 1);
+			rest = CDR(rest);
+		}
+		if (rest != NIL)
+		{
+			fprintf(f, " . ");
+			describeForm(rest, f, depth + 1);
+		}
+		fprintf(f, ")");
+	}
+	else if (isImmediate(x))
+	{
+		if (isCharacter(x))
+			fprintf(f, "#\\%c", (char)character(x));
+		else
+			fprintf(f, "#<immediate %p>", (void*)x);
+	}
+	else if (gettag(x) == FixnumTag)
+	{
+		fprintf(f, "%ld", integer(x));
+	}
+	else if (isUvector(x))
+	{
+		int ut = uvectorType(x);
+		fprintf(f, "#<uvector %p type=%d>", (void*)x, ut);
+	}
+	else
+	{
+		fprintf(f, "#<%p tag=%ld>", (void*)x, (long)gettag(x));
+	}
 }
 
-#define CURRENT_IP		(CBlength())
-#define CURRENT_IP_RAW	(integer(CBlength()))
-
+#define CURRENT_IP (CBlength())
+#define CURRENT_IP_RAW (integer(CBlength()))
 
 // static functions
 static LispObj compileList(LispObj, LispObj, LispObj resultType);
@@ -196,30 +214,30 @@ static LispObj compilerInlineFunctions();
 static LispObj compilerOptimizeTailRecursion();
 static LispObj compilerCheckKeyArgs();
 
-#define CODE_BUFFER_INFO					1
-#define CODE_BUFFER_CBUF					2
-#define CODE_BUFFER_REFS					3
-#define CODE_BUFFER_CODE_INDEX				4
-#define CODE_BUFFER_REF_INDEX				5
-#define CODE_BUFFER_DYNAMIC_ENV_SIZE		6
-#define CODE_BUFFER_HEAP_ENV_SIZE			7
-#define CODE_BUFFER_STACK_INDEX				8
-#define CODE_BUFFER_MAX_CODE_BYTES			9
-#define CODE_BUFFER_MAX_REFS				10
-#define CODE_BUFFER_SIZE					11
+#define CODE_BUFFER_INFO 1
+#define CODE_BUFFER_CBUF 2
+#define CODE_BUFFER_REFS 3
+#define CODE_BUFFER_CODE_INDEX 4
+#define CODE_BUFFER_REF_INDEX 5
+#define CODE_BUFFER_DYNAMIC_ENV_SIZE 6
+#define CODE_BUFFER_HEAP_ENV_SIZE 7
+#define CODE_BUFFER_STACK_INDEX 8
+#define CODE_BUFFER_MAX_CODE_BYTES 9
+#define CODE_BUFFER_MAX_REFS 10
+#define CODE_BUFFER_SIZE 11
 
-#pragma warning (disable:4127)				// conditional expression is constant
-#pragma warning (disable:4244)				// '=' : conversion from 'int' to 'unsigned char', possible loss of data
+#pragma warning(disable : 4127) // conditional expression is constant
+#pragma warning(disable : 4244) // '=' : conversion from 'int' to 'unsigned char', possible loss of data
 
 void CBaddLong(unsigned long b)
 {
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
 	long index = integer(UVECTOR(buf)[CODE_BUFFER_CODE_INDEX]);
-	byteArrayStart(cbuf)[index++] = (byte)(b & 0xff); 
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 8) & 0xff); 
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 16) & 0xff); 
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 24) & 0xff); 
+	byteArrayStart(cbuf)[index++] = (byte)(b & 0xff);
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 8) & 0xff);
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 16) & 0xff);
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 24) & 0xff);
 	UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] += wrapInteger(4);
 	if (UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] >= UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES])
 		CBgrowCode();
@@ -230,7 +248,7 @@ void CBaddByte(LispObj a)
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
 	long index = integer(UVECTOR(buf)[CODE_BUFFER_CODE_INDEX]);
-	byteArrayStart(cbuf)[index] = (byte)(char)(integer(a)); 
+	byteArrayStart(cbuf)[index] = (byte)(char)(integer(a));
 	UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] += wrapInteger(1);
 	if (UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] >= UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES])
 		CBgrowCode();
@@ -241,8 +259,8 @@ void CBaddBytes(LispObj a, LispObj b)
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
 	long index = integer(UVECTOR(buf)[CODE_BUFFER_CODE_INDEX]);
-	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(a)); 
-	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(b)); 
+	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(a));
+	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(b));
 	UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] += wrapInteger(2);
 	if (UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] >= UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES])
 		CBgrowCode();
@@ -253,9 +271,9 @@ void CBaddBytes(LispObj a, LispObj b, LispObj c)
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
 	long index = integer(UVECTOR(buf)[CODE_BUFFER_CODE_INDEX]);
-	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(a)); 
-	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(b)); 
-	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(c)); 
+	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(a));
+	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(b));
+	byteArrayStart(cbuf)[index++] = (byte)(char)(integer(c));
 	UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] += wrapInteger(3);
 	if (UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] >= UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES])
 		CBgrowCode();
@@ -268,9 +286,9 @@ void CBaddLongVal(LispObj a)
 	long index = integer(UVECTOR(buf)[CODE_BUFFER_CODE_INDEX]);
 	long b = integer(a);
 	byteArrayStart(cbuf)[index++] = (byte)(b & 0xff);
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 8) & 0xff);	
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 16) & 0xff); 
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 24) & 0xff); 
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 8) & 0xff);
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 16) & 0xff);
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 24) & 0xff);
 	UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] += wrapInteger(4);
 	if (UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] >= UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES])
 		CBgrowCode();
@@ -282,9 +300,9 @@ void CBaddObject(LispObj b)
 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
 	long index = integer(UVECTOR(buf)[CODE_BUFFER_CODE_INDEX]);
 	byteArrayStart(cbuf)[index++] = (byte)(b & 0xff);
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 8) & 0xff);	
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 16) & 0xff); 
-	byteArrayStart(cbuf)[index++] = (byte)((b >> 24) & 0xff); 
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 8) & 0xff);
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 16) & 0xff);
+	byteArrayStart(cbuf)[index++] = (byte)((b >> 24) & 0xff);
 	UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] += wrapInteger(4);
 	if (UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] >= UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES])
 		CBgrowCode();
@@ -294,7 +312,7 @@ void CBsetByte(LispObj index, LispObj b)
 {
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
-	byteArrayStart(cbuf)[integer(index)] = (byte)(integer(b) & 0xff); 
+	byteArrayStart(cbuf)[integer(index)] = (byte)(integer(b) & 0xff);
 }
 
 void CBsetObject(LispObj index, LispObj x)
@@ -302,10 +320,10 @@ void CBsetObject(LispObj index, LispObj x)
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
 	long i = integer(index);
-	byteArrayStart(cbuf)[i] = (byte)(x & 0xff); 
-	byteArrayStart(cbuf)[i + 1] = (byte)((x >> 8) & 0xff); 
-	byteArrayStart(cbuf)[i + 2] = (byte)((x >> 16) & 0xff); 
-	byteArrayStart(cbuf)[i + 3] = (byte)((x >> 24) & 0xff); 
+	byteArrayStart(cbuf)[i] = (byte)(x & 0xff);
+	byteArrayStart(cbuf)[i + 1] = (byte)((x >> 8) & 0xff);
+	byteArrayStart(cbuf)[i + 2] = (byte)((x >> 16) & 0xff);
+	byteArrayStart(cbuf)[i + 3] = (byte)((x >> 24) & 0xff);
 }
 
 void CBsetLong(LispObj index, LispObj n)
@@ -314,16 +332,16 @@ void CBsetLong(LispObj index, LispObj n)
 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
 	long i = integer(index);
 	long x = integer(n);
-	byteArrayStart(cbuf)[i] = (byte)(x & 0xff); 
-	byteArrayStart(cbuf)[i + 1] = (byte)((x >> 8) & 0xff); 
-	byteArrayStart(cbuf)[i + 2] = (byte)((x >> 16) & 0xff); 
-	byteArrayStart(cbuf)[i + 3] = (byte)((x >> 24) & 0xff); 
+	byteArrayStart(cbuf)[i] = (byte)(x & 0xff);
+	byteArrayStart(cbuf)[i + 1] = (byte)((x >> 8) & 0xff);
+	byteArrayStart(cbuf)[i + 2] = (byte)((x >> 16) & 0xff);
+	byteArrayStart(cbuf)[i + 3] = (byte)((x >> 24) & 0xff);
 }
 
 void CBref(LispObj obj, LispObj pos)
 {
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
- 	LispObj refs = UVECTOR(buf)[CODE_BUFFER_REFS];
+	LispObj refs = UVECTOR(buf)[CODE_BUFFER_REFS];
 	long refIndex = integer(UVECTOR(buf)[CODE_BUFFER_REF_INDEX]);
 	arrayStart(refs)[refIndex++] = obj;
 	arrayStart(refs)[refIndex++] = pos;
@@ -337,36 +355,30 @@ void CBref(LispObj obj, LispObj pos)
 LispObj CBLastRefPos()
 {
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
- 	LispObj refs = UVECTOR(buf)[CODE_BUFFER_REFS];
+	LispObj refs = UVECTOR(buf)[CODE_BUFFER_REFS];
 	long refIndex = integer(UVECTOR(buf)[CODE_BUFFER_REF_INDEX]);
-    return arrayStart(refs)[refIndex - 1];
+	return arrayStart(refs)[refIndex - 1];
 }
 
 void CBaddJumpTableRef(LispObj sym)
 {
 	if (symbolValue(COMPILER_COLLECT_JUMP_TABLE_REFS) != NIL)
-		setSymbolValue(CODE_JUMP_TABLE_REFS, 
-			cons(wrapInteger(CURRENT_IP_RAW - 4),
-				cons(sym,
-					symbolValue(CODE_JUMP_TABLE_REFS))));
+		setSymbolValue(CODE_JUMP_TABLE_REFS,
+					   cons(wrapInteger(CURRENT_IP_RAW - 4), cons(sym, symbolValue(CODE_JUMP_TABLE_REFS))));
 }
 
 void CBaddEnvTableRef(LispObj sym)
 {
 	if (symbolValue(COMPILER_COLLECT_JUMP_TABLE_REFS) != NIL)
-		setSymbolValue(CODE_ENV_TABLE_REFS, 
-			cons(wrapInteger(CURRENT_IP_RAW - 4),
-				cons(sym,
-					symbolValue(CODE_ENV_TABLE_REFS))));
+		setSymbolValue(CODE_ENV_TABLE_REFS,
+					   cons(wrapInteger(CURRENT_IP_RAW - 4), cons(sym, symbolValue(CODE_ENV_TABLE_REFS))));
 }
 
 void CBaddVarTableRef(LispObj sym)
 {
 	if (symbolValue(COMPILER_COLLECT_VAR_TABLE_REFS) != NIL)
-		setSymbolValue(CODE_VAR_TABLE_REFS, 
-			cons(wrapInteger(CURRENT_IP_RAW - 4),
-				cons(sym,
-					symbolValue(CODE_VAR_TABLE_REFS))));
+		setSymbolValue(CODE_VAR_TABLE_REFS,
+					   cons(wrapInteger(CURRENT_IP_RAW - 4), cons(sym, symbolValue(CODE_VAR_TABLE_REFS))));
 }
 
 //
@@ -435,25 +447,19 @@ LispObj CBpopCleanup()
 			if (symbolValue(SOURCE_FILE) == NIL)
 			{
 				if (symbolValue(COMPILER_FUNCTION_NAME) == NIL)
-					LispCall3(Funcall, WARN,
-						stringNode("Unused variable ~A in anonymous function"),
-						CAR(CDR(form)));
+					LispCall3(Funcall, WARN, stringNode("Unused variable ~A in anonymous function"), CAR(CDR(form)));
 				else
-					LispCall4(Funcall, WARN,
-						stringNode("Unused variable ~A in function ~S"),
-						CAR(CDR(form)), symbolValue(COMPILER_FUNCTION_NAME));
+					LispCall4(Funcall, WARN, stringNode("Unused variable ~A in function ~S"), CAR(CDR(form)),
+							  symbolValue(COMPILER_FUNCTION_NAME));
 			}
 			else
 			{
 				// warn of unused variable
 				line = symbolValue(SOURCE_LINE);
 				if (isFixnum(line))
-					line += wrapInteger(1);	// 1-based offset for message
-				LispCall6(Funcall, WARN,
-					stringNode("Unused variable ~A in function ~S, File ~A, line ~A"),
-					CAR(CDR(form)), symbolValue(COMPILER_FUNCTION_NAME),
-					symbolValue(SOURCE_FILE),
-					line);
+					line += wrapInteger(1); // 1-based offset for message
+				LispCall6(Funcall, WARN, stringNode("Unused variable ~A in function ~S, File ~A, line ~A"),
+						  CAR(CDR(form)), symbolValue(COMPILER_FUNCTION_NAME), symbolValue(SOURCE_FILE), line);
 			}
 		}
 	}
@@ -474,8 +480,8 @@ LispObj CBcleanups()
 void CBinsertCode(LispObj position, void* b, LispObj numBytes)
 {
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
- 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
- 	LispObj refs = UVECTOR(buf)[CODE_BUFFER_REFS];
+	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
+	LispObj refs = UVECTOR(buf)[CODE_BUFFER_REFS];
 	LispObj jumpTableRefs = symbolValue(CODE_JUMP_TABLE_REFS);
 	LispObj varTableRefs = symbolValue(CODE_VAR_TABLE_REFS);
 	LispObj envTableRefs = symbolValue(CODE_ENV_TABLE_REFS);
@@ -487,14 +493,13 @@ void CBinsertCode(LispObj position, void* b, LispObj numBytes)
 	long pos = integer(position);
 	long bytes = integer(numBytes);
 
-	while (UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] + wrapInteger(numBytes) 
-			>= UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES])
+	while (UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] + wrapInteger(numBytes) >= UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES])
 	{
 		r = 0;
 		code = 0;
 		CBgrowCode();
- 		cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
- 		refs = UVECTOR(buf)[CODE_BUFFER_REFS];
+		cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
+		refs = UVECTOR(buf)[CODE_BUFFER_REFS];
 		code = byteArrayStart(cbuf);
 		r = arrayStart(refs);
 	}
@@ -504,15 +509,15 @@ void CBinsertCode(LispObj position, void* b, LispObj numBytes)
 	UVECTOR(buf)[CODE_BUFFER_CODE_INDEX] += numBytes;
 
 	// now update references
-	for (i = 0; i < refIndex; i+=2)
+	for (i = 0; i < refIndex; i += 2)
 	{
 		if (integer(r[i + 1]) >= pos)
 			r[i + 1] += numBytes;
 	}
 
-    // if any LOAD-TIME-VALUE forms were compiled, add those here
-    t1 = symbolValue(LOAD_TIME_VALUES);
-    while (isCons(t1))
+	// if any LOAD-TIME-VALUE forms were compiled, add those here
+	t1 = symbolValue(LOAD_TIME_VALUES);
+	while (isCons(t1))
 	{
 		if (integer(CAR(CDR(t1))) >= pos)
 			CAR(CDR(t1)) += numBytes;
@@ -548,30 +553,30 @@ void CBinsertCode(LispObj position, void* b, LispObj numBytes)
 }
 
 void CBincStackIndex(LispObj num)
-{ 
-	UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_STACK_INDEX] += num; 
+{
+	UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_STACK_INDEX] += num;
 }
 
 void CBdecStackIndex(LispObj num)
-{ 
-	UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_STACK_INDEX] -= num; 
+{
+	UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_STACK_INDEX] -= num;
 }
 
 void CBsetStackIndex(LispObj num)
-{ 
-	UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_STACK_INDEX] = num; 
+{
+	UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_STACK_INDEX] = num;
 }
 
 LispObj CBstackIndex()
-{ 
-	return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_STACK_INDEX]; 
+{
+	return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_STACK_INDEX];
 }
 
 void CBgrowCode()
 {
 	LispObj bv = 0;
 	LispObj buf = symbolValue(COMPILER_CODE_BUFFER);
- 	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
+	LispObj cbuf = UVECTOR(buf)[CODE_BUFFER_CBUF];
 	UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES] *= 2;
 	bv = byteVector(UVECTOR(buf)[CODE_BUFFER_MAX_CODE_BYTES] + wrapInteger(16));
 	memcpy(byteArrayStart(bv), byteArrayStart(cbuf), integer(UVECTOR(buf)[CODE_BUFFER_CODE_INDEX]));
@@ -589,15 +594,33 @@ void CBgrowRefs()
 	UVECTOR(buf)[CODE_BUFFER_REFS] = v;
 }
 
-LispObj CBcode() { return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_CBUF]; }
-LispObj CBreferences() { return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_REFS]; }
-LispObj CBlength() { return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_CODE_INDEX]; } 
-LispObj CBnumReferences() { return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_REF_INDEX] / 2; }
-LispObj CBdynamicEnvSize()	{ return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_DYNAMIC_ENV_SIZE]; }
-LispObj CBheapEnvSize()	{ return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_HEAP_ENV_SIZE]; }
+LispObj CBcode()
+{
+	return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_CBUF];
+}
+LispObj CBreferences()
+{
+	return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_REFS];
+}
+LispObj CBlength()
+{
+	return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_CODE_INDEX];
+}
+LispObj CBnumReferences()
+{
+	return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_REF_INDEX] / 2;
+}
+LispObj CBdynamicEnvSize()
+{
+	return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_DYNAMIC_ENV_SIZE];
+}
+LispObj CBheapEnvSize()
+{
+	return UVECTOR(symbolValue(COMPILER_CODE_BUFFER))[CODE_BUFFER_HEAP_ENV_SIZE];
+}
 
-#define MAX_CODE_BYTES	0x1000
-#define MAX_REFS		0x400
+#define MAX_CODE_BYTES 0x1000
+#define MAX_REFS 0x400
 
 LispObj makeCodeBuffer()
 {
@@ -609,19 +632,19 @@ LispObj makeCodeBuffer()
 	rv = vectorNode(wrapInteger((MAX_REFS * 2) + 8));
 
 	s = AllocVector(CODE_BUFFER_SIZE);
-	UVECTOR(s)[0]							|= (StructureType << 3);
-	UVECTOR(s)[CODE_BUFFER_INFO]			= COMPILER_CODE_BUFFER;
-	UVECTOR(s)[CODE_BUFFER_CBUF]			= bv;
-	UVECTOR(s)[CODE_BUFFER_REFS]			= rv;
-	UVECTOR(s)[CODE_BUFFER_CODE_INDEX]		= 0;
-	UVECTOR(s)[CODE_BUFFER_REF_INDEX]		= 0;
-	UVECTOR(s)[CODE_BUFFER_DYNAMIC_ENV_SIZE]= 0;
-	UVECTOR(s)[CODE_BUFFER_HEAP_ENV_SIZE]	= 0;
-	UVECTOR(s)[CODE_BUFFER_STACK_INDEX]		= 0;
-	UVECTOR(s)[CODE_BUFFER_MAX_CODE_BYTES]	= wrapInteger(MAX_CODE_BYTES);
-	UVECTOR(s)[CODE_BUFFER_MAX_REFS]		= wrapInteger(MAX_REFS * 2);
+	UVECTOR(s)[0] |= (StructureType << 3);
+	UVECTOR(s)[CODE_BUFFER_INFO] = COMPILER_CODE_BUFFER;
+	UVECTOR(s)[CODE_BUFFER_CBUF] = bv;
+	UVECTOR(s)[CODE_BUFFER_REFS] = rv;
+	UVECTOR(s)[CODE_BUFFER_CODE_INDEX] = 0;
+	UVECTOR(s)[CODE_BUFFER_REF_INDEX] = 0;
+	UVECTOR(s)[CODE_BUFFER_DYNAMIC_ENV_SIZE] = 0;
+	UVECTOR(s)[CODE_BUFFER_HEAP_ENV_SIZE] = 0;
+	UVECTOR(s)[CODE_BUFFER_STACK_INDEX] = 0;
+	UVECTOR(s)[CODE_BUFFER_MAX_CODE_BYTES] = wrapInteger(MAX_CODE_BYTES);
+	UVECTOR(s)[CODE_BUFFER_MAX_REFS] = wrapInteger(MAX_REFS * 2);
 
-	return s;	
+	return s;
 }
 
 //
@@ -676,7 +699,7 @@ static LispObj copyTreeUnquoted(LispObj tree)
 
 //
 //	compileExpression()
-//	Takes an arbitrary lisp expression as its argument, 
+//	Takes an arbitrary lisp expression as its argument,
 //	and compiles it to produce a Lisp functions, which
 //	when executed, will imitate the behavior of interpreting
 //	the expression.
@@ -690,9 +713,9 @@ LispObj compileExpression(LispObj x, LispObj lexMacros, LispObj lexSymbolMacros)
 	LispObj t1 = 0;
 
 	pushDynamicBinding(COLLECT_LEXICAL_MACROS, NIL);
-	pushDynamicBinding(LEXICAL_MACROS, lexMacros);	// from previous (outer) lambda
+	pushDynamicBinding(LEXICAL_MACROS, lexMacros); // from previous (outer) lambda
 	pushDynamicBinding(COLLECT_LEXICAL_SYMBOL_MACROS, NIL);
-	pushDynamicBinding(LEXICAL_SYMBOL_MACROS, lexSymbolMacros);	// from previous (outer) lambda
+	pushDynamicBinding(LEXICAL_SYMBOL_MACROS, lexSymbolMacros); // from previous (outer) lambda
 
 	if (ExpandMacrosInline)
 		if (symbolValue(MACROEXPAND_INLINE) == NIL)
@@ -745,25 +768,11 @@ LispObj compileExpression(LispObj x, LispObj lexMacros, LispObj lexSymbolMacros)
 	pushDynamicBinding(COMPILER_LAMBDA_LIST, NIL);
 	pushDynamicBinding(COMPILING_LAMBDA, NIL);
 	pushDynamicBinding(LOAD_TIME_VALUES, NIL);
-	
-	t1 = list(COLLECT_LEXICAL_MACROS, 
-		      LEXICAL_MACROS,
-              COLLECT_LEXICAL_SYMBOL_MACROS,
-              LEXICAL_SYMBOL_MACROS,
-			  COMPILER_CLEANUPS, 
-			  EMBEDDED_LAMBDAS,
-			  ENV_COUNTER, 
-			  COMPILER_CODE_BUFFER,
-			  COMPILER_VARIABLE_TYPES,
-			  COMPILER_DYNAMIC_EXTENT_VARS,
-			  CODE_JUMP_TABLE_REFS,
-			  CODE_ENV_TABLE_REFS,
-			  CODE_VAR_TABLE_REFS,
-			  COMPILED_SPECIALS,
-			  COMPILER_FRAME_INFO,
-			  COMPILER_LAMBDA_LIST,
-			  COMPILING_LAMBDA,
-              LOAD_TIME_VALUES,
+
+	t1 = list(COLLECT_LEXICAL_MACROS, LEXICAL_MACROS, COLLECT_LEXICAL_SYMBOL_MACROS, LEXICAL_SYMBOL_MACROS,
+			  COMPILER_CLEANUPS, EMBEDDED_LAMBDAS, ENV_COUNTER, COMPILER_CODE_BUFFER, COMPILER_VARIABLE_TYPES,
+			  COMPILER_DYNAMIC_EXTENT_VARS, CODE_JUMP_TABLE_REFS, CODE_ENV_TABLE_REFS, CODE_VAR_TABLE_REFS,
+			  COMPILED_SPECIALS, COMPILER_FRAME_INFO, COMPILER_LAMBDA_LIST, COMPILING_LAMBDA, LOAD_TIME_VALUES,
 			  END_LIST);
 	establishSpecialBindings(t1);
 
@@ -796,7 +805,7 @@ LispObj compileExpression(LispObj x, LispObj lexMacros, LispObj lexSymbolMacros)
 		t1 = cons(convertRefsToVector(symbolValue(CODE_VAR_TABLE_REFS)), info);
 		info = cons(CODE_VAR_TABLE_REFS, t1);
 	}
-	
+
 	// save stack frame info if necessary
 	t1 = symbolValue(COMPILER_SAVE_STACK_FRAME_INFO);
 	if (t1 != NIL)
@@ -804,8 +813,8 @@ LispObj compileExpression(LispObj x, LispObj lexMacros, LispObj lexSymbolMacros)
 		t1 = symbolValue(COMPILED_SPECIALS);
 		while (isCons(t1))
 		{
-			addCompilerFrameInfo(CAR(t1), wrapInteger(3) /* esi */, 
-				UVECTOR(CAR(t1))[SYMBOL_VAR_TABLE] * 4, wrapInteger(1) /* indirect */);
+			addCompilerFrameInfo(CAR(t1), wrapInteger(3) /* esi */, UVECTOR(CAR(t1))[SYMBOL_VAR_TABLE] * 4,
+								 wrapInteger(1) /* indirect */);
 			t1 = CDR(t1);
 		}
 
@@ -816,16 +825,15 @@ LispObj compileExpression(LispObj x, LispObj lexMacros, LispObj lexSymbolMacros)
 		}
 	}
 
-    // if any LOAD-TIME-VALUE forms were compiled, add those here
-    t1 = symbolValue(LOAD_TIME_VALUES);
-    if (t1 != NIL)
-    {
-        info = cons(LOAD_TIME_VALUES, cons(t1, info));
-    }
+	// if any LOAD-TIME-VALUE forms were compiled, add those here
+	t1 = symbolValue(LOAD_TIME_VALUES);
+	if (t1 != NIL)
+	{
+		info = cons(LOAD_TIME_VALUES, cons(t1, info));
+	}
 
-	f = compiledFunctionNode(CBcode(), CBlength(), 
-			CBreferences(), CBnumReferences(), NIL, info, 
-			symbolValue(APPEND_REFS_TO_CODE));
+	f = compiledFunctionNode(CBcode(), CBlength(), CBreferences(), CBnumReferences(), NIL, info,
+							 symbolValue(APPEND_REFS_TO_CODE));
 
 	popDynamicBinding(ENV_COUNTER);
 	popDynamicBinding(EMBEDDED_LAMBDAS);
@@ -923,9 +931,9 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 	}
 
 	pushDynamicBinding(COLLECT_LEXICAL_MACROS, NIL);
-	pushDynamicBinding(LEXICAL_MACROS, lexMacros);	// from previous (outer) lambda
+	pushDynamicBinding(LEXICAL_MACROS, lexMacros); // from previous (outer) lambda
 	pushDynamicBinding(COLLECT_LEXICAL_SYMBOL_MACROS, NIL);
-	pushDynamicBinding(LEXICAL_SYMBOL_MACROS, lexSymbolMacros);	// from previous (outer) lambda
+	pushDynamicBinding(LEXICAL_SYMBOL_MACROS, lexSymbolMacros); // from previous (outer) lambda
 	if (!ExpandMacrosInline)
 	{
 		t1 = symbolFunction(MACROEXPAND_ALL_EXCEPT_TOP);
@@ -952,18 +960,14 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 	pushDynamicBinding(COMPILER_FRAME_INFO, NIL);
 	pushDynamicBinding(COMPILER_LAMBDA_LIST, NIL);
 	pushDynamicBinding(COMPILING_LAMBDA, T);
-    pushDynamicBinding(LOAD_TIME_VALUES, NIL);
+	pushDynamicBinding(LOAD_TIME_VALUES, NIL);
 
-	t1 = list(COLLECT_LEXICAL_MACROS, LEXICAL_MACROS, 
-        COLLECT_LEXICAL_SYMBOL_MACROS, LEXICAL_SYMBOL_MACROS,
-		COMPILER_CLEANUPS, EMBEDDED_LAMBDAS,
-		ENV_COUNTER, LAMBDA_SPECIAL_VARS, LAMBDA_DECLARATIONS,
-		LAMBDA_SPECIAL_DECS, COMPILER_CODE_BUFFER, COMPILER_VARIABLE_TYPES,
-		COMPILER_DYNAMIC_EXTENT_VARS,
-		COMPILER_FUNCTION_NAME, COMPILER_USES_ENV, 
-		CODE_JUMP_TABLE_REFS, CODE_ENV_TABLE_REFS,
-		CODE_VAR_TABLE_REFS, COMPILED_SPECIALS, COMPILER_FRAME_INFO, 
-		COMPILER_LAMBDA_LIST, COMPILING_LAMBDA, LOAD_TIME_VALUES, END_LIST);
+	t1 = list(COLLECT_LEXICAL_MACROS, LEXICAL_MACROS, COLLECT_LEXICAL_SYMBOL_MACROS, LEXICAL_SYMBOL_MACROS,
+			  COMPILER_CLEANUPS, EMBEDDED_LAMBDAS, ENV_COUNTER, LAMBDA_SPECIAL_VARS, LAMBDA_DECLARATIONS,
+			  LAMBDA_SPECIAL_DECS, COMPILER_CODE_BUFFER, COMPILER_VARIABLE_TYPES, COMPILER_DYNAMIC_EXTENT_VARS,
+			  COMPILER_FUNCTION_NAME, COMPILER_USES_ENV, CODE_JUMP_TABLE_REFS, CODE_ENV_TABLE_REFS, CODE_VAR_TABLE_REFS,
+			  COMPILED_SPECIALS, COMPILER_FRAME_INFO, COMPILER_LAMBDA_LIST, COMPILING_LAMBDA, LOAD_TIME_VALUES,
+			  END_LIST);
 	establishSpecialBindings(t1);
 
 	t1 = CDR(lambda);
@@ -992,8 +996,7 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 				break;
 			f = CDR(f);
 		}
- 		if (isCons(f) && isCons(CAR(f))
-			&& CAR(CAR(f)) == BLOCK && isCons(CDR(CAR(f))))
+		if (isCons(f) && isCons(CAR(f)) && CAR(CAR(f)) == BLOCK && isCons(CDR(CAR(f))))
 			funcname = CAR(CDR(CAR(f)));
 	}
 
@@ -1003,12 +1006,12 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 	{
 		t1 = cons(copyTreeUnquoted(origLambda), info);
 		info = cons(LAMBDA, t1);
-	}	
+	}
 
 	// add the lambda list to the info list
 	if (symbolValue(COMPILER_SAVE_LAMBDA_LISTS) != NIL)
 		info = cons(LAMBDA_LIST, cons(lambdaList, info));
- 
+
 	// add the function name to the info list
 	info = cons(FUNCTION_NAME, cons(funcname, info));
 	setSymbolValue(COMPILER_FUNCTION_NAME, funcname);
@@ -1026,46 +1029,43 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 	minArgs = numRequiredArgs;
 	maxArgs = numRequiredArgs;
 	optionalArgs = findOptionalArgs(lambdaList);
-	numOptionalArgs = listLength(optionalArgs); 
+	numOptionalArgs = listLength(optionalArgs);
 	maxArgs += numOptionalArgs;
 	restArgs = findRestArgs(lambdaList);
 	if (restArgs != NIL)
-		maxArgs = -1;	// no limit to number of args
+		maxArgs = -1; // no limit to number of args
 	keyArgs = findKeyArgs(lambdaList);
 	// if list contains arguments, the first value is &key
 	if (keyArgs != NIL)
 	{
 		keyArgs = CDR(keyArgs);
-		maxArgs = -1;	// no limit to number of args
+		maxArgs = -1; // no limit to number of args
 		if (keyArgs == NIL)
-			emptyKeywordList = 1;	// this special case has caused problems
+			emptyKeywordList = 1; // this special case has caused problems
 	}
 	allowOtherKeys = findAllowOtherKeys(lambdaList);
 	if (allowOtherKeys != NIL)
-		maxArgs = -1;	// no limit to number of args
+		maxArgs = -1; // no limit to number of args
 	auxArgs = findAuxArgs(lambdaList);
 	numAuxArgs = listLength(auxArgs);
-	numLocals = numRequiredArgs + numOptionalArgs + listLength(restArgs) 
-		+ listLength(keyArgs);
+	numLocals = numRequiredArgs + numOptionalArgs + listLength(restArgs) + listLength(keyArgs);
 
 	// look for declarations
 	f = forms;
 	while (isCons(f))
 	{
 		if (isCons(CAR(f)) && (CAR(CAR(f)) == DECLARE))
-			setSymbolValue(LAMBDA_DECLARATIONS, 
-				cons(CAR(f), symbolValue(LAMBDA_DECLARATIONS)));
+			setSymbolValue(LAMBDA_DECLARATIONS, cons(CAR(f), symbolValue(LAMBDA_DECLARATIONS)));
 		else
 			break;
 		f = CDR(f);
 	}
-	forms = f;			// skip past declarations
+	forms = f; // skip past declarations
 
 	// check the declarations for SPECIAL declarations
 	specialDecs = processSpecialDeclarations(symbolValue(LAMBDA_DECLARATIONS));
 	if (isCons(specialDecs))
-		setSymbolValue(LAMBDA_SPECIAL_DECS,
-			LispCall2(lispAppend, specialDecs, symbolValue(LAMBDA_SPECIAL_DECS)));
+		setSymbolValue(LAMBDA_SPECIAL_DECS, LispCall2(lispAppend, specialDecs, symbolValue(LAMBDA_SPECIAL_DECS)));
 
 	// check the declarations for compiler optimization settings
 	compilerBindings = processOptimizeDeclarations(symbolValue(LAMBDA_DECLARATIONS));
@@ -1092,19 +1092,16 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 		newVars = compileLambdaRequiredArgs(requiredArgs, newVars, T);
 	else
 	{
-		CBincDynamicEnvSize(wrapInteger(4));  // need to push ECX
+		CBincDynamicEnvSize(wrapInteger(4)); // need to push ECX
 		newVars = compileLambdaRequiredArgs(requiredArgs, newVars, NIL);
 	}
-	newVars = compileLambdaOptionalArgs(optionalArgs, newVars, 
-		wrapInteger(numRequiredArgs));
-	newVars = compileLambdaRestArgs(restArgs, newVars, 
-		wrapInteger(numRequiredArgs + numOptionalArgs));
+	newVars = compileLambdaOptionalArgs(optionalArgs, newVars, wrapInteger(numRequiredArgs));
+	newVars = compileLambdaRestArgs(restArgs, newVars, wrapInteger(numRequiredArgs + numOptionalArgs));
 
 	if (keyArgs != NIL || emptyKeywordList == 1)
 	{
-		newVars = compileLambdaKeyArgs(keyArgs, newVars, 
-			wrapInteger(numRequiredArgs + numOptionalArgs),
-			allowOtherKeys);
+		newVars =
+			compileLambdaKeyArgs(keyArgs, newVars, wrapInteger(numRequiredArgs + numOptionalArgs), allowOtherKeys);
 	}
 
 	if (auxArgs != NIL)
@@ -1114,7 +1111,7 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 	compileVariableHeapBindings(newVars);
 
 	if (symbolValue(LAMBDA_SPECIAL_VARS) != NIL)
-	{ 
+	{
 		specials = symbolValue(LAMBDA_SPECIAL_VARS);
 		CBpushCleanup(list(SPECIAL, specials, END_LIST));
 		compileLiteralForm(specials, Dest_Stack, LIST);
@@ -1139,7 +1136,7 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 		PUSH_EAX();
 		PUSH_ECX();
 		compileLiteralForm(specials, Dest_Stack, LIST);
-		MOV_EDI_NIL();		// null environment
+		MOV_EDI_NIL(); // null environment
 		SET_ARG_COUNT(1);
 		CALL_INDIRECT(POP_SPECIAL_BINDINGS);
 		ADD_ESP_NUM(4);
@@ -1155,7 +1152,7 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 	if (maxArgs == minArgs)
 		compileLambdaEpilog(NIL);
 	else
- 		compileLambdaEpilog(T);
+		compileLambdaEpilog(T);
 
 	stackNeeded = integer(CBdynamicEnvSize());
 	if (maxArgs == minArgs)
@@ -1188,8 +1185,8 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 		t1 = symbolValue(COMPILED_SPECIALS);
 		while (isCons(t1))
 		{
-			addCompilerFrameInfo(CAR(t1), wrapInteger(3) /* esi */, 
-				UVECTOR(CAR(t1))[SYMBOL_VAR_TABLE] * 4, wrapInteger(1) /* indirect */);
+			addCompilerFrameInfo(CAR(t1), wrapInteger(3) /* esi */, UVECTOR(CAR(t1))[SYMBOL_VAR_TABLE] * 4,
+								 wrapInteger(1) /* indirect */);
 			t1 = CDR(t1);
 		}
 		if (COMPILER_FRAME_INFO != NIL)
@@ -1199,27 +1196,26 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 		}
 	}
 
-    // if any LOAD-TIME-VALUE forms were compiled, add those here
-    t1 = symbolValue(LOAD_TIME_VALUES);
-    if (t1 != NIL)
-        info = cons(LOAD_TIME_VALUES, cons(t1, info));
+	// if any LOAD-TIME-VALUE forms were compiled, add those here
+	t1 = symbolValue(LOAD_TIME_VALUES);
+	if (t1 != NIL)
+		info = cons(LOAD_TIME_VALUES, cons(t1, info));
 
-	f = compiledFunctionNode(CBcode(), CBlength(), 
-			CBreferences(), CBnumReferences(), NIL, info, 
-			symbolValue(APPEND_REFS_TO_CODE));
+	f = compiledFunctionNode(CBcode(), CBlength(), CBreferences(), CBnumReferences(), NIL, info,
+							 symbolValue(APPEND_REFS_TO_CODE));
 
 	if (compilerBindings != NIL)
 		restoreOptimizeDeclarationBindings(compilerBindings);
 
 	popTypeDeclarations(numTypeDeclarations);
 	popDEDeclarations(numDynamicExtentDeclarations);
-	
+
 	// pop all variables
 	numLocals = listLength(newVars); // RGC 2/9/00
 	for (i = 0; i < numLocals; i++)
 		CBpopCleanup();
 
-	CBpopCleanup();		// get rid of lambda marker
+	CBpopCleanup(); // get rid of lambda marker
 
 	popDynamicBinding(LAMBDA_SPECIAL_DECS);
 	popDynamicBinding(LAMBDA_DECLARATIONS);
@@ -1265,16 +1261,16 @@ static LispObj compileLambdaRequiredArgs(LispObj args, LispObj newVars, LispObj 
 		if (isSpecialSymbol(sym) || (Cmember(sym, symbolValue(LAMBDA_SPECIAL_DECS)) != NIL))
 		{
 			setSymbolValue(LAMBDA_SPECIAL_VARS, cons(sym, symbolValue(LAMBDA_SPECIAL_VARS)));
- 			if (!symbolVarTableIndex(sym))
+			if (!symbolVarTableIndex(sym))
 				createSymbolTableEntry(sym);
 
 			// add dynamic binding to symbol
-			PUSH_ECX();						// save arg count
-			CALL_INDIRECT(ALLOC_CONS);		
-			POP_ECX();						// restore arg count
-			MOV_EDI_EAX();					// edi = new cons cell
+			PUSH_ECX(); // save arg count
+			CALL_INDIRECT(ALLOC_CONS);
+			POP_ECX(); // restore arg count
+			MOV_EDI_EAX(); // edi = new cons cell
 			MOV_EAX_SYMBOL_BINDING(sym);
-			MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// CDR points to old value contents
+			MOV_EDI_PTR_WITH_OFFSET_EAX(0); // CDR points to old value contents
 
 			if (useBPOffsets != NIL)
 			{
@@ -1284,8 +1280,8 @@ static LispObj compileLambdaRequiredArgs(LispObj args, LispObj newVars, LispObj 
 			{
 				MOV_EAX_EBX_PTR_WITH_OFFSET(count); // initialize new value
 			}
-			MOV_EDI_PTR_WITH_OFFSET_EAX(-4);// CAR points to new value
-			MOV_EAX_EDI();					// debug!!
+			MOV_EDI_PTR_WITH_OFFSET_EAX(-4); // CAR points to new value
+			MOV_EAX_EDI(); // debug!!
 			MOV_SYMBOL_BINDING_EAX(sym);
 		}
 		else
@@ -1304,8 +1300,7 @@ static LispObj compileLambdaRequiredArgs(LispObj args, LispObj newVars, LispObj 
 	return newVars;
 }
 
-static LispObj compileLambdaOptionalArgs(LispObj args, LispObj newVars, 
-		LispObj argIndex)
+static LispObj compileLambdaOptionalArgs(LispObj args, LispObj newVars, LispObj argIndex)
 {
 	LispObj t = 0;
 	LispObj s = 0;
@@ -1328,8 +1323,7 @@ static LispObj compileLambdaOptionalArgs(LispObj args, LispObj newVars,
 			init = NIL;
 			supplied_p = NIL;
 		}
-		else
-		if (isCons(form))
+		else if (isCons(form))
 		{
 			sym = CAR(form);
 			if (isCons(CDR(form)))
@@ -1368,7 +1362,7 @@ static LispObj compileLambdaOptionalArgs(LispObj args, LispObj newVars,
 		}
 
 		// if there is a supplied-p variable, allocate space for it
-		if (supplied_p != NIL)	// always lexical, for now!
+		if (supplied_p != NIL) // always lexical, for now!
 		{
 			supplied_p_Offset = CBincDynamicEnvSize(wrapInteger(4));
 			s = list(supplied_p, EBP, supplied_p_Offset, END_LIST);
@@ -1385,43 +1379,43 @@ static LispObj compileLambdaOptionalArgs(LispObj args, LispObj newVars,
 
 		if (supplied_p != NIL)
 		{
-			MOV_EAX_ESI_PTR_WITH_OFFSET(4);					// mov eax, [esi + 4]; supplied_p = T
-			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(supplied_p_Offset));	// mov [ebp + supplied_p_Offset], eax 
+			MOV_EAX_ESI_PTR_WITH_OFFSET(4); // mov eax, [esi + 4]; supplied_p = T
+			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(supplied_p_Offset)); // mov [ebp + supplied_p_Offset], eax
 		}
 
 		if (!dynamicBind)
 		{
 			MOV_EAX_EBX_PTR_WITH_OFFSET(-(integer(argIndex) * 4)); //	mov eax, [ebx - (argIndex * 4)]
-			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset));				// mov [ebp + varOffset], eax
+			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset)); // mov [ebp + varOffset], eax
 		}
 		else
 		{
- 			if (!symbolVarTableIndex(sym))
+			if (!symbolVarTableIndex(sym))
 				createSymbolTableEntry(sym);
 
 			// add dynamic binding to symbol
-			PUSH_ECX();						// save arg count
-			CALL_INDIRECT(ALLOC_CONS);		
-			POP_ECX();						// restore arg count
-			MOV_EDI_EAX();					// edi = new cons cell
+			PUSH_ECX(); // save arg count
+			CALL_INDIRECT(ALLOC_CONS);
+			POP_ECX(); // restore arg count
+			MOV_EDI_EAX(); // edi = new cons cell
 			MOV_EAX_SYMBOL_BINDING(sym);
-			MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// CDR points to old value contents
+			MOV_EDI_PTR_WITH_OFFSET_EAX(0); // CDR points to old value contents
 			MOV_EAX_EBX_PTR_WITH_OFFSET(-(integer(argIndex) * 4)); // initialize new value
-			MOV_EDI_PTR_WITH_OFFSET_EAX(-4);// CAR points to new value
-			MOV_EAX_EDI();					// debug!!
+			MOV_EDI_PTR_WITH_OFFSET_EAX(-4); // CAR points to new value
+			MOV_EAX_EDI(); // debug!!
 			MOV_SYMBOL_BINDING_EAX(sym);
 		}
 
 		//	jmp short next2
 		JMP_SHORT_RELATIVE(0);
- 		secondBranchAddress = CURRENT_IP;
+		secondBranchAddress = CURRENT_IP;
 
 		// now resolve addresses
 		CBsetByte(firstBranchAddress - wrapInteger(1), CURRENT_IP - firstBranchAddress);
 
 		if (supplied_p != NIL)
 		{
-			MOV_EAX_NIL();					// mov eax, [esi]; supplied_p = NIL
+			MOV_EAX_NIL(); // mov eax, [esi]; supplied_p = NIL
 			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(supplied_p_Offset));
 		}
 
@@ -1429,29 +1423,29 @@ static LispObj compileLambdaOptionalArgs(LispObj args, LispObj newVars,
 		{
 			if (init != NIL)
 			{
-				PUSH_ECX();			// push ecx
+				PUSH_ECX(); // push ecx
 				compileForm(init, Dest_EAX_Operand, T);
- 				POP_ECX();			// pop ecx
-				MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset));			// mov [ebp + varOffset], eax
+				POP_ECX(); // pop ecx
+				MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset)); // mov [ebp + varOffset], eax
 			}
 		}
 		else
 		{
- 			if (!symbolVarTableIndex(sym))
+			if (!symbolVarTableIndex(sym))
 				createSymbolTableEntry(sym);
 
 			// add dynamic binding to symbol
-			PUSH_ECX();						// save arg count
-			CALL_INDIRECT(ALLOC_CONS);		
-			MOV_EDI_EAX();					// edi = new cons cell
+			PUSH_ECX(); // save arg count
+			CALL_INDIRECT(ALLOC_CONS);
+			MOV_EDI_EAX(); // edi = new cons cell
 			MOV_EAX_SYMBOL_BINDING(sym);
-			MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// CDR points to old value contents
-            PUSH_EDI();
+			MOV_EDI_PTR_WITH_OFFSET_EAX(0); // CDR points to old value contents
+			PUSH_EDI();
 			compileForm(init, Dest_EAX_Operand, T);
-            POP_EDI();
+			POP_EDI();
 			POP_ECX();
-			MOV_EDI_PTR_WITH_OFFSET_EAX(-4);// CAR points to new value
-			MOV_EAX_EDI();					// debug!!
+			MOV_EDI_PTR_WITH_OFFSET_EAX(-4); // CAR points to new value
+			MOV_EAX_EDI(); // debug!!
 			MOV_SYMBOL_BINDING_EAX(sym);
 		}
 
@@ -1486,7 +1480,7 @@ static LispObj compileLambdaRestArgs(LispObj args, LispObj newVars, LispObj argI
 	LispObj address2 = 0;
 	LispObj createDynamicList = T;
 
-	// if all &rest arguments are dynamic-extent, create a list on 
+	// if all &rest arguments are dynamic-extent, create a list on
 	// the stack
 	t = args;
 	while (isCons(t))
@@ -1502,54 +1496,54 @@ static LispObj compileLambdaRestArgs(LispObj args, LispObj newVars, LispObj argI
 	if (createDynamicList != NIL)
 	{
 		// create list of remaining vars in eax, use stack instead of heap
-		PUSH_ECX();					// push ecx
-		PUSH_EDX();					// push edx
-		PUSH_EDI();					// push edi
-		DEC_STACK(12);				// no net change
+		PUSH_ECX(); // push ecx
+		PUSH_EDX(); // push edx
+		PUSH_EDI(); // push edi
+		DEC_STACK(12); // no net change
 
 		// allocate space in the frame for the variable
 		varOffset = CBincDynamicEnvSize(wrapInteger(4));
 		MOV_EBP_PTR_WITH_OFFSET_ESP(integer(varOffset));
-		
-		MOV_EDI_ESP();				// edi = saved stack pointer
-		TEST_ESP_NUM(4);				// see if ESP is at an 8-byte boundary
+
+		MOV_EDI_ESP(); // edi = saved stack pointer
+		TEST_ESP_NUM(4); // see if ESP is at an 8-byte boundary
 		JZ_SHORT_RELATIVE(0);
 		address0 = CURRENT_IP;
 		PUSH_NUM(0);
-		DEC_STACK(4);				// no net change
+		DEC_STACK(4); // no net change
 		CBsetByte(address0 - wrapInteger(1), CURRENT_IP - address0);
-		MOV_EAX_ECX();				// mov eax, ecx
-		DEC_EAX();					// dec eax
-		SHL_EAX_NUM(2);				// shl eax, 2
-		NEG_EAX();					// neg eax
-		MOV_EDI_EAX();				// mov edi, eax	  ; edi = offset into arg list of last arg
-		SUB_ECX_NUM(integer(argIndex));	 // sub ecx, argIndex
-		
-		MOV_EAX_NIL();				// mov eax, dword ptr [esi]
-		MOV_EDX_EAX();				// mov edx, eax
-									// loop_continue:
+		MOV_EAX_ECX(); // mov eax, ecx
+		DEC_EAX(); // dec eax
+		SHL_EAX_NUM(2); // shl eax, 2
+		NEG_EAX(); // neg eax
+		MOV_EDI_EAX(); // mov edi, eax	  ; edi = offset into arg list of last arg
+		SUB_ECX_NUM(integer(argIndex)); // sub ecx, argIndex
+
+		MOV_EAX_NIL(); // mov eax, dword ptr [esi]
+		MOV_EDX_EAX(); // mov edx, eax
+					   // loop_continue:
 		address1 = CURRENT_IP;
-		TST_ECX_ECX();				// tst ecx, ecx
-		JLE_SHORT_RELATIVE(0);		// jle exit_loop
+		TST_ECX_ECX(); // tst ecx, ecx
+		JLE_SHORT_RELATIVE(0); // jle exit_loop
 		address2 = CURRENT_IP;
 
 		// get a cons cell on the stack
 		PUSH_NUM(0);
-		DEC_STACK(4);				// no net change
-		MOV_EAX_ESP();					// eax = cons cell (tag = 4)
+		DEC_STACK(4); // no net change
+		MOV_EAX_ESP(); // eax = cons cell (tag = 4)
 		PUSH_NUM(0);
-		DEC_STACK(4);				// no net change
+		DEC_STACK(4); // no net change
 
-		MOV_EAX_PTR_WITH_OFFSET_EDX(0);	// mov dword ptr [eax], edx
-		PUSH_EDI_EBX_WITH_OFFSET(0);	// push dword ptr [edi + ebx]
-		POP_EAX_PTR_WITH_OFFSET(-4);	// pop dword ptr [eax - 4]
-		MOV_EDX_EAX();					// mov edx, eax
-		ADD_EDI_NUM(4);					// add edi, 4
-		DEC_ECX();						// dec ecx
-		JMP_SHORT_RELATIVE(0);			// jmp short loop_continue
+		MOV_EAX_PTR_WITH_OFFSET_EDX(0); // mov dword ptr [eax], edx
+		PUSH_EDI_EBX_WITH_OFFSET(0); // push dword ptr [edi + ebx]
+		POP_EAX_PTR_WITH_OFFSET(-4); // pop dword ptr [eax - 4]
+		MOV_EDX_EAX(); // mov edx, eax
+		ADD_EDI_NUM(4); // add edi, 4
+		DEC_ECX(); // dec ecx
+		JMP_SHORT_RELATIVE(0); // jmp short loop_continue
 		CBsetByte(CURRENT_IP - wrapInteger(1), address1 - CURRENT_IP);
 		CBsetByte(address2 - wrapInteger(1), CURRENT_IP - address2);
-										// exit_loop:
+		// exit_loop:
 		MOV_EDI_EBP_PTR_WITH_OFFSET(integer(varOffset));
 		MOV_ECX_EDI_PTR_WITH_OFFSET(8);
 		MOV_EDX_EDI_PTR_WITH_OFFSET(4);
@@ -1559,41 +1553,40 @@ static LispObj compileLambdaRestArgs(LispObj args, LispObj newVars, LispObj argI
 	{
 		// create list of remaining vars in eax
 
-		PUSH_ECX();					// push ecx
-		PUSH_EDX();					// push edx
-		MOV_EAX_ECX();				// mov eax, ecx
-		DEC_EAX();					// dec eax
-		SHL_EAX_NUM(2);				// shl eax, 2
-		NEG_EAX();					// neg eax
-		MOV_EDI_EAX();				// mov edi, eax	  ; edi = offset into arg list of last arg
-		SUB_ECX_NUM(integer(argIndex));	 // sub ecx, argIndex
-		
-		MOV_EAX_NIL();				// mov eax, dword ptr [esi]
-		MOV_EDX_EAX();				// mov edx, eax
-									// loop_continue:
+		PUSH_ECX(); // push ecx
+		PUSH_EDX(); // push edx
+		MOV_EAX_ECX(); // mov eax, ecx
+		DEC_EAX(); // dec eax
+		SHL_EAX_NUM(2); // shl eax, 2
+		NEG_EAX(); // neg eax
+		MOV_EDI_EAX(); // mov edi, eax	  ; edi = offset into arg list of last arg
+		SUB_ECX_NUM(integer(argIndex)); // sub ecx, argIndex
+
+		MOV_EAX_NIL(); // mov eax, dword ptr [esi]
+		MOV_EDX_EAX(); // mov edx, eax
+					   // loop_continue:
 		address1 = CURRENT_IP;
-		TST_ECX_ECX();				// tst ecx, ecx
-		JLE_SHORT_RELATIVE(0);		// jle exit_loop
+		TST_ECX_ECX(); // tst ecx, ecx
+		JLE_SHORT_RELATIVE(0); // jle exit_loop
 		address2 = CURRENT_IP;
 
-		
 		PUSH_ECX();
 		PUSH_EDX();
 		CALL_INDIRECT(ALLOC_CONS);
 		POP_EDX();
 		POP_ECX();
-		MOV_EAX_PTR_WITH_OFFSET_EDX(0);	// mov dword ptr [eax], edx
-		PUSH_EDI_EBX_WITH_OFFSET(0);	// push dword ptr [edi + ebx]
-		POP_EAX_PTR_WITH_OFFSET(-4);	// pop dword ptr [eax - 4]
-		MOV_EDX_EAX();					// mov edx, eax
-		ADD_EDI_NUM(4);					// add edi, 4
-		DEC_ECX();						// dec ecx
-		JMP_SHORT_RELATIVE(0);			// jmp short loop_continue
+		MOV_EAX_PTR_WITH_OFFSET_EDX(0); // mov dword ptr [eax], edx
+		PUSH_EDI_EBX_WITH_OFFSET(0); // push dword ptr [edi + ebx]
+		POP_EAX_PTR_WITH_OFFSET(-4); // pop dword ptr [eax - 4]
+		MOV_EDX_EAX(); // mov edx, eax
+		ADD_EDI_NUM(4); // add edi, 4
+		DEC_ECX(); // dec ecx
+		JMP_SHORT_RELATIVE(0); // jmp short loop_continue
 		CBsetByte(CURRENT_IP - wrapInteger(1), address1 - CURRENT_IP);
 		CBsetByte(address2 - wrapInteger(1), CURRENT_IP - address2);
-										// exit_loop:
-		POP_EDX();						// pop edx
-		POP_ECX();						// pop ecx
+		// exit_loop:
+		POP_EDX(); // pop edx
+		POP_ECX(); // pop ecx
 	}
 
 	while (isCons(args))
@@ -1617,8 +1610,7 @@ static LispObj compileLambdaRestArgs(LispObj args, LispObj newVars, LispObj argI
 	return newVars;
 }
 
-static LispObj compileLambdaKeyArgs(LispObj args, LispObj newVars, 
-					 LispObj argIndex, LispObj allowOtherKeys)
+static LispObj compileLambdaKeyArgs(LispObj args, LispObj newVars, LispObj argIndex, LispObj allowOtherKeys)
 {
 	LispObj vars = args;
 	LispObj loopAddr = 0;
@@ -1653,8 +1645,7 @@ static LispObj compileLambdaKeyArgs(LispObj args, LispObj newVars,
 			init = NIL;
 			supplied_p = NIL;
 		}
-		else
-		if (isCons(form))
+		else if (isCons(form))
 		{
 			sym = CAR(form);
 			if (isCons(CDR(form)))
@@ -1700,10 +1691,10 @@ static LispObj compileLambdaKeyArgs(LispObj args, LispObj newVars,
 		}
 
 		// allocate space in the frame for the variable
-		//varOffset = CBincDynamicEnvSize(wrapInteger(4));
+		// varOffset = CBincDynamicEnvSize(wrapInteger(4));
 
-		//t = list(sym, EBP, varOffset, END_LIST);
-		//CBaddStackVar(sym, CDR(t));
+		// t = list(sym, EBP, varOffset, END_LIST);
+		// CBaddStackVar(sym, CDR(t));
 
 		// if there is a supplied-p variable, allocate space for it
 		if (supplied_p != NIL)
@@ -1714,58 +1705,57 @@ static LispObj compileLambdaKeyArgs(LispObj args, LispObj newVars,
 		}
 		else
 			s = 0;
-		
+
 		if (!keySymbol)
 			keySymbol = findKeywordSym(symbolName(sym));
-		else
-		if (!isSymbol(keySymbol))
+		else if (!isSymbol(keySymbol))
 			Error("Lambda &key keyword-name is not a symbol: ~A", keySymbol);
 
-		PUSH_ECX();						// save arg count
-		compileLiteralForm(keySymbol, Dest_EAX_Operand, SYMBOL);	// mov eax, keySymbol
-		POP_ECX();						// restore arg count
+		PUSH_ECX(); // save arg count
+		compileLiteralForm(keySymbol, Dest_EAX_Operand, SYMBOL); // mov eax, keySymbol
+		POP_ECX(); // restore arg count
 		if (checkKeys)
 		{
-			PUSH_EAX();						// save key on stack
+			PUSH_EAX(); // save key on stack
 			numKeys++;
 		}
-		MOV_EDX_EAX();					// edx = key
-		MOV_EDI_EBX();					// mov edi, ebx
-		MOV_EAX_NUM(integer(argIndex) * 4);	// mov eax, -(argIndex * 4)
-		SUB_EDI_EAX();					// edi = address of current argument
-		PUSH_ECX();						// save ecx
+		MOV_EDX_EAX(); // edx = key
+		MOV_EDI_EBX(); // mov edi, ebx
+		MOV_EAX_NUM(integer(argIndex) * 4); // mov eax, -(argIndex * 4)
+		SUB_EDI_EAX(); // edi = address of current argument
+		PUSH_ECX(); // save ecx
 		MOV_EAX_ECX();
 		SHL_EAX_NUM(2);
 		MOV_ECX_EBX();
-		SUB_ECX_EAX();					// ecx = address of last argument - 4
+		SUB_ECX_EAX(); // ecx = address of last argument - 4
 
 		// loop:
 		loopAddr = CURRENT_IP;
 
-		CMP_EDI_ECX();					// checked all arguments?
-		JLE_SHORT_RELATIVE(0);			// jle notFoundAddr	; yes, do default
+		CMP_EDI_ECX(); // checked all arguments?
+		JLE_SHORT_RELATIVE(0); // jle notFoundAddr	; yes, do default
 		addr1 = CURRENT_IP;
 
-		MOV_EAX_EDI_PTR_WITH_OFFSET(0);	// mov eax, [edi]	; eax = arg
-		SUB_EDI_NUM(8);					// dec arg pointer
-		CMP_EAX_EDX();					// found key symbol?									
-		JNE_SHORT_RELATIVE(0);			// jne loopAddr		; no, loop
+		MOV_EAX_EDI_PTR_WITH_OFFSET(0); // mov eax, [edi]	; eax = arg
+		SUB_EDI_NUM(8); // dec arg pointer
+		CMP_EAX_EDX(); // found key symbol?
+		JNE_SHORT_RELATIVE(0); // jne loopAddr		; no, loop
 		CBsetByte(CURRENT_IP - wrapInteger(1), loopAddr - CURRENT_IP);
 
 		// found thekey
 		ADD_EDI_NUM(4);
-		CMP_EDI_ECX();					// make sure there is another argument
-		JNE_SHORT_RELATIVE(0);			// jne continueAddr
+		CMP_EDI_ECX(); // make sure there is another argument
+		JNE_SHORT_RELATIVE(0); // jne continueAddr
 		addr2 = CURRENT_IP;
-		CALL_INDIRECT(WRONG_NUMBER_OF_ARGS);	// call wrongNumberOfArgs()
+		CALL_INDIRECT(WRONG_NUMBER_OF_ARGS); // call wrongNumberOfArgs()
 
-										// continueAddr:
+		// continueAddr:
 		CBsetByte(addr2 - wrapInteger(1), CURRENT_IP - addr2);
 
 		if (!dynamicBind)
 		{
-			MOV_EAX_EDI_PTR_WITH_OFFSET(0);	// eax = key argument
-			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset));	// set key var
+			MOV_EAX_EDI_PTR_WITH_OFFSET(0); // eax = key argument
+			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset)); // set key var
 		}
 		else
 		{
@@ -1773,35 +1763,35 @@ static LispObj compileLambdaKeyArgs(LispObj args, LispObj newVars,
 				createSymbolTableEntry(sym);
 
 			// add dynamic binding to symbol
-			MOV_EAX_EDI_PTR_WITH_OFFSET(0);	// eax = key argument
-			PUSH_EAX();						// save arg
-			PUSH_ECX();						// save arg count
+			MOV_EAX_EDI_PTR_WITH_OFFSET(0); // eax = key argument
+			PUSH_EAX(); // save arg
+			PUSH_ECX(); // save arg count
 			CALL_INDIRECT(ALLOC_CONS);
-			POP_ECX();						// restore arg count
-			MOV_EDI_EAX();					// edi = new cons cell
+			POP_ECX(); // restore arg count
+			MOV_EDI_EAX(); // edi = new cons cell
 			MOV_EAX_SYMBOL_BINDING(sym);
-			MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// CDR points to old value contents
-			POP_EAX();						// initialize new value
-			MOV_EDI_PTR_WITH_OFFSET_EAX(-4);// CAR points to new value
-			MOV_EAX_EDI();					// debug!!
+			MOV_EDI_PTR_WITH_OFFSET_EAX(0); // CDR points to old value contents
+			POP_EAX(); // initialize new value
+			MOV_EDI_PTR_WITH_OFFSET_EAX(-4); // CAR points to new value
+			MOV_EAX_EDI(); // debug!!
 			MOV_SYMBOL_BINDING_EAX(sym);
 		}
 		if (supplied_p != NIL)
 		{
-			MOV_EAX_T();				// mov eax, [esi + 4]; supplied_p = T
-			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(supplied_p_Offset));	// mov [ebp + supplied_p_Offset], eax 
+			MOV_EAX_T(); // mov eax, [esi + 4]; supplied_p = T
+			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(supplied_p_Offset)); // mov [ebp + supplied_p_Offset], eax
 		}
-		JMP_LONG_RELATIVE(0);			// jmp keydone
+		JMP_LONG_RELATIVE(0); // jmp keydone
 		addr3 = CURRENT_IP;
-										// notFoundAddr:
+		// notFoundAddr:
 		CBsetByte(addr1 - wrapInteger(1), CURRENT_IP - addr1);
 
 		if (!dynamicBind)
 		{
-			PUSH_ECX();						// save arg count
+			PUSH_ECX(); // save arg count
 			compileForm(init, Dest_EAX_Operand, T);
 			POP_ECX();
-			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset));	// mov [ebp + varOffset], eax
+			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset)); // mov [ebp + varOffset], eax
 		}
 		else
 		{
@@ -1809,27 +1799,27 @@ static LispObj compileLambdaKeyArgs(LispObj args, LispObj newVars,
 				createSymbolTableEntry(sym);
 
 			// add dynamic binding to symbol
-			PUSH_ECX();						// save arg count
+			PUSH_ECX(); // save arg count
 			CALL_INDIRECT(ALLOC_CONS);
-			MOV_EDI_EAX();					// edi = new cons cell
+			MOV_EDI_EAX(); // edi = new cons cell
 			MOV_EAX_SYMBOL_BINDING(sym);
-			MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// CDR points to old value contents
+			MOV_EDI_PTR_WITH_OFFSET_EAX(0); // CDR points to old value contents
 			PUSH_EDI();
 			compileForm(init, Dest_EAX_Operand, T);
 			POP_EDI();
 			POP_ECX();
-			MOV_EDI_PTR_WITH_OFFSET_EAX(-4);// CAR points to new value
-			MOV_EAX_EDI();					// debug!!
+			MOV_EDI_PTR_WITH_OFFSET_EAX(-4); // CAR points to new value
+			MOV_EAX_EDI(); // debug!!
 			MOV_SYMBOL_BINDING_EAX(sym);
 		}
 
 		if (supplied_p != NIL)
 		{
-			MOV_EAX_NIL();				// mov eax, [esi + 4]; supplied_p = T
-			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(supplied_p_Offset));	// mov [ebp + supplied_p_Offset], eax 
-		}										// keydone:
+			MOV_EAX_NIL(); // mov eax, [esi + 4]; supplied_p = T
+			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(supplied_p_Offset)); // mov [ebp + supplied_p_Offset], eax
+		} // keydone:
 		CBsetLong(addr3 - wrapInteger(4), CURRENT_IP - addr3);
-		POP_ECX();						// restore ecx
+		POP_ECX(); // restore ecx
 
 		if (!dynamicBind)
 		{
@@ -1850,42 +1840,42 @@ static LispObj compileLambdaKeyArgs(LispObj args, LispObj newVars,
 		// check for invalid key arguments
 
 		// set up EDI to point to the first key argument, ECX points to last argument
-		MOV_EDI_EBX();					// mov edi, ebx
-		MOV_EAX_NUM(integer(argIndex) * 4);	// mov eax, -(argIndex * 4)
-		SUB_EDI_EAX();					// edi = address of current argument
-		PUSH_ECX();						// save ecx
+		MOV_EDI_EBX(); // mov edi, ebx
+		MOV_EAX_NUM(integer(argIndex) * 4); // mov eax, -(argIndex * 4)
+		SUB_EDI_EAX(); // edi = address of current argument
+		PUSH_ECX(); // save ecx
 		MOV_EAX_ECX();
 		SHL_EAX_NUM(2);
 		MOV_ECX_EBX();
-		SUB_ECX_EAX();					// ecx = address of last argument - 4
-			
+		SUB_ECX_EAX(); // ecx = address of last argument - 4
+
 		// loop:
 		loopAddr = CURRENT_IP;
 
-		CMP_EDI_ECX();					// checked all arguments?
-		JLE_RELATIVE(0);				// jle doneChecking
+		CMP_EDI_ECX(); // checked all arguments?
+		JLE_RELATIVE(0); // jle doneChecking
 		addr1 = CURRENT_IP;
 
-		MOV_EAX_EDI_PTR_WITH_OFFSET(0);		// eax = key argument
+		MOV_EAX_EDI_PTR_WITH_OFFSET(0); // eax = key argument
 		SUB_EDI_NUM(8);
-		
+
 		// checkKeys:
 		for (i = 0; i < numKeys; i++)
 		{
-			CMP_EAX_ESP_PTR_WITH_OFFSET((i + 1) * 4);	// compare against key
-			JE_RELATIVE(0);								// jump foundKey
-			addr2 = CURRENT_IP;				
+			CMP_EAX_ESP_PTR_WITH_OFFSET((i + 1) * 4); // compare against key
+			JE_RELATIVE(0); // jump foundKey
+			addr2 = CURRENT_IP;
 			CBsetLong(addr2 - wrapInteger(4), loopAddr - CURRENT_IP);
 		}
 
 		// did not find key
 		POP_ECX();
-		ADD_ESP_NUM(numKeys * 4);	
-		PUSH_EAX();						// did not find it
+		ADD_ESP_NUM(numKeys * 4);
+		PUSH_EAX(); // did not find it
 		SET_ARG_COUNT(1);
-		CALL_INDIRECT(INVALID_KEY_ARG);	// call invalidKeyArg()
+		CALL_INDIRECT(INVALID_KEY_ARG); // call invalidKeyArg()
 		INC_STACK(numKeys * 4);
-		
+
 		// doneChecking:
 		CBsetLong(addr1 - wrapInteger(4), CURRENT_IP - addr1);
 
@@ -1915,8 +1905,7 @@ static LispObj compileLambdaAuxArgs(LispObj args, LispObj newVars)
 			sym = form;
 			init = NIL;
 		}
-		else
-		if (isCons(form))
+		else if (isCons(form))
 		{
 			sym = CAR(form);
 			if (isCons(CDR(form)))
@@ -1946,37 +1935,37 @@ static LispObj compileLambdaAuxArgs(LispObj args, LispObj newVars)
 		{
 			if (init != NIL)
 			{
-				PUSH_ECX();			// push ecx
+				PUSH_ECX(); // push ecx
 				compileForm(init, Dest_EAX_Operand, T);
- 				POP_ECX();			// pop ecx
-				MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset));			// mov [ebp + varOffset], eax
+				POP_ECX(); // pop ecx
+				MOV_EBP_PTR_WITH_OFFSET_EAX(integer(varOffset)); // mov [ebp + varOffset], eax
 			}
 		}
 		else
 		{
- 			if (!symbolVarTableIndex(sym))
+			if (!symbolVarTableIndex(sym))
 				createSymbolTableEntry(sym);
 
 			// add dynamic binding to symbol
-			PUSH_ECX();						// save arg count
-			CALL_INDIRECT(ALLOC_CONS);		
-			MOV_EDI_EAX();					// edi = new cons cell
+			PUSH_ECX(); // save arg count
+			CALL_INDIRECT(ALLOC_CONS);
+			MOV_EDI_EAX(); // edi = new cons cell
 			MOV_EAX_SYMBOL_BINDING(sym);
-			MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// CDR points to old value contents
-            PUSH_EDI();
+			MOV_EDI_PTR_WITH_OFFSET_EAX(0); // CDR points to old value contents
+			PUSH_EDI();
 			compileForm(init, Dest_EAX_Operand, T);
- 			POP_EDI();
-            POP_ECX();
-			MOV_EDI_PTR_WITH_OFFSET_EAX(-4);// CAR points to new value
-			MOV_EAX_EDI();					// debug!!
+			POP_EDI();
+			POP_ECX();
+			MOV_EDI_PTR_WITH_OFFSET_EAX(-4); // CAR points to new value
+			MOV_EAX_EDI(); // debug!!
 			MOV_SYMBOL_BINDING_EAX(sym);
 		}
 
 		if (!dynamicBind)
-        {
+		{
 			newVars = cons(t, newVars);
 			CBaddStackVar(sym, CDR(t));
-        }
+		}
 		args = CDR(args);
 	}
 	return newVars;
@@ -2004,18 +1993,16 @@ static LispObj compileList(LispObj x, LispObj dest, LispObj resultType)
 	{
 		if (isSpecialOperator(first))
 			retval = compileSpecialOperator(x, dest, resultType);
-		else
-		if (hasFunctionBinding(first) || (findLexFunction(first) != NIL))
+		else if (hasFunctionBinding(first) || (findLexFunction(first) != NIL))
 			retval = compileFunctionExpressionForm(x, dest, resultType);
 		else
 			retval = compileFunctionExpressionForm(x, dest, resultType);
 	}
-	else
-	if (isLambdaForm(first) || isUvector(first))
+	else if (isLambdaForm(first) || isUvector(first))
 	{
 		funcallForm = cons(list(FUNCTION, first, END_LIST), CDR(x));
 		funcallForm = cons(FUNCALL, funcallForm);
-		retval = compileFunctionExpressionForm(funcallForm, dest, resultType); 
+		retval = compileFunctionExpressionForm(funcallForm, dest, resultType);
 	}
 	else
 	{
@@ -2053,8 +2040,7 @@ static LispObj compileSymbol(LispObj sym, LispObj dest, LispObj /*resultType*/)
 		if (!isSpecialSymbol(sym) && (Cmember(sym, symbolValue(LAMBDA_SPECIAL_DECS)) == NIL))
 		{
 			// warn of symbol assumed special if compiling a lambda
-			if (symbolValue(COMPILER_WARN_ON_ASSUMED_SPECIAL) != NIL
-				&& symbolValue(COMPILING_LAMBDA) != NIL)
+			if (symbolValue(COMPILER_WARN_ON_ASSUMED_SPECIAL) != NIL && symbolValue(COMPILING_LAMBDA) != NIL)
 			{
 				LispCall3(Funcall, WARN, stringNode("Symbol ~S assumed special"), sym);
 				/*
@@ -2069,15 +2055,15 @@ static LispObj compileSymbol(LispObj sym, LispObj dest, LispObj /*resultType*/)
 		// if no symbol table entry, create one now
 		if (!symbolVarTableIndex(sym))
 			createSymbolTableEntry(sym);
-	//	setSymbolValue(COMPILED_SPECIALS, cons(sym, symbolValue(COMPILED_SPECIALS)));
+		//	setSymbolValue(COMPILED_SPECIALS, cons(sym, symbolValue(COMPILED_SPECIALS)));
 
 		MOV_EAX_SYMBOL_VALUE(sym);
-		CMP_EAX_LONG(UNINITIALIZED);		// cmp eax, UNINITIALIZED
-		JNE_RELATIVE(0);					// jne next
+		CMP_EAX_LONG(UNINITIALIZED); // cmp eax, UNINITIALIZED
+		JNE_RELATIVE(0); // jne next
 		addr1 = CURRENT_IP;
 		compileLiteralForm(sym, Dest_Stack, T);
 		SET_ARG_COUNT(1);
-		CALL_INDIRECT(UNBOUND_VARIABLE);	// call UnboundVariable()
+		CALL_INDIRECT(UNBOUND_VARIABLE); // call UnboundVariable()
 		ADD_ESP_NUM(4);
 		// next:
 		CBsetLong(addr1 - wrapInteger(4), CURRENT_IP - addr1);
@@ -2095,29 +2081,32 @@ static void prolog(long envSize)
 	long i = 0;
 	pc = 0;
 
-	pbuf[pc++]= 0x55; 								// push	ebp
-	pbuf[pc++]= 0x8b; pbuf[pc++]= 0xec;				// mov	ebp, esp
-	pbuf[pc++]= 0x57; 								// push	edi	 (environment)
+	pbuf[pc++] = 0x55; // push	ebp
+	pbuf[pc++] = 0x8b;
+	pbuf[pc++] = 0xec; // mov	ebp, esp
+	pbuf[pc++] = 0x57; // push	edi	 (environment)
 
 	if (envSize > 0)
 	{
-		pbuf[pc++]=0x8b; pbuf[pc++]=0x06;			// mov eax, [esi]
-		if (envSize < 64)							// inline up to 16 push operations
+		pbuf[pc++] = 0x8b;
+		pbuf[pc++] = 0x06; // mov eax, [esi]
+		if (envSize < 64) // inline up to 16 push operations
 		{
 			for (i = 0; i < envSize; i += 4)
-				pbuf[pc++]= 0x50; 					// push	eax		;; push nil
+				pbuf[pc++] = 0x50; // push	eax		;; push nil
 		}
 		else
 		{
- 			pbuf[pc++]= 0xba; 							// mov edx, envSize	/ 4
-			pbuf[pc++]= (unsigned char)((unsigned long)envSize >> 2) & 0xff;	
-			pbuf[pc++]= (unsigned char)(((unsigned long)envSize >> 2) >> 8) & 0xff;	
-			pbuf[pc++]= (unsigned char)(((unsigned long)envSize >> 2) >> 16) & 0xff;	
-			pbuf[pc++]= (unsigned char)(((unsigned long)envSize >> 2) >> 24) & 0xff;
-														// loop:
- 			pbuf[pc++]= 0x50; 							// push	eax		;; push nil
- 			pbuf[pc++]= 0x4a; 							// dec edx
-			pbuf[pc++]= 0x7f; pbuf[pc++]= 0xfc;			// jg :loop
+			pbuf[pc++] = 0xba; // mov edx, envSize	/ 4
+			pbuf[pc++] = (unsigned char)((unsigned long)envSize >> 2) & 0xff;
+			pbuf[pc++] = (unsigned char)(((unsigned long)envSize >> 2) >> 8) & 0xff;
+			pbuf[pc++] = (unsigned char)(((unsigned long)envSize >> 2) >> 16) & 0xff;
+			pbuf[pc++] = (unsigned char)(((unsigned long)envSize >> 2) >> 24) & 0xff;
+			// loop:
+			pbuf[pc++] = 0x50; // push	eax		;; push nil
+			pbuf[pc++] = 0x4a; // dec edx
+			pbuf[pc++] = 0x7f;
+			pbuf[pc++] = 0xfc; // jg :loop
 		}
 	}
 
@@ -2136,37 +2125,43 @@ static void compileLambdaProlog(long envSize, LispObj needEBX, LispObj saveECX)
 {
 	long i = 0;
 	pc = 0;
-	pbuf[pc++]= 0x55; 								// push	ebp
-	pbuf[pc++]= 0x8b; pbuf[pc++]= 0xec;				// mov	ebp, esp
-	pbuf[pc++]= 0x57; 								// push	edi	 (environment)
+	pbuf[pc++] = 0x55; // push	ebp
+	pbuf[pc++] = 0x8b;
+	pbuf[pc++] = 0xec; // mov	ebp, esp
+	pbuf[pc++] = 0x57; // push	edi	 (environment)
 	if (saveECX != NIL)
-		pbuf[pc++]= 0x51; 							// push ecx	 (arg count)
+		pbuf[pc++] = 0x51; // push ecx	 (arg count)
 	if (envSize > 0)
 	{
-		pbuf[pc++]=0x8b; pbuf[pc++]=0x06;			// mov eax, [esi]
-		if (envSize < 64)							// inline up to 16 push operations
+		pbuf[pc++] = 0x8b;
+		pbuf[pc++] = 0x06; // mov eax, [esi]
+		if (envSize < 64) // inline up to 16 push operations
 		{
 			for (i = 0; i < envSize; i += 4)
-				pbuf[pc++]= 0x50; 					// push	eax		;; push nil
+				pbuf[pc++] = 0x50; // push	eax		;; push nil
 		}
 		else
 		{
- 			pbuf[pc++]= 0xba; 							// mov edx, envSize	/ 4
-			pbuf[pc++]= (unsigned char)((unsigned long)envSize >> 2) & 0xff;	
-			pbuf[pc++]= (unsigned char)(((unsigned long)envSize >> 2) >> 8) & 0xff;	
-			pbuf[pc++]= (unsigned char)(((unsigned long)envSize >> 2) >> 16) & 0xff;	
-			pbuf[pc++]= (unsigned char)(((unsigned long)envSize >> 2) >> 24) & 0xff;
-														// loop:
- 			pbuf[pc++]= 0x50; 							// push	eax		;; push nil
- 			pbuf[pc++]= 0x4a; 							// dec edx
-			pbuf[pc++]= 0x7f; pbuf[pc++]= 0xfc;			// jg :loop
+			pbuf[pc++] = 0xba; // mov edx, envSize	/ 4
+			pbuf[pc++] = (unsigned char)((unsigned long)envSize >> 2) & 0xff;
+			pbuf[pc++] = (unsigned char)(((unsigned long)envSize >> 2) >> 8) & 0xff;
+			pbuf[pc++] = (unsigned char)(((unsigned long)envSize >> 2) >> 16) & 0xff;
+			pbuf[pc++] = (unsigned char)(((unsigned long)envSize >> 2) >> 24) & 0xff;
+			// loop:
+			pbuf[pc++] = 0x50; // push	eax		;; push nil
+			pbuf[pc++] = 0x4a; // dec edx
+			pbuf[pc++] = 0x7f;
+			pbuf[pc++] = 0xfc; // jg :loop
 		}
 	}
 
 	if (needEBX != NIL)
 	{
-		pbuf[pc++]=0x53;								// push ebx
-		pbuf[pc++]=0x8d; pbuf[pc++]=0x5c; pbuf[pc++]=0x8d; pbuf[pc++]=0x04;	// lea ebx,[ebp+ecx*4+4]
+		pbuf[pc++] = 0x53; // push ebx
+		pbuf[pc++] = 0x8d;
+		pbuf[pc++] = 0x5c;
+		pbuf[pc++] = 0x8d;
+		pbuf[pc++] = 0x04; // lea ebx,[ebp+ecx*4+4]
 		// ebx now contains the 1st arg address
 	}
 
@@ -2212,21 +2207,21 @@ static void compileArgsRangeCheck(long low, long high)
 	LispObj codeAddr2 = 0;
 	LispObj codeAddr3 = 0;
 
-	if (low > 0 || high >= 0)  // if high < 0, no upper limit
+	if (low > 0 || high >= 0) // if high < 0, no upper limit
 	{
 		if (low > 0)
 		{
 			CMP_ECX_LONG(low);
-			JL_SHORT_RELATIVE(0);				// jl err
+			JL_SHORT_RELATIVE(0); // jl err
 			codeAddr1 = CURRENT_IP;
 		}
 		if (high >= 0)
 		{
 			CMP_ECX_LONG(high);
-			JG_SHORT_RELATIVE(0);			// jg err
+			JG_SHORT_RELATIVE(0); // jg err
 			codeAddr2 = CURRENT_IP;
 		}
-		JMP_SHORT_RELATIVE(0);		// jmp short next
+		JMP_SHORT_RELATIVE(0); // jmp short next
 		codeAddr3 = CURRENT_IP;
 		if (low > 0)
 			CBsetByte(codeAddr1 - wrapInteger(1), codeAddr3 - codeAddr1);
@@ -2236,7 +2231,7 @@ static void compileArgsRangeCheck(long low, long high)
 		CALL_INDIRECT(WRONG_NUMBER_OF_ARGS);
 
 		// next:
- 		CBsetByte(codeAddr3 - wrapInteger(1), CURRENT_IP - codeAddr3);
+		CBsetByte(codeAddr3 - wrapInteger(1), CURRENT_IP - codeAddr3);
 	}
 }
 
@@ -2249,7 +2244,7 @@ static LispObj compileFunctionExpressionForm(LispObj x, LispObj dest, LispObj re
 	{
 		return compileFunctionCallForm(cons(FUNCALL, cons(list(FUNCTION, sym, END_LIST), CDR(x))), dest);
 	}
-#if 0	// this is slowing things down
+#if 0 // this is slowing things down
 	// first see if the lisp function can handle it
 	LispObj a = LispCall(Funcall, COMPILE_FUNCTION_CALL_FORM, x, dest);
 	if (a != NIL)
@@ -2259,49 +2254,33 @@ static LispObj compileFunctionExpressionForm(LispObj x, LispObj dest, LispObj re
 	LispObj retval = T;
 	if (sym == PLUS)
 		retval = compilePlusFunctionCall(x, dest, resultType);
-	else
-	if (sym == MINUS)
+	else if (sym == MINUS)
 		retval = compileMinusFunctionCall(x, dest, resultType);
-	else
-	if (sym == NUMERIC_EQUAL)
+	else if (sym == NUMERIC_EQUAL)
 		retval = compileNumericEqualFunctionCall(x, dest);
-	else
-	if (sym == LESS_EQUAL || sym == LESS || sym == GREATER_EQUAL || sym == GREATER)
+	else if (sym == LESS_EQUAL || sym == LESS || sym == GREATER_EQUAL || sym == GREATER)
 		retval = compileNumericCompareFunctionCall(x, dest);
-	else
-	if (sym == CONS)
+	else if (sym == CONS)
 		retval = compileConsFunctionCall(x, dest);
-	else
-	if (sym == EQ)
+	else if (sym == EQ)
 		retval = compileEqFunctionCall(x, dest);
-	else
-	if (sym == CAR_SYM)
+	else if (sym == CAR_SYM)
 		retval = compileCarFunctionCall(x, dest);
-	else
-	if (sym == CDR_SYM)
+	else if (sym == CDR_SYM)
 		retval = compileCdrFunctionCall(x, dest);
-	else
-	if (sym == NULL_SYM || sym == NOT)
+	else if (sym == NULL_SYM || sym == NOT)
 		retval = compileNullFunctionCall(x, dest);
-	else
-	if (sym == ONEPLUS && (listLength(x) == 2))
-		retval = compilePlusFunctionCall(cons(PLUS, cons(CAR(CDR(x)), cons(wrapInteger(1), NIL))), dest,
-		resultType);
-	else
-	if (sym == ONEMINUS)
-		retval = compileMinusFunctionCall(cons(MINUS, cons(CAR(CDR(x)), cons(wrapInteger(1), NIL))), dest, 
-		resultType);
-	else
-	if (sym == UREF)
+	else if (sym == ONEPLUS && (listLength(x) == 2))
+		retval = compilePlusFunctionCall(cons(PLUS, cons(CAR(CDR(x)), cons(wrapInteger(1), NIL))), dest, resultType);
+	else if (sym == ONEMINUS)
+		retval = compileMinusFunctionCall(cons(MINUS, cons(CAR(CDR(x)), cons(wrapInteger(1), NIL))), dest, resultType);
+	else if (sym == UREF)
 		retval = compileUrefFunctionCall(x, dest);
-	else
-	if (sym == UREF_SET)
+	else if (sym == UREF_SET)
 		retval = compileUrefSetFunctionCall(x, dest);
-	else
-	if (sym == AREF)
+	else if (sym == AREF)
 		retval = compileArefFunctionCall(x, dest);
-	else
-	if (sym == SETF_AREF)
+	else if (sym == SETF_AREF)
 		retval = compileSetfArefFunctionCall(x, dest);
 	else
 		retval = compileFunctionCallForm(x, dest);
@@ -2325,9 +2304,9 @@ static LispObj compileFunctionCallForm(LispObj x, LispObj dest)
 			// assume it is a function which has not been defined yet
 			undefinedFunc = LispCall2(Funcall, UNDEFINED_FUNCTION, sym);
 			setSymbolFunction(sym, undefinedFunc, FUNCTION);
-			if (symbolValue(COMPILER_WARN_ON_UNDEFINED_FUNCTION) != NIL
-					&& LispCall2(Funcall, LOOKUP_FTYPE, sym) == NIL
-					&& symbolValue(COMPILER_FUNCTION_NAME) != sym)	// recursive case
+			if (symbolValue(COMPILER_WARN_ON_UNDEFINED_FUNCTION) != NIL &&
+				LispCall2(Funcall, LOOKUP_FTYPE, sym) == NIL &&
+				symbolValue(COMPILER_FUNCTION_NAME) != sym) // recursive case
 			{
 				LispCall3(Funcall, WARN, stringNode("Function not defined: ~A"), sym);
 				/*
@@ -2337,24 +2316,22 @@ static LispObj compileFunctionCallForm(LispObj x, LispObj dest)
 				LispCall(Terpri, symbolValue(STANDARD_OUTPUT));
 				*/
 			}
-			// If value of UNDEFINED-FUNCTIONS is not NIL, then push the symbol and the 
+			// If value of UNDEFINED-FUNCTIONS is not NIL, then push the symbol and the
 			// stub function onto it.
 			// This is useful to LOAD and COMPILE-FILE.
 			if (symbolValue(UNDEFINED_FUNCTIONS) != NIL)
-				setSymbolValue(UNDEFINED_FUNCTIONS, 
-					cons(sym, 
-						cons(undefinedFunc, symbolValue(UNDEFINED_FUNCTIONS))));
+				setSymbolValue(UNDEFINED_FUNCTIONS, cons(sym, cons(undefinedFunc, symbolValue(UNDEFINED_FUNCTIONS))));
 		}
 
 		a = CDR(x);
-		nargs = listLength(a);	// number of arguments
+		nargs = listLength(a); // number of arguments
 		for (i = 0; i < nargs; i++)
 		{
 			compileForm(CAR(a), Dest_Stack, T);
 			a = CDR(a);
 		}
 
-		SET_ARG_COUNT(nargs);					// ecx = number of args
+		SET_ARG_COUNT(nargs); // ecx = number of args
 		LOAD_ENVIRONMENT(sym);
 		CALL_INDIRECT(sym);
 		if (nargs > 0)
@@ -2374,74 +2351,51 @@ static LispObj compileSpecialOperator(LispObj x, LispObj dest, LispObj /*resultT
 
 	if (sym == QUOTE)
 		retval = compileQuoteForm(x, dest);
-	else
-	if (sym == SETQ)
+	else if (sym == SETQ)
 		retval = compileSetqForm(x, dest);
-	else
-	if (sym == FUNCTION)
+	else if (sym == FUNCTION)
 		retval = compileFunctionSpecialOperator(x, dest);
-	else
-	if (sym == BLOCK)
+	else if (sym == BLOCK)
 		retval = compileBlockForm(x, dest);
-	else
-	if (sym == PROGN)
+	else if (sym == PROGN)
 		retval = compilePrognForm(CDR(x), dest);
-	else
-	if (sym == IF)
+	else if (sym == IF)
 		retval = compileIfForm(x, dest);
-	else
-	if (sym == LET)
+	else if (sym == LET)
 		retval = compileLetForm(x, dest);
-	else
-	if (sym == LETSTAR)
+	else if (sym == LETSTAR)
 		retval = compileLetstarForm(x, dest);
-	else
-	if (sym == TAGBODY)
+	else if (sym == TAGBODY)
 		retval = compileTagbodyForm(x, dest);
-	else
-	if (sym == GO)
+	else if (sym == GO)
 		retval = compileGoForm(x, dest);
-	else
-	if (sym == RETURN_FROM)
- 		retval = compileReturnFromForm(x, dest);
-	else
-	if (sym == CATCH)
+	else if (sym == RETURN_FROM)
+		retval = compileReturnFromForm(x, dest);
+	else if (sym == CATCH)
 		retval = compileCatchForm(x, dest);
-	else
-	if (sym == THROW)
+	else if (sym == THROW)
 		retval = compileThrowForm(x, dest);
-	else
-	if (sym == UNWIND_PROTECT)
+	else if (sym == UNWIND_PROTECT)
 		retval = compileUnwindProtectForm(x, dest);
-	else
-	if (sym == MULTIPLE_VALUE_CALL)
+	else if (sym == MULTIPLE_VALUE_CALL)
 		retval = compileMultipleValueCallForm(x, dest);
-	else
-	if (sym == EVAL_WHEN)
+	else if (sym == EVAL_WHEN)
 		retval = compileEvalWhenForm(x, dest);
-	else
-	if (sym == MULTIPLE_VALUE_PROG1)
+	else if (sym == MULTIPLE_VALUE_PROG1)
 		retval = compileMultipleValueProg1Form(x, dest);
-	else
-	if (sym == THE)
+	else if (sym == THE)
 		retval = compileTheForm(x, dest);
-	else
-	if (sym == FLET)
+	else if (sym == FLET)
 		retval = compileFletForm(x, dest);
-	else
-	if (sym == LABELS)
+	else if (sym == LABELS)
 		retval = compileLabelsForm(x, dest);
-	else
-	if (sym == LOCALLY)
+	else if (sym == LOCALLY)
 		retval = compileLocallyForm(x, dest);
-	else
-	if (sym == LOAD_TIME_VALUE)
+	else if (sym == LOAD_TIME_VALUE)
 		retval = compileLoadTimeValueForm(x, dest);
-	else
-	if (sym == GET_CURRENT_ENVIRONMENT)
+	else if (sym == GET_CURRENT_ENVIRONMENT)
 		retval = compileCurrentEnvironment(x, dest);
-	else
-	if (sym == CAPTURE_COMPILER_ENVIRONMENT)
+	else if (sym == CAPTURE_COMPILER_ENVIRONMENT)
 		retval = compileCaptureCompilerEnvironmentForm(x, dest);
 	else
 		Error("Unknown special operator: ~A", sym);
@@ -2457,9 +2411,9 @@ static LispObj compileIfForm(LispObj x, LispObj dest)
 	LispObj elseForm = CDR(CDR(CDR(x)));
 	LispObj addr1 = 0;
 	LispObj addr2 = 0;
-	
+
 	if (isCons(elseForm) && isCons(CDR(elseForm)))
- 		Error("Invalid IF form--form(s) following ELSE clause: ~A", x);
+		Error("Invalid IF form--form(s) following ELSE clause: ~A", x);
 
 	// if the test is for numeric equal
 	if (isCons(testForm) && CAR(testForm) == NUMERIC_EQUAL && listLength(testForm) == 3)
@@ -2470,31 +2424,31 @@ static LispObj compileIfForm(LispObj x, LispObj dest)
 		if (!isCons(elseForm))
 			elseForm = cons(NIL, NIL);
 		compileForm(testForm, Dest_Zero_Flag, T);
-		JNE_RELATIVE(0);					// je else_label
+		JNE_RELATIVE(0); // je else_label
 	}
 	else
 	{
 		if (elseForm != NIL /* || dest == Dest_EAX_Operand */)
-			compileForm(testForm, Dest_EAX_Operand, T);	// don't need to set arg count
+			compileForm(testForm, Dest_EAX_Operand, T); // don't need to set arg count
 		else
 			compileForm(testForm, Dest_EAX, T);
 		CMP_EAX_NIL();
-		JE_RELATIVE(0);					// je else_label
+		JE_RELATIVE(0); // je else_label
 	}
 	addr1 = CURRENT_IP;
-//	if (dest == Dest_EAX_Operand)
-//		compileForm(thenForm, Dest_EAX_Operand, T);
-//	else
-		compileForm(thenForm, Dest_EAX, T);
+	//	if (dest == Dest_EAX_Operand)
+	//		compileForm(thenForm, Dest_EAX_Operand, T);
+	//	else
+	compileForm(thenForm, Dest_EAX, T);
 	if (isCons(elseForm))
-		JMP_LONG_RELATIVE(0);			// jmp end_label
+		JMP_LONG_RELATIVE(0); // jmp end_label
 	addr2 = CURRENT_IP;
 	if (isCons(elseForm))
 	{
-//		if (dest == Dest_EAX_Operand)
-//			compileForm(CAR(elseForm), Dest_EAX_Operand, T);
-//		else
-			compileForm(CAR(elseForm), Dest_EAX, T);
+		//		if (dest == Dest_EAX_Operand)
+		//			compileForm(CAR(elseForm), Dest_EAX_Operand, T);
+		//		else
+		compileForm(CAR(elseForm), Dest_EAX, T);
 	}
 	// now resolve addresses
 	CBsetLong(addr1 - wrapInteger(4), addr2 - addr1);
@@ -2518,7 +2472,6 @@ static LispObj compileQuoteForm(LispObj x, LispObj dest)
 
 static LispObj findVariableRecord(LispObj sym)
 {
-
 	LispObj stackVars = 0;
 	LispObj rec = 0;
 	LispObj temp = 0;
@@ -2543,7 +2496,7 @@ static LispObj findVariableRecord(LispObj sym)
 				temp = CDR(temp);
 			}
 			if (temp == NIL)
-				return NIL;	// don't inherit any lexicals passed this point
+				return NIL; // don't inherit any lexicals passed this point
 		}
 
 		if (CAR(rec) == ENVIRONMENT)
@@ -2564,7 +2517,7 @@ static LispObj findVariableRecord(LispObj sym)
 //	Generate code to place the lexical function or variable contents
 //	into the destination (it may be an offset from EBP, from EBX,
 //	or it may be in the local heap environment).
-//	The type argument specifies function (FLET), variable (LET) 
+//	The type argument specifies function (FLET), variable (LET)
 //	or either (T).
 //	Returns NIL if the entity was not found, or the type of the entity
 //	otherwise (currently this is always T).
@@ -2593,7 +2546,7 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 	stackVars = symbolValue(COMPILER_ENVIRONMENT);
 	if (stackVars != NIL)
 	{
-		len = integer(UVECTOR(stackVars)[1]);	// get vector length
+		len = integer(UVECTOR(stackVars)[1]); // get vector length
 		for (i = 4 /* skip first 4 cells */; i < len; i += 2)
 		{
 			if (UVECTOR(stackVars)[i + 2] == sym)
@@ -2602,30 +2555,28 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 				indirect = (code >> 29) & 1;
 				base = (code >> 27) & 3;
 				code &= 0x7ffffff;
-				if (code & 0x4000000)	// if code was signed
-					code |= 0xf8000000;	// store 1's in upper five bits
+				if (code & 0x4000000) // if code was signed
+					code |= 0xf8000000; // store 1's in upper five bits
 				if (base == 0 || base == 1)
 				{
 					addr = integer(code) + foreignPtr(UVECTOR(stackVars)[2 + base]);
-			//		MOV_EAX_NUM(integer(code) + foreignPtr(UVECTOR(stackVars)[2 + base]));  this overflows
-					ASM_OP8(0xb8); 
+					//		MOV_EAX_NUM(integer(code) + foreignPtr(UVECTOR(stackVars)[2 + base]));  this overflows
+					ASM_OP8(0xb8);
 					CBaddLong(addr); // like ASM_LONG(num); but with unwrapped integer
 					MOV_EAX_EAX_PTR_WITH_OFFSET(0);
 					if (indirect)
 						MOV_EAX_EAX_PTR_WITH_OFFSET(-ConsTag);
 					TARGET(1);
 				}
-				else
-				if (base == 2) // EDI
+				else if (base == 2) // EDI
 				{
 					compileLiteralForm(UVECTOR(stackVars)[2 + base], Dest_EAX, T);
-					MOV_EDI_EAX();	// edi = environment
+					MOV_EDI_EAX(); // edi = environment
 					MOV_EDI_EDI_PTR_WITH_OFFSET(8 - UvectorTag + integer(code)); // edi = binding
-					MOV_EAX_EDI_PTR_WITH_OFFSET(-ConsTag);	// mov eax, [edi - 4]; get value in eax
+					MOV_EAX_EDI_PTR_WITH_OFFSET(-ConsTag); // mov eax, [edi - 4]; get value in eax
 					TARGET(1);
 				}
-				else
-				if (base == 3)
+				else if (base == 3)
 				{
 					MOV_EAX_ESI_PTR_WITH_OFFSET(integer(code));
 					if (indirect)
@@ -2656,7 +2607,7 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 				temp = CDR(temp);
 			}
 			if (temp == NIL)
-				return NIL;	// don't inherit any lexicals passed this point
+				return NIL; // don't inherit any lexicals passed this point
 		}
 
 		if (!isEnvironment && CAR(rec) == ENVIRONMENT)
@@ -2666,12 +2617,12 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 			stackVars = CDR(stackVars);
 			continue;
 		}
-		
+
 		if (CAR(rec) == SPECIAL && type != FLET)
 		{
 			for (LispObj p = CAR(CDR(rec)); isCons(p); p = CDR(p))
 				if (CAR(p) == sym)
-					return NIL;		// a special declaration is shadowing any variable declarations
+					return NIL; // a special declaration is shadowing any variable declarations
 		}
 
 		if (CAR(rec) == FLET || CAR(rec) == LET)
@@ -2697,15 +2648,16 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 			{
 				if (isEnvironment)
 				{
-					if (isHeap)		// the function was found in the parent environment
+					if (isHeap) // the function was found in the parent environment
 					{
 						setSymbolValue(COMPILER_USES_ENV, T);
-						addCompilerFrameInfo(sym, wrapInteger(2) /* edi */, 
-								wrapInteger(/*8 - UvectorTag + */envCount * 4), wrapInteger(1) /* indirect */);
+						addCompilerFrameInfo(sym, wrapInteger(2) /* edi */,
+											 wrapInteger(/*8 - UvectorTag + */ envCount * 4),
+											 wrapInteger(1) /* indirect */);
 
-						MOV_EDI_ENV();	// edi = environment
+						MOV_EDI_ENV(); // edi = environment
 						MOV_EDI_EDI_PTR_WITH_OFFSET(8 - UvectorTag + (envCount * 4)); // edi = binding
-						MOV_EAX_EDI_PTR_WITH_OFFSET(-ConsTag);	// mov eax, [edi - 4]; get value in eax
+						MOV_EAX_EDI_PTR_WITH_OFFSET(-ConsTag); // mov eax, [edi - 4]; get value in eax
 						TARGET(1);
 						return (type == LET) ? findVariableType(sym) : findFunctionType(sym);
 					}
@@ -2719,18 +2671,17 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 				{
 					if (dest == Dest_EAX || dest == Dest_EAX_Operand)
 					{
-						if (CAR(src) == EBX)	// mov eax, [ebx + offset]
-						{	
-							MOV_EAX_EBX_PTR_WITH_OFFSET(noffset);	
+						if (CAR(src) == EBX) // mov eax, [ebx + offset]
+						{
+							MOV_EAX_EBX_PTR_WITH_OFFSET(noffset);
 						}
-						else
-						if (CAR(src) == EBP)	// mov eax, [ebp + offset]
+						else if (CAR(src) == EBP) // mov eax, [ebp + offset]
 						{
 							MOV_EAX_EBP_PTR_WITH_OFFSET(noffset);
 						}
 						else
 							Error("Compiler: Invalid variable source: ~A", src);
-				
+
 						if (isHeap)
 						{
 							MOV_EDI_EAX();
@@ -2739,15 +2690,13 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 						if (dest == Dest_EAX)
 							SET_ARG_COUNT(1);
 					}
-					else
-					if (dest == Dest_Stack)
+					else if (dest == Dest_Stack)
 					{
-						if (CAR(src) == EBX)	// push [ebx + offset]
+						if (CAR(src) == EBX) // push [ebx + offset]
 						{
 							PUSH_EBX_PTR_WITH_OFFSET(noffset);
 						}
-						else
-						if (CAR(src) == EBP)	// push [ebp + offset]
+						else if (CAR(src) == EBP) // push [ebp + offset]
 						{
 							PUSH_EBP_PTR_WITH_OFFSET(noffset);
 						}
@@ -2755,12 +2704,12 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 							Error("Compiler: Invalid variable source: ~A", src);
 						if (isHeap)
 						{
-							POP_EDI();			// pop edi
-							PUSH_EDI_PTR_WITH_OFFSET(-4);	// push dword ptr [edi - 4]
+							POP_EDI(); // pop edi
+							PUSH_EDI_PTR_WITH_OFFSET(-4); // push dword ptr [edi - 4]
 						}
 					}
 				}
-				CAR(CDR(CDR(CDR(rec)))) += wrapInteger(1);	// inc number of references
+				CAR(CDR(CDR(CDR(rec)))) += wrapInteger(1); // inc number of references
 				return (type == LET) ? findVariableType(sym) : findFunctionType(sym);
 			}
 		}
@@ -2772,7 +2721,7 @@ static LispObj compileLexicalEntity(LispObj sym, LispObj dest, LispObj type)
 //
 //	Like compileLexicalEntity(), above, but compiles the cons cell
 //	which holds the variable binding.
-// 
+//
 static LispObj compileLexicalSlot(LispObj sym, LispObj dest, LispObj type)
 {
 	LispObj stackVars = 0;
@@ -2805,7 +2754,7 @@ static LispObj compileLexicalSlot(LispObj sym, LispObj dest, LispObj type)
 				temp = CDR(temp);
 			}
 			if (temp == NIL)
-				return NIL;	// don't inherit any lexicals passed this point
+				return NIL; // don't inherit any lexicals passed this point
 		}
 
 		if (!isEnvironment && CAR(rec) == ENVIRONMENT)
@@ -2839,13 +2788,14 @@ static LispObj compileLexicalSlot(LispObj sym, LispObj dest, LispObj type)
 			{
 				if (isEnvironment)
 				{
-					if (isHeap)		// the function was found in the parent environment
+					if (isHeap) // the function was found in the parent environment
 					{
 						setSymbolValue(COMPILER_USES_ENV, T);
-						addCompilerFrameInfo(sym, wrapInteger(2) /* edi */, 
-								wrapInteger(/*8 - UvectorTag + */envCount * 4), wrapInteger(1) /* indirect */);
+						addCompilerFrameInfo(sym, wrapInteger(2) /* edi */,
+											 wrapInteger(/*8 - UvectorTag + */ envCount * 4),
+											 wrapInteger(1) /* indirect */);
 
-						MOV_EDI_ENV();	// edi = environment
+						MOV_EDI_ENV(); // edi = environment
 						MOV_EDI_EDI_PTR_WITH_OFFSET(8 - UvectorTag + (envCount * 4)); // edi = binding
 						MOV_EAX_EDI();
 						TARGET(1);
@@ -2861,12 +2811,11 @@ static LispObj compileLexicalSlot(LispObj sym, LispObj dest, LispObj type)
 				{
 					if (dest == Dest_EAX || dest == Dest_EAX_Operand)
 					{
-						if (CAR(src) == EBX)	// mov eax, [ebx + offset]
-						{	
-							MOV_EAX_EBX_PTR_WITH_OFFSET(noffset);	
+						if (CAR(src) == EBX) // mov eax, [ebx + offset]
+						{
+							MOV_EAX_EBX_PTR_WITH_OFFSET(noffset);
 						}
-						else
-						if (CAR(src) == EBP)	// mov eax, [ebp + offset]
+						else if (CAR(src) == EBP) // mov eax, [ebp + offset]
 						{
 							MOV_EAX_EBP_PTR_WITH_OFFSET(noffset);
 						}
@@ -2881,15 +2830,13 @@ static LispObj compileLexicalSlot(LispObj sym, LispObj dest, LispObj type)
 						if (dest == Dest_EAX)
 							SET_ARG_COUNT(1);
 					}
-					else
-					if (dest == Dest_Stack)
+					else if (dest == Dest_Stack)
 					{
-						if (CAR(src) == EBX)	// push [ebx + offset]
+						if (CAR(src) == EBX) // push [ebx + offset]
 						{
 							PUSH_EBX_PTR_WITH_OFFSET(noffset);
 						}
-						else
-						if (CAR(src) == EBP)	// push [ebp + offset]
+						else if (CAR(src) == EBP) // push [ebp + offset]
 						{
 							PUSH_EBP_PTR_WITH_OFFSET(noffset);
 						}
@@ -2901,7 +2848,7 @@ static LispObj compileLexicalSlot(LispObj sym, LispObj dest, LispObj type)
 						*/
 					}
 				}
-				CAR(CDR(CDR(CDR(rec)))) += wrapInteger(1);	// inc number of references
+				CAR(CDR(CDR(CDR(rec)))) += wrapInteger(1); // inc number of references
 				return T;
 			}
 		}
@@ -2963,8 +2910,7 @@ LispObj getEnvironmentVars()
 			src = CAR(CDR(CDR(rec)));
 			if (CAR(src) == EBP)
 				reg = FRAME;
-			else
-			if (CAR(src) == EBX)
+			else if (CAR(src) == EBX)
 				reg = ARGS;
 			else
 				reg = NIL;
@@ -2985,8 +2931,7 @@ LispObj getEnvironmentVars()
 				offset = wrapInteger(envCount * 4);
 				envars = cons(list(sym, reg, offset, indirect, END_LIST), envars);
 			}
-			else
-			if (!isEnvironment)
+			else if (!isEnvironment)
 				envars = cons(list(sym, reg, offset, indirect, END_LIST), envars);
 		}
 		stackVars = CDR(stackVars);
@@ -3006,12 +2951,12 @@ LispObj getEnvironmentVars()
 static LispObj lexEnvironmentSlots(LispObj env)
 {
 	LispObj p = 0;
- 	LispObj q = 0;
+	LispObj q = 0;
 	int lexSize = 0;
- 	LispObj type = 0;
- 	LispObj sym = 0;
- 	LispObj offset = 0;
- 	LispObj place = 0;
+	LispObj type = 0;
+	LispObj sym = 0;
+	LispObj offset = 0;
+	LispObj place = 0;
 	LispObj vars = NIL;
 	LispObj funcs = NIL;
 
@@ -3036,11 +2981,11 @@ static LispObj lexEnvironmentSlots(LispObj env)
 		}
 		p = CDR(p);
 	}
- 	return list(wrapInteger(lexSize), vars, funcs, END_LIST);
+	return list(wrapInteger(lexSize), vars, funcs, END_LIST);
 }
 
 // Given an environment info list (from cleanups) compiles an
-// environment. If the passed callback is a function, it will 
+// environment. If the passed callback is a function, it will
 // be called as each slot is created (at compile time) with the
 // name of each slot passed as the single argument.
 static LispObj compileLexEnvironment(LispObj env, LispObj callback)
@@ -3059,7 +3004,7 @@ static LispObj compileLexEnvironment(LispObj env, LispObj callback)
 
 	if (lexSize > 0)
 	{
-		PUSH_NUM(lexSize + 1);			// push lexSize (+ 1 for structure header)
+		PUSH_NUM(lexSize + 1); // push lexSize (+ 1 for structure header)
 		CALL_INDIRECT(ALLOC_VECTOR);
 		ADD_ESP_NUM(4);
 		MOV_EDI_EAX();
@@ -3079,7 +3024,7 @@ static LispObj compileLexEnvironment(LispObj env, LispObj callback)
 			// put variable contents in EAX
 			compileLexicalSlot(CAR(p), Dest_EAX_Operand, LET);
 			MOV_EDI_ESP_PTR_WITH_OFFSET(0);
- 			MOV_EDI_PTR_WITH_OFFSET_EAX(destoffset + integer(CAR(CDR(p))));
+			MOV_EDI_PTR_WITH_OFFSET_EAX(destoffset + integer(CAR(CDR(p))));
 			p = CDR(CDR(p));
 		}
 		p = funcs;
@@ -3092,18 +3037,18 @@ static LispObj compileLexEnvironment(LispObj env, LispObj callback)
 			// put variable contents in EAX
 			compileLexicalSlot(CAR(p), Dest_EAX_Operand, FLET);
 			MOV_EDI_ESP_PTR_WITH_OFFSET(0);
- 			MOV_EDI_PTR_WITH_OFFSET_EAX(destoffset + integer(CAR(CDR(p))));
+			MOV_EDI_PTR_WITH_OFFSET_EAX(destoffset + integer(CAR(CDR(p))));
 			p = CDR(CDR(p));
 		}
 	}
 	else
-		PUSH_NIL();		// push environment (NIL)
+		PUSH_NIL(); // push environment (NIL)
 	return 0;
 }
 
-static LispObj compileFunctionSpecialLambda(
-	LispObj lambda, LispObj env, LispObj lexicalMacros, LispObj lexicalSymbolMacros, LispObj callback, 
-	LispObj compiledEnv, LispObj dest)
+static LispObj compileFunctionSpecialLambda(LispObj lambda, LispObj env, LispObj lexicalMacros,
+											LispObj lexicalSymbolMacros, LispObj callback, LispObj compiledEnv,
+											LispObj dest)
 {
 	LispObj t = 0;
 	LispObj clambda = 0;
@@ -3134,13 +3079,13 @@ static LispObj compileFunctionSpecialLambda(
 
 	clambda = compileLambdaExpression(lambda, NIL, cons(cons(ENVIRONMENT, NIL), env), lexMacros, lexSymbolMacros);
 
-	compileLiteralForm(clambda, Dest_Stack, T);	// push function
+	compileLiteralForm(clambda, Dest_Stack, T); // push function
 	if (compiledEnv)
 		compileLiteralForm(compiledEnv, Dest_Stack, T);
 	else
 		compileLexEnvironment(env, callback);
 
-	SET_ARG_COUNT(2);			// 2 args
+	SET_ARG_COUNT(2); // 2 args
 	LOAD_ENVIRONMENT(CREATE_CLOSURE);
 	CALL_INDIRECT(CREATE_CLOSURE);
 	ADD_ESP_NUM(2 * 4);
@@ -3163,7 +3108,7 @@ static LispObj compileFunctionSpecialOperator(LispObj x, LispObj dest)
 	if (!isCons(CDR(x)))
 		Error("Invalid FUNCTION form: ~A", x);
 	f = CAR(CDR(x));
-	if (isLambdaForm(f))	// compile it and create a closure
+	if (isLambdaForm(f)) // compile it and create a closure
 	{
 		if (isCons(CDR(CDR(x))))
 			g = CAR(CDR(CDR(x)));
@@ -3175,10 +3120,9 @@ static LispObj compileFunctionSpecialOperator(LispObj x, LispObj dest)
 				// so use that. It should be in this form:
 				// (CAPTURE_COMPILER_ENVIRONMENT cleanups lexical-macros callback compiled-env)
 				//
-				retval = compileFunctionSpecialLambda(f, 
-					CAR(CDR(g)), CAR(CDR(CDR(g))), CAR(CDR(CDR(CDR(g)))), 
-					CAR(CDR(CDR(CDR(CDR(CDR(g)))))), 
-                    CAR(CDR(CDR(CDR(CDR(g))))), dest);
+				retval =
+					compileFunctionSpecialLambda(f, CAR(CDR(g)), CAR(CDR(CDR(g))), CAR(CDR(CDR(CDR(g)))),
+												 CAR(CDR(CDR(CDR(CDR(CDR(g)))))), CAR(CDR(CDR(CDR(CDR(g))))), dest);
 				return retval;
 			}
 			else
@@ -3190,45 +3134,41 @@ static LispObj compileFunctionSpecialOperator(LispObj x, LispObj dest)
 		env = CBcleanups();
 		retval = compileFunctionSpecialLambda(f, env, lexicalMacros, lexicalSymbolMacros, callback, 0, dest);
 	}
-	else
-	if (isSymbol(f))
+	else if (isSymbol(f))
 	{
 		// see if the function is in the stack environment
 		retval = compileLexicalEntity(f, dest, FLET);
 		if (retval == NIL)
 		{
 			// not found--assume a global function definition
-			retval = compileFunctionExpressionForm(
-				list(SYMBOL_FUNCTION_SYM, list(QUOTE, f, END_LIST), END_LIST), dest, T);
+			retval =
+				compileFunctionExpressionForm(list(SYMBOL_FUNCTION_SYM, list(QUOTE, f, END_LIST), END_LIST), dest, T);
 		}
 	}
-	else
-	if (isUvector(f))
+	else if (isUvector(f))
 	{
 		// Already a compiled function or KFunction — return it directly.
 		retval = f;
 	}
-	else
-	if (isCons(f) && CAR(f) == SETF && isCons(CDR(f)) && isSymbol(CAR(CDR(f))))
-		retval = compileFunctionExpressionForm(
-				list(LOOKUP_SETF_FUNCTION, list(QUOTE, CAR(CDR(f)), END_LIST), END_LIST), dest, T);
+	else if (isCons(f) && CAR(f) == SETF && isCons(CDR(f)) && isSymbol(CAR(CDR(f))))
+		retval = compileFunctionExpressionForm(list(LOOKUP_SETF_FUNCTION, list(QUOTE, CAR(CDR(f)), END_LIST), END_LIST),
+											   dest, T);
 	else
 		Error("Invalid FUNCTION form: ~A", x);
 	return retval;
 }
 #else
-static LispObj
-compileFunctionSpecialOperator(LispObj x, LispObj dest)
+static LispObj compileFunctionSpecialOperator(LispObj x, LispObj dest)
 {
 	LispObj clambda = 0;
 	LispObj lex = 0;
 	long lexSize = 0;
 	LispObj p = 0;
- 	LispObj q = 0;
- 	LispObj type = 0;
- 	LispObj sym = 0;
- 	LispObj offset = 0;
- 	LispObj place = 0;
+	LispObj q = 0;
+	LispObj type = 0;
+	LispObj sym = 0;
+	LispObj offset = 0;
+	LispObj place = 0;
 	LispObj f = 0;
 	LispObj retval = T;
 	LispObj vars = NIL;
@@ -3276,7 +3216,7 @@ compileFunctionSpecialOperator(LispObj x, LispObj dest)
 			{
 				sym = CAR(CDR(q));
 				place = CAR(CDR(CDR(q)));
-//				reg = CAR(place);
+				//				reg = CAR(place);
 				offset = CAR(CDR(place));
 				if (isCons(offset))
 				{
@@ -3289,13 +3229,13 @@ compileFunctionSpecialOperator(LispObj x, LispObj dest)
 			}
 			p = CDR(p);
 		}
- 		lexSize++;	// always need one extra slot for struct info
+		lexSize++; // always need one extra slot for struct info
 
-		compileLiteralForm(clambda, Dest_Stack, T);	// push function
+		compileLiteralForm(clambda, Dest_Stack, T); // push function
 
 		if (lexSize > 1)
 		{
-			PUSH_NUM(lexSize);			// push lexSize
+			PUSH_NUM(lexSize); // push lexSize
 			CALL_INDIRECT(ALLOC_VECTOR);
 			ADD_ESP_NUM(4);
 			MOV_EDI_EAX();
@@ -3315,7 +3255,7 @@ compileFunctionSpecialOperator(LispObj x, LispObj dest)
 				// put variable contents in EAX
 				compileLexicalSlot(CAR(p), Dest_EAX_Operand, LET);
 				MOV_EDI_ESP_PTR_WITH_OFFSET(0);
- 				MOV_EDI_PTR_WITH_OFFSET_EAX(destoffset + integer(CAR(CDR(p))));
+				MOV_EDI_PTR_WITH_OFFSET_EAX(destoffset + integer(CAR(CDR(p))));
 				p = CDR(CDR(p));
 			}
 			p = funcs;
@@ -3328,37 +3268,35 @@ compileFunctionSpecialOperator(LispObj x, LispObj dest)
 				// put variable contents in EAX
 				compileLexicalSlot(CAR(p), Dest_EAX_Operand, FLET);
 				MOV_EDI_ESP_PTR_WITH_OFFSET(0);
- 				MOV_EDI_PTR_WITH_OFFSET_EAX(destoffset + integer(CAR(CDR(p))));
+				MOV_EDI_PTR_WITH_OFFSET_EAX(destoffset + integer(CAR(CDR(p))));
 				p = CDR(CDR(p));
 			}
 		}
 		else
-			PUSH_NIL();		// push environment (NIL)
+			PUSH_NIL(); // push environment (NIL)
 
-		SET_ARG_COUNT(2);			// 2 args
+		SET_ARG_COUNT(2); // 2 args
 		LOAD_ENVIRONMENT(CREATE_CLOSURE);
 		CALL_INDIRECT(CREATE_CLOSURE);
 		ADD_ESP_NUM(2 * 4);
 
 		TARGET(1);
 	}
-	else
-	if (isSymbol(f))
+	else if (isSymbol(f))
 	{
 		// see if the function is in the stack environment
 		retval = compileLexicalEntity(f, dest, FLET);
 		if (retval == NIL)
 		{
 			// not found--assume a global function definition
-			retval = compileFunctionExpressionForm(
-				list(SYMBOL_FUNCTION_SYM, list(QUOTE, f, END_LIST), END_LIST), dest, T);
+			retval =
+				compileFunctionExpressionForm(list(SYMBOL_FUNCTION_SYM, list(QUOTE, f, END_LIST), END_LIST), dest, T);
 		}
 	}
-	else
-	if (isCons(f) && CAR(f) == SETF && isCons(CDR(f)) && isSymbol(CAR(CDR(f))))
+	else if (isCons(f) && CAR(f) == SETF && isCons(CDR(f)) && isSymbol(CAR(CDR(f))))
 	{
-			retval = compileFunctionExpressionForm(
-				list(LOOKUP_SETF_FUNCTION, list(QUOTE, CAR(CDR(f)), END_LIST), END_LIST), dest, T);
+		retval = compileFunctionExpressionForm(list(LOOKUP_SETF_FUNCTION, list(QUOTE, CAR(CDR(f)), END_LIST), END_LIST),
+											   dest, T);
 	}
 	else
 		Error("Invalid FUNCTION form: ~A", x);
@@ -3397,7 +3335,7 @@ static LispObj compileSetqForm(LispObj x, LispObj dest)
 
 	while (isCons(pairs) && isCons(CDR(pairs)))
 	{
-continue_loop:
+	continue_loop:
 		sym = CAR(pairs);
 		val = CAR(CDR(pairs));
 		pairs = CDR(CDR(pairs));
@@ -3412,7 +3350,7 @@ continue_loop:
 		stackVars = symbolValue(COMPILER_ENVIRONMENT);
 		if (stackVars != NIL)
 		{
-			len = integer(UVECTOR(stackVars)[1]);	// get vector length
+			len = integer(UVECTOR(stackVars)[1]); // get vector length
 			for (i = 4 /* skip first 4 cells */; i < len; i += 2)
 			{
 				if (UVECTOR(stackVars)[i + 2] == sym)
@@ -3421,14 +3359,14 @@ continue_loop:
 					indirect = (code >> 29) & 1;
 					base = (code >> 27) & 3;
 					code &= 0x7ffffff;
-					if (code & 0x4000000)	// if code was signed
-						code |= 0xf8000000;	// store 1's in upper five bits
+					if (code & 0x4000000) // if code was signed
+						code |= 0xf8000000; // store 1's in upper five bits
 					if (base == 0 || base == 1)
 					{
 						addr = integer(code) + foreignPtr(UVECTOR(stackVars)[2 + base]);
 						MOV_EDX_EAX();
-				//		MOV_EAX_NUM(integer(code) + foreignPtr(UVECTOR(stackVars)[2 + base]));  this overflows
-						ASM_OP8(0xb8); 
+						//		MOV_EAX_NUM(integer(code) + foreignPtr(UVECTOR(stackVars)[2 + base]));  this overflows
+						ASM_OP8(0xb8);
 						CBaddLong(addr); // like ASM_LONG(num); but with unwrapped integer
 						if (indirect)
 						{
@@ -3440,19 +3378,17 @@ continue_loop:
 						MOV_EAX_EDX();
 						TARGET(1);
 					}
-					else
-					if (base == 2) // EDI
+					else if (base == 2) // EDI
 					{
 						MOV_EDX_EAX();
 						compileLiteralForm(UVECTOR(stackVars)[2 + base], Dest_EAX, T);
-						MOV_EDI_EAX();	// edi = environment
+						MOV_EDI_EAX(); // edi = environment
 						MOV_EAX_EDX();
 						MOV_EDI_EDI_PTR_WITH_OFFSET(8 - UvectorTag + integer(code)); // edi = binding
-						MOV_EDI_PTR_WITH_OFFSET_EAX(-ConsTag);	// mov [edi - 4], edx
+						MOV_EDI_PTR_WITH_OFFSET_EAX(-ConsTag); // mov [edi - 4], edx
 						TARGET(1);
 					}
-					else
-					if (base == 3)
+					else if (base == 3)
 					{
 						MOV_EDX_EAX();
 						if (indirect)
@@ -3491,7 +3427,7 @@ continue_loop:
 					temp = CDR(temp);
 				}
 				if (temp == NIL)
-					return NIL;	// don't inherit any lexicals passed this point
+					return NIL; // don't inherit any lexicals passed this point
 			}
 
 			if (!isEnvironment && CAR(rec) == ENVIRONMENT)
@@ -3501,7 +3437,6 @@ continue_loop:
 				stackVars = CDR(stackVars);
 				continue;
 			}
-
 
 			if (CAR(rec) == FLET || CAR(rec) == LET)
 			{
@@ -3524,28 +3459,28 @@ continue_loop:
 					envCount++;
 
 				if (var == sym && (!isEnvironment || isHeap) && CAR(rec) != FLET)
-				{	// found it
+				{ // found it
 					if (isEnvironment)
 					{
 						setSymbolValue(COMPILER_USES_ENV, T);
-						addCompilerFrameInfo(sym, wrapInteger(2) /* edi */, 
-								wrapInteger(/*8 - UvectorTag + */envCount * 4), wrapInteger(1) /* indirect */);
+						addCompilerFrameInfo(sym, wrapInteger(2) /* edi */,
+											 wrapInteger(/*8 - UvectorTag + */ envCount * 4),
+											 wrapInteger(1) /* indirect */);
 
 						// the variable was found in the parent enironment
-						MOV_EDI_ENV();		// edi = environment
+						MOV_EDI_ENV(); // edi = environment
 						MOV_EDI_EDI_PTR_WITH_OFFSET(8 - UvectorTag + (envCount * 4)); // edi = binding
 						MOV_EDI_PTR_WITH_OFFSET_EAX(-ConsTag);
 					}
-					else	// not environment
+					else // not environment
 					{
 						if (isHeap)
 						{
-							if (reg == EBX)		// mov edi, [ebx + offset]
+							if (reg == EBX) // mov edi, [ebx + offset]
 							{
 								MOV_EDI_EBX_PTR_WITH_OFFSET(noffset);
 							}
-							else
-							if (reg == EBP)	// mov edi, [ebp + offset]
+							else if (reg == EBP) // mov edi, [ebp + offset]
 							{
 								MOV_EDI_EBP_PTR_WITH_OFFSET(noffset);
 							}
@@ -3554,14 +3489,13 @@ continue_loop:
 
 							MOV_EDI_PTR_WITH_OFFSET_EAX(-ConsTag);
 						}
-						else	// not a heap var
+						else // not a heap var
 						{
-							if (reg == EBX)	// mov [ebx + offset], eax
+							if (reg == EBX) // mov [ebx + offset], eax
 							{
 								MOV_EBX_PTR_WITH_OFFSET_EAX(noffset);
 							}
-							else
-							if (reg == EBP)	// mov [ebp + offset], eax
+							else if (reg == EBP) // mov [ebp + offset], eax
 							{
 								MOV_EBP_PTR_WITH_OFFSET_EAX(noffset);
 							}
@@ -3573,8 +3507,8 @@ continue_loop:
 						goto continue_loop;
 					else
 						goto exit;
-				}		// endif found it
-			}	// endif let form
+				} // endif found it
+			} // endif let form
 			stackVars = CDR(stackVars);
 		}
 
@@ -3588,8 +3522,7 @@ continue_loop:
 		if (!isSpecialSymbol(sym) && (Cmember(sym, symbolValue(LAMBDA_SPECIAL_DECS)) == NIL))
 		{
 			// warn of symbol assumed special if compiling a lambda
-			if (symbolValue(COMPILER_WARN_ON_ASSUMED_SPECIAL) != NIL
-				&& symbolValue(COMPILING_LAMBDA) != NIL)
+			if (symbolValue(COMPILER_WARN_ON_ASSUMED_SPECIAL) != NIL && symbolValue(COMPILING_LAMBDA) != NIL)
 			{
 				LispCall3(Funcall, WARN, stringNode("Symbol ~S assumed special"), sym);
 				/*
@@ -3604,7 +3537,7 @@ continue_loop:
 		// setSymbolValue(COMPILED_SPECIALS, cons(sym, symbolValue(COMPILED_SPECIALS)));
 		MOV_EDI_SYMBOL_BINDING(sym);
 		MOV_EDI_PTR_WITH_OFFSET_EAX(-ConsTag);
-	}	
+	}
 
 	if (isCons(pairs))
 		Error("Incorrect number of arguments to SETQ: ~A", x);
@@ -3622,28 +3555,24 @@ static LispObj compileLiteralForm(LispObj x, LispObj dest, LispObj /*resultType*
 		{
 			MOV_EAX_OBJ(x);
 			if (isSymbol(x) || isFunction(x))
-				CBref(x, wrapInteger(CURRENT_IP_RAW - 4));	// add symbol reference
+				CBref(x, wrapInteger(CURRENT_IP_RAW - 4)); // add symbol reference
 			if (dest == Dest_EAX)
 				SET_ARG_COUNT(1);
 		}
-		else
-		if (dest == Dest_Stack)
+		else if (dest == Dest_Stack)
 		{
 			PUSH_OBJ(x);
 			if (isSymbol(x) || isFunction(x))
-				CBref(x, wrapInteger(CURRENT_IP_RAW - 4));	// add symbol reference
+				CBref(x, wrapInteger(CURRENT_IP_RAW - 4)); // add symbol reference
 		}
 
 		if (isSymbol(x))
 			retval = SYMBOL;
-		else
-		if (isFixnum(x))
+		else if (isFixnum(x))
 			retval = FIXNUM;
-		else
-		if (isFunction(x))
+		else if (isFunction(x))
 			retval = FUNCTION;
-		else
-		if (isCharacter(x))
+		else if (isCharacter(x))
 			retval = CHARACTER;
 	}
 	else
@@ -3651,15 +3580,14 @@ static LispObj compileLiteralForm(LispObj x, LispObj dest, LispObj /*resultType*
 		if (dest == Dest_EAX || dest == Dest_EAX_Operand)
 		{
 			MOV_EAX_NUM(x);
-			CBref(x, wrapInteger(CURRENT_IP_RAW - 4));	// add reference
+			CBref(x, wrapInteger(CURRENT_IP_RAW - 4)); // add reference
 			if (dest == Dest_EAX)
 				SET_ARG_COUNT(1);
 		}
-		else
-		if (dest == Dest_Stack)
+		else if (dest == Dest_Stack)
 		{
 			PUSH_NUM(x);
-			CBref(x, wrapInteger(CURRENT_IP_RAW - 4));	// add reference
+			CBref(x, wrapInteger(CURRENT_IP_RAW - 4)); // add reference
 		}
 	}
 	return retval;
@@ -3670,8 +3598,7 @@ LispObj compileForm(LispObj x, LispObj dest, LispObj resultType)
 	LispObj retval = T;
 	if (isCons(x))
 		retval = compileList(x, dest, resultType);
-	else
-	if (isSymbol(x))
+	else if (isSymbol(x))
 		retval = compileSymbol(x, dest, resultType);
 	else
 		retval = compileLiteralForm(x, dest, resultType);
@@ -3696,7 +3623,7 @@ static LispObj compileBlockForm(LispObj block, LispObj dest)
 
 	if (len < 2)
 		Error("Invalid block form: ~A", block);
-	
+
 	label = CAR(CDR(block));
 	if (!isSymbol(label))
 		Error("Invalid BLOCK label: ~A", label);
@@ -3711,11 +3638,11 @@ static LispObj compileBlockForm(LispObj block, LispObj dest)
 			// find any inner scope instances of this same label
 			labels = findBlockLabels(CDR(CDR(block)), CAR(lambdas), NIL);
 			if (isCons(Cmember(label, labels)))
-				continue;	// found an inner label, so we won't worry about embedded returns at this level
+				continue; // found an inner label, so we won't worry about embedded returns at this level
 
 			returns = findEmbeddedReturnForms(label, CAR(lambdas), NIL);
 			for (; isCons(returns); returns = CDR(returns))
-			{	
+			{
 				returnForm = CAR(returns);
 				embeddedReturns = cons(returnForm, embeddedReturns);
 			}
@@ -3736,25 +3663,18 @@ static LispObj compileBlockForm(LispObj block, LispObj dest)
 				else if (CAR(CAR(embeddedReturns)) == RETURN)
 				{
 					CAR(CAR(embeddedReturns)) = THROW;
-					CDR(CAR(embeddedReturns)) = cons(tempSym, CDR(CAR(embeddedReturns)));	// splice in NIL block name
+					CDR(CAR(embeddedReturns)) = cons(tempSym, CDR(CAR(embeddedReturns))); // splice in NIL block name
 				}
 				embeddedReturns = CDR(embeddedReturns);
 			}
 
 			// generate (let ((sym (cons 0 0))) (catch sym ...))
 			//
-			compileLetForm(list(LET, 
-				list(
-					list(tempSym, 
-						list(CONS, 0, 0, END_LIST), 
-						END_LIST),
-					END_LIST),
-				list(CATCH, tempSym, cons(PROGN, CDR(CDR(block))), END_LIST),
-				END_LIST), dest);
+			compileLetForm(list(LET, list(list(tempSym, list(CONS, 0, 0, END_LIST), END_LIST), END_LIST),
+								list(CATCH, tempSym, cons(PROGN, CDR(CDR(block))), END_LIST), END_LIST),
+						   dest);
 			if (symbolValue(COMPILER_WARN_ON_DYNAMIC_RETURN) != NIL)
-				LispCall3(Funcall, WARN,
-					stringNode("Had to compile a catch form for a block header: ~A"),
-					label);
+				LispCall3(Funcall, WARN, stringNode("Had to compile a catch form for a block header: ~A"), label);
 		}
 		else
 		{
@@ -3804,10 +3724,10 @@ static LispObj compilePrognForm(LispObj forms, LispObj dest)
 			{
 				// if there is another form following, and it isn't a GO special
 				// form, then omit setting the arg count
-//				if (isCons(CDR(forms)) && CAR(CDR(forms)) != GO)
-//					retval = compileForm(CAR(forms), Dest_EAX_Operand, T);
-//				else	
-					retval = compileForm(CAR(forms), Dest_EAX, T);
+				//				if (isCons(CDR(forms)) && CAR(CDR(forms)) != GO)
+				//					retval = compileForm(CAR(forms), Dest_EAX_Operand, T);
+				//				else
+				retval = compileForm(CAR(forms), Dest_EAX, T);
 				forms = CDR(forms);
 			}
 			if (dest == Dest_Stack)
@@ -3826,13 +3746,11 @@ static LispObj compileNil(LispObj dest)
 		MOV_EAX_NIL();
 		SET_ARG_COUNT(1);
 	}
-	else
-	if (dest == Dest_EAX_Operand)
+	else if (dest == Dest_EAX_Operand)
 	{
 		MOV_EAX_NIL();
 	}
-	else
-	if (dest == Dest_Stack)
+	else if (dest == Dest_Stack)
 	{
 		PUSH_NIL();
 	}
@@ -3881,7 +3799,7 @@ static LispObj compileLetForm(LispObj x, LispObj dest)
 			break;
 		f = CDR(f);
 	}
-	letForms = f;			// skip past declarations
+	letForms = f; // skip past declarations
 
 	// check the declarations for compiler optimization settings
 	compilerBindings = processOptimizeDeclarations(declarationStatements);
@@ -3912,7 +3830,7 @@ static LispObj compileLetForm(LispObj x, LispObj dest)
 			MOV_EBP_PTR_WITH_OFFSET_EAX(integer(envOffset));
 			sym = CAR(sym);
 		}
-		
+
 		if (!isSymbol(sym))
 			Error("Invalid symbol in LET form: ~A", sym);
 
@@ -3931,12 +3849,12 @@ static LispObj compileLetForm(LispObj x, LispObj dest)
 		{
 			// special variable
 			specials++;
- 			if (!symbolVarTableIndex(sym))
+			if (!symbolVarTableIndex(sym))
 				createSymbolTableEntry(sym);
 			setSymbolValue(COMPILED_SPECIALS, cons(sym, symbolValue(COMPILED_SPECIALS)));
 
-			compileLiteralForm(sym, Dest_Stack, T);	// push symbol
-			PUSH_EBP_PTR_WITH_OFFSET(integer(envOffset));	// push value
+			compileLiteralForm(sym, Dest_Stack, T); // push symbol
+			PUSH_EBP_PTR_WITH_OFFSET(integer(envOffset)); // push value
 			specialVars = cons(sym, specialVars);
 		}
 
@@ -3954,15 +3872,14 @@ static LispObj compileLetForm(LispObj x, LispObj dest)
 
 	// introduce new special declarations
 	saveSpecialDecls = symbolValue(LAMBDA_SPECIAL_DECS);
-	setSymbolValue(LAMBDA_SPECIAL_DECS,
-		LispCall2(lispAppend, specialDecs, symbolValue(LAMBDA_SPECIAL_DECS)));
+	setSymbolValue(LAMBDA_SPECIAL_DECS, LispCall2(lispAppend, specialDecs, symbolValue(LAMBDA_SPECIAL_DECS)));
 
 	// if any special variables are present, add those bindings now
 	if (specials)
-	{ 
+	{
 		CBpushCleanup(list(SPECIAL, specialVars, END_LIST));
 
-		MOV_EDI_NIL();	  // null environment
+		MOV_EDI_NIL(); // null environment
 		SET_ARG_COUNT(specials * 2);
 		CALL_INDIRECT(PUSH_SPECIAL_BINDINGS);
 		ADD_ESP_NUM((specials * 2) * 4);
@@ -3980,7 +3897,7 @@ static LispObj compileLetForm(LispObj x, LispObj dest)
 		PUSH_EAX();
 		PUSH_ECX();
 		compileLiteralForm(specialVars, Dest_Stack, T);
-		MOV_EDI_NIL();				// null environment
+		MOV_EDI_NIL(); // null environment
 		SET_ARG_COUNT(1);
 		CALL_INDIRECT(POP_SPECIAL_BINDINGS);
 		ADD_ESP_NUM(4 * 1);
@@ -4046,7 +3963,7 @@ static LispObj compileLetstarForm(LispObj x, LispObj dest)
 			break;
 		f = CDR(f);
 	}
-	letForms = f;			// skip past declarations
+	letForms = f; // skip past declarations
 
 	// check the declarations for compiler optimization settings
 	compilerBindings = processOptimizeDeclarations(declarationStatements);
@@ -4060,8 +3977,7 @@ static LispObj compileLetstarForm(LispObj x, LispObj dest)
 
 	// introduce new special declarations
 	saveSpecialDecls = symbolValue(LAMBDA_SPECIAL_DECS);
-	setSymbolValue(LAMBDA_SPECIAL_DECS,
-		LispCall2(lispAppend, specialDecs, symbolValue(LAMBDA_SPECIAL_DECS)));
+	setSymbolValue(LAMBDA_SPECIAL_DECS, LispCall2(lispAppend, specialDecs, symbolValue(LAMBDA_SPECIAL_DECS)));
 
 	while (isCons(p))
 	{
@@ -4103,12 +4019,12 @@ static LispObj compileLetstarForm(LispObj x, LispObj dest)
 		{
 			// special variable
 			specials++;
- 			if (!symbolVarTableIndex(sym))
+			if (!symbolVarTableIndex(sym))
 				createSymbolTableEntry(sym);
 			setSymbolValue(COMPILED_SPECIALS, cons(sym, symbolValue(COMPILED_SPECIALS)));
-			compileLiteralForm(sym, Dest_Stack, T);	// push symbol
-			PUSH_EBP_PTR_WITH_OFFSET(integer(envOffset));	// push value
-			MOV_EDI_NIL();	  // null environment
+			compileLiteralForm(sym, Dest_Stack, T); // push symbol
+			PUSH_EBP_PTR_WITH_OFFSET(integer(envOffset)); // push value
+			MOV_EDI_NIL(); // null environment
 			SET_ARG_COUNT(2);
 			CALL_INDIRECT(PUSH_SPECIAL_BINDINGS);
 			ADD_ESP_NUM(2 * 4);
@@ -4132,7 +4048,7 @@ static LispObj compileLetstarForm(LispObj x, LispObj dest)
 		PUSH_EAX();
 		PUSH_ECX();
 		compileLiteralForm(specialVars, Dest_Stack, T);
-		MOV_EDI_NIL();				// null environment
+		MOV_EDI_NIL(); // null environment
 		SET_ARG_COUNT(1);
 		CALL_INDIRECT(POP_SPECIAL_BINDINGS);
 		ADD_ESP_NUM(4 * 1);
@@ -4189,7 +4105,7 @@ static LispObj compileLocallyForm(LispObj x, LispObj dest)
 			break;
 		f = CDR(f);
 	}
-	forms = f;			// skip past declarations
+	forms = f; // skip past declarations
 
 	// check the declarations for compiler optimization settings
 	compilerBindings = processOptimizeDeclarations(declarationStatements);
@@ -4245,12 +4161,12 @@ static LispObj compileLoadTimeValueForm(LispObj x, LispObj dest)
 	form = CAR(CDR(x));
 	if (isCons(CDR(CDR(x))))
 		readOnlyP = CAR(CDR(CDR(x)));
-    evaluatedForm = eval(form, NIL);        // evaluate it now
+	evaluatedForm = eval(form, NIL); // evaluate it now
 
-    result = compileLiteralForm(evaluatedForm, dest, T);
+	result = compileLiteralForm(evaluatedForm, dest, T);
 
-    // add a LOAD_TIME_VALUES entry to the information for the function
-    setSymbolValue(LOAD_TIME_VALUES, cons(form, cons(CBLastRefPos(), symbolValue(LOAD_TIME_VALUES))));
+	// add a LOAD_TIME_VALUES entry to the information for the function
+	setSymbolValue(LOAD_TIME_VALUES, cons(form, cons(CBLastRefPos(), symbolValue(LOAD_TIME_VALUES))));
 
 	return result;
 }
@@ -4296,7 +4212,7 @@ static LispObj compileFletForm(LispObj x, LispObj dest)
 		f = CAR(p);
 		if (listLength(f) < 2)
 			Error("Invalid FLET function expression: ~A", f);
-	
+
 		funcName = CAR(f);
 		funcArgs = CAR(CDR(f));
 		funcForms = CDR(CDR(f));
@@ -4319,13 +4235,10 @@ static LispObj compileFletForm(LispObj x, LispObj dest)
 		envOffset = CBincDynamicEnvSize(wrapInteger(4));
 
 		compileFunctionSpecialOperator(
-			list(FUNCTION, 
-				cons(LAMBDA, 
-					cons(funcArgs, 
-						LispCall2(lispAppend, 
-							localDecls, 
-							list(cons(BLOCK, cons(funcName, funcForms)), END_LIST)))), 
-				END_LIST), 
+			list(FUNCTION,
+				 cons(LAMBDA, cons(funcArgs, LispCall2(lispAppend, localDecls,
+													   list(cons(BLOCK, cons(funcName, funcForms)), END_LIST)))),
+				 END_LIST),
 			Dest_EAX_Operand);
 
 		MOV_EBP_PTR_WITH_OFFSET_EAX(integer(envOffset));
@@ -4399,7 +4312,7 @@ static LispObj compileLabelsForm(LispObj x, LispObj dest)
 		f = CAR(p);
 		if (listLength(f) < 2)
 			Error("Invalid LABELS function expression: ~A", f);
-	
+
 		funcName = CAR(f);
 		if (!isSymbol(funcName))
 			Error("Invalid LABELS function expression: ~A", f);
@@ -4411,7 +4324,7 @@ static LispObj compileLabelsForm(LispObj x, LispObj dest)
 		numLocals++;
 		p = CDR(p);
 	}
-	
+
 	// add the bindings
 	localBindings = Cnreverse(localBindings);
 	p = localBindings;
@@ -4425,7 +4338,7 @@ static LispObj compileLabelsForm(LispObj x, LispObj dest)
 	p = localFuns;
 	while (isCons(p))
 	{
-		f = CAR(p);	
+		f = CAR(p);
 		funcName = CAR(f);
 		funcArgs = CAR(CDR(f));
 
@@ -4461,13 +4374,10 @@ static LispObj compileLabelsForm(LispObj x, LispObj dest)
 			Error("Compiler error in LABELS form--could not find function ~A", funcName);
 
 		compileFunctionSpecialOperator(
-			list(FUNCTION, 
-				cons(LAMBDA, 
-					cons(funcArgs, 
-						LispCall2(lispAppend, 
-							localDecls, 
-							list(cons(BLOCK, cons(funcName, funcForms)), END_LIST)))), 
-				END_LIST), 
+			list(FUNCTION,
+				 cons(LAMBDA, cons(funcArgs, LispCall2(lispAppend, localDecls,
+													   list(cons(BLOCK, cons(funcName, funcForms)), END_LIST)))),
+				 END_LIST),
 			Dest_EAX_Operand);
 
 		if (isInteger(CAR(CDR(pos))))
@@ -4506,12 +4416,12 @@ static LispObj compileLabelsForm(LispObj x, LispObj dest)
 LispObj compileTagbodyForm(LispObj x, LispObj dest)
 {
 	LispObj forms = CDR(x);
- 	LispObj p = forms;
+	LispObj p = forms;
 	LispObj tags = NIL;
 	LispObj tagForms = NIL;
 	LispObj t = 0;
 	LispObj form = 0;
- 	LispObj tagForm = 0;
+	LispObj tagForm = 0;
 	LispObj branches = 0;
 	LispObj q = 0;
 	LispObj branchAddress = 0;
@@ -4544,12 +4454,11 @@ LispObj compileTagbodyForm(LispObj x, LispObj dest)
 	tags = Cnreverse(tags);
 	tagForms = Cnreverse(tagForms);
 
-	// if no evaluating forms (forms which are not a tag or a go form), 
+	// if no evaluating forms (forms which are not a tag or a go form),
 	// the tagbody returns NIL
 	if (listLength(tagForms) == listLength(forms))
 		return compileNil(dest);
-	else
-	if ((listLength(tagForms) + goForms) == listLength(forms))
+	else if ((listLength(tagForms) + goForms) == listLength(forms))
 		compileNil(Dest_EAX);
 
 	CBaddLabels(tagForms);
@@ -4579,22 +4488,13 @@ LispObj compileTagbodyForm(LispObj x, LispObj dest)
 							// <form>
 							//	becomes
 							//	(if (let ((sym (cons 0 0)))
-							//			(eq (catch sym <form>) sym)) 
+							//			(eq (catch sym <form>) sym))
 							//		(go tag))
 							newsym = LispCall2(Funcall, FUNCALL, GENSYM);
 							t = list(EQ, list(CATCH, newsym, CAR(p), END_LIST), newsym, END_LIST);
-							t = list(LET, 
-									list(
-										list(newsym, 
-											list(CONS, 0, 0, END_LIST), 
-											END_LIST),
-										END_LIST),
-									t,
-									END_LIST);
-							t = list(IF,
-									t,
-									list(GO, CAR(q), END_LIST),
-									END_LIST);
+							t = list(LET, list(list(newsym, list(CONS, 0, 0, END_LIST), END_LIST), END_LIST), t,
+									 END_LIST);
+							t = list(IF, t, list(GO, CAR(q), END_LIST), END_LIST);
 
 							CAR(p) = t;
 
@@ -4612,8 +4512,7 @@ LispObj compileTagbodyForm(LispObj x, LispObj dest)
 				p = CDR(p);
 			}
 			if (symbolValue(COMPILER_WARN_ON_DYNAMIC_RETURN) != NIL)
-				LispCall2(Funcall, WARN,
-					stringNode("Had to compile a catch form for a tagbody tag"));
+				LispCall2(Funcall, WARN, stringNode("Had to compile a catch form for a tagbody tag"));
 		}
 	}
 
@@ -4625,20 +4524,20 @@ LispObj compileTagbodyForm(LispObj x, LispObj dest)
 		if (isCons(t) && form == CAR(CAR(t)))
 		{
 			tagForm = CAR(t);
-			CAR(CDR(tagForm)) = CURRENT_IP;// get current code address
+			CAR(CDR(tagForm)) = CURRENT_IP; // get current code address
 			t = CDR(t);
 		}
 		else
 		{
 			// try to omit the setting the return count
-//			if (isCons(CDR(p)) && isCons(CAR(CDR(p))) && CAR(CAR(CDR(p))) != GO)
-//				compileForm(form, Dest_EAX_Operand, T);
-//			else
-				compileForm(form, Dest_EAX, T);
+			//			if (isCons(CDR(p)) && isCons(CAR(CDR(p))) && CAR(CAR(CDR(p))) != GO)
+			//				compileForm(form, Dest_EAX_Operand, T);
+			//			else
+			compileForm(form, Dest_EAX, T);
 		}
 		p = CDR(p);
 	}
-	compileNil(Dest_EAX);		// tagbody returns NIL
+	compileNil(Dest_EAX); // tagbody returns NIL
 
 	if (dest == Dest_Stack)
 		PUSH_EAX();
@@ -4706,11 +4605,8 @@ static LispObj compileGoForm(LispObj x, LispObj dest)
 	{
 		tagbodyRecord = findTagIncludingOuterLambdas(tag);
 		if (tagbodyRecord != NIL)
-			return compileThrowForm(
-				list(THROW, 
-					list(QUOTE, tag, END_LIST), 
-					list(QUOTE, tag, END_LIST), 
-					END_LIST), dest);
+			return compileThrowForm(list(THROW, list(QUOTE, tag, END_LIST), list(QUOTE, tag, END_LIST), END_LIST),
+									dest);
 		else
 			Error("No destination tag named ~A was found", tag);
 	}
@@ -4735,28 +4631,24 @@ static LispObj compileGoForm(LispObj x, LispObj dest)
 					// found the tag
 					stackDifference = integer(CBstackIndex()) - stackDepth;
 					if (stackDifference < 0)
-						Error("Invalid stack index found compiling GO form: ~A", 
-							wrapInteger(stackDifference));
+						Error("Invalid stack index found compiling GO form: ~A", wrapInteger(stackDifference));
 					if (stackDifference > 0)
 					{
 						ADD_ESP_NUM(stackDifference);
 						CBincStackIndex(wrapInteger(stackDifference)); // no net change
 					}
-					JMP_LONG_RELATIVE(0);		// jmp  tag
-					CAR(CDR(CDR(tagForm))) = 
-						cons(wrapInteger(CURRENT_IP_RAW - 4), CAR(CDR(CDR(tagForm))));
+					JMP_LONG_RELATIVE(0); // jmp  tag
+					CAR(CDR(CDR(tagForm))) = cons(wrapInteger(CURRENT_IP_RAW - 4), CAR(CDR(CDR(tagForm))));
 					return T;
 				}
 				tagForms = CDR(tagForms);
 			}
 		}
-		else
-		if (type == CATCH)
+		else if (type == CATCH)
 		{
 			CALL_INDIRECT(POP_CATCHER);
 		}
-		else
-		if (type == UNWIND_PROTECT)
+		else if (type == UNWIND_PROTECT)
 		{
 			// include cleanup code
 			// we rebind the cleanups to effectively remove the cleanup
@@ -4775,13 +4667,12 @@ static LispObj compileGoForm(LispObj x, LispObj dest)
 			popDynamicBinding(COMPILER_CLEANUPS);
 			popSpecials();
 		}
-		else
-		if (type == SPECIAL)
+		else if (type == SPECIAL)
 		{
 			PUSH_EAX();
 			PUSH_ECX();
 			compileLiteralForm(CAR(CDR(form)), Dest_Stack, T);
-			MOV_EDI_NIL();				// null environment	
+			MOV_EDI_NIL(); // null environment
 			SET_ARG_COUNT(1);
 			CALL_INDIRECT(POP_SPECIAL_BINDINGS);
 			ADD_ESP_NUM(4 * 1);
@@ -4795,7 +4686,6 @@ static LispObj compileGoForm(LispObj x, LispObj dest)
 	Error("Target of GO not found: ~A", x);
 	return T;
 }
-
 
 static LispObj compileCurrentEnvironment(LispObj x, LispObj dest)
 {
@@ -4840,7 +4730,7 @@ static LispObj compileCurrentEnvironment(LispObj x, LispObj dest)
 		ADD_EDI_NUM(4);
 		if (reg == ENV)
 			PUSH_EDI();
-		compileForm(sym, Dest_EAX_Operand, T);	// evaluate it to get the value
+		compileForm(sym, Dest_EAX_Operand, T); // evaluate it to get the value
 		if (reg == ENV)
 			POP_EDI();
 		MOV_EDI_PLUS_EDX_PTR_WITH_OFFSET_EAX(0);
@@ -4855,7 +4745,7 @@ static LispObj compileCurrentEnvironment(LispObj x, LispObj dest)
 		MOV_EDI_PLUS_EDX_PTR_WITH_OFFSET_EAX(0);
 		ADD_EDI_NUM(4);
 
-		currEnv = CDR(currEnv);	
+		currEnv = CDR(currEnv);
 	}
 	POP_EDI();
 	MOV_EAX_EDX();
@@ -4927,13 +4817,13 @@ static LispObj findTagbodyTag(LispObj tag)
 			return NIL;
 		if (CAR(form) == TAGBODY)
 		{
-			p = CAR(CDR(form));		// p = list of tag forms
+			p = CAR(CDR(form)); // p = list of tag forms
 			while (isCons(p))
 			{
 				if (CAR(CAR(p)) == tag ||
 					// catch case of a bignum as a tag
 					(isBignum(tag) && isBignum(CAR(CAR(p))) && lispNumericEqual(tag, CAR(CAR(p)))))
-					return CAR(p);	// return the tag form
+					return CAR(p); // return the tag form
 				p = CDR(p);
 			}
 		}
@@ -4952,11 +4842,11 @@ static LispObj findTagIncludingOuterLambdas(LispObj tag)
 		form = CAR(forms);
 		if (CAR(form) == TAGBODY)
 		{
-			p = CAR(CDR(form));		// p = list of tag forms
+			p = CAR(CDR(form)); // p = list of tag forms
 			while (isCons(p))
 			{
 				if (CAR(CAR(p)) == tag)
-					return CAR(p);	// return the tag form
+					return CAR(p); // return the tag form
 				p = CDR(p);
 			}
 		}
@@ -4998,21 +4888,17 @@ static LispObj compileReturnFromForm(LispObj x, LispObj dest)
 		Error("Invalid BLOCK label: ~A", label);
 
 	// find the block label
-//	if (label == NIL)
-//		blockRecord = findAnyBlock();
-//	else
-		blockRecord = findBlock(label);
+	//	if (label == NIL)
+	//		blockRecord = findAnyBlock();
+	//	else
+	blockRecord = findBlock(label);
 
 	// if we couldn't find the block record, then throw the return value
 	if (blockRecord == NIL)
 	{
 		blockRecord = findBlockIncludingOuterLambdas(label);
 		if (blockRecord != NIL)
-			return compileThrowForm(
-				list(THROW, 
-					CAR(CDR(CDR(CAR(CDR(blockRecord))))),
-					retx, 
-					END_LIST), dest);
+			return compileThrowForm(list(THROW, CAR(CDR(CDR(CAR(CDR(blockRecord))))), retx, END_LIST), dest);
 		else
 			Error("No enclosing block named ~A was found", label);
 	}
@@ -5032,15 +4918,14 @@ static LispObj compileReturnFromForm(LispObj x, LispObj dest)
 			saveCurrValues = 0;
 			break;
 		}
-		else
-		if (type == CATCH || type == UNWIND_PROTECT || type == SPECIAL)
+		else if (type == CATCH || type == UNWIND_PROTECT || type == SPECIAL)
 		{
 			saveCurrValues = 1;
 			break;
 		}
 		forms = CDR(forms);
 	}
-			
+
 	if (saveCurrValues)
 	{
 		PUSH_EAX();
@@ -5067,26 +4952,22 @@ static LispObj compileReturnFromForm(LispObj x, LispObj dest)
 				}
 				stackDifference = integer(CBstackIndex()) - stackDepth;
 				if (stackDifference < 0)
-					Error("Invalid stack index found compiling RETURN-FROM form: ~A",
-						wrapInteger(stackDifference));
+					Error("Invalid stack index found compiling RETURN-FROM form: ~A", wrapInteger(stackDifference));
 				if (stackDifference > 0)
 				{
 					ADD_ESP_NUM(stackDifference);
 					CBincStackIndex(wrapInteger(stackDifference)); // no net change
 				}
-				JMP_LONG_RELATIVE(0);		// jmp  tag
-				CAR(CDR(blockForm)) = 
-					cons(wrapInteger(CURRENT_IP_RAW - 4), CAR(CDR(blockForm)));
+				JMP_LONG_RELATIVE(0); // jmp  tag
+				CAR(CDR(blockForm)) = cons(wrapInteger(CURRENT_IP_RAW - 4), CAR(CDR(blockForm)));
 				return retval;
 			}
 		}
-		else
-		if (type == CATCH)
+		else if (type == CATCH)
 		{
 			CALL_INDIRECT(POP_CATCHER);
 		}
-		else
-		if (type == UNWIND_PROTECT)
+		else if (type == UNWIND_PROTECT)
 		{
 			// include cleanup code
 			// we rebind the cleanups to effectively remove the cleanup
@@ -5105,13 +4986,12 @@ static LispObj compileReturnFromForm(LispObj x, LispObj dest)
 			popDynamicBinding(COMPILER_CLEANUPS);
 			popSpecials();
 		}
-		else
-		if (type == SPECIAL)
+		else if (type == SPECIAL)
 		{
 			PUSH_EAX();
 			PUSH_ECX();
 			compileLiteralForm(CAR(CDR(form)), Dest_Stack, T);
-			MOV_EDI_NIL();				// null environment
+			MOV_EDI_NIL(); // null environment
 			SET_ARG_COUNT(1);
 			CALL_INDIRECT(POP_SPECIAL_BINDINGS);
 			ADD_ESP_NUM(4 * 1);
@@ -5119,8 +4999,7 @@ static LispObj compileReturnFromForm(LispObj x, LispObj dest)
 			POP_ECX();
 			POP_EAX();
 		}
-		else
-		if (type == LAMBDA)
+		else if (type == LAMBDA)
 			break;
 		forms = CDR(forms);
 	}
@@ -5169,7 +5048,7 @@ static LispObj compilePlusFunctionCall(LispObj x, LispObj dest, LispObj resultTy
 			{
 				TEST_AL_NUM(7);
 			}
-			JNE_SHORT_RELATIVE(0);	// jnz call_func
+			JNE_SHORT_RELATIVE(0); // jnz call_func
 			addr1 = CURRENT_IP;
 		}
 		if (!isFixnum(arg1) && (arg1type != FIXNUM || compilerCheckTypes() != NIL))
@@ -5182,16 +5061,16 @@ static LispObj compilePlusFunctionCall(LispObj x, LispObj dest, LispObj resultTy
 			{
 				TEST_DL_NUM(7);
 			}
-			JNE_SHORT_RELATIVE(0);	// jnz call_func
+			JNE_SHORT_RELATIVE(0); // jnz call_func
 			addr2 = CURRENT_IP;
 		}
 		ADD_EAX_EDX();
 
 		if (resultType != FIXNUM || compilerCheckTypes() != NIL)
 		{
-			JNO_SHORT_RELATIVE(0);	// jno done
+			JNO_SHORT_RELATIVE(0); // jno done
 			addr3 = CURRENT_IP;
-			SUB_EAX_EDX();	// whoops, back up
+			SUB_EAX_EDX(); // whoops, back up
 
 			// call_func:
 			// resolve branch target
@@ -5212,7 +5091,7 @@ static LispObj compilePlusFunctionCall(LispObj x, LispObj dest, LispObj resultTy
 
 		TARGET(1);
 	}
-	else 
+	else
 		compileFunctionCallForm(x, dest);
 
 	return NUMBER;
@@ -5237,26 +5116,26 @@ static LispObj compileMinusFunctionCall(LispObj x, LispObj dest, LispObj resultT
 		arg2 = CAR(CDR(x));
 		arg1type = compileForm(arg1, Dest_Stack, T);
 		arg2type = compileForm(arg2, Dest_EAX_Operand, T);
-		MOV_EDX_EAX();		// edx = arg2
-		POP_EAX();			// eax = arg1
+		MOV_EDX_EAX(); // edx = arg2
+		POP_EAX(); // eax = arg1
 		if (!isFixnum(arg1) && (arg1type != FIXNUM || compilerCheckTypes() != NIL))
 		{
 			TEST_AL_NUM(7);
-			JNE_SHORT_RELATIVE(0);	// jnz call_func
+			JNE_SHORT_RELATIVE(0); // jnz call_func
 			addr1 = CURRENT_IP;
 		}
 		if (!isFixnum(arg2) && (arg2type != FIXNUM || compilerCheckTypes() != NIL))
 		{
 			TEST_DL_NUM(7);
-			JNE_SHORT_RELATIVE(0);	// jnz call_func
+			JNE_SHORT_RELATIVE(0); // jnz call_func
 			addr2 = CURRENT_IP;
 		}
 		SUB_EAX_EDX();
 		if (resultType != FIXNUM || compilerCheckTypes() != NIL)
 		{
-			JNO_SHORT_RELATIVE(0);	// jno done
+			JNO_SHORT_RELATIVE(0); // jno done
 			addr3 = CURRENT_IP;
-			ADD_EAX_EDX();	// whoops, back up
+			ADD_EAX_EDX(); // whoops, back up
 			// call_func:
 			// resolve branch target
 			if (addr1)
@@ -5271,7 +5150,7 @@ static LispObj compileMinusFunctionCall(LispObj x, LispObj dest, LispObj resultT
 		}
 		TARGET(1);
 	}
-	else 
+	else
 		retval = compileFunctionCallForm(x, dest);
 	return retval;
 }
@@ -5295,9 +5174,8 @@ static LispObj compileNumericEqualFunctionCall(LispObj x, LispObj dest)
 		x = CDR(x);
 		arg1 = CAR(x);
 		arg2 = CAR(CDR(x));
-		
-		if ((isSymbol(arg1) || isConstantObject(arg1)) && 
-			(isSymbol(arg2) || isConstantObject(arg2)))
+
+		if ((isSymbol(arg1) || isConstantObject(arg1)) && (isSymbol(arg2) || isConstantObject(arg2)))
 		{
 			arg1type = compileForm(arg1, Dest_EAX_Operand, T);
 			MOV_EDX_EAX();
@@ -5313,13 +5191,13 @@ static LispObj compileNumericEqualFunctionCall(LispObj x, LispObj dest)
 		if (!isFixnum(arg2) && (arg2type != FIXNUM || compilerCheckTypes() != NIL))
 		{
 			TEST_AL_NUM(7);
-			JNE_SHORT_RELATIVE(0);	// jnz call_func
+			JNE_SHORT_RELATIVE(0); // jnz call_func
 			addr3 = CURRENT_IP;
 		}
 		if (!isFixnum(arg1) && (arg1type != FIXNUM || compilerCheckTypes() != NIL))
 		{
 			TEST_DL_NUM(7);
-			JNE_SHORT_RELATIVE(0);	// jnz call_func
+			JNE_SHORT_RELATIVE(0); // jnz call_func
 			addr4 = CURRENT_IP;
 		}
 		if (dest == Dest_Zero_Flag)
@@ -5327,7 +5205,7 @@ static LispObj compileNumericEqualFunctionCall(LispObj x, LispObj dest)
 			CMP_EAX_EDX();
 			if (addr3 || addr4)
 			{
-				JMP_SHORT_RELATIVE(0);		// jmp done
+				JMP_SHORT_RELATIVE(0); // jmp done
 				addr5 = CURRENT_IP;
 			}
 		}
@@ -5335,10 +5213,10 @@ static LispObj compileNumericEqualFunctionCall(LispObj x, LispObj dest)
 		{
 			CMP_EAX_EDX();
 			MOV_EAX_NIL();
-			JNE_SHORT_RELATIVE(0);		// jne done
+			JNE_SHORT_RELATIVE(0); // jne done
 			addr1 = CURRENT_IP;
 			MOV_EAX_T();
-			JMP_SHORT_RELATIVE(0);		// jmp done
+			JMP_SHORT_RELATIVE(0); // jmp done
 			addr2 = CURRENT_IP;
 		}
 
@@ -5349,9 +5227,9 @@ static LispObj compileNumericEqualFunctionCall(LispObj x, LispObj dest)
 				CBsetByte(addr3 - wrapInteger(1), CURRENT_IP - addr3);
 			if (addr4)
 				CBsetByte(addr4 - wrapInteger(1), CURRENT_IP - addr4);
-			PUSH_EDX();			// arg1
-			PUSH_EAX();			// arg2
-			MOV_EDI_NIL();		// environment
+			PUSH_EDX(); // arg1
+			PUSH_EAX(); // arg2
+			MOV_EDI_NIL(); // environment
 			SET_ARG_COUNT(2);
 			CALL_INDIRECT(NUMERIC_EQUAL);
 			ADD_ESP_NUM(8);
@@ -5369,7 +5247,7 @@ static LispObj compileNumericEqualFunctionCall(LispObj x, LispObj dest)
 
 		TARGET(1);
 	}
-	else 
+	else
 		retval = compileFunctionCallForm(x, dest);
 	return retval;
 }
@@ -5392,7 +5270,7 @@ static LispObj compileNumericCompareFunctionCall(LispObj x, LispObj dest)
 	{
 		x = CDR(x);
 		arg1 = CAR(x);
-		arg2 = CAR(CDR(x)); 
+		arg2 = CAR(CDR(x));
 		arg1type = compileForm(arg1, Dest_Stack, T);
 		arg2type = compileForm(arg2, Dest_EAX_Operand, T);
 
@@ -5400,13 +5278,13 @@ static LispObj compileNumericCompareFunctionCall(LispObj x, LispObj dest)
 		if (!isFixnum(arg2) && (arg2type != FIXNUM || compilerCheckTypes() != NIL))
 		{
 			TEST_AL_NUM(7);
-			JNE_SHORT_RELATIVE(0);	// jnz call_func
+			JNE_SHORT_RELATIVE(0); // jnz call_func
 			addr3 = CURRENT_IP;
 		}
 		if (!isFixnum(arg1) && (arg1type != FIXNUM || compilerCheckTypes() != NIL))
 		{
 			TEST_DL_NUM(7);
-			JNE_SHORT_RELATIVE(0);	// jnz call_func
+			JNE_SHORT_RELATIVE(0); // jnz call_func
 			addr4 = CURRENT_IP;
 		}
 		CMP_EAX_EDX();
@@ -5414,20 +5292,17 @@ static LispObj compileNumericCompareFunctionCall(LispObj x, LispObj dest)
 
 		if (op == LESS_EQUAL)
 		{
-			JL_SHORT_RELATIVE(0);			// jl done
+			JL_SHORT_RELATIVE(0); // jl done
 		}
-		else
-		if (op == LESS)
+		else if (op == LESS)
 		{
 			JLE_SHORT_RELATIVE(0);
 		}
-		else
-		if (op == GREATER_EQUAL)
+		else if (op == GREATER_EQUAL)
 		{
 			JG_SHORT_RELATIVE(0);
 		}
-		else
-		if (op == GREATER)
+		else if (op == GREATER)
 		{
 			JGE_SHORT_RELATIVE(0);
 		}
@@ -5436,7 +5311,7 @@ static LispObj compileNumericCompareFunctionCall(LispObj x, LispObj dest)
 		MOV_EAX_T();
 		if (addr3 || addr4)
 		{
-			JMP_SHORT_RELATIVE(0);		// jmp done
+			JMP_SHORT_RELATIVE(0); // jmp done
 			addr2 = CURRENT_IP;
 		}
 
@@ -5448,27 +5323,24 @@ static LispObj compileNumericCompareFunctionCall(LispObj x, LispObj dest)
 
 		if (addr3 || addr4)
 		{
-			PUSH_EDX();			// arg1
-			PUSH_EAX();			// arg2
-			MOV_EDI_NIL();		// environment
+			PUSH_EDX(); // arg1
+			PUSH_EAX(); // arg2
+			MOV_EDI_NIL(); // environment
 			SET_ARG_COUNT(2);
 
 			if (op == LESS_EQUAL)
 			{
 				CALL_INDIRECT(LESS_EQUAL);
 			}
-			else
-			if (op == LESS)
+			else if (op == LESS)
 			{
 				CALL_INDIRECT(LESS);
 			}
-			else
-			if (op == GREATER_EQUAL)
+			else if (op == GREATER_EQUAL)
 			{
 				CALL_INDIRECT(GREATER_EQUAL);
 			}
-			else
-			if (op == GREATER)
+			else if (op == GREATER)
 			{
 				CALL_INDIRECT(GREATER);
 			}
@@ -5482,7 +5354,7 @@ static LispObj compileNumericCompareFunctionCall(LispObj x, LispObj dest)
 
 		TARGET(1);
 	}
-	else 
+	else
 		retval = compileFunctionCallForm(x, dest);
 	return retval;
 }
@@ -5497,31 +5369,31 @@ static LispObj compileConsFunctionCall(LispObj x, LispObj dest)
 	long numArgs = listLength(x);
 	if (numArgs == 2)
 	{
-		compileForm(CAR(x), Dest_Stack, T);			// compile CAR
-		compileForm(CAR(CDR(x)), Dest_Stack, T);	// compile CDR
+		compileForm(CAR(x), Dest_Stack, T); // compile CAR
+		compileForm(CAR(CDR(x)), Dest_Stack, T); // compile CDR
 
 		tryLabel = CURRENT_IP;
-		MOV_EAX_ESI_PTR_WITH_OFFSET(THREAD_HEAP_Index*4);
-		ADD_EAX_NUM(ConsTag);	// tag it quick
+		MOV_EAX_ESI_PTR_WITH_OFFSET(THREAD_HEAP_Index * 4);
+		ADD_EAX_NUM(ConsTag); // tag it quick
 		LEA_EDX_EAX_PTR_WITH_OFFSET(8 - ConsTag);
 
 		// the next instruction will catch both the case of the
 		// buffer being exhausted, and if GC got invoked (causing
 		// the end pointer to be reset to 0).
-		CMP_EDX_ESI_PTR_WITH_OFFSET(THREAD_HEAP_END_Index*4); 
+		CMP_EDX_ESI_PTR_WITH_OFFSET(THREAD_HEAP_END_Index * 4);
 		JLE_SHORT_RELATIVE(0);
 		doneBranch = CURRENT_IP;
 		CALL_INDIRECT(LOAD_LOCAL_HEAP);
-		JMP_SHORT_RELATIVE(0);	// jmp try1
+		JMP_SHORT_RELATIVE(0); // jmp try1
 		CBsetByte(CURRENT_IP - wrapInteger(1), tryLabel - CURRENT_IP);
 		CBsetByte(doneBranch - wrapInteger(1), CURRENT_IP - doneBranch);
-		MOV_ESI_PTR_WITH_OFFSET_EDX(THREAD_HEAP_Index*4);
-		POP_EAX_PTR_WITH_OFFSET(0);					// set CDR
-		POP_EAX_PTR_WITH_OFFSET(-4);				// set CAR
+		MOV_ESI_PTR_WITH_OFFSET_EDX(THREAD_HEAP_Index * 4);
+		POP_EAX_PTR_WITH_OFFSET(0); // set CDR
+		POP_EAX_PTR_WITH_OFFSET(-4); // set CAR
 
 		TARGET(1);
 	}
-	else 
+	else
 		Error("Wrong number of arguments to function CONS: ~A", savex);
 	return CONS;
 }
@@ -5545,7 +5417,7 @@ static LispObj compileEqFunctionCall(LispObj x, LispObj dest)
 		CBsetByte(addr1 - wrapInteger(1), CURRENT_IP - addr1);
 		TARGET(1);
 	}
-	else 
+	else
 		Error("Wrong number of arguments to function EQ: ~A", savex);
 	return SYMBOL;
 }
@@ -5562,23 +5434,23 @@ static LispObj compileCarFunctionCall(LispObj x, LispObj dest)
 	if (numArgs == 1)
 	{
 		compileForm(CAR(x), Dest_EAX_Operand, T);
-		
+
 		MOV_EDX_EAX();
-		AND_EDX_LONG(7);				// check tag
-		CMP_EDX_LONG(ConsTag);			// is it a cons cell?
-		JNE_SHORT_RELATIVE(0);			// jne next1
+		AND_EDX_LONG(7); // check tag
+		CMP_EDX_LONG(ConsTag); // is it a cons cell?
+		JNE_SHORT_RELATIVE(0); // jne next1
 		addr3 = CURRENT_IP;
 
-		MOV_EAX_EAX_PTR_WITH_OFFSET(-4);// if so, get car field
-		JMP_SHORT_RELATIVE(0);			// jmp short done
+		MOV_EAX_EAX_PTR_WITH_OFFSET(-4); // if so, get car field
+		JMP_SHORT_RELATIVE(0); // jmp short done
 		addr1 = CURRENT_IP;
 		// next1:
 		CBsetByte(addr3 - wrapInteger(1), CURRENT_IP - addr3);
 
-		CMP_EAX_NIL();					// is it NIL
-		JE_SHORT_RELATIVE(0);			// je done
+		CMP_EAX_NIL(); // is it NIL
+		JE_SHORT_RELATIVE(0); // je done
 		addr2 = CURRENT_IP;
-		PUSH_EAX();						// push eax
+		PUSH_EAX(); // push eax
 		CALL_INDIRECT(CHECK_LIST);
 		ADD_ESP_NUM(4);
 		// done:
@@ -5587,7 +5459,7 @@ static LispObj compileCarFunctionCall(LispObj x, LispObj dest)
 
 		TARGET(1);
 	}
-	else 
+	else
 		Error("Wrong number of arguments to function CAR: ~A", savex);
 	return T;
 }
@@ -5597,30 +5469,30 @@ static LispObj compileCdrFunctionCall(LispObj x, LispObj dest)
 	LispObj addr1 = 0;
 	LispObj addr2 = 0;
 	LispObj addr3 = 0;
- 	LispObj savex = x;
+	LispObj savex = x;
 
 	x = CDR(x);
 	long numArgs = listLength(x);
 	if (numArgs == 1)
 	{
 		compileForm(CAR(x), Dest_EAX_Operand, T);
-		
+
 		MOV_EDX_EAX();
-		AND_EDX_LONG(7);				// check tag
-		CMP_EDX_LONG(ConsTag);			// is it a cons cell?
-		JNE_SHORT_RELATIVE(0);			// jne next1
+		AND_EDX_LONG(7); // check tag
+		CMP_EDX_LONG(ConsTag); // is it a cons cell?
+		JNE_SHORT_RELATIVE(0); // jne next1
 		addr3 = CURRENT_IP;
 
-		MOV_EAX_EAX_PTR_WITH_OFFSET(0);// if so, get cdr field
-		JMP_SHORT_RELATIVE(0);			// jmp short done
+		MOV_EAX_EAX_PTR_WITH_OFFSET(0); // if so, get cdr field
+		JMP_SHORT_RELATIVE(0); // jmp short done
 		addr1 = CURRENT_IP;
 		// next1:
 		CBsetByte(addr3 - wrapInteger(1), CURRENT_IP - addr3);
 
-		CMP_EAX_NIL();					// is it NIL
-		JE_SHORT_RELATIVE(0);			// je done
+		CMP_EAX_NIL(); // is it NIL
+		JE_SHORT_RELATIVE(0); // je done
 		addr2 = CURRENT_IP;
-		PUSH_EAX();						// push eax
+		PUSH_EAX(); // push eax
 		CALL_INDIRECT(CHECK_LIST);
 		ADD_ESP_NUM(4);
 		// done:
@@ -5629,7 +5501,7 @@ static LispObj compileCdrFunctionCall(LispObj x, LispObj dest)
 
 		TARGET(1);
 	}
-	else 
+	else
 		Error("Wrong number of arguments to function CDR: ~A", savex);
 	return T;
 }
@@ -5645,7 +5517,7 @@ static LispObj compileNullFunctionCall(LispObj x, LispObj dest)
 		compileForm(CAR(x), Dest_EAX_Operand, T);
 		CMP_EAX_NIL();
 		MOV_EAX_NIL();
-		JNE_SHORT_RELATIVE(0);			// jne next
+		JNE_SHORT_RELATIVE(0); // jne next
 		addr1 = CURRENT_IP;
 		MOV_EAX_T();
 		// next:
@@ -5653,7 +5525,7 @@ static LispObj compileNullFunctionCall(LispObj x, LispObj dest)
 
 		TARGET(1);
 	}
-	else 
+	else
 		Error("Wrong number of arguments to function NULL: ~A", savex);
 	return SYMBOL;
 }
@@ -5665,7 +5537,7 @@ static LispObj compileUrefFunctionCall(LispObj x, LispObj dest)
 	if (listLength(x) != 3)
 		Error("Wrong number of arguments passed to UREF: ~A", x);
 	uvec = CAR(CDR(x));
-	index =	CAR(CDR(CDR(x)));
+	index = CAR(CDR(CDR(x)));
 
 	if (isConstantObject(uvec))
 	{
@@ -5686,7 +5558,7 @@ static LispObj compileUrefFunctionCall(LispObj x, LispObj dest)
 		compileForm(index, Dest_EAX_Operand, T);
 		POP_EDX();
 		BEGIN_ATOMIC();
-		SHR_EAX_NUM(1);					// caution: untagged integer in EAX
+		SHR_EAX_NUM(1); // caution: untagged integer in EAX
 		MOV_EAX_EAX_PLUS_EDX_PTR_WITH_OFFSET(-UvectorTag);
 		END_ATOMIC();
 	}
@@ -5703,7 +5575,7 @@ static LispObj compileUrefSetFunctionCall(LispObj x, LispObj dest)
 	if (listLength(x) != 4)
 		Error("Wrong number of arguments passed to UREF-SET: ~A", x);
 	value = CAR(CDR(x));
-	uvec =	CAR(CDR(CDR(x)));
+	uvec = CAR(CDR(CDR(x)));
 	index = CAR(CDR(CDR(CDR(x))));
 	if (isConstantObject(uvec))
 	{
@@ -5726,10 +5598,10 @@ static LispObj compileUrefSetFunctionCall(LispObj x, LispObj dest)
 		compileForm(index, Dest_Stack, T);
 		compileForm(value, Dest_EAX_Operand, T);
 
-		POP_EDX();					// EDX = index
+		POP_EDX(); // EDX = index
 		BEGIN_ATOMIC();
-		SHR_EDX_NUM(1);				// caution: untagged integer in EDX
-		POP_EDI();					// EDI = uvector
+		SHR_EDX_NUM(1); // caution: untagged integer in EDX
+		POP_EDI(); // EDI = uvector
 		MOV_EDI_PLUS_EDX_PTR_WITH_OFFSET_EAX(-UvectorTag);
 		END_ATOMIC();
 	}
@@ -5766,8 +5638,8 @@ static LispObj compileCatchForm(LispObj x, LispObj dest)
 	// pushCatcher(tag, jmp_buf)
 	LEA_EAX_EBP_PTR_WITH_OFFSET(integer(envOffset));
 	PUSH_EAX();
-	
-	compileForm(tag, Dest_Stack, T);			// evaluate the tag
+
+	compileForm(tag, Dest_Stack, T); // evaluate the tag
 
 	CALL_INDIRECT(PUSH_CATCHER);
 	ADD_ESP_NUM(8);
@@ -5786,16 +5658,16 @@ static LispObj compileCatchForm(LispObj x, LispObj dest)
 	MOV_EBP_PTR_WITH_OFFSET_EBP(integer(envOffset) + 28);
 	BEGIN_ATOMIC();
 	PUSH_EIP();
-	POP_EDX();					// edx contains IP
+	POP_EDX(); // edx contains IP
 	ADD_EDX_NUM(15);
-	MOV_EBP_PTR_WITH_LONG_OFFSET_EDX(integer(envOffset) + 24);	// store ip
-	MOV_EDX_NUM(0);				// this must be 5 bytes-- make sure to clean up for gc
+	MOV_EBP_PTR_WITH_LONG_OFFSET_EDX(integer(envOffset) + 24); // store ip
+	MOV_EDX_NUM(0); // this must be 5 bytes-- make sure to clean up for gc
 	END_ATOMIC();
 
 	// if eax != UNINITIALIZED, we got here via an exception, and EAX contains
 	// the return value
 	CMP_EAX_NUM(UNINITIALIZED);
-	JNE_RELATIVE(0);					// jne		next
+	JNE_RELATIVE(0); // jne		next
 	addr1 = CURRENT_IP;
 
 	retval = compilePrognForm(forms, Dest_EAX);
@@ -5831,10 +5703,10 @@ static LispObj compileThrowForm(LispObj x, LispObj /*dest*/)
 	compileForm(throwTag, Dest_Stack, T);
 	retval = compileForm(throwForm, Dest_EAX, T);
 	PUSH_EAX();
-	SHL_ECX_NUM(3);			// wrapInteger(count)
+	SHL_ECX_NUM(3); // wrapInteger(count)
 	PUSH_ECX();
 	SET_ARG_COUNT(3);
-	CALL_INDIRECT(THROW_EXCEPTION);	// throwException(tag, form, count);
+	CALL_INDIRECT(THROW_EXCEPTION); // throwException(tag, form, count);
 	ADD_ESP_NUM(3 * 4);
 
 	return retval;
@@ -5863,7 +5735,7 @@ static LispObj compileUnwindProtectForm(LispObj x, LispObj dest)
 	protectedForm = CAR(CDR(x));
 	cleanupForms = CDR(CDR(x));
 
-		// allocate room on the stack for the jmpbuf
+	// allocate room on the stack for the jmpbuf
 	envOffset = CBincDynamicEnvSize(wrapInteger(JumpBufferSize));
 
 	// pushCatcher(tag, jmp_buf)
@@ -5888,17 +5760,17 @@ static LispObj compileUnwindProtectForm(LispObj x, LispObj dest)
 	MOV_EBP_PTR_WITH_OFFSET_EBP(integer(envOffset) + 28);
 	BEGIN_ATOMIC();
 	PUSH_EIP();
-	POP_EDX();					// edx contains IP
+	POP_EDX(); // edx contains IP
 	ADD_EDX_NUM(15);
-	MOV_EBP_PTR_WITH_LONG_OFFSET_EDX(integer(envOffset) + 24);	// store ip
-	MOV_EDX_NUM(0);				// this must be 5 bytes-- make sure to clean up for gc
+	MOV_EBP_PTR_WITH_LONG_OFFSET_EDX(integer(envOffset) + 24); // store ip
+	MOV_EDX_NUM(0); // this must be 5 bytes-- make sure to clean up for gc
 	END_ATOMIC();
 
 	// if eax != UNINITIALIZED, we got here via an exception, and EAX contains
 	// the return value
 	CMP_EAX_NUM(UNINITIALIZED);
-	PUSH_EAX();						// push		eax		;; save result on stack
-	JNE_RELATIVE(0);				// jne		next
+	PUSH_EAX(); // push		eax		;; save result on stack
+	JNE_RELATIVE(0); // jne		next
 	addr1 = CURRENT_IP;
 
 	CBpushCleanup(list(UNWIND_PROTECT, cleanupForms, CBcleanups(), END_LIST));
@@ -5907,7 +5779,7 @@ static LispObj compileUnwindProtectForm(LispObj x, LispObj dest)
 
 	CBpopCleanup();
 
-	// resolve branch target	
+	// resolve branch target
 	CBsetLong(addr1 - wrapInteger(4), CURRENT_IP - addr1);
 
 	// inline cleanup code
@@ -5925,16 +5797,16 @@ static LispObj compileUnwindProtectForm(LispObj x, LispObj dest)
 	POP_EAX();
 	CMP_EAX_LONG(UNINITIALIZED);
 	MOV_EAX_EDX();
-	JE_SHORT_RELATIVE(0);						//je		next2
+	JE_SHORT_RELATIVE(0); // je		next2
 	addr2 = CURRENT_IP;
 
 	// continue thrown exception
 	PUSH_ESI_PTR_WITH_OFFSET(THROW_TAG_Index * 4);
-	PUSH_EAX();						// push eax
-	SHL_ECX_NUM(3);					// ecx = wrapInteger(ecx)
-	PUSH_ECX();						// push ecx
+	PUSH_EAX(); // push eax
+	SHL_ECX_NUM(3); // ecx = wrapInteger(ecx)
+	PUSH_ECX(); // push ecx
 	SET_ARG_COUNT(3);
-	CALL_INDIRECT(THROW_EXCEPTION);	// throwException(tag, value, numValues);
+	CALL_INDIRECT(THROW_EXCEPTION); // throwException(tag, value, numValues);
 	ADD_ESP_NUM(3 * 4);
 	// resolve branch target
 	CBsetByte(addr2 - wrapInteger(1), CURRENT_IP - addr2);
@@ -5959,23 +5831,23 @@ static LispObj compileMultipleValueCallForm(LispObj x, LispObj dest)
 	long addr3 = 0;
 	long addr4 = 0;
 
-	compileForm(func, Dest_Stack, T);	// push function
-	
+	compileForm(func, Dest_Stack, T); // push function
+
 	for (; counter < numforms; counter++)
 	{
 		compileForm(CAR(forms), Dest_EAX, T);
 		forms = CDR(forms);
 		CMP_ECX_LONG(1);
-		JZ_SHORT_RELATIVE(0);				// jz next1
+		JZ_SHORT_RELATIVE(0); // jz next1
 		addr1 = CURRENT_IP;
-		
+
 		CMP_ECX_LONG(0);
-		JNE_SHORT_RELATIVE(0);			// jne next3
+		JNE_SHORT_RELATIVE(0); // jne next3
 		addr3 = CURRENT_IP;
 
 		MOV_EAX_NIL();
-		JMP_SHORT_RELATIVE(0);		// jmp short next4
- 		addr4 = CURRENT_IP;
+		JMP_SHORT_RELATIVE(0); // jmp short next4
+		addr4 = CURRENT_IP;
 
 		// next3:
 		CBsetByte(addr3 - wrapInteger(1), CURRENT_IP - addr3);
@@ -5984,18 +5856,18 @@ static LispObj compileMultipleValueCallForm(LispObj x, LispObj dest)
 		// next4:
 		CBsetByte(addr4 - wrapInteger(1), CURRENT_IP - addr4);
 
-		JMP_SHORT_RELATIVE(0);		// jmp short next2
+		JMP_SHORT_RELATIVE(0); // jmp short next2
 		addr2 = CURRENT_IP;
-		// next1: 
+		// next1:
 		// resolve branch target
 		CBsetByte(addr1 - wrapInteger(1), CURRENT_IP - addr1);
 
 		PUSH_EAX();
 		CALL_INDIRECT(ALLOC_CONS);
 		MOV_EDI_EAX();
-		POP_EDI_PTR_WITH_OFFSET(-4);	// set CAR
+		POP_EDI_PTR_WITH_OFFSET(-4); // set CAR
 		MOV_EAX_NIL();
-		MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// set CDR = NIL
+		MOV_EDI_PTR_WITH_OFFSET_EAX(0); // set CDR = NIL
 		MOV_EAX_EDI();
 
 		// next2:
@@ -6010,9 +5882,9 @@ static LispObj compileMultipleValueCallForm(LispObj x, LispObj dest)
 	ADD_ESP_NUM(numforms * 4);
 
 	// call apply()
-	POP_EDI();						// edi = function
-	PUSH_EDI();						// push function
-	PUSH_EAX();						// push arg list
+	POP_EDI(); // edi = function
+	PUSH_EDI(); // push function
+	PUSH_EAX(); // push arg list
 	SET_ARG_COUNT(2);
 	MOV_EDI_EDI_PTR_WITH_OFFSET(-UvectorTag + (FUNCTION_ENVIRONMENT * 4));
 	CALL_INDIRECT(APPLY);
@@ -6026,16 +5898,14 @@ static LispObj compileMultipleValueCallForm(LispObj x, LispObj dest)
 
 static long validLambda(LispObj x)
 {
-	if (isCons(x) && isCons(CDR(x))
-			&& CAR(x) == LAMBDA && isList(CAR(CDR(x))))
+	if (isCons(x) && isCons(CDR(x)) && CAR(x) == LAMBDA && isList(CAR(CDR(x))))
 		return 1;
 	return 0;
 }
 
 static long validBlock(LispObj x)
 {
-	if (isCons(x) && isCons(CDR(x))
-			&& CAR(x) == BLOCK && isSymbol(CAR(CDR(x))))
+	if (isCons(x) && isCons(CDR(x)) && CAR(x) == BLOCK && isSymbol(CAR(CDR(x))))
 		return 1;
 	return 0;
 }
@@ -6048,17 +5918,16 @@ static LispObj findLambdas(LispObj x)
 	if (validLambda(x))
 		return cons(x, NIL);
 	t = CAR(x);
-	if ((t == FLET || t == LABELS)
-		&& isCons(CDR(x)) && isList(CAR(CDR(x))))
+	if ((t == FLET || t == LABELS) && isCons(CDR(x)) && isList(CAR(CDR(x))))
 		return LispCall2(lispAppend, CAR(CDR(x)), findLambdas(CDR(CDR(x))));
 	if (t == QUOTE)
-		return NIL;		// don't go into quoted expressions
+		return NIL; // don't go into quoted expressions
 	return LispCall2(lispAppend, findLambdas(CAR(x)), findLambdas(CDR(x)));
 }
 
 //
 // If the target is found, a list is returned containing the symbol T,
-// to indicate the item was found, followed by the list of block labels 
+// to indicate the item was found, followed by the list of block labels
 // that enclose the specified target form (there may not be any labels).
 // If the target is not found, NIL is returned.
 // The returned list of labels is inner to outer.
@@ -6068,16 +5937,16 @@ static LispObj findBlockLabels(LispObj outer, LispObj target, LispObj labels)
 	LispObj t = 0;
 	LispObj ret = 0;
 	if (outer == target)
-		return cons(T, labels);	// found the target--return the labels we have collected
+		return cons(T, labels); // found the target--return the labels we have collected
 	if (!isCons(outer))
-		return NIL;		// could not find the target, return NIL to signify no labels found
+		return NIL; // could not find the target, return NIL to signify no labels found
 	t = CAR(outer);
 	if (t == QUOTE)
-		return NIL;		// don't go into quoted expressions
+		return NIL; // don't go into quoted expressions
 	if (validBlock(outer))
-		return findBlockLabels(CDR(CDR(outer)),
-			target,
-			cons(CAR(CDR(outer)), labels));  // we found a block--add its label to the list and recurse
+		return findBlockLabels(
+			CDR(CDR(outer)), target,
+			cons(CAR(CDR(outer)), labels)); // we found a block--add its label to the list and recurse
 	for (t = outer; isCons(t); t = CDR(t))
 	{
 		ret = findBlockLabels(CAR(t), target, labels);
@@ -6106,20 +5975,20 @@ static LispObj searchLambdas(LispObj sym, LispObj lambdas)
 	t = searchLambdas(sym, CAR(lambdas));
 	if (t != NIL)
 		return t;
- 	t = searchLambdas(sym, CDR(lambdas));
+	t = searchLambdas(sym, CDR(lambdas));
 	return t;
 }
 
 //
 //	This function searches for forms (RETURN-FROM sym ...)
-//	It is used to determine if a non-local return-from is 
+//	It is used to determine if a non-local return-from is
 //	needed.
 //	A list of the embedded return-from forms is returned.
 //  The passed labels argument is a list of block labels that are active
 //  for the form. It is initially empty, on the first call, but recursive
 //  calls will populate this list as appropriate. We don't want to return an
 //  embedded RETURN-FROM form which has a label in the enclosing syntax that
-//  it could return to. We are only interested in the cases where it needs 
+//  it could return to. We are only interested in the cases where it needs
 //  to return to a label in an enclosing LAMBDA.
 //
 static LispObj findEmbeddedReturnForms(LispObj sym, LispObj form, LispObj labels)
@@ -6137,22 +6006,19 @@ static LispObj findEmbeddedReturnForms(LispObj sym, LispObj form, LispObj labels
 		p = form;
 		while (isCons(p))
 		{
-			ret = findEmbeddedReturnForms(sym, CAR(p), labels);	// recurse on sublists
+			ret = findEmbeddedReturnForms(sym, CAR(p), labels); // recurse on sublists
 			while (isCons(ret))
 			{
 				retforms = cons(CAR(ret), retforms);
 				ret = CDR(ret);
 			}
 			p = CDR(p);
-		}		
-		if (CAR(form) == RETURN_FROM
-				&& isCons(CDR(form)) 
-				&& CAR(CDR(form)) == sym
-				&& !isCons(Cmember(sym, labels)))	// make sure there is not an enclosing block with this label
+		}
+		if (CAR(form) == RETURN_FROM && isCons(CDR(form)) && CAR(CDR(form)) == sym &&
+			!isCons(Cmember(sym, labels))) // make sure there is not an enclosing block with this label
 			retforms = cons(form, retforms);
-		else if (CAR(form) == RETURN
-				&& sym == NIL
-				&& !isCons(Cmember(sym, labels)))	// make sure there is not an enclosing block with this label
+		else if (CAR(form) == RETURN && sym == NIL &&
+				 !isCons(Cmember(sym, labels))) // make sure there is not an enclosing block with this label
 			retforms = cons(form, retforms);
 
 		return retforms;
@@ -6162,7 +6028,7 @@ static LispObj findEmbeddedReturnForms(LispObj sym, LispObj form, LispObj labels
 
 //
 //	This function searches for forms (GO sym)
-//	It is used to determine if a non-local return-from is 
+//	It is used to determine if a non-local return-from is
 //	needed.
 //	A list of the embedded GO forms is returned.
 //
@@ -6179,17 +6045,15 @@ static LispObj findEmbeddedGoForms(LispObj sym, LispObj form)
 		p = form;
 		while (isCons(p))
 		{
-			ret = findEmbeddedGoForms(sym, CAR(p));	// recurse on sublists
+			ret = findEmbeddedGoForms(sym, CAR(p)); // recurse on sublists
 			while (isCons(ret))
 			{
 				retforms = cons(CAR(ret), retforms);
 				ret = CDR(ret);
 			}
 			p = CDR(p);
-		}		
-		if (CAR(form) == GO
-				&& isCons(CDR(form)) 
-				&& (CAR(CDR(form)) == sym || (Cmember(CAR(CDR(form)), sym) != NIL)))
+		}
+		if (CAR(form) == GO && isCons(CDR(form)) && (CAR(CDR(form)) == sym || (Cmember(CAR(CDR(form)), sym) != NIL)))
 			return cons(form, retforms);
 	}
 	return retforms;
@@ -6202,9 +6066,8 @@ static LispObj referencedByEmbeddedLambdas(LispObj sym)
 
 static void addCompilerFrameInfo(LispObj name, LispObj base, LispObj offset, LispObj indirect)
 {
-	setSymbolValue(COMPILER_FRAME_INFO, 
-		cons((indirect << 26) | (base << 24) | (offset & 0x7fffff8), 
-			cons(name, symbolValue(COMPILER_FRAME_INFO))));
+	setSymbolValue(COMPILER_FRAME_INFO, cons((indirect << 26) | (base << 24) | (offset & 0x7fffff8),
+											 cons(name, symbolValue(COMPILER_FRAME_INFO))));
 }
 
 static void compileVariableHeapBindings(LispObj newVars)
@@ -6217,7 +6080,7 @@ static void compileVariableHeapBindings(LispObj newVars)
 	LispObj n = 0;
 	long num = 0;
 	LispObj indirect = 0;
-	LispObj regbase = 0;	// 0 = EBP, 1 = EBX, 2 = EDI, 3 = ESI
+	LispObj regbase = 0; // 0 = EBP, 1 = EBX, 2 = EDI, 3 = ESI
 
 	// update COMPILER_FRAME_INFO here, add records for all variables
 
@@ -6230,7 +6093,7 @@ static void compileVariableHeapBindings(LispObj newVars)
 		num = integer(n);
 		indirect = 0;
 
-		if (referencedByEmbeddedLambdas(sym) != NIL)	// check symbol
+		if (referencedByEmbeddedLambdas(sym) != NIL) // check symbol
 		{
 			// for each heap variable, allocate a cons and replace
 			// the car of the cons with the symbol value, then replace
@@ -6238,25 +6101,25 @@ static void compileVariableHeapBindings(LispObj newVars)
 			indirect = wrapInteger(1);
 
 			if (reg == EBX)
-			{	
+			{
 				regbase = wrapInteger(1);
 				PUSH_EBX_PTR_WITH_OFFSET(num);
 				CALL_INDIRECT(ALLOC_CONS);
 				MOV_EBX_PTR_WITH_OFFSET_EAX(integer(n));
 			}
-			else	// (reg == EBP)
+			else // (reg == EBP)
 			{
 				regbase = wrapInteger(0);
 				PUSH_EBP_PTR_WITH_OFFSET(num);
 				CALL_INDIRECT(ALLOC_CONS);
- 				MOV_EBP_PTR_WITH_OFFSET_EAX(integer(n));
+				MOV_EBP_PTR_WITH_OFFSET_EAX(integer(n));
 			}
 
 			MOV_EDI_EAX();
-			POP_EDI_PTR_WITH_OFFSET(-4);	// set CAR
+			POP_EDI_PTR_WITH_OFFSET(-4); // set CAR
 			MOV_EAX_NIL();
-			MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// CDR = NIL
-			CAR(CDR(CDR(q))) = cons(n, NIL); // (sym EBX 12) -> (sym EBX (12)) 
+			MOV_EDI_PTR_WITH_OFFSET_EAX(0); // CDR = NIL
+			CAR(CDR(CDR(q))) = cons(n, NIL); // (sym EBX 12) -> (sym EBX (12))
 		}
 		else
 		{
@@ -6288,7 +6151,7 @@ static void compileFunctionHeapBindings(LispObj newFuncs)
 		n = CAR(CDR(CDR(q)));
 		num = integer(n);
 
-		if (referencedByEmbeddedLambdas(sym) != NIL)	// check symbol
+		if (referencedByEmbeddedLambdas(sym) != NIL) // check symbol
 		{
 			// for each heap variable, allocate a cons and replace
 			// the car of the cons with the symbol value, then replace
@@ -6300,18 +6163,18 @@ static void compileFunctionHeapBindings(LispObj newFuncs)
 				CALL_INDIRECT(ALLOC_CONS);
 				MOV_EBX_PTR_WITH_OFFSET_EAX(integer(n));
 			}
-			else	// (reg == EBP)
+			else // (reg == EBP)
 			{
 				PUSH_EBP_PTR_WITH_OFFSET(num);
 				CALL_INDIRECT(ALLOC_CONS);
- 				MOV_EBP_PTR_WITH_OFFSET_EAX(integer(n));
+				MOV_EBP_PTR_WITH_OFFSET_EAX(integer(n));
 			}
 
 			MOV_EDI_EAX();
-			POP_EDI_PTR_WITH_OFFSET(-4);	// set CAR
+			POP_EDI_PTR_WITH_OFFSET(-4); // set CAR
 			MOV_EAX_NIL();
-			MOV_EDI_PTR_WITH_OFFSET_EAX(0);	// CDR = NIL
-			CAR(CDR(CDR(q))) = cons(n, NIL); // (sym EBX 12) -> (sym EBX (12)) 
+			MOV_EDI_PTR_WITH_OFFSET_EAX(0); // CDR = NIL
+			CAR(CDR(CDR(q))) = cons(n, NIL); // (sym EBX 12) -> (sym EBX (12))
 		}
 		p = CDR(p);
 	}
@@ -6325,16 +6188,13 @@ static LispObj findRequiredArgs(LispObj lambdaList)
 	while (isCons(lambdaList))
 	{
 		sym = CAR(lambdaList);
-		if (sym == LAMBDA_OPTIONAL
-			|| sym == LAMBDA_REST
-			|| sym == LAMBDA_KEY
-			|| sym == LAMBDA_AUX
-			|| sym == LAMBDA_ALLOW_OTHER_KEYS)
+		if (sym == LAMBDA_OPTIONAL || sym == LAMBDA_REST || sym == LAMBDA_KEY || sym == LAMBDA_AUX ||
+			sym == LAMBDA_ALLOW_OTHER_KEYS)
 			break;
 		vars = cons(sym, vars);
 		lambdaList = CDR(lambdaList);
 	}
-	return Cnreverse(vars);	
+	return Cnreverse(vars);
 }
 
 static LispObj findOptionalArgs(LispObj lambdaList)
@@ -6351,17 +6211,14 @@ static LispObj findOptionalArgs(LispObj lambdaList)
 		while (isCons(lambdaList))
 		{
 			sym = CAR(lambdaList);
-			if (sym == LAMBDA_REST
-				|| sym == LAMBDA_KEY
-				|| sym == LAMBDA_AUX
-				|| sym == LAMBDA_ALLOW_OTHER_KEYS)
+			if (sym == LAMBDA_REST || sym == LAMBDA_KEY || sym == LAMBDA_AUX || sym == LAMBDA_ALLOW_OTHER_KEYS)
 				break;
 			vars = cons(sym, vars);
 			lambdaList = CDR(lambdaList);
 		}
-		return Cnreverse(vars);	
+		return Cnreverse(vars);
 	}
-	return NIL;	
+	return NIL;
 }
 
 static LispObj findRestArgs(LispObj lambdaList)
@@ -6381,16 +6238,14 @@ static LispObj findRestArgs(LispObj lambdaList)
 			sym = CAR(lambdaList);
 			if (sym == LAMBDA_OPTIONAL)
 				Error("&OPTIONAL following &REST in lambda list: ~A", sll);
-			if (sym == LAMBDA_KEY
-				|| sym == LAMBDA_AUX
-				|| sym == LAMBDA_ALLOW_OTHER_KEYS)
+			if (sym == LAMBDA_KEY || sym == LAMBDA_AUX || sym == LAMBDA_ALLOW_OTHER_KEYS)
 				break;
 			vars = cons(sym, vars);
 			lambdaList = CDR(lambdaList);
 		}
-		return Cnreverse(vars);	
+		return Cnreverse(vars);
 	}
-	return NIL;	
+	return NIL;
 }
 
 static LispObj findKeyArgs(LispObj lambdaList)
@@ -6412,15 +6267,14 @@ static LispObj findKeyArgs(LispObj lambdaList)
 				Error("&OPTIONAL following &KEY in lambda list: ~A", sll);
 			if (sym == LAMBDA_REST)
 				Error("&REST following &KEY in lambda list: ~A", sll);
-			if (sym == LAMBDA_AUX
-				|| sym == LAMBDA_ALLOW_OTHER_KEYS)
+			if (sym == LAMBDA_AUX || sym == LAMBDA_ALLOW_OTHER_KEYS)
 				break;
 			vars = cons(sym, vars);
 			lambdaList = CDR(lambdaList);
 		}
-		return cons(LAMBDA_KEY, Cnreverse(vars));	
+		return cons(LAMBDA_KEY, Cnreverse(vars));
 	}
-	return NIL;	
+	return NIL;
 }
 
 static LispObj findAuxArgs(LispObj lambdaList)
@@ -6449,9 +6303,9 @@ static LispObj findAuxArgs(LispObj lambdaList)
 			vars = cons(sym, vars);
 			lambdaList = CDR(lambdaList);
 		}
-		return Cnreverse(vars);	
+		return Cnreverse(vars);
 	}
-	return NIL;	
+	return NIL;
 }
 
 static LispObj findAllowOtherKeys(LispObj lambdaList)
@@ -6471,8 +6325,7 @@ static LispObj compileEvalWhenForm(LispObj x, LispObj dest)
 		Error("EVAL-WHEN form missing condition list: ~A", x);
 	conditions = CAR(CDR(x));
 	forms = CDR(CDR(x));
-	if ((Cmember(EXECUTE_KEY, conditions) != NIL)
-			|| (Cmember(EVAL, conditions) != NIL))
+	if ((Cmember(EXECUTE_KEY, conditions) != NIL) || (Cmember(EVAL, conditions) != NIL))
 	{
 		retval = compilePrognForm(forms, dest);
 	}
@@ -6483,8 +6336,8 @@ static LispObj compileEvalWhenForm(LispObj x, LispObj dest)
 
 static int isConstantObject(LispObj x)
 {
-	return !(isSymbol(x) || isCons(x)); 
-		//	|| (isSymbol(x) && isConstantSymbol(x));
+	return !(isSymbol(x) || isCons(x));
+	//	|| (isSymbol(x) && isConstantSymbol(x));
 }
 
 static LispObj compileMultipleValueProg1Form(LispObj x, LispObj dest)
@@ -6540,9 +6393,7 @@ static LispObj compileTheForm(LispObj x, LispObj dest)
 
 	if (isCons(type) && (CAR(type) == VALUES || CAR(type) == FUNCTION))
 	{
-		LispCall3(Funcall, WARN,
-			stringNode("Type not currently checked by THE form: ~A"),
-			type);
+		LispCall3(Funcall, WARN, stringNode("Type not currently checked by THE form: ~A"), type);
 		return compileForm(obj, dest, type);
 	}
 
@@ -6553,20 +6404,19 @@ static LispObj compileTheForm(LispObj x, LispObj dest)
 		// check object at compile time
 		LispCall5(Funcall, CHECK_TYPE_BODY, obj, type, NIL, obj);
 	}
-	else
-	if (compilerCheckTypes() != NIL)
+	else if (compilerCheckTypes() != NIL)
 	{
 		if (type == FIXNUM)
 		{
 			TEST_AL_NUM(7);
 			JE_SHORT_RELATIVE(0);
- 			addr1 = CURRENT_IP;
+			addr1 = CURRENT_IP;
 			PUSH_EAX();
 			CALL_INDIRECT(INVALID_FIXNUM);
 			ADD_ESP_NUM(4);
 
 			// resolve branch target
-			CBsetByte(addr1 - wrapInteger(1), CURRENT_IP - addr1);			
+			CBsetByte(addr1 - wrapInteger(1), CURRENT_IP - addr1);
 		}
 		else
 		{
@@ -6579,7 +6429,7 @@ static LispObj compileTheForm(LispObj x, LispObj dest)
 			PUSH_NIL();
 			compileLiteralForm(obj, Dest_Stack, T);
 			SET_ARG_COUNT(4);
-			LOAD_ENVIRONMENT(CHECK_TYPE_BODY);			// push environment
+			LOAD_ENVIRONMENT(CHECK_TYPE_BODY); // push environment
 			CALL_INDIRECT(CHECK_TYPE_BODY);
 			ADD_ESP_NUM(4 * 4);
 
@@ -6631,7 +6481,7 @@ static LispObj findLexFunction(LispObj sym)
 	{
 		f = CAR(lex);
 		if (CAR(f) == WITH_ONLY_LEXICALS)
-			return NIL;	// don't inherit any lexicals passed this point
+			return NIL; // don't inherit any lexicals passed this point
 		if (CAR(f) == FLET && CAR(CDR(f)) == sym)
 			return T;
 		lex = CDR(lex);
@@ -6692,9 +6542,9 @@ static LispObj processOptimizeDeclarations(LispObj declareForms)
 						else
 							value = wrapInteger(3);
 					}
-					if (!isFixnum(value) || (value != 0	&& value != wrapInteger(1)
-								&& value != wrapInteger(2) && value != wrapInteger(3)))
- 						Error("Invalid declaration syntax: ~A", declareForm);
+					if (!isFixnum(value) ||
+						(value != 0 && value != wrapInteger(1) && value != wrapInteger(2) && value != wrapInteger(3)))
+						Error("Invalid declaration syntax: ~A", declareForm);
 					if (sym == SPEED)
 						compilerSym = COMPILER_OPTIMIZE_SPEED;
 					else if (sym == DEBUG)
@@ -6706,7 +6556,7 @@ static LispObj processOptimizeDeclarations(LispObj declareForms)
 					else if (sym == COMPILATION_SPEED)
 						compilerSym = COMPILER_OPTIMIZE_COMPILATION_SPEED;
 					else
- 						Error("Invalid declaration syntax: ~A", declareForm);
+						Error("Invalid declaration syntax: ~A", declareForm);
 					pushDynamicBinding(compilerSym, value);
 					bindings = cons(compilerSym, bindings);
 					optimizations = CDR(optimizations);
@@ -6734,7 +6584,7 @@ static LispObj processSpecialDeclarations(LispObj declareForms)
 	LispObj specialDecs = NIL;
 	while (isCons(forms))
 	{
-		declarations = CDR(CAR(forms));	 // skip DECLARE symbol
+		declarations = CDR(CAR(forms)); // skip DECLARE symbol
 		while (isCons(declarations))
 		{
 			decForm = CAR(declarations);
@@ -6765,7 +6615,7 @@ static LispObj processTypeDeclarations(LispObj declareForms)
 		{
 			declareForm = CAR(declareList);
 			if (!isCons(declareForm))
-				Error("Invalid declaration: ~A", CAR(forms)); 
+				Error("Invalid declaration: ~A", CAR(forms));
 			sym = CAR(declareForm);
 			if (sym == TYPE || (isSymbolTypeSpecifier(sym) != NIL))
 			{
@@ -6829,7 +6679,7 @@ static LispObj processIgnoreDeclarations(LispObj declareForms)
 				{
 					rec = findVariableRecord(CAR(ignores));
 					if (isCons(rec))
-						CAR(CDR(CDR(CDR(rec)))) += wrapInteger(1);	// inc number of references
+						CAR(CDR(CDR(CDR(rec)))) += wrapInteger(1); // inc number of references
 					ignores = CDR(ignores);
 				}
 			}
@@ -6842,8 +6692,7 @@ static LispObj processIgnoreDeclarations(LispObj declareForms)
 
 static void pushTypeDeclaration(LispObj variable, LispObj type)
 {
-	setSymbolValue(COMPILER_VARIABLE_TYPES, 
-		cons(variable, cons(type, symbolValue(COMPILER_VARIABLE_TYPES))));
+	setSymbolValue(COMPILER_VARIABLE_TYPES, cons(variable, cons(type, symbolValue(COMPILER_VARIABLE_TYPES))));
 }
 
 static void popTypeDeclarations(LispObj numVars)
@@ -6877,7 +6726,7 @@ static LispObj processDynamicExtentDeclarations(LispObj declareForms)
 		{
 			declareForm = CAR(declareList);
 			if (!isCons(declareForm))
-				Error("Invalid declaration: ~A", CAR(forms)); 
+				Error("Invalid declaration: ~A", CAR(forms));
 			sym = CAR(declareForm);
 			if (sym == DYNAMIC_EXTENT)
 			{
@@ -6900,8 +6749,7 @@ static LispObj processDynamicExtentDeclarations(LispObj declareForms)
 
 static void pushDEDeclaration(LispObj variable)
 {
-	setSymbolValue(COMPILER_DYNAMIC_EXTENT_VARS, 
-		cons(variable, symbolValue(COMPILER_DYNAMIC_EXTENT_VARS)));
+	setSymbolValue(COMPILER_DYNAMIC_EXTENT_VARS, cons(variable, symbolValue(COMPILER_DYNAMIC_EXTENT_VARS)));
 }
 
 static void popDEDeclarations(LispObj numVars)
@@ -6924,10 +6772,8 @@ static LispObj isSymbolTypeSpecifier(LispObj symbol)
 {
 	if (symbol == IGNORE_DECL)
 		return NIL;
-	if (symbol == SYMBOL || symbol == FIXNUM ||
-			symbol == BIGNUM || symbol == FLOAT_SYM
-			|| symbol == COMPLEX || symbol == RATIO
-			|| symbol == NUMBER)
+	if (symbol == SYMBOL || symbol == FIXNUM || symbol == BIGNUM || symbol == FLOAT_SYM || symbol == COMPLEX ||
+		symbol == RATIO || symbol == NUMBER)
 		return T;
 	return LispCall3(Funcall, GET, symbol, TYPE_DISCRIMINATOR);
 }
@@ -7006,12 +6852,12 @@ static LispObj compileCaptureCompilerEnvironmentForm(LispObj x, LispObj dest)
 	LispObj lexicalMacros = 0;
 	LispObj lexicalSymbolMacros = 0;
 	LispObj callback = 0;
-	
+
 	env = CBcleanups();
 	lexicalMacros = symbolValue(COLLECT_LEXICAL_MACROS);
 	lexicalSymbolMacros = symbolValue(COLLECT_LEXICAL_SYMBOL_MACROS);
 	callback = symbolValue(CAPTURED_LEXICAL_CALLBACK);
-	
+
 	compileLiteralForm(CAPTURE_COMPILER_ENVIRONMENT, Dest_Stack, T);
 	compileLiteralForm(env, Dest_Stack, T);
 	compileLiteralForm(lexicalMacros, Dest_Stack, T);
@@ -7019,12 +6865,12 @@ static LispObj compileCaptureCompilerEnvironmentForm(LispObj x, LispObj dest)
 	compileLexEnvironment(env, callback);
 	compileLiteralForm(lexicalSymbolMacros, Dest_Stack, T);
 	SET_ARG_COUNT(6);
-	MOV_EDI_NIL();		// null environment
+	MOV_EDI_NIL(); // null environment
 	CALL_INDIRECT(LIST);
 	ADD_ESP_NUM(24);
 	if (dest == Dest_Stack)
 		PUSH_EAX();
 	return T;
-//	return compileLiteralForm(list(
-//		CAPTURE_COMPILER_ENVIRONMENT, env, lexicalMacros, callback, END_LIST), dest, T);
+	//	return compileLiteralForm(list(
+	//		CAPTURE_COMPILER_ENVIRONMENT, env, lexicalMacros, callback, END_LIST), dest, T);
 }

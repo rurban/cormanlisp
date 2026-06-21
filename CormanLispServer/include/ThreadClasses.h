@@ -27,7 +27,7 @@ public:
 	virtual ~PLSyncObject();
 
 	operator HANDLE() const;
-	HANDLE  m_hObject;
+	HANDLE m_hObject;
 
 	virtual BOOL Lock(DWORD dwTimeout = INFINITE);
 	virtual BOOL Unlock() = 0;
@@ -39,8 +39,8 @@ public:
 class PLEvent : public PLSyncObject
 {
 public:
-	PLEvent(BOOL bInitiallyOwn = FALSE, BOOL bManualReset = FALSE,
-		LPCTSTR lpszName = NULL, LPSECURITY_ATTRIBUTES lpsaAttribute = NULL);
+	PLEvent(BOOL bInitiallyOwn = FALSE, BOOL bManualReset = FALSE, LPCTSTR lpszName = NULL,
+			LPSECURITY_ATTRIBUTES lpsaAttribute = NULL);
 	virtual ~PLEvent();
 
 	BOOL SetEvent();
@@ -52,8 +52,8 @@ public:
 class PLSemaphore : public PLSyncObject
 {
 public:
-	PLSemaphore(LONG lInitialCount = 1, LONG lMaxCount = 1,
-		LPCTSTR pstrName = NULL, LPSECURITY_ATTRIBUTES lpsaAttributes = NULL);
+	PLSemaphore(LONG lInitialCount = 1, LONG lMaxCount = 1, LPCTSTR pstrName = NULL,
+				LPSECURITY_ATTRIBUTES lpsaAttributes = NULL);
 	virtual ~PLSemaphore();
 
 	virtual BOOL Unlock();
@@ -73,17 +73,18 @@ public:
 
 protected:
 	PLSyncObject* m_pObject;
-	HANDLE  m_hObject;
-	BOOL    m_bAcquired;
+	HANDLE m_hObject;
+	BOOL m_bAcquired;
 };
 
 class CriticalSection
 {
 public:
 	CriticalSection() { InitializeCriticalSection(&m_sect); }
-	~CriticalSection(){	DeleteCriticalSection(&m_sect); }
-	void Enter()	  { EnterCriticalSection(&m_sect); }
-	void Leave()	  { LeaveCriticalSection(&m_sect); }
+	~CriticalSection() { DeleteCriticalSection(&m_sect); }
+	void Enter() { EnterCriticalSection(&m_sect); }
+	void Leave() { LeaveCriticalSection(&m_sect); }
+
 public:
 	CRITICAL_SECTION m_sect;
 };
@@ -91,24 +92,44 @@ public:
 class ScopedLock
 {
 public:
-	ScopedLock(CriticalSection &cs) : m_cs(cs) {m_cs.Enter();}
+	ScopedLock(CriticalSection& cs) : m_cs(cs) { m_cs.Enter(); }
 	~ScopedLock() { m_cs.Leave(); }
+
 public:
-	CriticalSection &m_cs;
+	CriticalSection& m_cs;
 };
 
 inline PLSyncObject::operator HANDLE() const
-	{ return m_hObject;}
+{
+	return m_hObject;
+}
 
 inline BOOL PLSemaphore::Unlock()
-	{ return Unlock(1, NULL); }
+{
+	return Unlock(1, NULL);
+}
 
-inline BOOL PLEvent::SetEvent()   { return ::SetEvent(m_hObject); }
-inline BOOL PLEvent::PulseEvent() { return ::PulseEvent(m_hObject); }
-inline BOOL PLEvent::ResetEvent() { return ::ResetEvent(m_hObject); }
+inline BOOL PLEvent::SetEvent()
+{
+	return ::SetEvent(m_hObject);
+}
+inline BOOL PLEvent::PulseEvent()
+{
+	return ::PulseEvent(m_hObject);
+}
+inline BOOL PLEvent::ResetEvent()
+{
+	return ::ResetEvent(m_hObject);
+}
 
-inline PLSingleLock::~PLSingleLock() { Unlock(); }
-inline BOOL PLSingleLock::IsLocked() { return m_bAcquired; }
+inline PLSingleLock::~PLSingleLock()
+{
+	Unlock();
+}
+inline BOOL PLSingleLock::IsLocked()
+{
+	return m_bAcquired;
+}
 
 #else // !_WIN32 (Linux)
 
@@ -121,7 +142,8 @@ inline BOOL PLSingleLock::IsLocked() { return m_bAcquired; }
 class CriticalSection
 {
 public:
-	CriticalSection()  {
+	CriticalSection()
+	{
 		pthread_mutexattr_t attr;
 		pthread_mutexattr_init(&attr);
 		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
@@ -129,20 +151,22 @@ public:
 		pthread_mutexattr_destroy(&attr);
 	}
 	~CriticalSection() { pthread_mutex_destroy(&m_mutex); }
-	void Enter()       { pthread_mutex_lock(&m_mutex); }
-	void Leave()       { pthread_mutex_unlock(&m_mutex); }
+	void Enter() { pthread_mutex_lock(&m_mutex); }
+	void Leave() { pthread_mutex_unlock(&m_mutex); }
+
 public:
 	pthread_mutex_t m_mutex;
-	char m_sect[1];    // backward compat: Win32 CRITICAL_SECTION alias
+	char m_sect[1]; // backward compat: Win32 CRITICAL_SECTION alias
 };
 
 class ScopedLock
 {
 public:
-	ScopedLock(CriticalSection &cs) : m_cs(cs) { m_cs.Enter(); }
+	ScopedLock(CriticalSection& cs) : m_cs(cs) { m_cs.Enter(); }
 	~ScopedLock() { m_cs.Leave(); }
+
 public:
-	CriticalSection &m_cs;
+	CriticalSection& m_cs;
 };
 
 // ---- PLSyncObject (base class) ----
@@ -153,8 +177,8 @@ public:
 	PLSyncObject(LPCTSTR pstrName);
 	virtual ~PLSyncObject();
 
-	HANDLE  m_hObject;       // kept for API compat; in Linux port this is
-	                         // a pthread_mutex_t* or sem_t* cast to HANDLE
+	HANDLE m_hObject; // kept for API compat; in Linux port this is
+					  // a pthread_mutex_t* or sem_t* cast to HANDLE
 	operator HANDLE() const { return m_hObject; }
 
 	virtual BOOL Lock(DWORD dwTimeout = INFINITE);
@@ -168,8 +192,8 @@ public:
 class PLEvent : public PLSyncObject
 {
 public:
-	PLEvent(BOOL bInitiallyOwn = FALSE, BOOL bManualReset = FALSE,
-		LPCTSTR lpszName = NULL, LPSECURITY_ATTRIBUTES lpsaAttribute = NULL);
+	PLEvent(BOOL bInitiallyOwn = FALSE, BOOL bManualReset = FALSE, LPCTSTR lpszName = NULL,
+			LPSECURITY_ATTRIBUTES lpsaAttribute = NULL);
 	virtual ~PLEvent();
 
 	BOOL SetEvent();
@@ -178,17 +202,17 @@ public:
 	BOOL Unlock();
 
 	pthread_mutex_t m_eventMutex;
-	pthread_cond_t  m_eventCond;
-	bool            m_signaled;
-	bool            m_manualReset;
+	pthread_cond_t m_eventCond;
+	bool m_signaled;
+	bool m_manualReset;
 };
 
 // ---- PLSemaphore (POSIX semaphore) ----
 class PLSemaphore : public PLSyncObject
 {
 public:
-	PLSemaphore(LONG lInitialCount = 1, LONG lMaxCount = 1,
-		LPCTSTR pstrName = NULL, LPSECURITY_ATTRIBUTES lpsaAttributes = NULL);
+	PLSemaphore(LONG lInitialCount = 1, LONG lMaxCount = 1, LPCTSTR pstrName = NULL,
+				LPSECURITY_ATTRIBUTES lpsaAttributes = NULL);
 	virtual ~PLSemaphore();
 
 	virtual BOOL Unlock();
@@ -211,17 +235,25 @@ public:
 
 protected:
 	PLSyncObject* m_pObject;
-	HANDLE  m_hObject;
-	BOOL    m_bAcquired;
+	HANDLE m_hObject;
+	BOOL m_bAcquired;
 };
 
 // ---- Inline implementations ----
 
-inline PLSingleLock::~PLSingleLock() { Unlock(); }
-inline BOOL PLSingleLock::IsLocked() { return m_bAcquired; }
+inline PLSingleLock::~PLSingleLock()
+{
+	Unlock();
+}
+inline BOOL PLSingleLock::IsLocked()
+{
+	return m_bAcquired;
+}
 
 inline BOOL PLSemaphore::Unlock()
-	{ return Unlock(1, NULL); }
+{
+	return Unlock(1, NULL);
+}
 
 inline BOOL PLEvent::SetEvent()
 {

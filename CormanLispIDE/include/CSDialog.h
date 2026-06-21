@@ -48,10 +48,9 @@ protected:
 class CCSPropertySheet : public CPropertySheet
 {
 public:
-	CCSPropertySheet(UINT nIDCaption, CWnd *pParentWnd = NULL, 
-		UINT iSelectPage = 0);
-	CCSPropertySheet(LPCTSTR pszCaption, CWnd *pParentWnd = NULL, 
-		UINT iSelectPage = 0);
+	CCSPropertySheet(UINT nIDCaption, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CCSPropertySheet(LPCTSTR pszCaption, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	// Generated message map functions

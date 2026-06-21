@@ -19,13 +19,13 @@
 class CharBuf
 {
 public:
-	CharBuf(long length); 
+	CharBuf(long length);
 	~CharBuf();
 	long size();
 	long numchars();
 
-	char* getChars(); 
-	long getCharsInBuffer(unsigned char* buf, long num); 
+	char* getChars();
+	long getCharsInBuffer(unsigned char* buf, long num);
 	long addChars(const char* buf, long num);
 	PLEvent* charsAvailable();
 	PLEvent* bufEmpty();

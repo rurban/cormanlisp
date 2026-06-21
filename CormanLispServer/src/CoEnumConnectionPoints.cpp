@@ -23,8 +23,7 @@ const BOOL g_bIsDLL = FALSE;
 const BOOL g_bIsDLL = TRUE;
 #endif
 
-CoEnumConnectionPoints::CoEnumConnectionPoints(IUnknown* pUnk, ULONG cPoints, 
-					IConnectionPoint** rgpConnectionPoint)
+CoEnumConnectionPoints::CoEnumConnectionPoints(IUnknown* pUnk, ULONG cPoints, IConnectionPoint** rgpConnectionPoint)
 {
 	UINT i = 0;
 	m_cRef = 0;
@@ -33,7 +32,7 @@ CoEnumConnectionPoints::CoEnumConnectionPoints(IUnknown* pUnk, ULONG cPoints,
 	m_iPosition = 0;
 	m_cPoints = cPoints;
 
-	m_rgpConnectionPoint = new IConnectionPoint* [(UINT)cPoints];
+	m_rgpConnectionPoint = new IConnectionPoint*[(UINT)cPoints];
 
 	if (m_rgpConnectionPoint)
 	{
@@ -58,7 +57,7 @@ CoEnumConnectionPoints::~CoEnumConnectionPoints()
 }
 
 // IUnknown methods
-STDMETHODIMP 
+STDMETHODIMP
 CoEnumConnectionPoints::QueryInterface(REFIID riid, void** ppv)
 {
 	if (riid == IID_IUnknown)
@@ -74,40 +73,40 @@ CoEnumConnectionPoints::QueryInterface(REFIID riid, void** ppv)
 	return *ppv ? S_OK : E_NOINTERFACE;
 }
 
-STDMETHODIMP_(ULONG) 
+STDMETHODIMP_(ULONG)
 CoEnumConnectionPoints::AddRef()
 {
-    return InterlockedIncrement(&m_cRef);
+	return InterlockedIncrement(&m_cRef);
 }
 
-STDMETHODIMP_(ULONG) 
+STDMETHODIMP_(ULONG)
 CoEnumConnectionPoints::Release()
 {
-    if (InterlockedDecrement(&m_cRef) != 0)
-        return m_cRef;
-    delete this;
-    return 0;
+	if (InterlockedDecrement(&m_cRef) != 0)
+		return m_cRef;
+	delete this;
+	return 0;
 }
 
 // IEnumConnectionPoints methods
-STDMETHODIMP 
+STDMETHODIMP
 CoEnumConnectionPoints::Next(ULONG cPoints, IConnectionPoint** rgpConnectionPoint, ULONG* pcFetched)
 {
-    ULONG cReturn = 0;
+	ULONG cReturn = 0;
 
-    if (!m_rgpConnectionPoint)
-        return S_FALSE;
+	if (!m_rgpConnectionPoint)
+		return S_FALSE;
 
-    if (!pcFetched)
+	if (!pcFetched)
 	{
 		if (cPoints != 1)
 			return E_POINTER;
 	}
-    else
-        *pcFetched = 0;
+	else
+		*pcFetched = 0;
 
-    if (!rgpConnectionPoint || m_iPosition >= m_cPoints)
-        return S_FALSE;
+	if (!rgpConnectionPoint || m_iPosition >= m_cPoints)
+		return S_FALSE;
 
 	while (m_iPosition < m_cPoints && cPoints > 0)
 	{
@@ -118,49 +117,48 @@ CoEnumConnectionPoints::Next(ULONG cPoints, IConnectionPoint** rgpConnectionPoin
 
 		rgpConnectionPoint++;
 		cReturn++;
-        cPoints--;
+		cPoints--;
 	}
 
-    if (pcFetched)
-        *pcFetched=cReturn;
+	if (pcFetched)
+		*pcFetched = cReturn;
 
-    return S_OK;
+	return S_OK;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoEnumConnectionPoints::Skip(ULONG cPoints)
 {
-    if ((m_iPosition + cPoints) >= m_cPoints || !m_rgpConnectionPoint)
-        return S_FALSE;
+	if ((m_iPosition + cPoints) >= m_cPoints || !m_rgpConnectionPoint)
+		return S_FALSE;
 
-    m_iPosition += cPoints;
-    return S_OK;
+	m_iPosition += cPoints;
+	return S_OK;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoEnumConnectionPoints::Reset()
 {
 	m_iPosition = 0;
 	return S_OK;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoEnumConnectionPoints::Clone(IEnumConnectionPoints** ppEnumConnectionPoints)
 {
-    CoEnumConnectionPoints* pClone = 0;
+	CoEnumConnectionPoints* pClone = 0;
 
-    *ppEnumConnectionPoints = 0;
+	*ppEnumConnectionPoints = 0;
 
-    //Create the clone
-    pClone = new CoEnumConnectionPoints(m_pUnkRef, m_cPoints, m_rgpConnectionPoint);
+	// Create the clone
+	pClone = new CoEnumConnectionPoints(m_pUnkRef, m_cPoints, m_rgpConnectionPoint);
 
-    if (!pClone)
-        return E_OUTOFMEMORY;
+	if (!pClone)
+		return E_OUTOFMEMORY;
 
-    pClone->AddRef();
-    pClone->m_iPosition = m_iPosition;
+	pClone->AddRef();
+	pClone->m_iPosition = m_iPosition;
 
-    *ppEnumConnectionPoints = pClone;
-    return S_OK;
+	*ppEnumConnectionPoints = pClone;
+	return S_OK;
 }
-

@@ -6,7 +6,7 @@
 #include "../distorm/include/distorm.h"
 #include "../distorm/include/mnemonics.h"
 
-#pragma warning (disable:4996) // sprintf() is insecure.
+#pragma warning(disable : 4996) // sprintf() is insecure.
 
 #define OUTPUT_BUF_SIZE (256)
 #define MAX_INSTRUCTION_SIZE (15) // maximum size of the instruction on x86
@@ -19,8 +19,8 @@ long unassemble(unsigned long addr, unsigned long offset)
 	_DInst inst;
 	_DecodedInst format;
 	unsigned int count = 0;
-	char hex_buf[OUTPUT_BUF_SIZE] = { 0 };
-	char mnemonic_buf[OUTPUT_BUF_SIZE] = { 0 };
+	char hex_buf[OUTPUT_BUF_SIZE] = {0};
+	char mnemonic_buf[OUTPUT_BUF_SIZE] = {0};
 
 	memset(&ci, 0, sizeof(ci));
 	ci.code = (const unsigned char*)(addr + offset);
@@ -40,7 +40,7 @@ long unassemble(unsigned long addr, unsigned long offset)
 	/* hex data - to upper case */
 	{
 		size_t i = 0;
-		const char *p = (char*)format.instructionHex.p;
+		const char* p = (char*)format.instructionHex.p;
 		while (p[i])
 		{
 			hex_buf[i] = toupper(p[i]);
@@ -51,9 +51,10 @@ long unassemble(unsigned long addr, unsigned long offset)
 	/* mnemonic instruction data - to lower case */
 	{
 		size_t i = 0;
-		sprintf(mnemonic_buf, "%s%s%s", (char*)format.mnemonic.p, format.operands.length != 0 ? " " : "", (char*)format.operands.p);
+		sprintf(mnemonic_buf, "%s%s%s", (char*)format.mnemonic.p, format.operands.length != 0 ? " " : "",
+				(char*)format.operands.p);
 
-		char *p = (char*)mnemonic_buf;
+		char* p = (char*)mnemonic_buf;
 		while (p[i])
 		{
 			p[i] = tolower(p[i]);
@@ -61,7 +62,8 @@ long unassemble(unsigned long addr, unsigned long offset)
 		}
 	}
 
-	snprintf(gDisassemblyOutputBuf, sizeof(gDisassemblyOutputBuf), "%-24s %s", (const char *)hex_buf, (const char *)mnemonic_buf);
+	snprintf(gDisassemblyOutputBuf, sizeof(gDisassemblyOutputBuf), "%-24s %s", (const char*)hex_buf,
+			 (const char*)mnemonic_buf);
 
 	/* stop on RET */
 	if (inst.opcode == I_RET)

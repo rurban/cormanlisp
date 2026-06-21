@@ -37,56 +37,54 @@ CoCormanLisp* CormanLispServer = 0;
 
 //////////////////////////////////////////////////////////////////////
 // ctor and dtor
-CoCormanLisp::CoCormanLisp():
-pUserInfo(NULL)
+CoCormanLisp::CoCormanLisp() : pUserInfo(NULL)
 {
 	m_cRef = 0;
 	m_pcpPointSink = 0;
 	m_pcpShutdownPointSink = 0;
 
- 	SvcLock();
+	SvcLock();
 	CormanLispServer = this;
 }
 
 CoCormanLisp::~CoCormanLisp()
 {
-	UserInfo *info = (UserInfo *)pUserInfo;
+	UserInfo* info = (UserInfo*)pUserInfo;
 	SvcUnlock();
 	delete info;
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // IUnknown interfaces
 
 STDMETHODIMP CoCormanLisp::QueryInterface(REFIID riid, void** ppv)
 {
-    if (riid == IID_IUnknown)
-        *ppv = (ICormanLisp*)this;
-    else if (riid == IID_ICormanLisp)
-        *ppv = (ICormanLisp*)this;
-    else if (riid == IID_IConnectionPointContainer)
-        *ppv = (IConnectionPointContainer*)this;
-    else if (riid == IID_ICormanLispDirectCall)
-        *ppv = (ICormanLispDirectCall*)this;
-    else
-        *ppv = 0;
-    if (*ppv)
-        ((IUnknown*)*ppv)->AddRef();
-    return *ppv ? S_OK : E_NOINTERFACE;
+	if (riid == IID_IUnknown)
+		*ppv = (ICormanLisp*)this;
+	else if (riid == IID_ICormanLisp)
+		*ppv = (ICormanLisp*)this;
+	else if (riid == IID_IConnectionPointContainer)
+		*ppv = (IConnectionPointContainer*)this;
+	else if (riid == IID_ICormanLispDirectCall)
+		*ppv = (ICormanLispDirectCall*)this;
+	else
+		*ppv = 0;
+	if (*ppv)
+		((IUnknown*)*ppv)->AddRef();
+	return *ppv ? S_OK : E_NOINTERFACE;
 }
 
 STDMETHODIMP_(ULONG) CoCormanLisp::AddRef()
 {
-    return InterlockedIncrement(&m_cRef);
+	return InterlockedIncrement(&m_cRef);
 }
 
 STDMETHODIMP_(ULONG) CoCormanLisp::Release()
 {
-    if (InterlockedDecrement(&m_cRef) != 0)
-        return m_cRef;
-    delete this;
-    return 0;
+	if (InterlockedDecrement(&m_cRef) != 0)
+		return m_cRef;
+	delete this;
+	return 0;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -96,15 +94,14 @@ char LispImageName[LispImageNameMax] = "CormanLisp.img";
 int CormanLispClientType = 0;
 
 // client type should be WIN_APP_CLIENT, CONSOLE_CLIENT or IDE_CLIENT
-STDMETHODIMP CoCormanLisp::Initialize(IUnknown* clientInterface, 
-			const char* lispImage, int clientType)
+STDMETHODIMP CoCormanLisp::Initialize(IUnknown* clientInterface, const char* lispImage, int clientType)
 {
 	if (lispImage)
 		strncpy_s(LispImageName, sizeof(LispImageName), lispImage, LispImageNameMax);
 	CormanLispClientType = clientType;
 	if (pUserInfo == NULL)
 	{
-		UserInfo *info = new UserInfo;
+		UserInfo* info = new UserInfo;
 		if (!UserInfo::FillUserInfo(*info))
 		{
 			delete info;
@@ -113,58 +110,57 @@ STDMETHODIMP CoCormanLisp::Initialize(IUnknown* clientInterface,
 		}
 		pUserInfo = info;
 	}
-	InitializeCormanLisp(clientInterface, (UserInfo *)pUserInfo);
+	InitializeCormanLisp(clientInterface, (UserInfo*)pUserInfo);
 	return S_OK;
 }
 
 // client type should be WIN_APP_CLIENT, CONSOLE_CLIENT or IDE_CLIENT
-STDMETHODIMP CoCormanLisp::InitializeEx(IUnknown* clientInterface, 
-			const char* lispImage, int clientType,
-            int heapReserve, int heapInitialSize, 
-            int ephemeralHeap1Size, int ephemeralHeap2Size)
+STDMETHODIMP CoCormanLisp::InitializeEx(IUnknown* clientInterface, const char* lispImage, int clientType,
+										int heapReserve, int heapInitialSize, int ephemeralHeap1Size,
+										int ephemeralHeap2Size)
 {
 	if (lispImage)
 		strncpy_s(LispImageName, sizeof(LispImageName), lispImage, LispImageNameMax);
 	CormanLispClientType = clientType;
-    if (heapReserve != 0)
-    {
-        if (heapReserve < LispHeapReserveMin)
-            heapReserve = LispHeapReserveMin;
-        if (heapReserve > LispHeapReserveMax)
-            heapReserve = LispHeapReserveMax;
-         LispHeapReserveDefault = heapReserve;
-    }
+	if (heapReserve != 0)
+	{
+		if (heapReserve < LispHeapReserveMin)
+			heapReserve = LispHeapReserveMin;
+		if (heapReserve > LispHeapReserveMax)
+			heapReserve = LispHeapReserveMax;
+		LispHeapReserveDefault = heapReserve;
+	}
 
-    if (heapInitialSize != 0)
-    {
-        if (heapInitialSize < LispHeapSizeMin)
-            heapInitialSize = LispHeapSizeMin;
-        if (heapInitialSize > LispHeapSizeMax)
-            heapInitialSize = LispHeapSizeMax;
-         LispHeapSize = heapInitialSize;
-    }
+	if (heapInitialSize != 0)
+	{
+		if (heapInitialSize < LispHeapSizeMin)
+			heapInitialSize = LispHeapSizeMin;
+		if (heapInitialSize > LispHeapSizeMax)
+			heapInitialSize = LispHeapSizeMax;
+		LispHeapSize = heapInitialSize;
+	}
 
-    if (ephemeralHeap1Size != 0)
-    {
-        if (ephemeralHeap1Size < EphemeralHeap1SizeMin)
-            ephemeralHeap1Size = EphemeralHeap1SizeMin;
-        if (ephemeralHeap1Size > EphemeralHeap1SizeMax)
-            ephemeralHeap1Size = EphemeralHeap1SizeMax;
-        EphemeralHeap1Size = ephemeralHeap1Size;
-    }
+	if (ephemeralHeap1Size != 0)
+	{
+		if (ephemeralHeap1Size < EphemeralHeap1SizeMin)
+			ephemeralHeap1Size = EphemeralHeap1SizeMin;
+		if (ephemeralHeap1Size > EphemeralHeap1SizeMax)
+			ephemeralHeap1Size = EphemeralHeap1SizeMax;
+		EphemeralHeap1Size = ephemeralHeap1Size;
+	}
 
-    if (ephemeralHeap2Size != 0)
-    {
-        if (ephemeralHeap2Size < EphemeralHeap2SizeMin)
-            ephemeralHeap2Size = EphemeralHeap2SizeMin;
-        if (ephemeralHeap2Size > EphemeralHeap2SizeMax)
-            ephemeralHeap2Size = EphemeralHeap2SizeMax;
-        EphemeralHeap2Size = ephemeralHeap2Size;
-    }
+	if (ephemeralHeap2Size != 0)
+	{
+		if (ephemeralHeap2Size < EphemeralHeap2SizeMin)
+			ephemeralHeap2Size = EphemeralHeap2SizeMin;
+		if (ephemeralHeap2Size > EphemeralHeap2SizeMax)
+			ephemeralHeap2Size = EphemeralHeap2SizeMax;
+		EphemeralHeap2Size = ephemeralHeap2Size;
+	}
 
 	if (pUserInfo == NULL)
 	{
-		UserInfo *info = new UserInfo;
+		UserInfo* info = new UserInfo;
 		if (!UserInfo::FillUserInfo(*info))
 		{
 			delete info;
@@ -174,7 +170,7 @@ STDMETHODIMP CoCormanLisp::InitializeEx(IUnknown* clientInterface,
 		pUserInfo = info;
 	}
 
-	InitializeCormanLisp(clientInterface, (UserInfo *)pUserInfo);
+	InitializeCormanLisp(clientInterface, (UserInfo*)pUserInfo);
 	return S_OK;
 }
 
@@ -192,7 +188,7 @@ STDMETHODIMP CoCormanLisp::ProcessSource(char* text, long numChars)
 
 STDMETHODIMP CoCormanLisp::GetNumThreads(long* numThreads)
 {
-	*numThreads	= GetNumLispThreads();
+	*numThreads = GetNumLispThreads();
 	return S_OK;
 }
 
@@ -216,20 +212,18 @@ STDMETHODIMP CoCormanLisp::EnumConnectionPoints(IEnumConnectionPoints** ppEnumCo
 	IConnectionPoint* rgConnectionPoint = (IConnectionPoint*)m_pcpPointSink;
 
 	// Create the enumerator, we have only one connection point
-	CoEnumConnectionPoints* pEnum = 
-		new CoEnumConnectionPoints((ICormanLisp*)this, 1, 
-			&rgConnectionPoint);
+	CoEnumConnectionPoints* pEnum = new CoEnumConnectionPoints((ICormanLisp*)this, 1, &rgConnectionPoint);
 
 	if (!pEnum)
 		return E_OUTOFMEMORY;
 
 	pEnum->AddRef();
 	*ppEnumConnectionPoints = pEnum;
-	
-	return S_OK;	
+
+	return S_OK;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoCormanLisp::FindConnectionPoint(REFIID riid, IConnectionPoint** ppConnectionPoint)
 {
 	*ppConnectionPoint = 0;
@@ -238,8 +232,7 @@ CoCormanLisp::FindConnectionPoint(REFIID riid, IConnectionPoint** ppConnectionPo
 	{
 		if (!m_pcpPointSink)
 		{
-			m_pcpPointSink = new CoConnectionPoint(IID_ICormanLispTextOutput,
-			 (IConnectionPointContainer*)this);
+			m_pcpPointSink = new CoConnectionPoint(IID_ICormanLispTextOutput, (IConnectionPointContainer*)this);
 			m_pcpPointSink->AddRef();
 		}
 
@@ -250,8 +243,7 @@ CoCormanLisp::FindConnectionPoint(REFIID riid, IConnectionPoint** ppConnectionPo
 	{
 		if (!m_pcpShutdownPointSink)
 		{
-			m_pcpShutdownPointSink = new CoConnectionPoint(IID_ICormanLispShutdown,
-			 (IConnectionPointContainer*)this);
+			m_pcpShutdownPointSink = new CoConnectionPoint(IID_ICormanLispShutdown, (IConnectionPointContainer*)this);
 			m_pcpShutdownPointSink->AddRef();
 		}
 
@@ -261,12 +253,12 @@ CoCormanLisp::FindConnectionPoint(REFIID riid, IConnectionPoint** ppConnectionPo
 	return *ppConnectionPoint ? S_OK : CONNECT_E_NOCONNECTION;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoCormanLisp::SetMessage(const char* text)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispStatusMessage* messager = 0;
 
 	if (!m_pcpPointSink)
@@ -277,8 +269,7 @@ CoCormanLisp::SetMessage(const char* text)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, 
-				(void**)&messager)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, (void**)&messager)))
 		{
 			hr = messager->SetMessage(text);
 			messager->Release();
@@ -289,12 +280,12 @@ CoCormanLisp::SetMessage(const char* text)
 	return hr;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoCormanLisp::GetMessage(char* text, long maxMessageLength)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispStatusMessage* messager = 0;
 
 	if (!m_pcpPointSink)
@@ -305,8 +296,7 @@ CoCormanLisp::GetMessage(char* text, long maxMessageLength)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, 
-				(void**)&messager)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, (void**)&messager)))
 		{
 			hr = messager->GetMessage(text, maxMessageLength);
 			messager->Release();
@@ -317,12 +307,12 @@ CoCormanLisp::GetMessage(char* text, long maxMessageLength)
 	return hr;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoCormanLisp::SetDefaultMessage()
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispStatusMessage* messager = 0;
 
 	if (!m_pcpPointSink)
@@ -333,8 +323,7 @@ CoCormanLisp::SetDefaultMessage()
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, 
-				(void**)&messager)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, (void**)&messager)))
 		{
 			hr = messager->SetDefaultMessage();
 			messager->Release();
@@ -345,12 +334,12 @@ CoCormanLisp::SetDefaultMessage()
 	return hr;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoCormanLisp::OutputText(const char* text, long numChars)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispTextOutput* output = 0;
 
 	if (!m_pcpPointSink)
@@ -361,8 +350,7 @@ CoCormanLisp::OutputText(const char* text, long numChars)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispTextOutput, 
-				(void**)&output)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispTextOutput, (void**)&output)))
 		{
 			hr = output->OutputText(text, numChars);
 			output->Release();
@@ -373,12 +361,12 @@ CoCormanLisp::OutputText(const char* text, long numChars)
 	return hr;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoCormanLisp::LispShutdown(const char* text, long numChars)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispShutdown* output = 0;
 
 	if (!m_pcpShutdownPointSink)
@@ -389,8 +377,7 @@ CoCormanLisp::LispShutdown(const char* text, long numChars)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispShutdown, 
-				(void**)&output)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispShutdown, (void**)&output)))
 		{
 			hr = output->LispShutdown(text, numChars);
 			output->Release();
@@ -405,7 +392,7 @@ STDMETHODIMP CoCormanLisp::GetAppInstance(HINSTANCE* appInstance)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispTextOutput* output = 0;
 
 	*appInstance = 0;
@@ -418,8 +405,7 @@ STDMETHODIMP CoCormanLisp::GetAppInstance(HINSTANCE* appInstance)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispTextOutput, 
-				(void**)&output)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispTextOutput, (void**)&output)))
 		{
 			hr = output->GetAppInstance(appInstance);
 			output->Release();
@@ -434,7 +420,7 @@ STDMETHODIMP CoCormanLisp::GetAppMainWindow(HWND* appMainWindow)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispTextOutput* output = 0;
 
 	*appMainWindow = 0;
@@ -447,8 +433,7 @@ STDMETHODIMP CoCormanLisp::GetAppMainWindow(HWND* appMainWindow)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispTextOutput, 
-				(void**)&output)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispTextOutput, (void**)&output)))
 		{
 			hr = output->GetAppMainWindow(appMainWindow);
 			output->Release();
@@ -463,7 +448,7 @@ STDMETHODIMP CoCormanLisp::OpenEditWindow(char* file, HWND* wnd)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispStatusMessage* messager = 0;
 
 	if (!m_pcpPointSink)
@@ -474,8 +459,7 @@ STDMETHODIMP CoCormanLisp::OpenEditWindow(char* file, HWND* wnd)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, 
-				(void**)&messager)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, (void**)&messager)))
 		{
 			hr = messager->OpenEditWindow(file, wnd);
 			messager->Release();
@@ -490,7 +474,7 @@ STDMETHODIMP CoCormanLisp::OpenURL(char* file, HWND* wnd)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispStatusMessage* messager = 0;
 
 	if (!m_pcpPointSink)
@@ -501,8 +485,7 @@ STDMETHODIMP CoCormanLisp::OpenURL(char* file, HWND* wnd)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, 
-				(void**)&messager)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, (void**)&messager)))
 		{
 			hr = messager->OpenURL(file, wnd);
 			messager->Release();
@@ -517,7 +500,7 @@ STDMETHODIMP CoCormanLisp::AddMenu(char* menuName)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispStatusMessage* messager = 0;
 
 	if (!m_pcpPointSink)
@@ -528,8 +511,7 @@ STDMETHODIMP CoCormanLisp::AddMenu(char* menuName)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, 
-				(void**)&messager)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, (void**)&messager)))
 		{
 			hr = messager->AddMenu(menuName);
 			messager->Release();
@@ -544,7 +526,7 @@ STDMETHODIMP CoCormanLisp::AddMenuItem(char* menuName, char* menuItem)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispStatusMessage* messager = 0;
 
 	if (!m_pcpPointSink)
@@ -555,8 +537,7 @@ STDMETHODIMP CoCormanLisp::AddMenuItem(char* menuName, char* menuItem)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, 
-				(void**)&messager)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, (void**)&messager)))
 		{
 			hr = messager->AddMenuItem(menuName, menuItem);
 			messager->Release();
@@ -567,12 +548,12 @@ STDMETHODIMP CoCormanLisp::AddMenuItem(char* menuName, char* menuItem)
 	return hr;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoCormanLisp::ReplaceSelection(char* text, long numChars)
 {
 	HRESULT hr = S_OK;
 	IEnumConnections* pEnum = 0;
-	CONNECTDATA cd = { 0 };
+	CONNECTDATA cd = {0};
 	ICormanLispStatusMessage* messager = 0;
 
 	if (!m_pcpPointSink)
@@ -583,8 +564,7 @@ CoCormanLisp::ReplaceSelection(char* text, long numChars)
 
 	while (pEnum->Next(1, &cd, NULL) == NOERROR)
 	{
-		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, 
-				(void**)&messager)))
+		if (SUCCEEDED(cd.pUnk->QueryInterface(IID_ICormanLispStatusMessage, (void**)&messager)))
 		{
 			hr = messager->ReplaceSelection(text, numChars);
 			messager->Release();
@@ -619,7 +599,7 @@ STDMETHODIMP CoCormanLisp::HandleStructuredException(long exception, LPEXCEPTION
 	return S_OK;
 }
 
-STDMETHODIMP CoCormanLisp::GetCurrentUserName(char *UserName, size_t *len)
+STDMETHODIMP CoCormanLisp::GetCurrentUserName(char* UserName, size_t* len)
 {
 	if (CurrentUserInfo == NULL || len == NULL)
 	{
@@ -639,7 +619,7 @@ STDMETHODIMP CoCormanLisp::GetCurrentUserName(char *UserName, size_t *len)
 	return S_OK;
 }
 
-STDMETHODIMP CoCormanLisp::GetCurrentUserProfileDirectory(char *profileDirectory, size_t *len)
+STDMETHODIMP CoCormanLisp::GetCurrentUserProfileDirectory(char* profileDirectory, size_t* len)
 {
 	if (CurrentUserInfo == NULL || len == NULL)
 	{
@@ -653,15 +633,14 @@ STDMETHODIMP CoCormanLisp::GetCurrentUserProfileDirectory(char *profileDirectory
 		if (old_len < *len)
 			return S_FALSE;
 
-		strcpy_s(profileDirectory,
-			CurrentUserInfo->GetProfileDirectoryLength() + 1,
-			CurrentUserInfo->GetProfileDirectory());
+		strcpy_s(profileDirectory, CurrentUserInfo->GetProfileDirectoryLength() + 1,
+				 CurrentUserInfo->GetProfileDirectory());
 	}
 
 	return S_OK;
 }
 
-STDMETHODIMP CoCormanLisp::GetCurrentUserPersonalDirectory(char *personalDirectory, size_t *len)
+STDMETHODIMP CoCormanLisp::GetCurrentUserPersonalDirectory(char* personalDirectory, size_t* len)
 {
 	if (CurrentUserInfo == NULL || len == NULL)
 	{
@@ -675,21 +654,20 @@ STDMETHODIMP CoCormanLisp::GetCurrentUserPersonalDirectory(char *personalDirecto
 		if (old_len < *len)
 			return S_FALSE;
 
-		strcpy_s(personalDirectory,
-			CurrentUserInfo->GetPersonalDirectoryLength() + 1,
-			CurrentUserInfo->GetPersonalDirectory());
+		strcpy_s(personalDirectory, CurrentUserInfo->GetPersonalDirectoryLength() + 1,
+				 CurrentUserInfo->GetPersonalDirectory());
 	}
 
 	return S_OK;
 }
 
-STDMETHODIMP CoCormanLisp::GetImageLoadsCount(LONG *count)
+STDMETHODIMP CoCormanLisp::GetImageLoadsCount(LONG* count)
 {
 	if (count == NULL)
 	{
 		return S_FALSE;
 	}
-	
+
 	*count = getImageLoadsCount();
 
 	return S_OK;
@@ -700,8 +678,8 @@ STDMETHODIMP CoCormanLisp::GetImageLoadsCount(LONG *count)
 
 extern "C" IUnknown* CreateCormanLisp()
 {
-    ICormanLisp* p = new CoCormanLisp;
-    if (p)
-        p->AddRef();
-    return p;
+	ICormanLisp* p = new CoCormanLisp;
+	if (p)
+		p->AddRef();
+	return p;
 }

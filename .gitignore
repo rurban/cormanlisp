@@ -43,4 +43,16 @@ installer/Version.wxi
 installer/LICENSE.rtf
 unpacked/*
 CormanLisp*.zip
-
+# Agents
+20*.txt
+kimi-export-session*.md
+session_*.zip
+# CMake build directories
+build-O0/
+build_dbg/
+# Old vendored zlib (not used in build)
+zlib.old/
+# Compiled objects and static libs
+*.o
+*.a
+.clang-format-staging

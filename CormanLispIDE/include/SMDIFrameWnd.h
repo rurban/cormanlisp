@@ -17,22 +17,20 @@ class CSMDIFrameWnd : public CMDIFrameWnd
 {
 	DECLARE_DYNCREATE(CSMDIFrameWnd)
 protected:
-	CSMDIFrameWnd();           // protected constructor used by dynamic creation
+	CSMDIFrameWnd(); // protected constructor used by dynamic creation
 
-// Attributes
+	// Attributes
 public:
-
-// Operations
+	// Operations
 public:
-
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSMDIFrameWnd)
-	public:
+public:
 	virtual BOOL DestroyWindow();
 	//}}AFX_VIRTUAL
 
-// Implementation
+	// Implementation
 protected:
 	virtual ~CSMDIFrameWnd();
 
@@ -42,7 +40,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-	bool	m_bShowOnce;
+	bool m_bShowOnce;
 };
 
 /////////////////////////////////////////////////////////////////////////////

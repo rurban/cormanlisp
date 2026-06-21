@@ -17,8 +17,8 @@ struct PreferencesInfo
 	bool autoPrototypeOnMouseMove;
 	bool autoPrototypeOnKeyDown;
 	bool appendLispOutputToEnd;
-	int  tab;
-	int  charSize;
+	int tab;
+	int charSize;
 	char fontName[128];
 	bool charBold;
 	bool charItalic;
@@ -37,7 +37,7 @@ class PreferencesDialog : public CDialog
 {
 public:
 	PreferencesDialog(UINT nIDTemplate);
-	
+
 	BOOL OnInitDialog();
 	void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 	void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);

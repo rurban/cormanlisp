@@ -2,7 +2,7 @@
 //		Copyright (c) Corman Technologies Inc.
 //		See LICENSE.txt for license information.
 //		-------------------------------
-// 
+//
 //		File:	LispObjDisplay.cpp
 //
 
@@ -19,12 +19,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // LispObjDisplay dialog
 
-
-LispObjDisplay::LispObjDisplay(CWnd* pParent, CStringArray* contents)
-	: CDialog(LispObjDisplay::IDD, pParent)
+LispObjDisplay::LispObjDisplay(CWnd* pParent, CStringArray* contents) : CDialog(LispObjDisplay::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(LispObjDisplay)
-		// NOTE: the ClassWizard will add member initialization here
+	// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 	if (!pParent)
 		pParent = AfxGetApp()->GetMainWnd();
@@ -46,31 +44,28 @@ LispObjDisplay::LispObjDisplay(CWnd* pParent, CStringArray* contents)
 	delete contents;
 }
 
-
 void LispObjDisplay::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(LispObjDisplay)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
+	// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 }
 
-void 
-LispObjDisplay::OnCancel()
+void LispObjDisplay::OnCancel()
 {
 	DestroyWindow();
 }
 
-void 
-LispObjDisplay::PostNcDestroy()
+void LispObjDisplay::PostNcDestroy()
 {
 	delete this;
 }
 
 BEGIN_MESSAGE_MAP(LispObjDisplay, CDialog)
-	//{{AFX_MSG_MAP(LispObjDisplay)
-		// NOTE: the ClassWizard will add message map macros here
-	//}}AFX_MSG_MAP
+//{{AFX_MSG_MAP(LispObjDisplay)
+// NOTE: the ClassWizard will add message map macros here
+//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////

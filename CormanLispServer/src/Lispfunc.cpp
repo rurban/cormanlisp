@@ -26,7 +26,7 @@
 #include <zlib.h>
 #endif
 
-#pragma warning (disable:4127)				// conditional expression is constant
+#pragma warning(disable : 4127) // conditional expression is constant
 
 static void updateKernelFunctions();
 
@@ -74,7 +74,7 @@ LispFunction(SymbolFunction)
 LispFunction(Functionp)
 {
 	LISP_FUNC_BEGIN(1);
-	
+
 	ret = NIL;
 	if (isFunction(LISP_ARG(0)))
 		ret = T;
@@ -128,7 +128,7 @@ LispFunction(listStar)
 	n = LISP_ARG(ARG_COUNT - 1);
 	for (i = ARG_COUNT - 2; i >= 0; i--)
 		n = cons(LISP_ARG(i), n);
-	
+
 	LISP_FUNC_RETURN(n);
 }
 
@@ -140,19 +140,19 @@ LispFunction(lispAppend)
 	LispObj p = copy;
 	LispObj n = 0;
 	long i = 0;
-	
+
 	for (i = 0; i < ARG_COUNT; i++)
 	{
 		n = LISP_ARG(i);
 		checkList(n);
-		if (i == ARG_COUNT - 1)		// if we are at the last element
+		if (i == ARG_COUNT - 1) // if we are at the last element
 		{
 			if (copy == NIL)
 			{
 				LISP_FUNC_RETURN(n);
 			}
 			CDR(p) = n;
-			{	
+			{
 				LISP_FUNC_RETURN(copy);
 			}
 		}
@@ -270,88 +270,82 @@ LispFunction(Funcall)
 		ret
 	}
 #else
-	asm volatile(
-		"push %%ebp\n\t"
-		"mov %%esp, %%ebp\n\t"
-		"push %%ebx\n\t"
-		"push %%edi\n\t"
-		"push $0\n\t"                           // local at [ebp-12]
-		"cmp $1, %%ecx\n\t"
-		"jge 1f\n\t"
-		"call WrongNumberOfArgs\n\t"
-		"1:\n\t"
-		"mov 4(%%ebp, %%ecx, 4), %%eax\n\t"     // eax = function = [ebp + ecx*4 + 4]
-		"mov %%eax, %%edx\n\t"
-		"and $7, %%edx\n\t"
-		"cmp $%c[utag], %%edx\n\t"              // UvectorTag
-		"je 2f\n\t"
-		"push %%eax\n\t"
-		"call checkFunction\n\t"
-		"2:\n\t"
-		"mov -%c[utag](%%eax), %%edx\n\t"       // edx = header
-		"shr $3, %%dl\n\t"
-		"cmp $%c[symtype], %%dl\n\t"            // SymbolType
-		"jne 3f\n\t"
-		"mov %c[symfunc](%%eax), %%eax\n\t"     // SYMBOL_FUNCTION*4-UvectorTag
-		"mov -4(%%eax), %%eax\n\t"
-		"mov %%eax, %%edx\n\t"
-		"and $7, %%edx\n\t"
-		"cmp $%c[utag], %%edx\n\t"
-		"je 9f\n\t"
-		"push 4(%%ebp, %%ecx, 4)\n\t"
-		"call checkFunction\n\t"
-		"9:\n\t"
-		"mov -%c[utag](%%eax), %%edx\n\t"
-		"shr $3, %%dl\n\t"
-		"3:\n\t"                                // dl = type, eax = function
-		"mov %%esp, -12(%%ebp)\n\t"
-		"mov %%ecx, %%ebx\n\t"
-		"dec %%ecx\n\t"                            // ecx = number of actual args (numargs - 1)
-		"4:\n\t"
-		"dec %%ebx\n\t"                            // pre-decrement, then test (skip position 1 = function)
-		"jle 5f\n\t"
-		"push 4(%%ebp, %%ebx, 4)\n\t"             // push arg at position ebx
-		"jmp 4b\n\t"
-		"5:\n\t"
-		"cmp $%c[functype], %%dl\n\t"            // FunctionType
-		"jne 6f\n\t"
-		"mov %c[funcenv](%%eax), %%edi\n\t"     // FUNCTION_ENVIRONMENT*4-UvectorTag
-		"mov %c[funcaddr](%%eax), %%eax\n\t"    // FUNCTION_ADDRESS*4-UvectorTag
-		"lea %c[codeoff](%%eax), %%eax\n\t"
-		"call *%%eax\n\t"
-		"jmp 8f\n\t"
-		"6:\n\t"
-		"cmp $%c[kfunctype], %%dl\n\t"           // KFunctionType
-		"jne 7f\n\t"
-		"mov (%%esi), %%edi\n\t"
-		"call *%c[funcaddr](%%eax)\n\t"
-		"jmp 8f\n\t"
-		"7:\n\t"
-		"push %%eax\n\t"
-		"call checkFunction\n\t"
-		"8:\n\t"
-		"mov -12(%%ebp), %%esp\n\t"
-		"pop %%edi\n\t"
-		"pop %%edi\n\t"
-		"pop %%ebx\n\t"
-		"mov %%ebp, %%esp\n\t"
-		"pop %%ebp\n\t"
-		"ret"
-		:
-		: [utag] "i"(UvectorTag),
-		  [symtype] "i"(SymbolType),
-		  [symfunc] "i"(SYMBOL_FUNCTION * 4 - UvectorTag),
-		  [functype] "i"(FunctionType),
-		  [funcenv] "i"(FUNCTION_ENVIRONMENT * 4 - UvectorTag),
-		  [funcaddr] "i"(FUNCTION_ADDRESS * 4 - UvectorTag),
-		  [codeoff] "i"(COMPILED_CODE_OFFSET * 4 - UvectorTag),
-		  [kfunctype] "i"(KFunctionType)
-		: "eax", "ebx", "ecx", "edx", "edi", "memory"
-	);
+	asm volatile("push %%ebp\n\t"
+				 "mov %%esp, %%ebp\n\t"
+				 "push %%ebx\n\t"
+				 "push %%edi\n\t"
+				 "push $0\n\t" // local at [ebp-12]
+				 "cmp $1, %%ecx\n\t"
+				 "jge 1f\n\t"
+				 "call WrongNumberOfArgs\n\t"
+				 "1:\n\t"
+				 "mov 4(%%ebp, %%ecx, 4), %%eax\n\t" // eax = function = [ebp + ecx*4 + 4]
+				 "mov %%eax, %%edx\n\t"
+				 "and $7, %%edx\n\t"
+				 "cmp $%c[utag], %%edx\n\t" // UvectorTag
+				 "je 2f\n\t"
+				 "push %%eax\n\t"
+				 "call checkFunction\n\t"
+				 "2:\n\t"
+				 "mov -%c[utag](%%eax), %%edx\n\t" // edx = header
+				 "shr $3, %%dl\n\t"
+				 "cmp $%c[symtype], %%dl\n\t" // SymbolType
+				 "jne 3f\n\t"
+				 "mov %c[symfunc](%%eax), %%eax\n\t" // SYMBOL_FUNCTION*4-UvectorTag
+				 "mov -4(%%eax), %%eax\n\t"
+				 "mov %%eax, %%edx\n\t"
+				 "and $7, %%edx\n\t"
+				 "cmp $%c[utag], %%edx\n\t"
+				 "je 9f\n\t"
+				 "push 4(%%ebp, %%ecx, 4)\n\t"
+				 "call checkFunction\n\t"
+				 "9:\n\t"
+				 "mov -%c[utag](%%eax), %%edx\n\t"
+				 "shr $3, %%dl\n\t"
+				 "3:\n\t" // dl = type, eax = function
+				 "mov %%esp, -12(%%ebp)\n\t"
+				 "mov %%ecx, %%ebx\n\t"
+				 "dec %%ecx\n\t" // ecx = number of actual args (numargs - 1)
+				 "4:\n\t"
+				 "dec %%ebx\n\t" // pre-decrement, then test (skip position 1 = function)
+				 "jle 5f\n\t"
+				 "push 4(%%ebp, %%ebx, 4)\n\t" // push arg at position ebx
+				 "jmp 4b\n\t"
+				 "5:\n\t"
+				 "cmp $%c[functype], %%dl\n\t" // FunctionType
+				 "jne 6f\n\t"
+				 "mov %c[funcenv](%%eax), %%edi\n\t" // FUNCTION_ENVIRONMENT*4-UvectorTag
+				 "mov %c[funcaddr](%%eax), %%eax\n\t" // FUNCTION_ADDRESS*4-UvectorTag
+				 "lea %c[codeoff](%%eax), %%eax\n\t"
+				 "call *%%eax\n\t"
+				 "jmp 8f\n\t"
+				 "6:\n\t"
+				 "cmp $%c[kfunctype], %%dl\n\t" // KFunctionType
+				 "jne 7f\n\t"
+				 "mov (%%esi), %%edi\n\t"
+				 "call *%c[funcaddr](%%eax)\n\t"
+				 "jmp 8f\n\t"
+				 "7:\n\t"
+				 "push %%eax\n\t"
+				 "call checkFunction\n\t"
+				 "8:\n\t"
+				 "mov -12(%%ebp), %%esp\n\t"
+				 "pop %%edi\n\t"
+				 "pop %%edi\n\t"
+				 "pop %%ebx\n\t"
+				 "mov %%ebp, %%esp\n\t"
+				 "pop %%ebp\n\t"
+				 "ret"
+				 :
+				 : [utag] "i"(UvectorTag), [symtype] "i"(SymbolType), [symfunc] "i"(SYMBOL_FUNCTION * 4 - UvectorTag),
+				   [functype] "i"(FunctionType), [funcenv] "i"(FUNCTION_ENVIRONMENT * 4 - UvectorTag),
+				   [funcaddr] "i"(FUNCTION_ADDRESS * 4 - UvectorTag),
+				   [codeoff] "i"(COMPILED_CODE_OFFSET * 4 - UvectorTag), [kfunctype] "i"(KFunctionType)
+				 : "eax", "ebx", "ecx", "edx", "edi", "memory");
 #endif
 }
 
-#define ARGS_OFFSET	8
+#define ARGS_OFFSET 8
 
 // redefined in lisp
 CL_NAKED
@@ -489,7 +483,7 @@ LispFunction(Apply)
 		"push 8(%%ebp, %%ebx, 4)\n\t"
 		"jmp 5b\n\t"
 		"6:\n\t"
-		"mov 8(%%ebp), %%edi\n\t"              // last arg = list
+		"mov 8(%%ebp), %%edi\n\t" // last arg = list
 		"7:\n\t"
 		"mov %%edi, %%ebx\n\t"
 		"and $7, %%ebx\n\t"
@@ -525,17 +519,11 @@ LispFunction(Apply)
 		"pop %%ebp\n\t"
 		"ret"
 		:
-		: [utag] "i"(UvectorTag),
-		  [symtype] "i"(SymbolType),
-		  [symfunc] "i"(SYMBOL_FUNCTION * 4 - UvectorTag),
-		  [constag] "i"(ConsTag),
-		  [functype] "i"(FunctionType),
-		  [funcenv] "i"(FUNCTION_ENVIRONMENT * 4 - UvectorTag),
-		  [funcaddr] "i"(FUNCTION_ADDRESS * 4 - UvectorTag),
-		  [codeoff] "i"(COMPILED_CODE_OFFSET * 4 - UvectorTag),
+		: [utag] "i"(UvectorTag), [symtype] "i"(SymbolType), [symfunc] "i"(SYMBOL_FUNCTION * 4 - UvectorTag),
+		  [constag] "i"(ConsTag), [functype] "i"(FunctionType), [funcenv] "i"(FUNCTION_ENVIRONMENT * 4 - UvectorTag),
+		  [funcaddr] "i"(FUNCTION_ADDRESS * 4 - UvectorTag), [codeoff] "i"(COMPILED_CODE_OFFSET * 4 - UvectorTag),
 		  [kfunctype] "i"(KFunctionType)
-		: "eax", "ebx", "ecx", "edx", "edi", "memory"
-	);
+		: "eax", "ebx", "ecx", "edx", "edi", "memory");
 #endif
 }
 //
@@ -549,11 +537,11 @@ LispFunction(create_closure)
 	LispObj environment = LISP_ARG(1);
 	LispObj n = 0;
 
-	n = AllocVector(FUNCTION_SIZE);		// need two slots
+	n = AllocVector(FUNCTION_SIZE); // need two slots
 	setUvectorType(n, FunctionType);
 	UVECTOR(n)[FUNCTION_ENVIRONMENT] = environment;
 	UVECTOR(n)[FUNCTION_ADDRESS] = UVECTOR(func)[FUNCTION_ADDRESS];
-	
+
 	LISP_FUNC_RETURN(n);
 }
 
@@ -564,14 +552,14 @@ LispFunction(gc)
 
 	if (ARG_COUNT == 1)
 		level = LISP_ARG(0);
-	
+
 	garbageCollect(integer(level));
 
 	LISP_FUNC_RETURN(T);
 }
 
 //
-//	Non-standard 
+//	Non-standard
 //  Usage: (SAVE-IMAGE filename)
 //	Returns NIL.
 //
@@ -593,7 +581,7 @@ LispFunction(SaveLispImage)
 }
 
 //
-//	Non-standard 
+//	Non-standard
 //  Usage: (LOAD-IMAGE filename)
 //	Returns NIL.
 //
@@ -607,10 +595,10 @@ LispFunction(LoadLispImage)
 
 	checkString(path);
 	readHeapFromFile(path);
-	updateKernelFunctions();	// reinitialize kernel function pointers
-								// in case the CormanLispServer DLL is loaded at
-								// a different address than when the image 
-								// was saved
+	updateKernelFunctions(); // reinitialize kernel function pointers
+							 // in case the CormanLispServer DLL is loaded at
+							 // a different address than when the image
+							 // was saved
 
 	funcs = symbolValue(LOAD_IMAGE_RESTORE_FUNCS);
 	while (isCons(funcs))
@@ -623,7 +611,7 @@ LispFunction(LoadLispImage)
 	path = 0;
 	_args = 0;
 	LISP_ARG(0) = 0;
-	InitializationEvent.SetEvent();		// done initializing				
+	InitializationEvent.SetEvent(); // done initializing
 	if (isFunction(func))
 	{
 		LispCall1(Funcall, symbolValue(TOP_LEVEL));
@@ -631,8 +619,7 @@ LispFunction(LoadLispImage)
 	LISP_FUNC_RETURN(NIL);
 }
 
-LispObj 
-loadFile(LispObj inputStream)
+LispObj loadFile(LispObj inputStream)
 {
 	long count = 0;
 	LispObj x = UNINITIALIZED;
@@ -659,7 +646,7 @@ loadFile(LispObj inputStream)
 			LispCall2(Write, stringNode("An error occurred while loading.\n"), outputStream);
 			throw;
 		}
-		count++;		
+		count++;
 	}
 	return wrapInteger(count);
 }
@@ -685,8 +672,7 @@ LispFunction(Car)
 
 	if (isCons(LISP_ARG(0)))
 		ret = CAR(LISP_ARG(0));
-	else
-	if (LISP_ARG(0) == NIL)
+	else if (LISP_ARG(0) == NIL)
 		ret = NIL;
 	else
 		Error("Not a list: ~A", LISP_ARG(0));
@@ -701,8 +687,7 @@ LispFunction(Cdr)
 
 	if (isCons(LISP_ARG(0)))
 		ret = CDR(LISP_ARG(0));
-	else
-	if (LISP_ARG(0) == NIL)
+	else if (LISP_ARG(0) == NIL)
 		ret = NIL;
 	else
 		Error("Not a list: ~A", LISP_ARG(0));
@@ -713,7 +698,7 @@ LispFunction(Cdr)
 LispFunction(Eval)
 {
 	LISP_FUNC_BEGIN(1);
-	
+
 	ret = eval(LISP_ARG(0), NIL);
 
 	ReturnCount(NumReturnValues);
@@ -723,7 +708,7 @@ LispFunction(Eval)
 LispFunction(Compile_Form)
 {
 	LISP_FUNC_BEGIN(1);
-	
+
 	ret = compileExpression(LISP_ARG(0), NIL, NIL);
 
 	LISP_FUNC_RETURN(ret);
@@ -738,11 +723,11 @@ LispFunction(Compile_Lambda)
 	LispObj lexSymbolMacros = 0;
 	LispObj name = 0;
 
-	lambda		= LISP_ARG(0);
-	env			= LISP_ARG(1);
-	lexMacros	= LISP_ARG(2);
-	lexSymbolMacros	= LISP_ARG(3);
-	name		= LISP_ARG(4);
+	lambda = LISP_ARG(0);
+	env = LISP_ARG(1);
+	lexMacros = LISP_ARG(2);
+	lexSymbolMacros = LISP_ARG(3);
+	name = LISP_ARG(4);
 
 	ret = compileLambdaExpression(lambda, name, env, lexMacros, lexSymbolMacros);
 
@@ -1021,7 +1006,7 @@ LispFunction(Gensym)
 	long n = 0;
 	long digit = 0;
 	long intbufpos = 15;
-	
+
 	gensymInt++;
 	n = gensymInt;
 	buf[intbufpos--] = 0;
@@ -1046,8 +1031,8 @@ LispFunction(Get_Internal_Run_Time)
 	BOOL rv = 0;
 	ret = bignumNode(wrapInteger(2));
 	rv = QueryPerformanceCounter(&largeTime);
-	UVECTOR(ret)[BIGNUM_FIRST_CELL]		 = (LispObj)largeTime.LowPart;
-	UVECTOR(ret)[BIGNUM_FIRST_CELL + 1]  = (LispObj)largeTime.HighPart;
+	UVECTOR(ret)[BIGNUM_FIRST_CELL] = (LispObj)largeTime.LowPart;
+	UVECTOR(ret)[BIGNUM_FIRST_CELL + 1] = (LispObj)largeTime.HighPart;
 
 	LISP_FUNC_RETURN(ret);
 }
@@ -1080,18 +1065,17 @@ LispFunction(Get_Instruction_Count)
 	unsigned long hightime = 0;
 
 	bn = bignumNode(wrapInteger(2));
-	
-//	__asm db 0fH, 31H
+
+	//	__asm db 0fH, 31H
 
 #ifdef _MSC_VER
-	__asm rdtsc
-	__asm mov dword ptr lowtime, eax
-	__asm mov dword ptr hightime, edx
+	__asm rdtsc __asm mov dword ptr lowtime, eax __asm mov dword ptr hightime,
+		edx
 #else
 	asm volatile("rdtsc" : "=a"(lowtime), "=d"(hightime));
 #endif
 
-	UVECTOR(bn)[BIGNUM_FIRST_CELL] = lowtime;
+			UVECTOR(bn)[BIGNUM_FIRST_CELL] = lowtime;
 	UVECTOR(bn)[BIGNUM_FIRST_CELL + 1] = hightime;
 
 	LISP_FUNC_RETURN(bn);
@@ -1140,7 +1124,6 @@ LispFunction(Force_Output)
 	LISP_FUNC_RETURN(NIL);
 }
 
-
 // redefined later
 LispFunction(Symbol_Get_Flags)
 {
@@ -1160,7 +1143,7 @@ LispFunction(Symbol_Set_Flags)
 
 	checkSymbol(LISP_ARG(1));
 	UVECTOR(LISP_ARG(1))[SYMBOL_FLAGS] = LISP_ARG(0);
-	
+
 	LISP_FUNC_RETURN(LISP_ARG(0));
 }
 
@@ -1212,8 +1195,8 @@ LispFunction(Read)
 		}
 	}
 
-	checkInputStream(s);		
-	
+	checkInputStream(s);
+
 	// this loop allows skipping over read expressions which return
 	// no values i.e. commented expressions
 	while (TRUE)
@@ -1222,7 +1205,7 @@ LispFunction(Read)
 #ifdef _DEBUG
 		fprintf(stderr, "[Read] ret=%p cons=%d\n", (void*)ret, (int)isCons(ret));
 #endif
-		if (ret == UNINITIALIZED)		// if end of file
+		if (ret == UNINITIALIZED) // if end of file
 		{
 			if (eof_error_p != NIL)
 				Error("End of file encountered in stream ~A", s);
@@ -1285,8 +1268,7 @@ LispFunction(Room)
 	LispCall2(Write, Heap1Capacity() - Heap1CurrentlyUsed(), os);
 	LispCall2(Write, stringNode(" bytes."), os);
 	LispCall1(Terpri, os);
-	symbolTableEntries = (integer(SYMBOL_TABLE_COUNT) - FirstJumpTableEntry)
-							/ JumpTableCellsPerEntry;
+	symbolTableEntries = (integer(SYMBOL_TABLE_COUNT) - FirstJumpTableEntry) / JumpTableCellsPerEntry;
 	symbolTableSize = NumJumpTableEntries;
 	LispCall2(Write, stringNode("Jump table size: "), os);
 	LispCall2(Write, wrapInteger(symbolTableSize), os);
@@ -1365,14 +1347,12 @@ LispFunction(Close)
 	checkStream(LISP_ARG(0));
 	if (streamSubclass(stream) == FILE_STREAM)
 	{
-		if (streamDirection(stream) == OUTPUT_KEY
-				|| streamDirection(stream) == BIDIRECTIONAL_KEY)
+		if (streamDirection(stream) == OUTPUT_KEY || streamDirection(stream) == BIDIRECTIONAL_KEY)
 			flushStream(stream);
 
 		retval = CloseHandle((void*)lispIntegerToLong(streamHandle(stream)));
 		if (!retval)
-			Error("Could not close file ~A, error code = ~A", 
-				stream, createLispInteger(GetLastError()));
+			Error("Could not close file ~A, error code = ~A", stream, createLispInteger(GetLastError()));
 		streamOpen(stream) = NIL;
 	}
 
@@ -1380,7 +1360,7 @@ LispFunction(Close)
 }
 
 // low level function for setting uvector field
-// example: (uref-set sym 1 "name")	causes the 
+// example: (uref-set sym 1 "name")	causes the
 // symbol-name to be set to "name"
 // This function is intended to be very fast and low-level.
 // Returns the new value.
@@ -1403,7 +1383,7 @@ LispFunction(Uref_Set)
 LispFunction(Uref)
 {
 	LISP_FUNC_BEGIN(2);
-	
+
 	ret = UVECTOR(LISP_ARG(0))[integer(LISP_ARG(1))];
 
 	LISP_FUNC_RETURN(ret);
@@ -1420,9 +1400,9 @@ LispFunction(Read_Char)
 	if (ARG_COUNT > 0)
 		stream = LISP_ARG(0);
 	if (ARG_COUNT > 1)
-		eof_error = LISP_ARG(1);	
+		eof_error = LISP_ARG(1);
 	if (ARG_COUNT > 2)
-		eof_value = LISP_ARG(2);	
+		eof_value = LISP_ARG(2);
 	if (ARG_COUNT > 3)
 		recursive_p = LISP_ARG(3);
 	if (stream == NIL || stream == T)
@@ -1465,7 +1445,6 @@ LispFunction(_Read_Char_With_Error)
 	LISP_FUNC_RETURN(ret);
 }
 
-
 LispFunction(Unread_Char)
 {
 	LISP_FUNC_BEGIN_VARIABLE(1, 2);
@@ -1507,8 +1486,7 @@ LispFunction(_Output_Chars)
 	checkOutputStream(stream);
 	checkInteger(start);
 	checkInteger(end);
-	if (integer(start) < 0 || end > vectorLength(str)
-		|| end < start)
+	if (integer(start) < 0 || end > vectorLength(str) || end < start)
 		Error("Index out of range: start = ~A, end = ~A", start, end);
 	outputChars(str, integer(start), integer(end - start), stream);
 	ret = str;
@@ -1526,10 +1504,13 @@ LispFunction(LispError)
 
 	// Naked functions break C++ exception unwinding.
 	// For now, just exit on any Lisp error.
-	if (isString(msg)) {
+	if (isString(msg))
+	{
 		LispObj terminated = nullTerminate(msg);
 		fprintf(stderr, "Lisp error: %s\n", (char*)byteArrayStart(terminated));
-	} else {
+	}
+	else
+	{
 		fprintf(stderr, "Lisp error (exiting): object=%p\n", (void*)msg);
 	}
 	exit(1);
@@ -1593,20 +1574,16 @@ LispFunction(Elt)
 	if (isVector(sequence))
 	{
 		n = integer(index);
-		if (n < 0
-				|| (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence))
-				|| n >= arrayDimension(sequence, 0))
-				Error("Index out of range: ~A", index);
+		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) ||
+			n >= arrayDimension(sequence, 0))
+			Error("Index out of range: ~A", index);
 		if (isGenericArray(sequence))
 			ret = arrayStart(sequence)[n];
-		else
-		if (isString(sequence))
+		else if (isString(sequence))
 			ret = wrapCharacter(charArrayStart(sequence)[n]);
-		else
-		if (isBitVector(sequence))
+		else if (isBitVector(sequence))
 			ret = wrapInteger(byteArrayStart(sequence)[n]);
-		else
-		if (isByteVector(sequence))
+		else if (isByteVector(sequence))
 			ret = wrapInteger(byteArrayStart(sequence)[n]);
 	}
 	else
@@ -1642,29 +1619,25 @@ LispFunction(SetElt)
 	if (isVector(sequence))
 	{
 		n = integer(index);
-		if (n < 0 
-			|| (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence))
-			|| n >= arrayDimension(sequence, 0))
+		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) ||
+			n >= arrayDimension(sequence, 0))
 			Error("Index out of range: ~A", index);
 
 		if (isGenericArray(sequence))
 			arrayStart(sequence)[n] = val;
-		else
-		if (isString(sequence))
+		else if (isString(sequence))
 		{
 			checkCharacter(val);
 			charArrayStart(sequence)[n] = (byte)character(val);
 		}
-		else
-		if (isBitVector(sequence))
+		else if (isBitVector(sequence))
 		{
 			checkInteger(val);
 			if (val != 0 && val != wrapInteger(1))
 				Error("Invalid value stored in bit array--out of range: ~A", val);
 			byteArrayStart(sequence)[n] = (byte)(unsigned long)integer(val);
 		}
-		else
-		if (isByteVector(sequence))
+		else if (isByteVector(sequence))
 		{
 			checkInteger(val);
 			if (integer(val) < 0 || integer(val) > 255)
@@ -1730,8 +1703,8 @@ LispFunction(Vector_Slot_Initialized)
 
 	vec = LISP_ARG(0);
 	index = LISP_ARG(1);
-//	if (isString(vec))
-//		return T;		// characters are always initialized
+	//	if (isString(vec))
+	//		return T;		// characters are always initialized
 	if (!isVector(vec) || !isGenericArray(vec))
 		Error("Invalid vector type passed to VECTOR-SLOT-INITIALIZED: ~A", vec);
 	n = integer(index);
@@ -1827,15 +1800,14 @@ LispFunction(Probe_File)
 	LispObj path = LISP_ARG(0);
 	HANDLE handle = 0;
 	checkString(path);
-	
-	handle = CreateFile(
-		(char*)byteArrayStart(nullTerminate(path)), // pointer to name of the file
-		GENERIC_READ,						 // access (read-write) mode
-		FILE_SHARE_READ,					 // share mode
-		NULL,								 // pointer to security descriptor
-		OPEN_EXISTING,						 // how to create
-		FILE_ATTRIBUTE_NORMAL,				 //	file attributes
-		NULL);								 // handle to file with attributes to copy
+
+	handle = CreateFile((char*)byteArrayStart(nullTerminate(path)), // pointer to name of the file
+						GENERIC_READ, // access (read-write) mode
+						FILE_SHARE_READ, // share mode
+						NULL, // pointer to security descriptor
+						OPEN_EXISTING, // how to create
+						FILE_ATTRIBUTE_NORMAL, //	file attributes
+						NULL); // handle to file with attributes to copy
 
 	if (handle == INVALID_HANDLE_VALUE)
 		ret = NIL;
@@ -1857,7 +1829,7 @@ LispFunction(Alloc_Uvector)
 	LispObj tag = LISP_ARG(1);
 	checkInteger(size);
 	ret = AllocVector(integer(size));
-	UVECTOR(ret)[0]	|= tag;
+	UVECTOR(ret)[0] |= tag;
 	LISP_FUNC_RETURN(ret);
 }
 
@@ -1885,7 +1857,12 @@ LispFunction(Alloc_Char_Vector)
 //	the float is returned.
 //
 static char float_buf[128];
-enum FloatPrecision { ShortFloat, SingleFloat, DoubleFloat };
+enum FloatPrecision
+{
+	ShortFloat,
+	SingleFloat,
+	DoubleFloat
+};
 
 LispFunction(Chars_To_Float)
 {
@@ -1898,14 +1875,13 @@ LispFunction(Chars_To_Float)
 	long expDigits = 0;
 	ret = NIL;
 	long i = 0;
- 	char* str = float_buf;
+	char* str = float_buf;
 	long precision = SingleFloat;
 
 	defaultFormat = symbolValue(READ_DEFAULT_FLOAT_FORMAT);
 	if (defaultFormat == SHORT_FLOAT)
 		precision = ShortFloat;
-	else
-	if (defaultFormat == DOUBLE_FLOAT || defaultFormat == LONG_FLOAT)
+	else if (defaultFormat == DOUBLE_FLOAT || defaultFormat == LONG_FLOAT)
 		precision = DoubleFloat;
 
 	checkList(chars);
@@ -1921,46 +1897,43 @@ LispFunction(Chars_To_Float)
 
 	if (*str == '+' || *str == '-')
 		str++;
-		
+
 	// check mantissa
 	while (*str)
 	{
 		if (isdigit(*str))
 			digits++;
-		else
-		if (*str == '.')
+		else if (*str == '.')
 		{
 			decimal++;
 			if (decimal > 1)
-				goto exit;		// more than one decimal point!
+				goto exit; // more than one decimal point!
 		}
 		else
 			break;
 		str++;
 	}
-	
+
 	if (digits == 0)
 		goto exit;
 
 	// get exponent
-	if (*str == 'E' || *str == 'e'		// default float
-		|| *str == 'F' || *str == 'f'	// single-float
-		|| *str == 'L' || *str == 'l'	// long-float
-		|| *str == 'S' || *str == 's'	// short-float
-		|| *str == 'D' || *str == 'd')	// double-float
+	if (*str == 'E' || *str == 'e' // default float
+		|| *str == 'F' || *str == 'f' // single-float
+		|| *str == 'L' || *str == 'l' // long-float
+		|| *str == 'S' || *str == 's' // short-float
+		|| *str == 'D' || *str == 'd') // double-float
 	{
 		if (*str == 'S' || *str == 's')
 			precision = ShortFloat;
-		else
-		if (*str == 'F' || *str == 'f')
+		else if (*str == 'F' || *str == 'f')
 			precision = SingleFloat;
-		else
-		if (*str == 'L' || *str == 'l' || *str == 'D'  || *str == 'd')
+		else if (*str == 'L' || *str == 'l' || *str == 'D' || *str == 'd')
 			precision = DoubleFloat;
 
 		*str = 'E';
 		str++;
-		if (*str == '+' || *str == '-')		// allow for sign on exponent
+		if (*str == '+' || *str == '-') // allow for sign on exponent
 			str++;
 
 		while (isdigit(*str))
@@ -1971,19 +1944,16 @@ LispFunction(Chars_To_Float)
 		if (expDigits == 0)
 			goto exit;
 	}
-	else
-		if (*str != (long) 0)
-			goto exit;
-	
+	else if (*str != (long)0)
+		goto exit;
+
 	switch (precision)
 	{
 		case SingleFloat:
 			ret = singleFloatNode(0);
 			singleFloat(ret) = (float)atof(float_buf);
 			break;
-		case ShortFloat:
-			ret = createShortFloat(atof(float_buf));
-			break;
+		case ShortFloat: ret = createShortFloat(atof(float_buf)); break;
 		case DoubleFloat:
 			ret = doubleFloatNode(0);
 			doubleFloat(ret) = atof(float_buf);
@@ -2003,7 +1973,7 @@ LispFunction(Pop_Special_Bindings)
 		popDynamicBinding(CAR(bindings));
 		bindings = CDR(bindings);
 	}
-	LISP_FUNC_RETURN(ret);	// returns NIL
+	LISP_FUNC_RETURN(ret); // returns NIL
 }
 
 // Usage: (%push-special-bindings sym1 val1 sym2 val2 ...)
@@ -2016,7 +1986,7 @@ LispFunction(Push_Special_Bindings)
 	{
 		pushDynamicBinding(LISP_ARG(i), LISP_ARG(i + 1));
 	}
-	LISP_FUNC_RETURN(ret);	// returns NIL
+	LISP_FUNC_RETURN(ret); // returns NIL
 }
 
 LispFunction(Array_Dimension)
@@ -2047,23 +2017,17 @@ LispFunction(Array_Type)
 
 	if (type == SimpleVectorType)
 		ret = T;
-	else
-	if (type == SimpleCharVectorType)
+	else if (type == SimpleCharVectorType)
 		ret = CHARACTER;
-	else
-	if (type == SimpleByteVectorType)
+	else if (type == SimpleByteVectorType)
 		ret = LBYTE;
-	else
-	if (type == SimpleBitVectorType)
+	else if (type == SimpleBitVectorType)
 		ret = BIT;
-	else
-	if (type == SimpleShortVectorType)
+	else if (type == SimpleShortVectorType)
 		ret = SHORT_SYM;
-	else
-	if (type == SimpleDoubleFloatVectorType)
+	else if (type == SimpleDoubleFloatVectorType)
 		ret = DOUBLE_FLOAT;
-	else
-	if (type == SimpleSingleFloatVectorType)
+	else if (type == SimpleSingleFloatVectorType)
 		ret = SINGLE_FLOAT;
 
 	LISP_FUNC_RETURN(ret);
@@ -2102,8 +2066,7 @@ LispFunction(Float_To_String)
 	defaultFormat = symbolValue(READ_DEFAULT_FLOAT_FORMAT);
 	if (defaultFormat == SINGLE_FLOAT)
 		readFormat = SingleFloat;
-	else
-	if (defaultFormat == SHORT_FLOAT)
+	else if (defaultFormat == SHORT_FLOAT)
 		readFormat = ShortFloat;
 	else
 		readFormat = DoubleFloat;
@@ -2113,14 +2076,12 @@ LispFunction(Float_To_String)
 		precision = SingleFloat;
 		d = singleFloat(LISP_ARG(0));
 	}
-	else
-	if (isShortFloat(LISP_ARG(0)))
+	else if (isShortFloat(LISP_ARG(0)))
 	{
 		precision = ShortFloat;
 		d = shortFloat(LISP_ARG(0));
 	}
-	else
-	if (isDoubleFloat(LISP_ARG(0)))
+	else if (isDoubleFloat(LISP_ARG(0)))
 	{
 		precision = DoubleFloat;
 		d = doubleFloat(LISP_ARG(0));
@@ -2142,8 +2103,7 @@ LispFunction(Float_To_String)
 			else
 				strcat_s(floatbuf, sizeof(floatbuf), "f0");
 		}
-		else
-		if (precision == ShortFloat)
+		else if (precision == ShortFloat)
 		{
 			p = strchr(floatbuf, 'e');
 			if (p)
@@ -2151,7 +2111,7 @@ LispFunction(Float_To_String)
 			else
 				strcat_s(floatbuf, sizeof(floatbuf), "s0");
 		}
-		else	// (precision == DoubleFloat)
+		else // (precision == DoubleFloat)
 		{
 			p = strchr(floatbuf, 'e');
 			if (p)
@@ -2188,11 +2148,9 @@ LispFunction(Row_Major_Aref)
 		if (ret == UNINITIALIZED)
 			ret = NIL;
 	}
-	else
-	if (isString(vec))
- 		ret = wrapCharacter(charArrayStart(vec)[integer(index)]);
-	else
-	if (isBitVector(vec) || isByteVector(vec))
+	else if (isString(vec))
+		ret = wrapCharacter(charArrayStart(vec)[integer(index)]);
+	else if (isBitVector(vec) || isByteVector(vec))
 		ret = wrapInteger((long)(byteArrayStart(vec)[integer(index)]));
 	LISP_FUNC_RETURN(ret);
 }
@@ -2210,20 +2168,17 @@ LispFunction(Setf_Row_Major_Aref)
 		vec = adjustableArrayVector(array);
 	if (isGenericArray(vec))
 		arrayStart(vec)[integer(index)] = value;
-	else
-	if (isString(vec))
+	else if (isString(vec))
 	{
 		checkCharacter(value);
 		charArrayStart(vec)[integer(index)] = (LISP_CHAR)character(value);
 	}
-	else
-	if (isBitVector(vec))
+	else if (isBitVector(vec))
 	{
 		checkBit(value);
 		byteArrayStart(vec)[integer(index)] = (byte)integer(value);
 	}
-	else
-	if (isByteVector(vec))
+	else if (isByteVector(vec))
 	{
 		if (integer(value) < 0 || integer(value) > 255)
 			Error("Invalid value for byte array: ~A", value);
@@ -2271,23 +2226,20 @@ LispFunction(Array_Initialize_Element)
 		for (i = 0; i < numCells; i++)
 			p[i] = element;
 	}
-	else
-	if (isSimpleCharVector(vec))
+	else if (isSimpleCharVector(vec))
 	{
 		checkCharacter(element);
 		ch = character(element);
 		for (i = 0; i < numCells; i++)
 			charArrayStart(vec)[i] = (LISP_CHAR)ch;
 	}
-	else
-	if (isSimpleByteVector(vec))
+	else if (isSimpleByteVector(vec))
 	{
 		if (integer(element) < 0 || integer(element) > 255)
 			Error("Invalid value for byte array: ~A", element);
 		memset(byteArrayStart(vec), integer(element), numCells);
 	}
-	else
-	if (isSimpleBitVector(vec))
+	else if (isSimpleBitVector(vec))
 	{
 		checkBit(element);
 		memset(byteArrayStart(vec), integer(element), numCells);
@@ -2299,8 +2251,7 @@ LispFunction(Array_Initialize_Element)
 //
 //	Lisp internal routine to initialize members of an array
 //
-void
-initArray(LispObj sequence, long depth, LispObj** a, LispObj* end, LispObj array)
+void initArray(LispObj sequence, long depth, LispObj** a, LispObj* end, LispObj array)
 {
 	long seqlength = 0;
 	long numdims = 0;
@@ -2334,8 +2285,7 @@ initArray(LispObj sequence, long depth, LispObj** a, LispObj* end, LispObj array
 //
 //	Lisp internal routine to initialize members of a character array
 //
-void
-initCharArray(LispObj sequence, long depth, LISP_CHAR** a, LISP_CHAR* end, LispObj array)
+void initCharArray(LispObj sequence, long depth, LISP_CHAR** a, LISP_CHAR* end, LispObj array)
 {
 	long seqlength = 0;
 	long numdims = 0;
@@ -2373,8 +2323,7 @@ initCharArray(LispObj sequence, long depth, LISP_CHAR** a, LISP_CHAR* end, LispO
 //
 //	Lisp internal routine to initialize members of a bit array
 //
-void
-initBitArray(LispObj sequence, long depth, byte** a, byte* end, LispObj array)
+void initBitArray(LispObj sequence, long depth, byte** a, byte* end, LispObj array)
 {
 	long seqlength = 0;
 	long numdims = 0;
@@ -2412,8 +2361,7 @@ initBitArray(LispObj sequence, long depth, byte** a, byte* end, LispObj array)
 //
 //	Lisp internal routine to initialize members of a byte array
 //
-void
-initByteArray(LispObj sequence, long depth, byte** a, byte* end, LispObj array)
+void initByteArray(LispObj sequence, long depth, byte** a, byte* end, LispObj array)
 {
 	long seqlength = 0;
 	long numdims = 0;
@@ -2470,24 +2418,22 @@ LispFunction(Array_Initialize_Contents)
 		b = byteArrayStart(array);
 		initBitArray(contents, dimensions - 1, &b, b + numCells, array);
 	}
-	else
-	if (isCharArray(array))
+	else if (isCharArray(array))
 	{
 		cs = charArrayStart(array);
 		initCharArray(contents, dimensions - 1, &cs, cs + numCells, array);
 	}
-	else
-	if (isByteArray(array))
+	else if (isByteArray(array))
 	{
 		b = byteArrayStart(array);
 		initByteArray(contents, dimensions - 1, &b, b + numCells, array);
 	}
-	else		// T type
-	if (isGenericArray(array))
-	{
-		start = arrayStart(array);
-		initArray(contents, dimensions - 1, &start, start + numCells, array);
-	}
+	else // T type
+		if (isGenericArray(array))
+		{
+			start = arrayStart(array);
+			initArray(contents, dimensions - 1, &start, start + numCells, array);
+		}
 
 	ret = array;
 	LISP_FUNC_RETURN(ret);
@@ -2515,9 +2461,8 @@ LispFunction(Disassembly_Statement)
 	LispObj s = 0;
 	checkLispInteger(address);
 	checkInteger(offset);
-	numbytes = wrapInteger(unassemble(lispIntegerToUnsignedLong(address),
-				(unsigned long)integer(offset)));
- 	s = stringNode(gDisassemblyOutputBuf); 
+	numbytes = wrapInteger(unassemble(lispIntegerToUnsignedLong(address), (unsigned long)integer(offset)));
+	s = stringNode(gDisassemblyOutputBuf);
 	ThreadQV()[MULTIPLE_RETURN_VALUES_Index] = list(s, numbytes, END_LIST);
 	ret = s;
 	ReturnCount(2);
@@ -2550,21 +2495,21 @@ LispFunction(Address_Find_Function)
 
 //
 //	Non-standard Lisp function 'print-float'.
-//	Usage:	(print-float float-num stream format width digits scale 
+//	Usage:	(print-float float-num stream format width digits scale
 //				padchar showpos)
 //			Valid formats are :fixed :exponential and :general
 //
 LispFunction(Print_Float)
 {
 	LISP_FUNC_BEGIN(8);
-	LispObj fnum =		LISP_ARG(0);
-	LispObj stream =	LISP_ARG(1);
-	LispObj format =	LISP_ARG(2);
-	LispObj fwidth =	LISP_ARG(3);
-	LispObj fdigits =	LISP_ARG(4);
-	LispObj fscale =	LISP_ARG(5);
-	LispObj fpadchar =	LISP_ARG(6);
-	LispObj fshowpos =	LISP_ARG(7);
+	LispObj fnum = LISP_ARG(0);
+	LispObj stream = LISP_ARG(1);
+	LispObj format = LISP_ARG(2);
+	LispObj fwidth = LISP_ARG(3);
+	LispObj fdigits = LISP_ARG(4);
+	LispObj fscale = LISP_ARG(5);
+	LispObj fpadchar = LISP_ARG(6);
+	LispObj fshowpos = LISP_ARG(7);
 	double d = 0.0;
 	int fixed_format = 0;
 	int scientific_format = 0;
@@ -2577,11 +2522,9 @@ LispFunction(Print_Float)
 	// fnum = LispCall(Lisp::lispFloat, fnum, 0);	 // convert to a float if necessary
 	if (isDoubleFloat(fnum))
 		d = doubleFloat(fnum);
-	else
-	if (isSingleFloat(fnum))
+	else if (isSingleFloat(fnum))
 		d = singleFloat(fnum);
-	else
-	if (isShortFloat(fnum))
+	else if (isShortFloat(fnum))
 		d = shortFloat(fnum);
 
 	checkStream(stream);
@@ -2593,8 +2536,7 @@ LispFunction(Print_Float)
 
 	if (format == findKeyword("FIXED"))
 		fixed_format++;
-	else
-	if (format == findKeyword("EXPONENTIAL"))
+	else if (format == findKeyword("EXPONENTIAL"))
 		scientific_format++;
 
 	width = integer(fwidth);
@@ -2614,10 +2556,10 @@ LispFunction(Print_Float)
 		scale++;
 	}
 
-//	long saveFill = os->fill();
-//	long saveFlags = os->flags();
-//	int savePrecision = os->precision();
-//	int saveWidth = os->width();
+	//	long saveFill = os->fill();
+	//	long saveFlags = os->flags();
+	//	int savePrecision = os->precision();
+	//	int saveWidth = os->width();
 
 #if 0
 	os->fill(padchar);
@@ -2631,11 +2573,11 @@ LispFunction(Print_Float)
 	*os << d;
 #endif
 	LispCall3(Funcall, WRITE, fnum, stream);
-	
-//	os->fill(saveFill);
-//	os->flags(saveFlags);
-//	os->precision(savePrecision);
-//	os->width(saveWidth);
+
+	//	os->fill(saveFill);
+	//	os->flags(saveFlags);
+	//	os->precision(savePrecision);
+	//	os->width(saveWidth);
 
 	LISP_FUNC_RETURN(fnum);
 }
@@ -2700,8 +2642,7 @@ LispFunction(Protect_Stack)
 	long result = 0;
 	if (gStackOverflowAddress != 0)
 	{
-		result = VirtualProtect((void*)gStackOverflowAddress, 1, 
-				PAGE_GUARD | PAGE_READWRITE, &oldProtect);
+		result = VirtualProtect((void*)gStackOverflowAddress, 1, PAGE_GUARD | PAGE_READWRITE, &oldProtect);
 		ret = T;
 	}
 	else
@@ -2743,8 +2684,7 @@ LispFunction(Jump_Table_Capacity)
 LispFunction(Jump_Table_Used)
 {
 	LISP_FUNC_BEGIN(0);
-	ret = wrapInteger((integer(SYMBOL_TABLE_COUNT) - FirstJumpTableEntry)
-							/ JumpTableCellsPerEntry);
+	ret = wrapInteger((integer(SYMBOL_TABLE_COUNT) - FirstJumpTableEntry) / JumpTableCellsPerEntry);
 	LISP_FUNC_RETURN(ret);
 }
 
@@ -2816,15 +2756,14 @@ LispFunction(Lisp_object_id)
 	LISP_FUNC_RETURN(ret);
 }
 
-#define hashUlong(n) ((n)^((n)<<5)^((n)<<10)^((n)<<15)^((n)<<20)^((n) <<25))
+#define hashUlong(n) ((n) ^ ((n) << 5) ^ ((n) << 10) ^ ((n) << 15) ^ ((n) << 20) ^ ((n) << 25))
 
 static LispObj hashFloat(LispObj obj)
 {
 	if (isDoubleFloat(obj))
-		return stripTag(hashUlong(UVECTOR(obj)[DOUBLE_FLOAT_OFFSET])
-					  ^ hashUlong(UVECTOR(obj)[DOUBLE_FLOAT_OFFSET + 1]));
-	else
-	if (isSingleFloat(obj))
+		return stripTag(hashUlong(UVECTOR(obj)[DOUBLE_FLOAT_OFFSET]) ^
+						hashUlong(UVECTOR(obj)[DOUBLE_FLOAT_OFFSET + 1]));
+	else if (isSingleFloat(obj))
 		return stripTag(hashUlong(UVECTOR(obj)[SINGLE_FLOAT_OFFSET]));
 	else
 		return hashUlong(obj);
@@ -2886,7 +2825,7 @@ static LispObj hashArray(LispObj obj)
 
 static LispObj hashPathname(LispObj obj)
 {
-	LispObj n = hashUlong(obj);		// need to implement!
+	LispObj n = hashUlong(obj); // need to implement!
 	return stripTag(n);
 }
 
@@ -2907,14 +2846,11 @@ LispFunction(Hash_eql_function)
 
 	if (isDoubleFloat(obj) || isSingleFloat(obj))
 		ret = hashFloat(obj);
-	else
-	if (isBignum(obj))
+	else if (isBignum(obj))
 		ret = hashBignum(obj);
-	else
-	if (isRatio(obj))
+	else if (isRatio(obj))
 		ret = hashRatio(obj);
-	else
-	if (isComplex(obj))
+	else if (isComplex(obj))
 		ret = hashComplex(obj);
 	else
 		ret = LispCall1(Hash_eq_function, obj);
@@ -2928,14 +2864,11 @@ LispFunction(Hash_equal_function)
 
 	if (isCons(obj))
 		ret = hashList(obj);
-	else
-	if (isString(obj))
+	else if (isString(obj))
 		ret = hashArray(obj);
-	else
-	if (isBitVector(obj))
+	else if (isBitVector(obj))
 		ret = hashArray(obj);
-	else
-	if (isPathname(obj))
+	else if (isPathname(obj))
 		ret = hashPathname(obj);
 	else
 		ret = LispCall1(Hash_eql_function, obj);
@@ -2948,7 +2881,7 @@ LispFunction(Hash_equalp_function)
 	LISP_FUNC_BEGIN(1);
 	LispObj obj = LISP_ARG(0);
 
-	ret = LispCall1(Hash_equal_function, obj);	// need to implement!
+	ret = LispCall1(Hash_equal_function, obj); // need to implement!
 
 	LISP_FUNC_RETURN(ret);
 }
@@ -2984,7 +2917,7 @@ LispFunction(Remove_gc_exec_registry)
 	LispObj func = LISP_ARG(0);
 	removeGCExecRegistry(func);
 	ret = T;
- 	LISP_FUNC_RETURN(ret);
+	LISP_FUNC_RETURN(ret);
 }
 
 LispFunction(CompileFunctionCallForm)
@@ -2998,18 +2931,16 @@ LispFunction(CompileFunctionCallForm)
 LispFunction(Constantp)
 {
 	LISP_FUNC_BEGIN(1);
- 	LispObj obj = LISP_ARG(0);
+	LispObj obj = LISP_ARG(0);
 	ret = NIL;
 	if (isSymbol(obj))
 	{
 		if (isConstantSymbol(obj))
 			ret = T;
 	}
-	else
-	if (!isCons(obj))
+	else if (!isCons(obj))
 		ret = T;
-	else
-	if (CAR(obj) == QUOTE)
+	else if (CAR(obj) == QUOTE)
 		ret = T;
 	LISP_FUNC_RETURN(ret);
 }
@@ -3017,8 +2948,8 @@ LispFunction(Constantp)
 LispFunction(Create_Compiled_Function)
 {
 	LISP_FUNC_BEGIN(7);
-	ret = compiledFunctionNode(LISP_ARG(0), LISP_ARG(1), LISP_ARG(2), 
-				LISP_ARG(3), LISP_ARG(4), LISP_ARG(5), LISP_ARG(6));
+	ret =
+		compiledFunctionNode(LISP_ARG(0), LISP_ARG(1), LISP_ARG(2), LISP_ARG(3), LISP_ARG(4), LISP_ARG(5), LISP_ARG(6));
 	LISP_FUNC_RETURN(ret);
 }
 
@@ -3033,9 +2964,8 @@ LispFunction(Load_DLL)
 	HINSTANCE handle = 0;
 	checkString(path);
 	handle = LoadLibrary((char*)byteArrayStart(nullTerminate(path)));
-	if (!handle)	
-		Error("Could not load requested DLL: ~A, error code = ~A", path,
-			createLispInteger(GetLastError()));
+	if (!handle)
+		Error("Could not load requested DLL: ~A, error code = ~A", path, createLispInteger(GetLastError()));
 	ret = createLispInteger((long)handle);
 	LISP_FUNC_RETURN(ret);
 }
@@ -3055,14 +2985,14 @@ LispFunction(Unload_DLL)
 	{
 		module = (HMODULE)UVECTOR(dll_handle)[BIGNUM_FIRST_CELL];
 		if (bignumNegative(dll_handle))
-			module = (HMODULE)-((long)module);
+			module = (HMODULE) - ((long)module);
 	}
 	else
 		module = (HMODULE)integer(dll_handle);
 	r = FreeLibrary(module);
-	if (!r)	
+	if (!r)
 		Error("Could not unload requested DLL handle: ~A, error code = ~A", dll_handle,
-			createLispInteger(GetLastError()));
+			  createLispInteger(GetLastError()));
 	LISP_FUNC_RETURN(NIL);
 }
 
@@ -3085,15 +3015,14 @@ LispFunction(Get_DLL_Proc_Address)
 	{
 		module = (HMODULE)UVECTOR(dll_handle)[BIGNUM_FIRST_CELL];
 		if (bignumNegative(dll_handle))
-			module = (HMODULE)-((long)module);
+			module = (HMODULE) - ((long)module);
 	}
 	else
 		module = (HMODULE)integer(dll_handle);
 
-	proc = GetProcAddress(module, (char*)byteArrayStart(nullTerminate(procname))); 
+	proc = GetProcAddress(module, (char*)byteArrayStart(nullTerminate(procname)));
 	if (!proc)
-		Error("Could not find the procedure ~A, error code = ~A", procname,
-			createLispInteger(GetLastError()));
+		Error("Could not find the procedure ~A, error code = ~A", procname, createLispInteger(GetLastError()));
 	UVECTOR(fp)[FOREIGN_PTR] = (LispObj)proc;
 	ret = fp;
 	LISP_FUNC_RETURN(ret);
@@ -3118,7 +3047,7 @@ LispFunction(Int_To_Foreign_Ptr)
 	LISP_FUNC_BEGIN(1);
 	LispObj fp = 0;
 	LispObj num = 0;
-	long addr = 0;	   // untagged integer
+	long addr = 0; // untagged integer
 	num = LISP_ARG(0);
 	checkLispInteger(num);
 	fp = foreignNode();
@@ -3250,15 +3179,14 @@ LispFunction(Deallocate_C_Heap)
 }
 
 // figure 16 leap years between 1900 and 1970
-const int days_from_1900_to_1970 
-	= 24 * ((365 * 70) + 16);
+const int days_from_1900_to_1970 = 24 * ((365 * 70) + 16);
 LispFunction(Get_Universal_Time)
 {
 	LISP_FUNC_BEGIN(0);
 	_timeb time;
 	_ftime_s(&time);
-	ret = _Add(_Multiply(wrapInteger(days_from_1900_to_1970), wrapInteger(60 * 60)),
-			createLispInteger((long)time.time));
+	ret =
+		_Add(_Multiply(wrapInteger(days_from_1900_to_1970), wrapInteger(60 * 60)), createLispInteger((long)time.time));
 	LISP_FUNC_RETURN(ret);
 }
 
@@ -3276,7 +3204,7 @@ LispFunction(Local_Time_Zone)
 	DWORD result = GetTimeZoneInformation(&tzi);
 	LispObj daylight_time = NIL;
 	if (result == 0xffffffff)
-		ret = 0;			// we can't determine it
+		ret = 0; // we can't determine it
 	else
 	{
 		ret = _Divide(wrapInteger(tzi.Bias), wrapInteger(60));
@@ -3293,15 +3221,9 @@ LispFunction(Get_System_Time)
 	LISP_FUNC_BEGIN(0);
 	SYSTEMTIME time;
 	GetSystemTime(&time);
-	ret = list(wrapInteger(time.wYear),
-			   wrapInteger(time.wMonth),
-			   wrapInteger(time.wDayOfWeek),
-			   wrapInteger(time.wDay),
-			   wrapInteger(time.wHour),
-			   wrapInteger(time.wMinute),
-			   wrapInteger(time.wSecond),
-			   wrapInteger(time.wMilliseconds),
-			   END_LIST);
+	ret = list(wrapInteger(time.wYear), wrapInteger(time.wMonth), wrapInteger(time.wDayOfWeek), wrapInteger(time.wDay),
+			   wrapInteger(time.wHour), wrapInteger(time.wMinute), wrapInteger(time.wSecond),
+			   wrapInteger(time.wMilliseconds), END_LIST);
 	LISP_FUNC_RETURN(ret);
 }
 
@@ -3310,23 +3232,17 @@ LispFunction(Get_Local_Time)
 	LISP_FUNC_BEGIN(0);
 	SYSTEMTIME time;
 	GetLocalTime(&time);
-	ret = list(wrapInteger(time.wYear),
-			   wrapInteger(time.wMonth),
-			   wrapInteger(time.wDayOfWeek),
-			   wrapInteger(time.wDay),
-			   wrapInteger(time.wHour),
-			   wrapInteger(time.wMinute),
-			   wrapInteger(time.wSecond),
-			   wrapInteger(time.wMilliseconds),
-			   END_LIST);
+	ret = list(wrapInteger(time.wYear), wrapInteger(time.wMonth), wrapInteger(time.wDayOfWeek), wrapInteger(time.wDay),
+			   wrapInteger(time.wHour), wrapInteger(time.wMinute), wrapInteger(time.wSecond),
+			   wrapInteger(time.wMilliseconds), END_LIST);
 	LISP_FUNC_RETURN(ret);
 }
 
 LispFunction(System_Time_To_File_Time)
 {
 	LISP_FUNC_BEGIN(8);
-	SYSTEMTIME	time	= {0};
-	FILETIME	ftime	= {0};
+	SYSTEMTIME time = {0};
+	FILETIME ftime = {0};
 	LispObj bn = 0;
 	BOOL result = 0;
 
@@ -3339,24 +3255,23 @@ LispFunction(System_Time_To_File_Time)
 	checkInteger(LISP_ARG(6));
 	checkInteger(LISP_ARG(7));
 
-	time.wYear			= (short)integer(LISP_ARG(0));
-	time.wMonth			= (short)integer(LISP_ARG(1));
-	time.wDayOfWeek		= (short)integer(LISP_ARG(2));
-	time.wDay			= (short)integer(LISP_ARG(3));
-	time.wHour			= (short)integer(LISP_ARG(4));
-	time.wMinute		= (short)integer(LISP_ARG(5));
-	time.wSecond		= (short)integer(LISP_ARG(6));
-	time.wMilliseconds	= (short)integer(LISP_ARG(7));
+	time.wYear = (short)integer(LISP_ARG(0));
+	time.wMonth = (short)integer(LISP_ARG(1));
+	time.wDayOfWeek = (short)integer(LISP_ARG(2));
+	time.wDay = (short)integer(LISP_ARG(3));
+	time.wHour = (short)integer(LISP_ARG(4));
+	time.wMinute = (short)integer(LISP_ARG(5));
+	time.wSecond = (short)integer(LISP_ARG(6));
+	time.wMilliseconds = (short)integer(LISP_ARG(7));
 	result = SystemTimeToFileTime(&time, &ftime);
 	if (!result)
-		Error("SystemTimeToFileTime() failed, error code: ", 
-			createLispInteger(GetLastError()));
+		Error("SystemTimeToFileTime() failed, error code: ", createLispInteger(GetLastError()));
 
 	if (ftime.dwHighDateTime == 0)
 		ret = createLispInteger(ftime.dwLowDateTime);
 	else
 	{
-		bn = bignumNode(wrapInteger(2));	
+		bn = bignumNode(wrapInteger(2));
 		UVECTOR(bn)[BIGNUM_FIRST_CELL] = ftime.dwLowDateTime;
 		UVECTOR(bn)[BIGNUM_FIRST_CELL + 1] = ftime.dwHighDateTime;
 		ret = bn;
@@ -3367,14 +3282,13 @@ LispFunction(System_Time_To_File_Time)
 LispFunction(File_Time_To_System_Time)
 {
 	LISP_FUNC_BEGIN(1);
-	SYSTEMTIME	time	= {0};
-	FILETIME	ftime	= {0};
+	SYSTEMTIME time = {0};
+	FILETIME ftime = {0};
 	LispObj n = LISP_ARG(0);
 	BOOL result = 0;
 	if (isInteger(n))
 		ftime.dwLowDateTime = integer(n);
-	else
-	if (isBignum(n))
+	else if (isBignum(n))
 	{
 		ftime.dwLowDateTime = UVECTOR(n)[BIGNUM_FIRST_CELL];
 		ftime.dwHighDateTime = UVECTOR(n)[BIGNUM_FIRST_CELL + 1];
@@ -3383,17 +3297,10 @@ LispFunction(File_Time_To_System_Time)
 		Error("Invalid file time: ~A", n);
 	result = FileTimeToSystemTime(&ftime, &time);
 	if (!result)
-		Error("SystemTimeToFileTime() failed, error code: ",
-			createLispInteger(GetLastError()));
-	ret = list(wrapInteger(time.wYear),
-			   wrapInteger(time.wMonth),
-			   wrapInteger(time.wDayOfWeek),
-			   wrapInteger(time.wDay),
-			   wrapInteger(time.wHour),
-			   wrapInteger(time.wMinute),
-			   wrapInteger(time.wSecond),
-			   wrapInteger(time.wMilliseconds),
-			   END_LIST);
+		Error("SystemTimeToFileTime() failed, error code: ", createLispInteger(GetLastError()));
+	ret = list(wrapInteger(time.wYear), wrapInteger(time.wMonth), wrapInteger(time.wDayOfWeek), wrapInteger(time.wDay),
+			   wrapInteger(time.wHour), wrapInteger(time.wMinute), wrapInteger(time.wSecond),
+			   wrapInteger(time.wMilliseconds), END_LIST);
 	LISP_FUNC_RETURN(ret);
 }
 
@@ -3512,7 +3419,7 @@ LispFunction(Address_Find_Function_Callback)
 
 		// execaddr = LispCall(Funcall, EXECUTION_ADDRESS, p);
 		// assume function smaller than 64k in size
-		if (execaddr <= address && (address - execaddr) < 0x10000)	
+		if (execaddr <= address && (address - execaddr) < 0x10000)
 		{
 			if ((address - execaddr) < lispIntegerToUnsignedLong(currOffset))
 			{
@@ -3619,9 +3526,8 @@ LispFunction(Add_Menu_Item)
 	{
 		checkString(item);
 		if (CormanLispServer)
-			rv = CormanLispServer->AddMenuItem(
-						(char*)byteArrayStart(nullTerminate(menu)),
-						(char*)byteArrayStart(nullTerminate(item)));
+			rv = CormanLispServer->AddMenuItem((char*)byteArrayStart(nullTerminate(menu)),
+											   (char*)byteArrayStart(nullTerminate(item)));
 	}
 	if (rv == S_OK)
 		ret = T;
@@ -3645,111 +3551,87 @@ LispFunction(Lookup_Ftype)
 	LISP_FUNC_RETURN(NIL);
 }
 
-
 CL_NAKED void Load_QV_Reg()
 {
 #ifdef _MSC_VER
-	__asm	push	ebp
-	__asm	mov		ebp, esp
-	TlsGetValue(QV_Index);
-	__asm	mov		esi, eax
-	__asm	pop		ebp
-	__asm	ret
+	__asm push ebp __asm mov ebp, esp TlsGetValue(QV_Index);
+	__asm mov esi, eax __asm pop ebp __asm ret
 #else
-	asm volatile(
-		"push %%ebp\n\t"
-		"mov %%esp, %%ebp\n\t"
-		"call ThreadQV\n\t"
-		"mov %%eax, %%esi\n\t"
-		"pop %%ebp\n\t"
-		"ret"
-		: : : "memory"
-	);
+	asm volatile("push %%ebp\n\t"
+				 "mov %%esp, %%ebp\n\t"
+				 "call ThreadQV\n\t"
+				 "mov %%eax, %%esi\n\t"
+				 "pop %%ebp\n\t"
+				 "ret"
+				 :
+				 :
+				 : "memory");
 #endif
 }
 
 CL_NAKED void genericThunkFunc()
 {
 #ifdef _MSC_VER
-	__asm	mov		eax, dword ptr [0x1000000]		;; use global QV
-	__asm	jmp		dword ptr [eax+0x12345678] ;; replace this with actual offset
+	__asm mov eax, dword ptr[0x1000000];
+	;
+	use global QV __asm jmp dword ptr[eax + 0x12345678];
+	;
+	replace this with actual offset
 #else
-	asm volatile(
-		"movl $0x1000000, %eax\n\t"
-		"jmp *0x12345678(%eax)\n\t"
-	);
+	asm volatile("movl $0x1000000, %eax\n\t"
+				 "jmp *0x12345678(%eax)\n\t");
 #endif
 }
 
 CL_NAKED void Minus_EAX_EDX()
 {
 #ifdef _MSC_VER
-	__asm	push	ebp
-	__asm	mov		ebp, esp
-    __asm   push    edi
-	__asm	push	eax
-	__asm	push	edx
-	__asm	mov		edi, dword ptr [esi]
-	__asm	mov		ecx, 2
-	__asm	call	Minus
-	__asm	add		esp, 8
-    __asm   pop     edi
-	__asm	pop		ebp
-	__asm	ret
+	__asm push ebp __asm mov ebp, esp __asm push edi __asm push eax __asm push edx __asm mov edi,
+		dword ptr[esi] __asm mov ecx, 2 __asm call Minus __asm add esp, 8 __asm pop edi __asm pop ebp __asm ret
 #else
-	asm volatile(
-		"push %%ebp\n\t"
-		"mov %%esp, %%ebp\n\t"
-		"push %%edi\n\t"
-		"push %%eax\n\t"
-		"push %%edx\n\t"
-		"mov (%%esi), %%edi\n\t"
-		"mov $2, %%ecx\n\t"
-		"call Minus\n\t"
-		"add $8, %%esp\n\t"
-		"pop %%edi\n\t"
-		"pop %%ebp\n\t"
-		"ret"
-		: : : "memory"
-	);
+	asm volatile("push %%ebp\n\t"
+				 "mov %%esp, %%ebp\n\t"
+				 "push %%edi\n\t"
+				 "push %%eax\n\t"
+				 "push %%edx\n\t"
+				 "mov (%%esi), %%edi\n\t"
+				 "mov $2, %%ecx\n\t"
+				 "call Minus\n\t"
+				 "add $8, %%esp\n\t"
+				 "pop %%edi\n\t"
+				 "pop %%ebp\n\t"
+				 "ret"
+				 :
+				 :
+				 : "memory");
 #endif
 }
 
 CL_NAKED void Plus_EAX_EDX()
 {
 #ifdef _MSC_VER
-	__asm	push	ebp
-	__asm	mov		ebp, esp
-    __asm   push    edi
-	__asm	push	edx
-	__asm	push	eax
-	__asm	mov		edi, dword ptr [esi]
-	__asm	mov		ecx, 2
-	__asm	call	Plus
-	__asm	add		esp, 8
-    __asm   pop     edi
-	__asm	pop		ebp
-	__asm	ret
+	__asm push ebp __asm mov ebp, esp __asm push edi __asm push edx __asm push eax __asm mov edi,
+		dword ptr[esi] __asm mov ecx, 2 __asm call Plus __asm add esp, 8 __asm pop edi __asm pop ebp __asm ret
 #else
-	asm volatile(
-		"push %%ebp\n\t"
-		"mov %%esp, %%ebp\n\t"
-		"push %%edi\n\t"
-		"push %%edx\n\t"
-		"push %%eax\n\t"
-		"mov (%%esi), %%edi\n\t"
-		"mov $2, %%ecx\n\t"
-		"call Plus\n\t"
-		"add $8, %%esp\n\t"
-		"pop %%edi\n\t"
-		"pop %%ebp\n\t"
-		"ret"
-		: : : "memory"
-	);
+	asm volatile("push %%ebp\n\t"
+				 "mov %%esp, %%ebp\n\t"
+				 "push %%edi\n\t"
+				 "push %%edx\n\t"
+				 "push %%eax\n\t"
+				 "mov (%%esi), %%edi\n\t"
+				 "mov $2, %%ecx\n\t"
+				 "call Plus\n\t"
+				 "add $8, %%esp\n\t"
+				 "pop %%edi\n\t"
+				 "pop %%ebp\n\t"
+				 "ret"
+				 :
+				 :
+				 : "memory");
 #endif
 }
 
-const int sizeGenericThunk = 11;	// have to measure this and keep in sync
+const int sizeGenericThunk = 11; // have to measure this and keep in sync
 
 LispFunction(Create_Callback_Thunk)
 {
@@ -3759,7 +3641,7 @@ LispFunction(Create_Callback_Thunk)
 	createFuncTableEntry(sym);
 	LispObj index = UVECTOR(sym)[SYMBOL_JUMP_TABLE] * 4;
 	LispObj thunkObj = LispCall1(Allocate_C_Heap, wrapInteger(sizeGenericThunk));
-	foreignHeapType(thunkObj) = wrapInteger(FOREIGN_HEAP_TYPE_CALLBACK_THUNK);	// tag as callback thunk
+	foreignHeapType(thunkObj) = wrapInteger(FOREIGN_HEAP_TYPE_CALLBACK_THUNK); // tag as callback thunk
 	memcpy((void*)foreignPtr(thunkObj), (void*)genericThunkFunc, sizeGenericThunk);
 	*(unsigned char*)foreignPtr(thunkObj) = 0xA1;
 	*(unsigned long*)(((char*)foreignPtr(thunkObj)) + 1) = (unsigned long)SysGlobalsAddr;
@@ -3794,14 +3676,14 @@ LispFunction(Allocate_Foreign_Jump_Table_Entry)
 
 	n = foreignNode();
 	entryIndex = *GlobalForeignJumpTableNumEntries;
-	(*GlobalForeignJumpTableNumEntries)++;			// thread synchronization issue here!
+	(*GlobalForeignJumpTableNumEntries)++; // thread synchronization issue here!
 	jmp_entry = *GlobalForeignJumpTable + (entryIndex * SizeOfForeignJumpTableEntry);
 
-	jmp_entry[0] = 0x8F;					// pop [edi]   ([edi] = return address)
+	jmp_entry[0] = 0x8F; // pop [edi]   ([edi] = return address)
 	jmp_entry[1] = 0x07;
-	jmp_entry[2] = 0xE8;					// call addr
+	jmp_entry[2] = 0xE8; // call addr
 	*(LispObj*)(jmp_entry + 3) = UVECTOR(execaddr)[FOREIGN_PTR] - (unsigned long)(jmp_entry + 7); // compute offset
-	jmp_entry[7] = 0xFF;					// jmp [edi]
+	jmp_entry[7] = 0xFF; // jmp [edi]
 	jmp_entry[8] = 0x27;
 
 	UVECTOR(n)[FOREIGN_PTR] = (LispObj)jmp_entry;
@@ -3830,11 +3712,11 @@ LispFunction(Get_Current_Thread_IDs)
 	int i = 0;
 
 	x = GetNumLispThreads();
-	x++;		// make buffer one larger just in case somehow another thread starts
+	x++; // make buffer one larger just in case somehow another thread starts
 	p = (DWORD*)_alloca(x * sizeof(DWORD));
 	x = ThreadList.GetLispThreadIDs(p, x);
 	ret = NIL;
-	for (x-- ;x >= 0; x--)
+	for (x--; x >= 0; x--)
 	{
 		ret = cons(wrapInteger(p[x]), ret);
 	}
@@ -3934,9 +3816,9 @@ LispFunction(Deallocate_Critical_Section)
 
 /*
 extern "C" int compress(byte* dest,   unsigned long* destLen,
-                        byte* source, unsigned long  sourceLen);
+						byte* source, unsigned long  sourceLen);
 extern "C" int uncompress(byte* dest,   unsigned long* destLen,
-                        byte* source, unsigned long  sourceLen);
+						byte* source, unsigned long  sourceLen);
 */
 extern byte* allocateCompressionBuffer(unsigned long size);
 extern void freeCompressionBuffer(byte* buf);
@@ -3966,7 +3848,7 @@ LispFunction(Compress_Bytes)
 	destlen = ((long)(integer(length) * 1.02)) + 12;
 	byte* srcbuf = allocateCompressionBuffer(srclen);
 	byte* destbuf = allocateCompressionBuffer(destlen);
-	
+
 	// compress the buffer
 	memcpy(srcbuf, byteArrayStart(src), srclen);
 	compret = compress(destbuf, &destlen, srcbuf, srclen);
@@ -3977,8 +3859,8 @@ LispFunction(Compress_Bytes)
 		Error("A compression error occurred");
 	}
 	ret = byteVector(wrapInteger(destlen + 8));
-	memcpy(byteArrayStart(ret), &destlen, 4);		// size of compressed result
-	memcpy(byteArrayStart(ret) + 4, &srclen, 4);	// size of uncompressed result
+	memcpy(byteArrayStart(ret), &destlen, 4); // size of compressed result
+	memcpy(byteArrayStart(ret) + 4, &srclen, 4); // size of uncompressed result
 	memcpy(byteArrayStart(ret) + 8, destbuf, destlen);
 	freeCompressionBuffer(srcbuf);
 	freeCompressionBuffer(destbuf);
@@ -3988,8 +3870,8 @@ LispFunction(Compress_Bytes)
 //
 //	Corman Lisp UNCOMPRESS_BYTES functions (src-buffer)
 //	The passed buffer should be a byte vector, and a byte
-//	vector of the uncompressed bytes is returned. If the data 
-//	could not be uncompressed, NIL is returned. 
+//	vector of the uncompressed bytes is returned. If the data
+//	could not be uncompressed, NIL is returned.
 //	It is assumed that the data is in the format output by the
 //	COMPRESS-BYTES function, above.
 //
@@ -4002,14 +3884,14 @@ LispFunction(Uncompress_Bytes)
 	LispObj length = 0;
 	int compret = 0;
 	length = vectorLength(src);
-	memcpy(&srclen, byteArrayStart(src), 4);		// size of compressed result
-	memcpy(&destlen, byteArrayStart(src) + 4, 4);	// size of uncompressed result
+	memcpy(&srclen, byteArrayStart(src), 4); // size of compressed result
+	memcpy(&destlen, byteArrayStart(src) + 4, 4); // size of uncompressed result
 	if (srclen != integer(length) - 8)
 		Error("A decompression error occurred");
 
 	byte* srcbuf = allocateCompressionBuffer(srclen);
 	byte* destbuf = allocateCompressionBuffer(destlen);
-	
+
 	// uncompress the buffer
 	memcpy(srcbuf, byteArrayStart(src) + 8, srclen);
 	compret = uncompress(destbuf, &destlen, srcbuf, srclen);
@@ -4043,14 +3925,13 @@ LispFunction(Uncompress_Foreign_Bytes)
 	if (!isForeign(src) && !isForeignHeapPtr(src))
 		Error("Not a foreign pointer: ~A", src);
 
-	memcpy(&srclen, (byte*)foreignPtr(src), 4);		// size of compressed result
-	memcpy(&destlen, (byte*)foreignPtr(src) + 4, 4);// size of uncompressed result
+	memcpy(&srclen, (byte*)foreignPtr(src), 4); // size of compressed result
+	memcpy(&destlen, (byte*)foreignPtr(src) + 4, 4); // size of uncompressed result
 
 	ret = allocateCHeap(wrapInteger(destlen));
-	
+
 	// uncompress the buffer
-	compret = uncompress((byte*)foreignPtr(ret), &destlen, 
-					(byte*)foreignPtr(src) + 8, srclen);
+	compret = uncompress((byte*)foreignPtr(ret), &destlen, (byte*)foreignPtr(src) + 8, srclen);
 	if (compret != 0)
 	{
 		deallocateCHeap(ret);
@@ -4097,50 +3978,50 @@ LispFunction(Execute_Finalizers)
 		LispCall3(Funcall, FUNCALL, CDR(CAR(x)), CAR(CAR(x)));
 		x = CDR(x);
 	}
-	LISP_FUNC_RETURN(NIL);	
+	LISP_FUNC_RETURN(NIL);
 }
 
 LispFunction(Compiler_Check_Args_Num)
 {
 	LISP_FUNC_BEGIN(0);
-	LISP_FUNC_RETURN(T);	
+	LISP_FUNC_RETURN(T);
 }
 
 LispFunction(Compiler_Check_Types)
 {
 	LISP_FUNC_BEGIN(0);
-	LISP_FUNC_RETURN(T);	
+	LISP_FUNC_RETURN(T);
 }
 
 LispFunction(Compiler_Fold_Constants)
 {
 	LISP_FUNC_BEGIN(0);
-	LISP_FUNC_RETURN(T);	
+	LISP_FUNC_RETURN(T);
 }
 
 LispFunction(Compiler_Inline_Functions)
 {
 	LISP_FUNC_BEGIN(0);
-	LISP_FUNC_RETURN(T);	
+	LISP_FUNC_RETURN(T);
 }
 
 LispFunction(Compiler_Optimize_Tail_Recursion)
 {
 	LISP_FUNC_BEGIN(0);
-	LISP_FUNC_RETURN(NIL);	
+	LISP_FUNC_RETURN(NIL);
 }
 
 LispFunction(Compiler_Check_Key_Args)
 {
 	LISP_FUNC_BEGIN(0);
-	LISP_FUNC_RETURN(T);	
+	LISP_FUNC_RETURN(T);
 }
 
 LispFunction(Lookup_Setf_Function)
 {
 	LISP_FUNC_BEGIN(1);
-	Error("SETF function not defined");		// defined in lisp code
-	LISP_FUNC_RETURN(NIL);	
+	Error("SETF function not defined"); // defined in lisp code
+	LISP_FUNC_RETURN(NIL);
 }
 
 LispFunction(InvalidKeyArgError)
@@ -4148,10 +4029,10 @@ LispFunction(InvalidKeyArgError)
 	LISP_FUNC_BEGIN(1);
 	LispObj key = LISP_ARG(0);
 	Error("The passed key ~S is not defined for this function", key);
-	LISP_FUNC_RETURN(NIL);	// never returns
+	LISP_FUNC_RETURN(NIL); // never returns
 }
 
-#define BUFLEN      16384
+#define BUFLEN 16384
 static char gzip_buf[BUFLEN];
 
 LispFunction(Compress_File)
@@ -4160,32 +4041,33 @@ LispFunction(Compress_File)
 	LispObj inpath = LISP_ARG(0);
 	LispObj outpath = LISP_ARG(1);
 	FILE* in = 0;
-    gzFile out = 0;
+	gzFile out = 0;
 	int len = 0;
 	int err = 0;
-	
+
 	checkString(inpath);
 	checkString(outpath);
 
-    err = fopen_s(&in, (char*)byteArrayStart(nullTerminate(inpath)), "rb");
-    if (err != 0) 
-        Error("Could not open file ~S for reading", inpath);
+	err = fopen_s(&in, (char*)byteArrayStart(nullTerminate(inpath)), "rb");
+	if (err != 0)
+		Error("Could not open file ~S for reading", inpath);
 
-    out = gzopen((char*)byteArrayStart(nullTerminate(outpath)), "wb");
-    if (out == NULL)        
+	out = gzopen((char*)byteArrayStart(nullTerminate(outpath)), "wb");
+	if (out == NULL)
 		Error("Could not open file ~S for writing", outpath);
 
-    for (;;) 
+	for (;;)
 	{
-        len = fread(gzip_buf, 1, sizeof(gzip_buf), in);
-        if (ferror(in)) 
+		len = fread(gzip_buf, 1, sizeof(gzip_buf), in);
+		if (ferror(in))
 			Error("An error occurred while reading file ~S", inpath);
-        if (len == 0) break;
-        if (gzwrite(out, gzip_buf, (unsigned)len) != len) 
+		if (len == 0)
+			break;
+		if (gzwrite(out, gzip_buf, (unsigned)len) != len)
 			Error("An error occurred while writing file ~S", outpath);
-    }
-    fclose(in);
-    if (gzclose(out) != Z_OK) 
+	}
+	fclose(in);
+	if (gzclose(out) != Z_OK)
 		Error("An error occurred while closing file ~S", outpath);
 
 	LISP_FUNC_RETURN(outpath);
@@ -4197,35 +4079,36 @@ LispFunction(Uncompress_File)
 	LispObj inpath = LISP_ARG(0);
 	LispObj outpath = LISP_ARG(1);
 	gzFile in = 0;
-    FILE* out = 0;
-    int len = 0;
-    int err = 0;
+	FILE* out = 0;
+	int len = 0;
+	int err = 0;
 
 	checkString(inpath);
 	checkString(outpath);
 
-    in = gzopen((char*)byteArrayStart(nullTerminate(inpath)), "rb");
-    if (in == NULL) 
-        Error("Could not open file ~S for reading", inpath);
+	in = gzopen((char*)byteArrayStart(nullTerminate(inpath)), "rb");
+	if (in == NULL)
+		Error("Could not open file ~S for reading", inpath);
 
-    err = fopen_s(&out, (char*)byteArrayStart(nullTerminate(outpath)), "wb");
-    if (err != 0)        
+	err = fopen_s(&out, (char*)byteArrayStart(nullTerminate(outpath)), "wb");
+	if (err != 0)
 		Error("Could not open file ~S for writing", outpath);
 
-    for (;;) 
+	for (;;)
 	{
-        len = gzread(in, gzip_buf, sizeof(gzip_buf));
-        if (len < 0) 
+		len = gzread(in, gzip_buf, sizeof(gzip_buf));
+		if (len < 0)
 			Error("An error occurred while reading file ~S", inpath);
-        if (len == 0) break;
+		if (len == 0)
+			break;
 
-        if ((int)fwrite(gzip_buf, 1, (unsigned)len, out) != len)
+		if ((int)fwrite(gzip_buf, 1, (unsigned)len, out) != len)
 			Error("An error occurred while writing file ~S", outpath);
-    }
-    if (fclose(out)) 
+	}
+	if (fclose(out))
 		Error("An error occurred while closing file ~S", outpath);
 
-    if (gzclose(in) != Z_OK)
+	if (gzclose(in) != Z_OK)
 		Error("An error occurred while closing file ~S", inpath);
 
 	LISP_FUNC_RETURN(outpath);
@@ -4255,7 +4138,7 @@ LispFunction(Heap_Used)
 	long allocated = 0;
 	long current = 0;
 	percent = createLispInteger(getHeapStatistics(integer(LISP_ARG(0)), &allocated, &current));
-	ThreadQV()[MULTIPLE_RETURN_VALUES_Index] = 
+	ThreadQV()[MULTIPLE_RETURN_VALUES_Index] =
 		list(percent, createLispInteger(allocated), createLispInteger(current), END_LIST);
 	ret = percent;
 	ReturnCount(3);
@@ -4271,14 +4154,11 @@ LispFunction(Containing_Heap)
 	{
 		if (inEphemeralHeap1AddressRange(obj))
 			ret = wrapInteger(0);
-		else
-		if (inEphemeralHeap2AddressRange(obj))
+		else if (inEphemeralHeap2AddressRange(obj))
 			ret = wrapInteger(1);
-		else
-		if (inLispHeap1AddressRange(obj))
+		else if (inLispHeap1AddressRange(obj))
 			ret = wrapInteger(2);
-		else
-		if (inLispHeap2AddressRange(obj))
+		else if (inLispHeap2AddressRange(obj))
 			ret = wrapInteger(3);
 		else
 			ret = NIL;
@@ -4289,7 +4169,8 @@ LispFunction(Containing_Heap)
 }
 
 LispFunction(Registration_Info)
-{	LISP_FUNC_BEGIN(0);
+{
+	LISP_FUNC_BEGIN(0);
 	HMODULE module = 0;
 	LispObj registered = T;
 	LispObj version = NIL;
@@ -4303,8 +4184,7 @@ LispFunction(Registration_Info)
 		version = wrapInteger(CurrentUserInfo->GetVersion());
 		name = stringNode(CurrentUserInfo->GetName());
 	}
-	ThreadQV()[MULTIPLE_RETURN_VALUES_Index] = 
-		list(registered, version, name, organization, daysRemaining, END_LIST);
+	ThreadQV()[MULTIPLE_RETURN_VALUES_Index] = list(registered, version, name, organization, daysRemaining, END_LIST);
 	ret = registered;
 	ReturnCount(3);
 	return ret;
@@ -4325,7 +4205,7 @@ LispFunction(Reset_Hash_ID)
 	if (isHashtable(p))
 	{
 		UVECTOR(p)[2] = wrapInteger(2);
-		UVECTOR(p)[12] = 0;	// zero out the hash ID
+		UVECTOR(p)[12] = 0; // zero out the hash ID
 	}
 	LISP_FUNC_RETURN(NIL);
 }
@@ -4378,16 +4258,16 @@ LispFunction(Hardware_GC)
 		if (sym == NIL && HardwareAssist == 1)
 		{
 			// turn hardware-assist off
-			garbageCollect(2);		// do full collection
-			HardwareAssist = 0;		// switch off
-			garbageCollect(2);		// another full collection
+			garbageCollect(2); // do full collection
+			HardwareAssist = 0; // switch off
+			garbageCollect(2); // another full collection
 		}
 		else if (sym != NIL && HardwareAssist == 0)
 		{
 			// turn hardware-assist on
-			garbageCollect(2);		// do full collection
-			HardwareAssist = 1;		// switch on
-			garbageCollect(2);		// another full collection
+			garbageCollect(2); // do full collection
+			HardwareAssist = 1; // switch on
+			garbageCollect(2); // another full collection
 		}
 	}
 	else
@@ -4395,361 +4275,362 @@ LispFunction(Hardware_GC)
 	LISP_FUNC_RETURN(sym);
 }
 
-FunctEntry functTable[] =
-{
-	{	"SYMBOL-VALUE",				SymbolValue				},	// redefined in lisp
-	{	"SYMBOL-FUNCTION",			SymbolFunction			},	// redefined in lisp
-	{	"MACRO-FUNCTION",			Macro_Function			},	// redefined in lisp
-	{	"LIST*",					listStar				},	// redefined in lisp
-	{	"LIST",						lispList				},	// redefined in lisp
-	{	"APPEND",					lispAppend				},	// redefined in lisp
-	{	"FUNCALL",					Funcall					},	// redefined in lisp
-	{	"%CREATE-CLOSURE",			create_closure			},	// redefined in lisp
-	{	"SET-SYMBOL-FUNCTION",		SetSymbolFunction		},	// redefined in lisp
-	{	"SET-SYMBOL-MACRO",			SetSymbolMacro			},	// redefined in lisp
-	{	"GC",						gc						},	// leave in kernel
-	{	"SAVE-IMAGE",				SaveLispImage			},	// leave in kernel
-	{	"LOAD-IMAGE",				LoadLispImage			},	// leave in kernel
-	{	"%STRINGNODE",				(LispFunc)stringNode	},	// redefined in lisp
-	{	"%FOREIGNNODE",				(LispFunc)foreignNode	},	// redefined in lisp
-	{	"%CREATE-BIG-NUM",			(LispFunc)createBignum	},	// not used anywhere 03/13/00
-	{	"%DOUBLE-FLOAT-NODE",		(LispFunc)doubleFloatNode}, // redefined in lisp
-	{	"%SINGLE-FLOAT-NODE",		(LispFunc)singleFloatNode}, // redefined in lisp
-	{	"LOAD",						Load					},  // redefined in lisp
-	{	"CAR",						Car						},	// redefined in lisp
-	{	"CDR",						Cdr						},	// redefined in lisp
-	{	"EVAL",						Eval					},	// redefined in lisp
-	{	"COMPILE-FORM",				Compile_Form			},  // leave in kernel
-	{	"COMPILE-LAMBDA",			Compile_Lambda			},  // leave in kernel
-	{	"%WRONG-NUMBER-OF-ARGS",	WrongNumberOfArgs		},	// redefined in lisp
-	{	"%UNBOUND-VARIABLE",		(LispFunc)UnboundVariable}, // redefined in lisp
-	{	"%INVALID-FIXNUM",			(LispFunc)InvalidFixnum	},	// redefined in lisp
-	{	"%CHECK-LIST",				(LispFunc)checkList		},	// redefined in lisp
-	{	"+",						Plus					},	// refedined in lisp
-	{	"-",						Minus					},	// refedined in lisp
-	{	"*",						Multiply				},	// refedined in lisp
-	{	"/",						Divide					},	// refedined in lisp
-	{	"MOD",						Mod						},  // redefined in lisp
-	{	"NULL",						Null					},	// redefined in lisp
-	{	"EQ",						Eq						},	// redefined in lisp
-	{	"%UNDEFINED-FUNCTION",		UndefinedFunction		},  // redefined in lisp
-	{	"READ",						Read					},	// redefined in lisp
-	{	"WRITE",					Write					},	// redefined in lisp
-	{	"CLOSE",					Close					},	// redefined in lisp
-	{	"OPEN-INPUT-FILE",			Open_Input_File			},  // redefined in lisp
-	{	"=",						NumericEqual			},	// refedined in lisp
-	{	"<",						Less					},	// refedined in lisp
-	{	"<=",						LessEqual				},	// refedined in lisp
-	{	">",						Greater					},	// refedined in lisp
-	{	">=",						GreaterEqual			},	// refedined in lisp
-	{	"/=",						NotEqual				},	// refedined in lisp
-	{	"CONS",						Cons					},	// redefined in lisp
-	{	"CONSP",					Consp					},	// redefined in lisp
-	{	"SYMBOLP",					Symbolp					},	// redefined in lisp
-	{	"STRINGP",					Stringp					},	// redefined in lisp
-	{	"STREAMP",					Streamp					},	// redefined in lisp
-	{	"HASH-TABLE-P",				Hash_table_p			},	// redefined in lisp
-	{	"PACKAGEP",					Packagep				},	// redefined in lisp
-	{	"READTABLEP",				Readtablep				},	// redefined in lisp
-	{	"ARRAYP",					Arrayp					},	// redefined in lisp
-	{	"SEQUENCEP",				Sequencep				},	// redefined in lisp
-	{	"STRUCTUREP",				Structurep				},	// redefined in lisp
-	{	"INTEGERP",					Integerp				},	// redefined in lisp
-	{	"UVECTORP",					Uvectorp				},	// redefined in lisp
-	{	"BIGNUMP",					Bignump					},	// redefined in lisp
-	{	"FIXNUMP",					Fixnump					},	// redefined in lisp
-	{	"FLOATP",					Floatp					},	// redefined in lisp
-	{	"SHORT-FLOAT-P",			Short_Float_P			},	// redefined in lisp
-	{	"SINGLE-FLOAT-P",			Single_Float_P			},	// redefined in lisp
-	{	"DOUBLE-FLOAT-P",			Double_Float_P			},	// redefined in lisp
-	{	"RATIOP",					Ratiop					},	// redefined in lisp
-	{	"COMPLEXP",					Complexp				},	// redefined in lisp
-	{	"LISTP",					Listp					},	// redefined in lisp
-	{	"CHARACTERP",				Characterp				},	// redefined in lisp
-	{	"ERROR",					LispError				},	// redefined in lisp
-	{	"GENSYM",					Gensym					},	// redefined in lisp
-	{	"GET-INTERNAL-RUN-TIME",	Get_Internal_Run_Time	},  // redefined in lisp
-	{	"GET-INTERNAL-TIME-UNITS-PER-SECOND",Get_Time_Units_Per_Second}, // redefined in lisp
-	{	"GET-MILLISECOND-COUNT",	Get_Millisecond_Count	},  // not used anywhere 07/20/06
-	{	"GET-INSTRUCTION-COUNT",	Get_Instruction_Count	},  // not used anywhere 07/20/06
-	{	"GET-GC-TIME",				Get_Garbage_Collection_Time	}, // not used anywhere 07/20/06 (time function overridden)
-	{	"TERPRI",					Terpri					},  // redefined in lisp
-	{	"FORCE-OUTPUT",				Force_Output			},	// redefined in lisp
-	{	"%SYMBOL-GET-FLAGS",		Symbol_Get_Flags		},	// redefined in lisp
-	{	"%SYMBOL-SET-FLAGS",		Symbol_Set_Flags		},	// redefined in lisp
-	{	"BIT-OR",					Bit_Or					},	// redefined in lisp
-	{	"%ALLOC-CONS",				(LispFunc)AllocLocalCons},	// redefined in lisp
-	{	"%ALLOC-VECTOR",			(LispFunc)LispAllocVector}, // already naked asm in C++, leave for now
-	{	"%PUSH_CATCHER",			(LispFunc)pushCatcher	},  // redefined in lisp
-	{	"%POP_CATCHER",				(LispFunc)popCatcher	},  // redefined in lisp
-	{	"%POP_SPECIALS",			(LispFunc)popSpecials	},  // redefined in lisp
-	{	"%THROW_EXCEPTION",			Throw_Exception			},  // keep in kernel for now 03/13/00
-	{	"VALUES",					Values					},	// redefined in lisp
-	{	"ROOM",						Room					},  // redefined in lisp
-	{	"DUMP-HEAP",				DumpHeap				},  // leave in kernel
-	{	"MAKE-ARRAY",				Make_Array				},	// redefined in lisp
-	{	"APPLY",					Apply					},	// redefined in lisp
-	{	"RPLACA",					Rplaca					},	// redefined in lisp
-	{	"RPLACD",					Rplacd					},	// redefined in lisp
-	{	"FUNCTION-ENVIRONMENT",		Function_Environment	},	// redefined in lisp
-	{	"FUNCTION-INFO-LIST",		Function_Info_List		},	// redefined in lisp
-	{	"READ-CHAR",				Read_Char				},	// redefined in lisp
-	{	"%READ-CHAR",				_Read_Char				},	// redefined in lisp
-	{	"%READ-CHAR-WITH-ERROR",	_Read_Char_With_Error	},	// redefined in lisp
-	{	"UNREAD-CHAR",				Unread_Char				},	// redefined in lisp
-	{	"INT-CHAR",					Int_Char				},	// redefined in lisp
-	{	"CHAR-INT",					Char_Int				},	// redefined in lisp
-	{	"ELT",						Elt						},	// redefined in lisp
-	{	"CHAR-UPCASE",				Char_Upcase				},	// redefined in lisp
-	{	"CHAR-DOWNCASE",			Char_Downcase			},	// redefined in lisp
-	{	"FUNCTIONP",				Functionp				},	// redefined in lisp
-	{	"PACKAGE-HASH-INDEX",		Package_Hash_Index		},	// redefined in lisp
-	{	"VECTOR-SLOT-INITIALIZED",	Vector_Slot_Initialized	},	// not used anywhere -04/25/06
-	{	"STRING=",					String_Equal			},	// redefined in lisp
-	{	"SETELT",					SetElt					},	// redefined in lisp
-	{	"MAKE-SYMBOL",				Make_Symbol				},  // redefined in lisp
-	{	"COERCE",					Coerce					},	// redefined in lisp
-	{	"ALLOC-UVECTOR",			Alloc_Uvector			},	// redefined in lisp
-	{	"ALLOC-BYTE-VECTOR",		Alloc_Byte_Vector		},	// not used 03/13/00
-	{	"%CHARS-TO-FLOAT",			Chars_To_Float			},	// redefined in lisp	
-	{	"%POP-SPECIAL-BINDINGS",	Pop_Special_Bindings	},	// redefined in lisp	
-	{	"%PUSH-SPECIAL-BINDINGS",	Push_Special_Bindings	},	// redefined in lisp	
-	{	"%ESTABLISH-SPECIAL-BINDINGS",	(LispFunc)establishSpecialBindings	}, // redefined in lisp0
-	{	"%OUTPUT-CHAR",				_Output_Char			},	// redefined in lisp
-	{	"%OUTPUT-CHARS",			_Output_Chars			},	// redefined in lisp
-	{	"VECTORP",					Vectorp					},	// redefined in lisp
-	{	"ARRAY-RANK",				Array_Rank				},	// redefined in lisp
-	{	"ARRAY-DIMENSION",			Array_Dimension			},	// redefined in lisp
-	{	"%UVECTOR-ADDRESS",			Uvector_Address			},	// redefined in lisp
-	{	"%FLOAT-TO-STRING",			Float_To_String			},	// not used anywhere 03/13/00
-	{	"ROW-MAJOR-AREF",			Row_Major_Aref			},	// redefined in lisp
-	{	"(SETF ROW-MAJOR-AREF)",	Setf_Row_Major_Aref		},	// redefined in lisp
-	{	"ARRAY-CELL-SIZE",			Array_Cell_Size			},	// not used 03/13/00
-	{	"ARRAY-INITIALIZE-ELEMENT",	Array_Initialize_Element},	// redefined in lisp
-	{	"ARRAY-INITIALIZE-CONTENTS",Array_Initialize_Contents},	// redefined in lisp
-	{	"UNINITIALIZED-OBJECT-P",	Uninitialized_Object_P  },  // redefined in lisp
-	{	"DISASSEMBLY-STATEMENT",	Disassembly_Statement	},  // redefined in lisp
-	{	"EXECUTION-ADDRESS",		Execution_Address		},	// redefined in lisp
-	{	"PRINT-FLOAT",				Print_Float				},  // redefined in lisp
-	{	"STACK-TRACE",				Stack_Trace				},  // keep in kernel
-	{	"ADDRESS-FIND-FUNCTION",	Address_Find_Function	},	// keep in kernel for now 03/13/00
-	{	"%BIGNUM-BYTE",				Bignum_Byte				},	// not used anywhere 03/13/00
-	{	"FLOAT",					Float					},	// redefined in lisp
-	{	"FLOOR",					Floor					},	// redefined in lisp
-	{	"CEILING",					Ceiling					},	// redefined in lisp
-	{	"TRUNCATE",					Truncate				},	// redefined in lisp
-	{	"ROUND",					Round					},	// redefined in lisp
-	{	"COMPLEX",					Complex					},	// redefined in lisp
-	{	"SQRT",						Sqrt					},	// redefined in lisp
-	{	"ISQRT",					Isqrt					},	// redefined in lisp
-	{	"EXP",						Exp						},	// redefined in lisp
-	{	"EXPT",						Expt					},	// redefined in lisp
-	{	"LOG",						Log						},	// redefined in lisp
-	{	"SIN",						Sin						},	// redefined in lisp
-	{	"COS",						Cos						},	// redefined in lisp
-	{	"GCD",						Gcd						},	// redefined in lisp
-	{	"UVECTOR-TYPE-BITS",		Uvector_Type_Bits		},	// redefined in lisp
-	{	"TAG-BITS",					Tag_Bits				},	// redefined in lisp
-	{	"TEST-FUNCTION",			Test_Function			},  // not used anywhere
-	{	"PROTECT-STACK",			Protect_Stack			},
-	{	"GET-OS-VERSION",			Get_OS_Version			},
-	{	"HEAP-CAPACITY",			Heap_Capacity			},
-	{	"HEAP-CURRENTLY-USED",		Heap_Currently_Used		},
-	{	"JUMP-TABLE-CAPACITY",		Jump_Table_Capacity		},
-	{	"JUMP-TABLE-USED",			Jump_Table_Used			},
-	{	"SYMBOL-TABLE-CAPACITY",	Symbol_Table_Capacity	},
-	{	"SYMBOL-TABLE-USED",		Symbol_Table_Used		},
-	{	"%FMAKUNBOUND",				Fmakunbound				},	// redefined in lisp
-	{	"REGISTER-FINALIZATION",	Register_Finalization	},	// redefined in lisp
-	{	"UVECTOR-NUM-SLOTS",		Uvector_Num_Slots		},  // redefined in lisp
-	{	"LOGXOR",					Logxor					},	// redefined in lisp
-	{	"LOGIOR",					Logior					},	// redefined in lisp
-	{	"LOGAND",					Logand					},	// redefined in lisp
-	{	"LOGNOT",					Lognot					},	// redefined in lisp
-	{	"LOGANDC1",					Logandc1				},	// redefined in lisp
-	{	"LOGANDC2",					Logandc2				},	// redefined in lisp
-	{	"LOGEQV",					Logeqv					},	// redefined in lisp
-	{	"LOGNAND",					Lognand					},	// redefined in lisp
-	{	"LOGNOR",					Lognor					},	// redefined in lisp
-	{	"LOGORC1",					Logorc1					},	// redefined in lisp
-	{	"LOGORC2",					Logorc2					},	// redefined in lisp
-	{	"LISP-OBJECT-ID",			Lisp_object_id			},  // redefined in lisp
-	{	"HASH-EQ-FUNCTION",			Hash_eq_function		},  // redefined in lisp
-	{	"HASH-EQL-FUNCTION",		Hash_eql_function		},	// redefined in lisp
-	{	"HASH-EQUAL-FUNCTION",		Hash_equal_function		},	// redefined in lisp
-	{	"HASH-EQUALP-FUNCTION",		Hash_equalp_function	},	// redefined in lisp
-	{	"FUNCALL-IGNORING-ERRORS",	Funcall_ignoring_errors	},	// redefined in lisp
-	{	"GET-GC-EXEC-REGISTRY",		Get_gc_exec_registry	},  // not currently used anywhere
-	{	"ADD-GC-EXEC-REGISTRY",		Add_gc_exec_registry	},	// not currently used anywhere
-	{	"REMOVE-GC-EXEC-REGISTRY",	Remove_gc_exec_registry	},  // not currently used anywhere
-	{	"COMPILE-FUNCTION-CALL-FORM", CompileFunctionCallForm },// redefined in lisp
-	{	"UREF-SET",					Uref_Set				},	// redefined in lisp
-	{	"UREF",						Uref					},	// redefined in lisp
-	{	"CONSTANTP",				Constantp				},	// redefined in lisp
-	{	"CREATE-COMPILED-FUNCTION",	Create_Compiled_Function},
-	{	"LOAD-DLL",					Load_DLL				},  // redefined in lisp
-	{	"UNLOAD-DLL",				Unload_DLL				},
-	{	"GET-DLL-PROC-ADDRESS",		Get_DLL_Proc_Address	},
-	{	"FOREIGNP",					Foreignp				},  // redefined in lisp
-	{	"FOREIGN-HEAP-P",			Foreign_Heap_P			},
-	{	"FOREIGN-PTR-TO-INT",		Foreign_Ptr_To_Int		},  // redefined in lisp
-	{	"INT-TO-FOREIGN-PTR",		Int_To_Foreign_Ptr		},  // redefined in lisp
-	{	"EDITOR-SET-MESSAGE",		Editor_Set_Message		},
-	{	"EDITOR-SET-DEFAULT-MESSAGE", Editor_Set_Default_Message},
-	{	"EDITOR-GET-MESSAGE",		Editor_Get_Message		},
-//	{	"DISPLAY-VALUE",			Display_Value			},
-	{	"CREATE-THREAD",			Create_Thread			},
-	{	"COMPILE-SUB-FORM",			Compile_Sub_Form		},
-	{	"REGISTER-UNTAGGED-VALUES",	Register_Untagged_Values},	// redefined in lisp
-	{	"ALLOCATE-C-HEAP",			Allocate_C_Heap			},	// redefined in lisp
-	{	"DEALLOCATE-C-HEAP",		Deallocate_C_Heap		},	// redefined in lisp
-	{	"GET-UNIVERSAL-TIME",		Get_Universal_Time		},	// redefined in lisp
-	{	"LOCAL-TIME-ZONE",			Local_Time_Zone			},	// redefined in lisp
-	{	"GET-LOCAL-TIME",			Get_Local_Time			},
-	{	"GET-SYSTEM-TIME",			Get_System_Time			},
-	{	"SYSTEM-TIME-TO-FILE-TIME",	System_Time_To_File_Time},
-	{	"FILE-TIME-TO-SYSTEM-TIME",	File_Time_To_System_Time},
-	{	"BIGNUM-INTEGER-LENGTH",	Bignum_Integer_Length	},	// redefined in lisp
-	{	"BIGNUM-SHIFT",				Bignum_Shift			},	// redefined in lisp
-	{	"%FIXNUM-TO-BIGNUM",		(LispFunc)fixnumToBignum},	// not used anywhere 04/25/06
-	{	"%CREATE-FUNC-TABLE-ENTRY", Create_Func_Table_Entry	},	// keep in kernel  03/13/00
-	{	"%CREATE-VAR-TABLE-ENTRY",  Create_Var_Table_Entry	},	// keep in kernel  03/13/00
-	{	"%CREATE-LISP-INTEGER",		(LispFunc)createLispInteger}, // TDE: replace with lisp code 03/13/00
-	{	"%CREATE-UNSIGNED-LISP-INTEGER",(LispFunc)createUnsignedLispInteger}, // TDE: replace with lisp code 03/13/00
-	{	"FIND-KEYWORD",				Find_Keyword			},
-	{	"CONSOLE-OVERFLOW-FUNCTION",Console_Overflow_Function},
-	{	"CONSOLE-UNDERFLOW-FUNCTION",Console_Underflow_Function},
-	{	"FILE-OVERFLOW-FUNCTION",	File_Overflow_Function	},	// redefined in lisp
-	{	"FILE-UNDERFLOW-FUNCTION",	File_Underflow_Function	},	// redefined in lisp
-	{	"STRING-OVERFLOW-FUNCTION",	String_Overflow_Function},	// To Do!!
-	{	"STRING-UNDERFLOW-FUNCTION",String_Underflow_Function},	// redefined in lisp
-	{	"MAKE-WEAK-POINTER",		Make_Weak_Pointer		},
-	{	"ADDRESS-FIND-FUNCTION-CALLBACK", Address_Find_Function_Callback }, // keep in kernel for now 03/13/00
-	{	"PROCESS-EACH-HEAP-BLOCK",	Process_Each_Heap_Block	},
-	{	"CONSOLE-INPUT-CHARS-AVAILABLE", Console_Input_Chars_Available	},
-	{	"TYPEEXPAND-ALL",			Typeexpand_All			},	// redefined in lisp
-	{	"LOOKUP-FTYPE",				Lookup_Ftype			},	// redefined in lisp
-	{	"GET-APPLICATION-INSTANCE",	Get_Application_Instance},
-	{	"GET-APPLICATION-MAIN-WINDOW",	Get_Application_Main_Window},
-	{	"%LOAD-QV-REG",				(LispFunc)Load_QV_Reg	},	// TDE: replace with lisp code 03/13/00
-	{	"CREATE-CALLBACK-THUNK",	Create_Callback_Thunk	},
-	{	"ED",						Ed						},
-	{	"DISPLAY-URL",				Display_URL				},
-	{	"ADD-MENU-ITEM",			Add_Menu_Item			},	// not currently used anywhere 03/13/00
-	{	"CORMANLISP-CLIENT-TYPE",	CormanLisp_Client_Type	},
-	{	"ARRAY-TYPE",				Array_Type				},	// TDE: replace with lisp code 03/13/00
-	{	"MOD-BIGNUMS",				Mod_Bignums				},		// debug function
-	{	"DIVIDE-BIGNUMS",			Divide_Bignums			},		// debug function
+FunctEntry functTable[] = {
+	{"SYMBOL-VALUE", SymbolValue}, // redefined in lisp
+	{"SYMBOL-FUNCTION", SymbolFunction}, // redefined in lisp
+	{"MACRO-FUNCTION", Macro_Function}, // redefined in lisp
+	{"LIST*", listStar}, // redefined in lisp
+	{"LIST", lispList}, // redefined in lisp
+	{"APPEND", lispAppend}, // redefined in lisp
+	{"FUNCALL", Funcall}, // redefined in lisp
+	{"%CREATE-CLOSURE", create_closure}, // redefined in lisp
+	{"SET-SYMBOL-FUNCTION", SetSymbolFunction}, // redefined in lisp
+	{"SET-SYMBOL-MACRO", SetSymbolMacro}, // redefined in lisp
+	{"GC", gc}, // leave in kernel
+	{"SAVE-IMAGE", SaveLispImage}, // leave in kernel
+	{"LOAD-IMAGE", LoadLispImage}, // leave in kernel
+	{"%STRINGNODE", (LispFunc)stringNode}, // redefined in lisp
+	{"%FOREIGNNODE", (LispFunc)foreignNode}, // redefined in lisp
+	{"%CREATE-BIG-NUM", (LispFunc)createBignum}, // not used anywhere 03/13/00
+	{"%DOUBLE-FLOAT-NODE", (LispFunc)doubleFloatNode}, // redefined in lisp
+	{"%SINGLE-FLOAT-NODE", (LispFunc)singleFloatNode}, // redefined in lisp
+	{"LOAD", Load}, // redefined in lisp
+	{"CAR", Car}, // redefined in lisp
+	{"CDR", Cdr}, // redefined in lisp
+	{"EVAL", Eval}, // redefined in lisp
+	{"COMPILE-FORM", Compile_Form}, // leave in kernel
+	{"COMPILE-LAMBDA", Compile_Lambda}, // leave in kernel
+	{"%WRONG-NUMBER-OF-ARGS", WrongNumberOfArgs}, // redefined in lisp
+	{"%UNBOUND-VARIABLE", (LispFunc)UnboundVariable}, // redefined in lisp
+	{"%INVALID-FIXNUM", (LispFunc)InvalidFixnum}, // redefined in lisp
+	{"%CHECK-LIST", (LispFunc)checkList}, // redefined in lisp
+	{"+", Plus}, // refedined in lisp
+	{"-", Minus}, // refedined in lisp
+	{"*", Multiply}, // refedined in lisp
+	{"/", Divide}, // refedined in lisp
+	{"MOD", Mod}, // redefined in lisp
+	{"NULL", Null}, // redefined in lisp
+	{"EQ", Eq}, // redefined in lisp
+	{"%UNDEFINED-FUNCTION", UndefinedFunction}, // redefined in lisp
+	{"READ", Read}, // redefined in lisp
+	{"WRITE", Write}, // redefined in lisp
+	{"CLOSE", Close}, // redefined in lisp
+	{"OPEN-INPUT-FILE", Open_Input_File}, // redefined in lisp
+	{"=", NumericEqual}, // refedined in lisp
+	{"<", Less}, // refedined in lisp
+	{"<=", LessEqual}, // refedined in lisp
+	{">", Greater}, // refedined in lisp
+	{">=", GreaterEqual}, // refedined in lisp
+	{"/=", NotEqual}, // refedined in lisp
+	{"CONS", Cons}, // redefined in lisp
+	{"CONSP", Consp}, // redefined in lisp
+	{"SYMBOLP", Symbolp}, // redefined in lisp
+	{"STRINGP", Stringp}, // redefined in lisp
+	{"STREAMP", Streamp}, // redefined in lisp
+	{"HASH-TABLE-P", Hash_table_p}, // redefined in lisp
+	{"PACKAGEP", Packagep}, // redefined in lisp
+	{"READTABLEP", Readtablep}, // redefined in lisp
+	{"ARRAYP", Arrayp}, // redefined in lisp
+	{"SEQUENCEP", Sequencep}, // redefined in lisp
+	{"STRUCTUREP", Structurep}, // redefined in lisp
+	{"INTEGERP", Integerp}, // redefined in lisp
+	{"UVECTORP", Uvectorp}, // redefined in lisp
+	{"BIGNUMP", Bignump}, // redefined in lisp
+	{"FIXNUMP", Fixnump}, // redefined in lisp
+	{"FLOATP", Floatp}, // redefined in lisp
+	{"SHORT-FLOAT-P", Short_Float_P}, // redefined in lisp
+	{"SINGLE-FLOAT-P", Single_Float_P}, // redefined in lisp
+	{"DOUBLE-FLOAT-P", Double_Float_P}, // redefined in lisp
+	{"RATIOP", Ratiop}, // redefined in lisp
+	{"COMPLEXP", Complexp}, // redefined in lisp
+	{"LISTP", Listp}, // redefined in lisp
+	{"CHARACTERP", Characterp}, // redefined in lisp
+	{"ERROR", LispError}, // redefined in lisp
+	{"GENSYM", Gensym}, // redefined in lisp
+	{"GET-INTERNAL-RUN-TIME", Get_Internal_Run_Time}, // redefined in lisp
+	{"GET-INTERNAL-TIME-UNITS-PER-SECOND", Get_Time_Units_Per_Second}, // redefined in lisp
+	{"GET-MILLISECOND-COUNT", Get_Millisecond_Count}, // not used anywhere 07/20/06
+	{"GET-INSTRUCTION-COUNT", Get_Instruction_Count}, // not used anywhere 07/20/06
+	{"GET-GC-TIME", Get_Garbage_Collection_Time}, // not used anywhere 07/20/06 (time function overridden)
+	{"TERPRI", Terpri}, // redefined in lisp
+	{"FORCE-OUTPUT", Force_Output}, // redefined in lisp
+	{"%SYMBOL-GET-FLAGS", Symbol_Get_Flags}, // redefined in lisp
+	{"%SYMBOL-SET-FLAGS", Symbol_Set_Flags}, // redefined in lisp
+	{"BIT-OR", Bit_Or}, // redefined in lisp
+	{"%ALLOC-CONS", (LispFunc)AllocLocalCons}, // redefined in lisp
+	{"%ALLOC-VECTOR", (LispFunc)LispAllocVector}, // already naked asm in C++, leave for now
+	{"%PUSH_CATCHER", (LispFunc)pushCatcher}, // redefined in lisp
+	{"%POP_CATCHER", (LispFunc)popCatcher}, // redefined in lisp
+	{"%POP_SPECIALS", (LispFunc)popSpecials}, // redefined in lisp
+	{"%THROW_EXCEPTION", Throw_Exception}, // keep in kernel for now 03/13/00
+	{"VALUES", Values}, // redefined in lisp
+	{"ROOM", Room}, // redefined in lisp
+	{"DUMP-HEAP", DumpHeap}, // leave in kernel
+	{"MAKE-ARRAY", Make_Array}, // redefined in lisp
+	{"APPLY", Apply}, // redefined in lisp
+	{"RPLACA", Rplaca}, // redefined in lisp
+	{"RPLACD", Rplacd}, // redefined in lisp
+	{"FUNCTION-ENVIRONMENT", Function_Environment}, // redefined in lisp
+	{"FUNCTION-INFO-LIST", Function_Info_List}, // redefined in lisp
+	{"READ-CHAR", Read_Char}, // redefined in lisp
+	{"%READ-CHAR", _Read_Char}, // redefined in lisp
+	{"%READ-CHAR-WITH-ERROR", _Read_Char_With_Error}, // redefined in lisp
+	{"UNREAD-CHAR", Unread_Char}, // redefined in lisp
+	{"INT-CHAR", Int_Char}, // redefined in lisp
+	{"CHAR-INT", Char_Int}, // redefined in lisp
+	{"ELT", Elt}, // redefined in lisp
+	{"CHAR-UPCASE", Char_Upcase}, // redefined in lisp
+	{"CHAR-DOWNCASE", Char_Downcase}, // redefined in lisp
+	{"FUNCTIONP", Functionp}, // redefined in lisp
+	{"PACKAGE-HASH-INDEX", Package_Hash_Index}, // redefined in lisp
+	{"VECTOR-SLOT-INITIALIZED", Vector_Slot_Initialized}, // not used anywhere -04/25/06
+	{"STRING=", String_Equal}, // redefined in lisp
+	{"SETELT", SetElt}, // redefined in lisp
+	{"MAKE-SYMBOL", Make_Symbol}, // redefined in lisp
+	{"COERCE", Coerce}, // redefined in lisp
+	{"ALLOC-UVECTOR", Alloc_Uvector}, // redefined in lisp
+	{"ALLOC-BYTE-VECTOR", Alloc_Byte_Vector}, // not used 03/13/00
+	{"%CHARS-TO-FLOAT", Chars_To_Float}, // redefined in lisp
+	{"%POP-SPECIAL-BINDINGS", Pop_Special_Bindings}, // redefined in lisp
+	{"%PUSH-SPECIAL-BINDINGS", Push_Special_Bindings}, // redefined in lisp
+	{"%ESTABLISH-SPECIAL-BINDINGS", (LispFunc)establishSpecialBindings}, // redefined in lisp0
+	{"%OUTPUT-CHAR", _Output_Char}, // redefined in lisp
+	{"%OUTPUT-CHARS", _Output_Chars}, // redefined in lisp
+	{"VECTORP", Vectorp}, // redefined in lisp
+	{"ARRAY-RANK", Array_Rank}, // redefined in lisp
+	{"ARRAY-DIMENSION", Array_Dimension}, // redefined in lisp
+	{"%UVECTOR-ADDRESS", Uvector_Address}, // redefined in lisp
+	{"%FLOAT-TO-STRING", Float_To_String}, // not used anywhere 03/13/00
+	{"ROW-MAJOR-AREF", Row_Major_Aref}, // redefined in lisp
+	{"(SETF ROW-MAJOR-AREF)", Setf_Row_Major_Aref}, // redefined in lisp
+	{"ARRAY-CELL-SIZE", Array_Cell_Size}, // not used 03/13/00
+	{"ARRAY-INITIALIZE-ELEMENT", Array_Initialize_Element}, // redefined in lisp
+	{"ARRAY-INITIALIZE-CONTENTS", Array_Initialize_Contents}, // redefined in lisp
+	{"UNINITIALIZED-OBJECT-P", Uninitialized_Object_P}, // redefined in lisp
+	{"DISASSEMBLY-STATEMENT", Disassembly_Statement}, // redefined in lisp
+	{"EXECUTION-ADDRESS", Execution_Address}, // redefined in lisp
+	{"PRINT-FLOAT", Print_Float}, // redefined in lisp
+	{"STACK-TRACE", Stack_Trace}, // keep in kernel
+	{"ADDRESS-FIND-FUNCTION", Address_Find_Function}, // keep in kernel for now 03/13/00
+	{"%BIGNUM-BYTE", Bignum_Byte}, // not used anywhere 03/13/00
+	{"FLOAT", Float}, // redefined in lisp
+	{"FLOOR", Floor}, // redefined in lisp
+	{"CEILING", Ceiling}, // redefined in lisp
+	{"TRUNCATE", Truncate}, // redefined in lisp
+	{"ROUND", Round}, // redefined in lisp
+	{"COMPLEX", Complex}, // redefined in lisp
+	{"SQRT", Sqrt}, // redefined in lisp
+	{"ISQRT", Isqrt}, // redefined in lisp
+	{"EXP", Exp}, // redefined in lisp
+	{"EXPT", Expt}, // redefined in lisp
+	{"LOG", Log}, // redefined in lisp
+	{"SIN", Sin}, // redefined in lisp
+	{"COS", Cos}, // redefined in lisp
+	{"GCD", Gcd}, // redefined in lisp
+	{"UVECTOR-TYPE-BITS", Uvector_Type_Bits}, // redefined in lisp
+	{"TAG-BITS", Tag_Bits}, // redefined in lisp
+	{"TEST-FUNCTION", Test_Function}, // not used anywhere
+	{"PROTECT-STACK", Protect_Stack},
+	{"GET-OS-VERSION", Get_OS_Version},
+	{"HEAP-CAPACITY", Heap_Capacity},
+	{"HEAP-CURRENTLY-USED", Heap_Currently_Used},
+	{"JUMP-TABLE-CAPACITY", Jump_Table_Capacity},
+	{"JUMP-TABLE-USED", Jump_Table_Used},
+	{"SYMBOL-TABLE-CAPACITY", Symbol_Table_Capacity},
+	{"SYMBOL-TABLE-USED", Symbol_Table_Used},
+	{"%FMAKUNBOUND", Fmakunbound}, // redefined in lisp
+	{"REGISTER-FINALIZATION", Register_Finalization}, // redefined in lisp
+	{"UVECTOR-NUM-SLOTS", Uvector_Num_Slots}, // redefined in lisp
+	{"LOGXOR", Logxor}, // redefined in lisp
+	{"LOGIOR", Logior}, // redefined in lisp
+	{"LOGAND", Logand}, // redefined in lisp
+	{"LOGNOT", Lognot}, // redefined in lisp
+	{"LOGANDC1", Logandc1}, // redefined in lisp
+	{"LOGANDC2", Logandc2}, // redefined in lisp
+	{"LOGEQV", Logeqv}, // redefined in lisp
+	{"LOGNAND", Lognand}, // redefined in lisp
+	{"LOGNOR", Lognor}, // redefined in lisp
+	{"LOGORC1", Logorc1}, // redefined in lisp
+	{"LOGORC2", Logorc2}, // redefined in lisp
+	{"LISP-OBJECT-ID", Lisp_object_id}, // redefined in lisp
+	{"HASH-EQ-FUNCTION", Hash_eq_function}, // redefined in lisp
+	{"HASH-EQL-FUNCTION", Hash_eql_function}, // redefined in lisp
+	{"HASH-EQUAL-FUNCTION", Hash_equal_function}, // redefined in lisp
+	{"HASH-EQUALP-FUNCTION", Hash_equalp_function}, // redefined in lisp
+	{"FUNCALL-IGNORING-ERRORS", Funcall_ignoring_errors}, // redefined in lisp
+	{"GET-GC-EXEC-REGISTRY", Get_gc_exec_registry}, // not currently used anywhere
+	{"ADD-GC-EXEC-REGISTRY", Add_gc_exec_registry}, // not currently used anywhere
+	{"REMOVE-GC-EXEC-REGISTRY", Remove_gc_exec_registry}, // not currently used anywhere
+	{"COMPILE-FUNCTION-CALL-FORM", CompileFunctionCallForm}, // redefined in lisp
+	{"UREF-SET", Uref_Set}, // redefined in lisp
+	{"UREF", Uref}, // redefined in lisp
+	{"CONSTANTP", Constantp}, // redefined in lisp
+	{"CREATE-COMPILED-FUNCTION", Create_Compiled_Function},
+	{"LOAD-DLL", Load_DLL}, // redefined in lisp
+	{"UNLOAD-DLL", Unload_DLL},
+	{"GET-DLL-PROC-ADDRESS", Get_DLL_Proc_Address},
+	{"FOREIGNP", Foreignp}, // redefined in lisp
+	{"FOREIGN-HEAP-P", Foreign_Heap_P},
+	{"FOREIGN-PTR-TO-INT", Foreign_Ptr_To_Int}, // redefined in lisp
+	{"INT-TO-FOREIGN-PTR", Int_To_Foreign_Ptr}, // redefined in lisp
+	{"EDITOR-SET-MESSAGE", Editor_Set_Message},
+	{"EDITOR-SET-DEFAULT-MESSAGE", Editor_Set_Default_Message},
+	{"EDITOR-GET-MESSAGE", Editor_Get_Message},
+	//	{	"DISPLAY-VALUE",			Display_Value			},
+	{"CREATE-THREAD", Create_Thread},
+	{"COMPILE-SUB-FORM", Compile_Sub_Form},
+	{"REGISTER-UNTAGGED-VALUES", Register_Untagged_Values}, // redefined in lisp
+	{"ALLOCATE-C-HEAP", Allocate_C_Heap}, // redefined in lisp
+	{"DEALLOCATE-C-HEAP", Deallocate_C_Heap}, // redefined in lisp
+	{"GET-UNIVERSAL-TIME", Get_Universal_Time}, // redefined in lisp
+	{"LOCAL-TIME-ZONE", Local_Time_Zone}, // redefined in lisp
+	{"GET-LOCAL-TIME", Get_Local_Time},
+	{"GET-SYSTEM-TIME", Get_System_Time},
+	{"SYSTEM-TIME-TO-FILE-TIME", System_Time_To_File_Time},
+	{"FILE-TIME-TO-SYSTEM-TIME", File_Time_To_System_Time},
+	{"BIGNUM-INTEGER-LENGTH", Bignum_Integer_Length}, // redefined in lisp
+	{"BIGNUM-SHIFT", Bignum_Shift}, // redefined in lisp
+	{"%FIXNUM-TO-BIGNUM", (LispFunc)fixnumToBignum}, // not used anywhere 04/25/06
+	{"%CREATE-FUNC-TABLE-ENTRY", Create_Func_Table_Entry}, // keep in kernel  03/13/00
+	{"%CREATE-VAR-TABLE-ENTRY", Create_Var_Table_Entry}, // keep in kernel  03/13/00
+	{"%CREATE-LISP-INTEGER", (LispFunc)createLispInteger}, // TDE: replace with lisp code 03/13/00
+	{"%CREATE-UNSIGNED-LISP-INTEGER", (LispFunc)createUnsignedLispInteger}, // TDE: replace with lisp code 03/13/00
+	{"FIND-KEYWORD", Find_Keyword},
+	{"CONSOLE-OVERFLOW-FUNCTION", Console_Overflow_Function},
+	{"CONSOLE-UNDERFLOW-FUNCTION", Console_Underflow_Function},
+	{"FILE-OVERFLOW-FUNCTION", File_Overflow_Function}, // redefined in lisp
+	{"FILE-UNDERFLOW-FUNCTION", File_Underflow_Function}, // redefined in lisp
+	{"STRING-OVERFLOW-FUNCTION", String_Overflow_Function}, // To Do!!
+	{"STRING-UNDERFLOW-FUNCTION", String_Underflow_Function}, // redefined in lisp
+	{"MAKE-WEAK-POINTER", Make_Weak_Pointer},
+	{"ADDRESS-FIND-FUNCTION-CALLBACK", Address_Find_Function_Callback}, // keep in kernel for now 03/13/00
+	{"PROCESS-EACH-HEAP-BLOCK", Process_Each_Heap_Block},
+	{"CONSOLE-INPUT-CHARS-AVAILABLE", Console_Input_Chars_Available},
+	{"TYPEEXPAND-ALL", Typeexpand_All}, // redefined in lisp
+	{"LOOKUP-FTYPE", Lookup_Ftype}, // redefined in lisp
+	{"GET-APPLICATION-INSTANCE", Get_Application_Instance},
+	{"GET-APPLICATION-MAIN-WINDOW", Get_Application_Main_Window},
+	{"%LOAD-QV-REG", (LispFunc)Load_QV_Reg}, // TDE: replace with lisp code 03/13/00
+	{"CREATE-CALLBACK-THUNK", Create_Callback_Thunk},
+	{"ED", Ed},
+	{"DISPLAY-URL", Display_URL},
+	{"ADD-MENU-ITEM", Add_Menu_Item}, // not currently used anywhere 03/13/00
+	{"CORMANLISP-CLIENT-TYPE", CormanLisp_Client_Type},
+	{"ARRAY-TYPE", Array_Type}, // TDE: replace with lisp code 03/13/00
+	{"MOD-BIGNUMS", Mod_Bignums}, // debug function
+	{"DIVIDE-BIGNUMS", Divide_Bignums}, // debug function
 
 	// read macros
-	{	"%DOUBLEQUOTEMACRO",		doublequoteMacro		},  // only used during booting 03/13/00
-	{	"%QUOTEMACRO",				quoteMacro				},	// only used during booting 03/13/00
-	{	"%LEFTPARENMACRO",			leftparenMacro			},	// only used during booting 03/13/00
-	{	"%RIGHTPARENMACRO",			rightparenMacro			},	// only used during booting 03/13/00
-	{	"%COMMAMACRO",				commaMacro				},	// only used during booting 03/13/00
-	{	"%SEMICOLONMACRO",			semicolonMacro			},	// only used during booting 08/18/01
-	{	"%BACKQUOTEMACRO",			backquoteMacro			},	// only used during booting 03/13/00
-	{	"%POUNDQUOTEMACRO",			poundQuoteMacro			},	// only used during booting 08/18/01
-	{	"%POUNDLEFTPARENMACRO",		poundLeftParenMacro		},	// only used during booting 03/13/00
-	{	"%POUNDBACKSLASHMACRO",		poundBackslashMacro		},	// only used during booting 03/13/00
-	{	"%BRACKETEDCOMMENTMACRO",	bracketedCommentMacro	},	// redefined in lisp
-	{	"%KERNEL-FUNCALL",			Funcall					},	// not used anywhere 03/13/00
-	{	"%KERNEL-APPLY",			Apply					},	// not used anywhere 03/13/00
-	{	"PROBE-FILE",				Probe_File				},	// redefined in lisp
+	{"%DOUBLEQUOTEMACRO", doublequoteMacro}, // only used during booting 03/13/00
+	{"%QUOTEMACRO", quoteMacro}, // only used during booting 03/13/00
+	{"%LEFTPARENMACRO", leftparenMacro}, // only used during booting 03/13/00
+	{"%RIGHTPARENMACRO", rightparenMacro}, // only used during booting 03/13/00
+	{"%COMMAMACRO", commaMacro}, // only used during booting 03/13/00
+	{"%SEMICOLONMACRO", semicolonMacro}, // only used during booting 08/18/01
+	{"%BACKQUOTEMACRO", backquoteMacro}, // only used during booting 03/13/00
+	{"%POUNDQUOTEMACRO", poundQuoteMacro}, // only used during booting 08/18/01
+	{"%POUNDLEFTPARENMACRO", poundLeftParenMacro}, // only used during booting 03/13/00
+	{"%POUNDBACKSLASHMACRO", poundBackslashMacro}, // only used during booting 03/13/00
+	{"%BRACKETEDCOMMENTMACRO", bracketedCommentMacro}, // redefined in lisp
+	{"%KERNEL-FUNCALL", Funcall}, // not used anywhere 03/13/00
+	{"%KERNEL-APPLY", Apply}, // not used anywhere 03/13/00
+	{"PROBE-FILE", Probe_File}, // redefined in lisp
 
-	{	"%PLUS_EAX_EDX",			(LispFunc)Plus_EAX_EDX	},	// redefined in lisp
-	{	"%MINUS_EAX_EDX",			(LispFunc)Minus_EAX_EDX	},	// redefined in lisp
-	{	"%ADD-2",					(LispFunc)_Add			},	// not used anywhere 03/13/00
-	{	"%SUBTRACT-2",				(LispFunc)_Subtract		},  // not used anywhere 03/13/00
-	{	"%MULTIPLY-2",				(LispFunc)_Multiply		},	// not used anywhere 04/24/06
-	{	"%DIVIDE-2",				(LispFunc)_Divide		},	// not used anywhere 03/13/00
+	{"%PLUS_EAX_EDX", (LispFunc)Plus_EAX_EDX}, // redefined in lisp
+	{"%MINUS_EAX_EDX", (LispFunc)Minus_EAX_EDX}, // redefined in lisp
+	{"%ADD-2", (LispFunc)_Add}, // not used anywhere 03/13/00
+	{"%SUBTRACT-2", (LispFunc)_Subtract}, // not used anywhere 03/13/00
+	{"%MULTIPLY-2", (LispFunc)_Multiply}, // not used anywhere 04/24/06
+	{"%DIVIDE-2", (LispFunc)_Divide}, // not used anywhere 03/13/00
 
-	{   "ALLOCATE-FOREIGN-JUMP-TABLE-ENTRY", Allocate_Foreign_Jump_Table_Entry  }, //  TDE: replace with lisp code 03/13/00
-	{   "CLEAR-FOREIGN-JUMP-TABLE",	Clear_Foreign_Jump_Table }, 
-	{	"SYS-GLOBALS-ADDRESS",		Sys_Globals_Address		},
-	{	"GET-CURRENT-THREAD-IDS",	Get_Current_Thread_IDs	},
-	{	"GET-NUM-LISP-THREADS",		Get_Num_Lisp_Threads	},
-	{	"THREAD-HANDLE",			Thread_Handle			},
-	{	"TERMINATE-THREAD",			Terminate_Thread		},
+	{"ALLOCATE-FOREIGN-JUMP-TABLE-ENTRY", Allocate_Foreign_Jump_Table_Entry}, //  TDE: replace with lisp code 03/13/00
+	{"CLEAR-FOREIGN-JUMP-TABLE", Clear_Foreign_Jump_Table},
+	{"SYS-GLOBALS-ADDRESS", Sys_Globals_Address},
+	{"GET-CURRENT-THREAD-IDS", Get_Current_Thread_IDs},
+	{"GET-NUM-LISP-THREADS", Get_Num_Lisp_Threads},
+	{"THREAD-HANDLE", Thread_Handle},
+	{"TERMINATE-THREAD", Terminate_Thread},
 
-	{	"ENTER-CRITICAL-SECTION",	Enter_Critical_Section	},
-	{	"LEAVE-CRITICAL-SECTION",	Leave_Critical_Section	},
-	{	"ALLOCATE-CRITICAL-SECTION",Allocate_Critical_Section }, // TDE: replace with lisp code 03/13/00
-	{	"DEALLOCATE-CRITICAL-SECTION",Deallocate_Critical_Section },
+	{"ENTER-CRITICAL-SECTION", Enter_Critical_Section},
+	{"LEAVE-CRITICAL-SECTION", Leave_Critical_Section},
+	{"ALLOCATE-CRITICAL-SECTION", Allocate_Critical_Section}, // TDE: replace with lisp code 03/13/00
+	{"DEALLOCATE-CRITICAL-SECTION", Deallocate_Critical_Section},
 
-	{	"COMPRESS-BYTES",			Compress_Bytes			},  // redefined in lisp
-	{	"UNCOMPRESS-BYTES",			Uncompress_Bytes		},  // redefined in lisp
-	{	"UNCOMPRESS-FOREIGN-BYTES",	Uncompress_Foreign_Bytes},  // redefined in lisp
-	{	"%THROW-SYSTEM-EXCEPTION",	ThrowSystemException	},
-	{	"INLINE-PROCLAIM-P",		Inline_Proclaim_P		},
-	{	"%EXECUTE-FINALIZERS",		Execute_Finalizers		},	// called by garbage collector 03/13/00
-	{	"ALLOC-CHAR-VECTOR",		Alloc_Char_Vector		},	// TDE: replace with lisp code 03/13/00
-	{	"COMPILER-CHECK-ARGS-NUM",	Compiler_Check_Args_Num	},
-	{	"COMPILER-CHECK-TYPES",		Compiler_Check_Types	},
-	{	"COMPILER-FOLD-CONSTANTS",	Compiler_Fold_Constants	},
-	{	"COMPILER-INLINE-FUNCTIONS",Compiler_Inline_Functions},
-	{	"COMPILER-OPTIMIZE-TAIL-RECURSION",	Compiler_Optimize_Tail_Recursion	},
-	{	"%LOAD-LOCAL-HEAP",			(LispFunc)LoadLocalHeap	},
-	{	"LOOKUP-SETF-FUNCTION",		Lookup_Setf_Function	},
-	{	"COMPILER-CHECK-KEY-ARGS",	Compiler_Check_Key_Args	},
-	{	"INVALID-KEY-ARG",			InvalidKeyArgError		},
-	{	"COMPRESS-FILE",			Compress_File			},
-	{	"UNCOMPRESS-FILE",			Uncompress_File			},
-	{	"EDITOR-REPLACE-SELECTION",	Editor_Replace_Selection},
-	{	"GET-CALLBACK",				Get_Callback			},	// redefined in lisp (in ffi.lisp)
-	{   "%HEAP_FAULT_HANDLER",		(LispFunc)Heap_Fault_Handler},	// not to be called directly from lisp
-	{	"HEAP-USED",				Heap_Used				},
-	{	"CONTAINING-HEAP",			Containing_Heap			},
-	{	"REGISTRATION-INFO",		Registration_Info		},
-    {   "CONSOLE-CHARS-AVAILABLE",  Console_Chars_Available },
-	{   "GET-GC-ID",				Get_GC_ID				},	// get the garbage collection id
-	{   "RESET-HASH-ID",			Reset_Hash_ID			},
-	{	"SUSPEND-OTHER-THREADS",	Suspend_Other_Threads	},
-	{	"RESUME-OTHER-THREADS",		Resume_Other_Threads	},
-	{	"MEMORY-REPORT",			Memory_Report			},
-	{	"%LISP-SHUTDOWN",			Lisp_Shutdown			},
-	{	"%COMPRESS-FOREIGN-BYTES",  (LispFunc)compress	    },  // defined in Lisp via FFI
-	{	"%UNCOMPRESS-FOREIGN-BYTES",(LispFunc)uncompress    },  // defined in Lisp via FFI
-	{	"%COMPRESS-BOUND",          (LispFunc)compressBound },  // defined in Lisp via FFI
-	{	"%ALLOC-VECTOR-TAGGED",		(LispFunc)LispAllocVectorTagged}, // already naked asm in C++, leave for now
-	{	"UPDATE-JUMP-TABLE",		UpdateJumpTable			},
-    {   "%UNASSEMBLE",              (LispFunc)unassemble    },  // defined in Lisp via FFI
-    {   "%LOADLIBRARY",             (LispFunc)LoadLibraryA  },  // defined in Lisp via FFI
-	{	"%HARDWARE-GC",				Hardware_GC				},  // turn on or off hardware-assisted gc
+	{"COMPRESS-BYTES", Compress_Bytes}, // redefined in lisp
+	{"UNCOMPRESS-BYTES", Uncompress_Bytes}, // redefined in lisp
+	{"UNCOMPRESS-FOREIGN-BYTES", Uncompress_Foreign_Bytes}, // redefined in lisp
+	{"%THROW-SYSTEM-EXCEPTION", ThrowSystemException},
+	{"INLINE-PROCLAIM-P", Inline_Proclaim_P},
+	{"%EXECUTE-FINALIZERS", Execute_Finalizers}, // called by garbage collector 03/13/00
+	{"ALLOC-CHAR-VECTOR", Alloc_Char_Vector}, // TDE: replace with lisp code 03/13/00
+	{"COMPILER-CHECK-ARGS-NUM", Compiler_Check_Args_Num},
+	{"COMPILER-CHECK-TYPES", Compiler_Check_Types},
+	{"COMPILER-FOLD-CONSTANTS", Compiler_Fold_Constants},
+	{"COMPILER-INLINE-FUNCTIONS", Compiler_Inline_Functions},
+	{"COMPILER-OPTIMIZE-TAIL-RECURSION", Compiler_Optimize_Tail_Recursion},
+	{"%LOAD-LOCAL-HEAP", (LispFunc)LoadLocalHeap},
+	{"LOOKUP-SETF-FUNCTION", Lookup_Setf_Function},
+	{"COMPILER-CHECK-KEY-ARGS", Compiler_Check_Key_Args},
+	{"INVALID-KEY-ARG", InvalidKeyArgError},
+	{"COMPRESS-FILE", Compress_File},
+	{"UNCOMPRESS-FILE", Uncompress_File},
+	{"EDITOR-REPLACE-SELECTION", Editor_Replace_Selection},
+	{"GET-CALLBACK", Get_Callback}, // redefined in lisp (in ffi.lisp)
+	{"%HEAP_FAULT_HANDLER", (LispFunc)Heap_Fault_Handler}, // not to be called directly from lisp
+	{"HEAP-USED", Heap_Used},
+	{"CONTAINING-HEAP", Containing_Heap},
+	{"REGISTRATION-INFO", Registration_Info},
+	{"CONSOLE-CHARS-AVAILABLE", Console_Chars_Available},
+	{"GET-GC-ID", Get_GC_ID}, // get the garbage collection id
+	{"RESET-HASH-ID", Reset_Hash_ID},
+	{"SUSPEND-OTHER-THREADS", Suspend_Other_Threads},
+	{"RESUME-OTHER-THREADS", Resume_Other_Threads},
+	{"MEMORY-REPORT", Memory_Report},
+	{"%LISP-SHUTDOWN", Lisp_Shutdown},
+	{"%COMPRESS-FOREIGN-BYTES", (LispFunc)compress}, // defined in Lisp via FFI
+	{"%UNCOMPRESS-FOREIGN-BYTES", (LispFunc)uncompress}, // defined in Lisp via FFI
+	{"%COMPRESS-BOUND", (LispFunc)compressBound}, // defined in Lisp via FFI
+	{"%ALLOC-VECTOR-TAGGED", (LispFunc)LispAllocVectorTagged}, // already naked asm in C++, leave for now
+	{"UPDATE-JUMP-TABLE", UpdateJumpTable},
+	{"%UNASSEMBLE", (LispFunc)unassemble}, // defined in Lisp via FFI
+	{"%LOADLIBRARY", (LispFunc)LoadLibraryA}, // defined in Lisp via FFI
+	{"%HARDWARE-GC", Hardware_GC}, // turn on or off hardware-assisted gc
 
-    // these are just here for Lisp reporting purposes (so the names in stack dumps are known)
-    { "LispCall0",                  (LispFunc)LispCall0     },
-    { "LispCall1",                  (LispFunc)LispCall1     },
-    { "LispCall2",                  (LispFunc)LispCall2     },
-    { "LispCall3",                  (LispFunc)LispCall3     },
-    { "LispCall4",                  (LispFunc)LispCall4     },
-    { "LispCall5",                  (LispFunc)LispCall5     },
-    { "LispCall6",                  (LispFunc)LispCall6     },
-    { "LispCall7",                  (LispFunc)LispCall7     },
-    { "LispCall8",                  (LispFunc)LispCall8     },
-    { "LispLoop",                   (LispFunc)LispLoop      },
-    { "lispmain",                   (LispFunc)lispmain      },
-    { "consoleUnderflow",           (LispFunc)consoleUnderflow },
-    { "garbageCollect",             (LispFunc)garbageCollect },
+	// these are just here for Lisp reporting purposes (so the names in stack dumps are known)
+	{"LispCall0", (LispFunc)LispCall0},
+	{"LispCall1", (LispFunc)LispCall1},
+	{"LispCall2", (LispFunc)LispCall2},
+	{"LispCall3", (LispFunc)LispCall3},
+	{"LispCall4", (LispFunc)LispCall4},
+	{"LispCall5", (LispFunc)LispCall5},
+	{"LispCall6", (LispFunc)LispCall6},
+	{"LispCall7", (LispFunc)LispCall7},
+	{"LispCall8", (LispFunc)LispCall8},
+	{"LispLoop", (LispFunc)LispLoop},
+	{"lispmain", (LispFunc)lispmain},
+	{"consoleUnderflow", (LispFunc)consoleUnderflow},
+	{"garbageCollect", (LispFunc)garbageCollect},
 
 	// We need this built-in function to support callback in FFI on 64-bit versions of Windows
 	// It seems one can not throw Access Violation Exceptions through the Windows API functions on 64 bit OSes.
-	{ "%SAFECALL",                  (LispFunc)Safecall      },
+	{"%SAFECALL", (LispFunc)Safecall},
 
-	{ "%USER-HOMEDIR-NAMESTRING",   (LispFunc)User_HomeDir_Namestring }, // internal function to supply data for USER-HOMEDIR-PATHNAME
+	{"%USER-HOMEDIR-NAMESTRING",
+	 (LispFunc)User_HomeDir_Namestring}, // internal function to supply data for USER-HOMEDIR-PATHNAME
 
 	// One needs the following functions to bootstrap Corman Lisp image
-	{ "%CORMANLISP-DIRECTORY-NAMESTRING", (LispFunc)CormanLisp_Directory_Namestring }, // get Corman Lisp directory namestring
-	{ "%CHANGE-DIRECTORY",          (LispFunc)Change_Directory },        // change working directory - it is needed during image building process.
-	{ "%IMAGE-LOADS-COUNT",         (LispFunc)Image_Loads_Count },       // returns number of LOAD-IMAGE calls.
+	{"%CORMANLISP-DIRECTORY-NAMESTRING",
+	 (LispFunc)CormanLisp_Directory_Namestring}, // get Corman Lisp directory namestring
+	{"%CHANGE-DIRECTORY",
+	 (LispFunc)Change_Directory}, // change working directory - it is needed during image building process.
+	{"%IMAGE-LOADS-COUNT", (LispFunc)Image_Loads_Count}, // returns number of LOAD-IMAGE calls.
 
-	{ "%CORMANLISP-VERSION-STRING", (LispFunc)CormanLispVersionString }        // returns number of LOAD-IMAGE calls.
-    // ----------------------------------------------------------
+	{"%CORMANLISP-VERSION-STRING", (LispFunc)CormanLispVersionString} // returns number of LOAD-IMAGE calls.
+	// ----------------------------------------------------------
 };
-long sizeFunctTable = sizeof(functTable)/sizeof(FunctEntry);
+long sizeFunctTable = sizeof(functTable) / sizeof(FunctEntry);
 
-const char* specialOperatorTable[] =
-{
+const char* specialOperatorTable[] = {
 	"BLOCK",
 	"CATCH",
 	"EVAL-WHEN",
@@ -4775,25 +4656,25 @@ const char* specialOperatorTable[] =
 	"THE",
 	"THROW",
 	"UNWIND-PROTECT",
-	"GET-CURRENT-ENVIRONMENT",		// non-standard
-	"CAPTURE-COMPILER-ENVIRONMENT"	// non-standard
+	"GET-CURRENT-ENVIRONMENT", // non-standard
+	"CAPTURE-COMPILER-ENVIRONMENT" // non-standard
 };
 
-static long sizeSpecialOperatorTable = sizeof(specialOperatorTable)/sizeof(char*);
+static long sizeSpecialOperatorTable = sizeof(specialOperatorTable) / sizeof(char*);
 
 static void addFunct(const char* name, LispFunc func)
 {
 	LispObj s = 0;
 	s = findSymbol(name);
 	setSymbolFunction(s, kernelFunctionNode(func), FUNCTION);
-}	
+}
 
 static void addSpecialOperator(const char* name)
 {
 	LispObj s = 0;
 	s = findSymbol(name);
 	setSpecialOperator(s);
-}	
+}
 
 void initKernelFunctions()
 {
@@ -4839,14 +4720,14 @@ static void updateKernelFunctions()
 			break;
 	}
 	if (i >= 0)
-		CormanLispDirectoryBuffer[i + 1] = 0;		// we only want the directory
-	
-//	_getcwd(CormanLispDirectoryBuffer, _MAX_PATH);
+		CormanLispDirectoryBuffer[i + 1] = 0; // we only want the directory
+
+	//	_getcwd(CormanLispDirectoryBuffer, _MAX_PATH);
 	setSymbolValue(CORMANLISP_DIRECTORY, stringNode(CormanLispDirectoryBuffer));
 	setSymbolValue(CORMANLISP_SERVER_DIRECTORY, stringNode(CormanLispServerDirectory));
 
-    // initialize these here because they may differ from the addresses when the
-    // lisp heap was saved
+	// initialize these here because they may differ from the addresses when the
+	// lisp heap was saved
 	f = foreignNode();
 	UVECTOR(f)[FOREIGN_PTR] = (LispObj)&GCCriticalSection.m_sect;
 	setSymbolValue(GC_CRITICAL_SECTION, f);
@@ -4881,8 +4762,7 @@ LispObj getRequiredArgs(LispObj lambda)
 	while (isCons(lambda))
 	{
 		x = CAR(lambda);
-		if (x == LAMBDA_OPTIONAL || x == LAMBDA_REST || x == LAMBDA_AUX
-				|| x == LAMBDA_ALLOW_OTHER_KEYS)
+		if (x == LAMBDA_OPTIONAL || x == LAMBDA_REST || x == LAMBDA_AUX || x == LAMBDA_ALLOW_OTHER_KEYS)
 			return result;
 		result = cons(x, result);
 		lambda = CDR(lambda);
@@ -4908,11 +4788,18 @@ LispFunction(Stack_Trace)
 	LispObj arg = 0;
 	long lexCount = 0;
 
-	enum { required, optional, rest, key, aux } state = required;
+	enum
+	{
+		required,
+		optional,
+		rest,
+		key,
+		aux
+	} state = required;
 
 	long i = 0;
 	FunctEntry* funcEntry = 0;
-	long count = 30;  // maximum of 30 frames
+	long count = 30; // maximum of 30 frames
 	LispObj* stackStart = ((ThreadRecord*)TlsGetValue(Thread_Index))->stackStart;
 
 #ifdef _MSC_VER
@@ -4921,7 +4808,7 @@ LispFunction(Stack_Trace)
 	asm volatile("mov %%ebp, %0" : "=m"(basePointer) : : "memory");
 #endif
 
-	while (basePointer < stackStart)
+		while (basePointer < stackStart)
 	{
 		retAddress = createLispInteger(basePointer[1]);
 		func = addressFindFunction(retAddress);
@@ -4972,7 +4859,7 @@ LispFunction(Stack_Trace)
 			}
 		}
 		else
-		{	// handle functions with &optional, &rest or &key params
+		{ // handle functions with &optional, &rest or &key params
 			// these all push ecx on the stack, and we need that for the
 			// arg count
 			numArgs = wrapInteger(((unsigned long*)*basePointer)[-2]);
@@ -4983,14 +4870,11 @@ LispFunction(Stack_Trace)
 				sym = CAR(funcLambda);
 				if (sym == LAMBDA_OPTIONAL)
 					state = optional;
-				else
-				if (sym == LAMBDA_REST)
+				else if (sym == LAMBDA_REST)
 					state = rest;
-				else
-				if (sym == LAMBDA_KEY)
+				else if (sym == LAMBDA_KEY)
 					state = key;
-				else
-				if (sym == LAMBDA_AUX)
+				else if (sym == LAMBDA_AUX)
 					state = aux;
 				else
 				{
@@ -5007,12 +4891,11 @@ LispFunction(Stack_Trace)
 							arg = ((LispObj*)*basePointer)[2 + integer(numArgs) - 1];
 							numArgs -= wrapInteger(1);
 							argList = cons(arg, argList);
-//							arg = ((LispObj*)*basePointer)[-2 - lexCount - 1];
-//							lexCount++;
-//							argList = cons(sym, cons(arg, argList));
+							//							arg = ((LispObj*)*basePointer)[-2 - lexCount - 1];
+							//							lexCount++;
+							//							argList = cons(sym, cons(arg, argList));
 							break;
-						case aux:
-							break;
+						case aux: break;
 					}
 				}
 				if (isCons(funcLambda))
@@ -5032,9 +4915,9 @@ LispFunction(Stack_Trace)
 		count--;
 		if (count <= 0)
 			break;
-        if (isFunction(func) && (symbolValue(TOP_LEVEL) == func ||
-            (funcName && symbolValue(TOP_LEVEL) == symbolFunction(funcName))))
-            break; 
+		if (isFunction(func) &&
+			(symbolValue(TOP_LEVEL) == func || (funcName && symbolValue(TOP_LEVEL) == symbolFunction(funcName))))
+			break;
 	}
 	ret = Cnreverse(framesList);
 	LISP_FUNC_RETURN(ret);
@@ -5045,7 +4928,7 @@ LispFunction(Memory_Report)
 	LISP_FUNC_BEGIN(0);
 	WriteMemoryReportTask((void*)(-2), 0);
 	ret = NIL;
-	LISP_FUNC_RETURN(ret);	
+	LISP_FUNC_RETURN(ret);
 }
 
 extern long expandLineFeedsIntoBuffer(LISP_CHAR* src, long numChars, LISP_CHAR* buffer);
@@ -5060,24 +4943,22 @@ LispFunction(Lisp_Shutdown)
 	LispObj message = LISP_ARG(0);
 	checkString(message);
 	LispObj len = vectorLength(message);
-	
+
 	CharBuffer = new LISP_CHAR[(integer(len) + 1) * 2];
-	numBytes = expandLineFeedsIntoBuffer(charArrayStart(message),
-		integer(len), CharBuffer);
+	numBytes = expandLineFeedsIntoBuffer(charArrayStart(message), integer(len), CharBuffer);
 
 	if (CormanLispServer)
 	{
 		// convert from 16-bit to 8-bit chars
 		ByteOutputBuffer = (byte*)CharBuffer;
 		for (int i = 0; i < numBytes; i++)
-			ByteOutputBuffer[i] = ByteOutputBuffer[i * 2];	// convert from 16-bit to 8-bit chars
+			ByteOutputBuffer[i] = ByteOutputBuffer[i * 2]; // convert from 16-bit to 8-bit chars
 		CormanLispServer->LispShutdown((char*)ByteOutputBuffer, numBytes);
 	}
-	delete [] CharBuffer;
+	delete[] CharBuffer;
 	ret = NIL;
-	LISP_FUNC_RETURN(ret);	
+	LISP_FUNC_RETURN(ret);
 }
-
 
 // We need this to implement %SAFECALL primitive to support callbacks on 64 bit versions of Windows.
 volatile static LispObj doSafecall(LispObj func)
@@ -5089,7 +4970,6 @@ volatile static LispObj doSafecall(LispObj func)
 	}
 	__except (handleStructuredException(GetExceptionCode(), GetExceptionInformation()))
 	{
-
 	}
 	return res;
 }

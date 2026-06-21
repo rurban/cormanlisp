@@ -68,7 +68,7 @@ UINT CoConnectionPoint::GetFirstEmptyPosition()
 }
 
 // IUnknown methods
-STDMETHODIMP 
+STDMETHODIMP
 CoConnectionPoint::QueryInterface(REFIID riid, void** ppv)
 {
 	if (riid == IID_IUnknown)
@@ -84,23 +84,23 @@ CoConnectionPoint::QueryInterface(REFIID riid, void** ppv)
 	return *ppv ? S_OK : E_NOINTERFACE;
 }
 
-STDMETHODIMP_(ULONG) 
+STDMETHODIMP_(ULONG)
 CoConnectionPoint::AddRef()
 {
-    return InterlockedIncrement(&m_cRef);
+	return InterlockedIncrement(&m_cRef);
 }
 
-STDMETHODIMP_(ULONG) 
+STDMETHODIMP_(ULONG)
 CoConnectionPoint::Release()
 {
-    if (InterlockedDecrement(&m_cRef) != 0)
-        return m_cRef;
-    delete this;
-    return 0;
+	if (InterlockedDecrement(&m_cRef) != 0)
+		return m_cRef;
+	delete this;
+	return 0;
 }
 
 // IConnectionPoint
-STDMETHODIMP 
+STDMETHODIMP
 CoConnectionPoint::GetConnectionInterface(IID* pIID)
 {
 	if (NULL == pIID)
@@ -112,39 +112,39 @@ CoConnectionPoint::GetConnectionInterface(IID* pIID)
 	return S_OK;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoConnectionPoint::GetConnectionPointContainer(IConnectionPointContainer** ppConnectionPointContainer)
 {
-	return m_pUnkContainer->QueryInterface(IID_IConnectionPointContainer,
-	 (void**) ppConnectionPointContainer);
+	return m_pUnkContainer->QueryInterface(IID_IConnectionPointContainer, (void**)ppConnectionPointContainer);
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoConnectionPoint::Advise(IUnknown* pUnkSink, DWORD* pdwCookie)
 {
-	*pdwCookie=0;
+	*pdwCookie = 0;
 
 	UINT cIndex = 0; // Find first blank position
-	
+
 	// if connection count is less than array size
 	// check for empty array spot.
 	if (m_cConnections < m_nArraySize)
 	{
 		// empty for loop; only want to set CIndex to blank spot
-		for (; cIndex < m_nArraySize && m_rgpUnk[cIndex] != 0; cIndex++);
+		for (; cIndex < m_nArraySize && m_rgpUnk[cIndex] != 0; cIndex++)
+			;
 	}
 	// No blank cell available, add new block to ragged array
 	else
 	{
 		UINT nArraySize = m_nArraySize + nBlockSize;
 		IUnknown** rgpUnk = new IUnknown*[nArraySize];
-		
+
 		// If the block can't get bigger, can't connect
 		if (!rgpUnk)
 			return CONNECT_E_ADVISELIMIT;
 
 		// Copy existing connected sinks, and delete old ragged array
-		for (cIndex= 0; cIndex < m_cConnections; cIndex++)
+		for (cIndex = 0; cIndex < m_cConnections; cIndex++)
 		{
 			rgpUnk[cIndex] = m_rgpUnk[cIndex];
 		}
@@ -164,21 +164,20 @@ CoConnectionPoint::Advise(IUnknown* pUnkSink, DWORD* pdwCookie)
 
 	// Verify that the sink supports the correct interface.
 	// We don't have to know what it is because we have
-	// m_iid to describe it. If this works, then we neatly 
+	// m_iid to describe it. If this works, then we neatly
 	// have a pointer with an AddRef that we can stow away.
 
 	IUnknown* pSink;
 	if (FAILED(pUnkSink->QueryInterface(m_iid, (void**)&pSink)))
 		return (CONNECT_E_CANNOTCONNECT);
-	
-	m_rgpUnk[cIndex]=pSink;
+
+	m_rgpUnk[cIndex] = pSink;
 	*pdwCookie = cIndex + 1;
 	m_cConnections++;
 	return S_OK;
 }
 
-
-STDMETHODIMP 
+STDMETHODIMP
 CoConnectionPoint::Unadvise(DWORD dwCookie)
 {
 	if (dwCookie > 16 || m_rgpUnk[dwCookie - 1] == 0)
@@ -189,7 +188,7 @@ CoConnectionPoint::Unadvise(DWORD dwCookie)
 	return S_OK;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 CoConnectionPoint::EnumConnections(IEnumConnections** ppEnumConnections)
 {
 	*ppEnumConnections = NULL;
@@ -203,7 +202,7 @@ CoConnectionPoint::EnumConnections(IEnumConnections** ppEnumConnections)
 		return E_OUTOFMEMORY;
 
 	UINT cIndex, cConnections;
-	for (cIndex = 0, cConnections=0; cIndex < m_nArraySize; cIndex++)
+	for (cIndex = 0, cConnections = 0; cIndex < m_nArraySize; cIndex++)
 	{
 		if (NULL != m_rgpUnk[cIndex])
 		{
@@ -215,13 +214,11 @@ CoConnectionPoint::EnumConnections(IEnumConnections** ppEnumConnections)
 
 	CoEnumConnections* pEnum = new CoEnumConnections(this, m_cConnections, pCD);
 
-	delete [] pCD;
+	delete[] pCD;
 
 	if (NULL == pEnum)
 		return E_OUTOFMEMORY;
 
 	// This does an AddRef for us
-	return pEnum->QueryInterface(IID_IEnumConnections, (void**) ppEnumConnections);
+	return pEnum->QueryInterface(IID_IEnumConnections, (void**)ppEnumConnections);
 }
-	
-

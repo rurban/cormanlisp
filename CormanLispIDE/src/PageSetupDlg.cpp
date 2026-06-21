@@ -20,18 +20,12 @@ static char BASED_CODE THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPageSetupDlg dialog
 
-const DWORD CPageSetupDlg::m_nHelpIDs[] = 
-{
-	IDC_EDIT_TM, IDH_CORMANLISP_TOPMARGIN,
-	IDC_EDIT_BM, IDH_CORMANLISP_BOTTOMMARGIN,
-	IDC_EDIT_LM, IDH_CORMANLISP_LEFTMARGIN,
-	IDC_EDIT_RM, IDH_CORMANLISP_RIGHTMARGIN,
-	IDC_BOX, IDH_COMM_GROUPBOX,
-	0, 0
-};
+const DWORD CPageSetupDlg::m_nHelpIDs[] = {
+	IDC_EDIT_TM, IDH_CORMANLISP_TOPMARGIN,	IDC_EDIT_BM, IDH_CORMANLISP_BOTTOMMARGIN,
+	IDC_EDIT_LM, IDH_CORMANLISP_LEFTMARGIN, IDC_EDIT_RM, IDH_CORMANLISP_RIGHTMARGIN,
+	IDC_BOX,	 IDH_COMM_GROUPBOX,			0,			 0};
 
-CPageSetupDlg::CPageSetupDlg(CWnd* pParent /*=NULL*/)
-	: CCSDialog(CPageSetupDlg::IDD, pParent)
+CPageSetupDlg::CPageSetupDlg(CWnd* pParent /*=NULL*/) : CCSDialog(CPageSetupDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CPageSetupDlg)
 	m_nTopMargin = 0;
@@ -57,8 +51,8 @@ void CPageSetupDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CPageSetupDlg, CCSDialog)
-	//{{AFX_MSG_MAP(CPageSetupDlg)
-	//}}AFX_MSG_MAP
+//{{AFX_MSG_MAP(CPageSetupDlg)
+//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 // this routine prints a floatingpoint number with 2 digits after the decimal
@@ -74,8 +68,8 @@ void PASCAL DDX_Twips(CDataExchange* pDX, int nIDC, int& value)
 		{
 			if (!theApp.ParseMeasurement(szT, value))
 			{
-				AfxMessageBox(IDS_INVALID_MEASUREMENT,MB_OK|MB_ICONINFORMATION);
-				pDX->Fail();            // throws exception
+				AfxMessageBox(IDS_INVALID_MEASUREMENT, MB_OK | MB_ICONINFORMATION);
+				pDX->Fail(); // throws exception
 			}
 			theApp.PrintTwips(szT, value, 2);
 			theApp.ParseMeasurement(szT, value);
@@ -103,7 +97,7 @@ void PASCAL DDV_MinMaxTwips(CDataExchange* pDX, int value, int minVal, int maxVa
 		if (!pDX->m_bSaveAndValidate)
 		{
 			TRACE0("Warning: initial dialog data is out of range.\n");
-			return;     // don't stop now
+			return; // don't stop now
 		}
 		TCHAR szMin[32];
 		TCHAR szMax[32];

@@ -11,38 +11,38 @@
 
 class LispObjDisplay : public CDialog
 {
-// Construction
+	// Construction
 public:
 	LispObjDisplay(CWnd* pParent, CStringArray* contents);
 
-// Dialog Data
+	// Dialog Data
 	//{{AFX_DATA(LispObjDisplay)
-	enum { IDD = IDD_DIALOG1 };
-		// NOTE: the ClassWizard will add data members here
+	enum
+	{
+		IDD = IDD_DIALOG1
+	};
+	// NOTE: the ClassWizard will add data members here
 	//}}AFX_DATA
 
-
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(LispObjDisplay)
 
 	void OnCancel();
 	void PostNcDestroy();
 
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 	//}}AFX_VIRTUAL
 
-// Implementation
+	// Implementation
 protected:
-
 	CWnd* m_pParent;
 	int m_nID;
 
 	// Generated message map functions
 	//{{AFX_MSG(LispObjDisplay)
-		// NOTE: the ClassWizard will add member functions here
+	// NOTE: the ClassWizard will add member functions here
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
 };

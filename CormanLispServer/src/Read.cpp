@@ -16,7 +16,7 @@
 #include <io.h>
 #include <fcntl.h>
 
-#pragma warning (disable:4127)				// conditional expression is constant
+#pragma warning(disable : 4127) // conditional expression is constant
 
 #include "Lisp.h"
 #include "CormanLispServer.h"
@@ -34,14 +34,13 @@ LispObj createSymbol(const char* str);
 
 #define READTABLE_START(rt) arrayStart(UVECTOR(rt)[READTABLE_TABLE])
 
-
 // UpperAlpha only converts alphabetic characters
-inline LispObj UpperAlpha(LispObj c) 
+inline LispObj UpperAlpha(LispObj c)
 {
 	return islower(character(c)) ? wrapCharacter(toupper(character(c))) : c;
 }
 
-LispObj readtableNode() 
+LispObj readtableNode()
 {
 	// create table
 	LispObj table = 0;
@@ -51,7 +50,7 @@ LispObj readtableNode()
 	table = vectorNode(wrapInteger(512));
 
 	for (i = 0; i < 512; i += 2)
-	{	
+	{
 		arrayStart(table)[i] = CONSTITUENT_CHAR_TYPE;
 		arrayStart(table)[i + 1] = NIL;
 	}
@@ -59,7 +58,7 @@ LispObj readtableNode()
 	// initialize whitespace characters
 	arrayStart(table)['\t' * 2] = WHITESPACE_CHAR_TYPE;
 	arrayStart(table)[' ' * 2] = WHITESPACE_CHAR_TYPE;
-	arrayStart(table)[12 * 2] = WHITESPACE_CHAR_TYPE;			// new page character
+	arrayStart(table)[12 * 2] = WHITESPACE_CHAR_TYPE; // new page character
 	arrayStart(table)[ASCII_CR * 2] = WHITESPACE_CHAR_TYPE;
 	arrayStart(table)[ASCII_NEWLINE * 2] = WHITESPACE_CHAR_TYPE;
 	arrayStart(table)[0 * 2] = WHITESPACE_CHAR_TYPE;
@@ -105,7 +104,7 @@ LispObj readtableNode()
 
 //
 //		readExpression()
-//		The following code implements the lisp reader state machine as 
+//		The following code implements the lisp reader state machine as
 //		described Steele's Common Lisp the Language, pp. 335-338
 //		Returns UNINITIALIZED if end of file.
 //		Otherwise returns NIL, if no values were returned, or a list of one item.
@@ -133,119 +132,154 @@ LispObj readExpression(LispObj stream)
 	{
 		switch (state)
 		{
-		case 1:
-			x = getCharacter(stream);
-			if (x == Eof)
-				return UNINITIALIZED;
+			case 1:
+				x = getCharacter(stream);
+				if (x == Eof)
+					return UNINITIALIZED;
 
-			charType = READTABLE_START(readtable)[character(x) * 2];
-			if (charType == ILLEGAL_CHAR_TYPE)
-			{
-				Error("Illegal character found in input", 0);
-			}
-			else
-			if (charType == WHITESPACE_CHAR_TYPE)
-			{
-				// no change in state -- state = 1;
-			}
-			else
-			if (charType == TERMINATING_MACRO_CHAR_TYPE
-				|| charType == NON_TERMINATING_MACRO_CHAR_TYPE)
-			{
+				charType = READTABLE_START(readtable)[character(x) * 2];
+				if (charType == ILLEGAL_CHAR_TYPE)
 				{
-					LispObj macrofn = READTABLE_START(readtable)[character(x) * 2 + 1];
-#ifdef _DEBUG
-					fprintf(stderr, "[readExpression macro] char=%c macrofn=%p\n",
-						(char)integer(x), (void*)macrofn);
-#endif
-					callret = LispCall3(Funcall, macrofn, stream, x);
+					Error("Illegal character found in input", 0);
 				}
-#ifdef _DEBUG
-				fprintf(stderr, "[readExpression macro] char=%c callret=%p NumReturnValues=%d\n",
-					(char)integer(x), (void*)callret, (int)NumReturnValues);
-#endif
-				if (NumReturnValues == 0)
-					return NIL;
-				else
-					return cons(callret, NIL);
-			}
-			else
-			if (charType == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE
-				|| charType == DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE)
-			{
-				y = getCharacter(stream);
-				if (y == Eof)
-					Error("Unexpected end of file", 0);
-				y = UpperAlpha(y);
-				if (isdigit(character(y)))
+				else if (charType == WHITESPACE_CHAR_TYPE)
 				{
-					dispatchInt = 0;	
-					while (isdigit(character(y)))
+					// no change in state -- state = 1;
+				}
+				else if (charType == TERMINATING_MACRO_CHAR_TYPE || charType == NON_TERMINATING_MACRO_CHAR_TYPE)
+				{
 					{
-						dispatchInt *= 10;
-						dispatchInt += (character(y) - '0');
-						y = getCharacter(stream);
-						if (y == Eof)
-							Error("Unexpected end of file", 0);
-						y = UpperAlpha(y);
+						LispObj macrofn = READTABLE_START(readtable)[character(x) * 2 + 1];
+#ifdef _DEBUG
+						fprintf(stderr, "[readExpression macro] char=%c macrofn=%p\n", (char)integer(x),
+								(void*)macrofn);
+#endif
+						callret = LispCall3(Funcall, macrofn, stream, x);
 					}
-					thirdDispatchArg = wrapInteger(dispatchInt);
+#ifdef _DEBUG
+					fprintf(stderr, "[readExpression macro] char=%c callret=%p NumReturnValues=%d\n", (char)integer(x),
+							(void*)callret, (int)NumReturnValues);
+#endif
+					if (NumReturnValues == 0)
+						return NIL;
+					else
+						return cons(callret, NIL);
+				}
+				else if (charType == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE ||
+						 charType == DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE)
+				{
+					y = getCharacter(stream);
+					if (y == Eof)
+						Error("Unexpected end of file", 0);
+					y = UpperAlpha(y);
+					if (isdigit(character(y)))
+					{
+						dispatchInt = 0;
+						while (isdigit(character(y)))
+						{
+							dispatchInt *= 10;
+							dispatchInt += (character(y) - '0');
+							y = getCharacter(stream);
+							if (y == Eof)
+								Error("Unexpected end of file", 0);
+							y = UpperAlpha(y);
+						}
+						thirdDispatchArg = wrapInteger(dispatchInt);
+					}
+					else
+						thirdDispatchArg = NIL;
+
+					func = dispatchFunction(readtable, character(x), character(y));
+					if (func == UNINITIALIZED || func == NIL)
+						Error("Invalid input form", 0);
+					callret = LispCall4(Funcall, func, stream, y, thirdDispatchArg);
+					if (NumReturnValues == 0)
+						return NIL;
+					else
+						return cons(callret, NIL);
+				}
+				else if (charType == SINGLE_ESCAPE_CHAR_TYPE)
+				{
+					y = getCharacter(stream);
+					if (y == Eof)
+						Error("Unexpected end of file", 0);
+					else
+						token[index++] = (char)character(y);
+					state = 8;
+				}
+				else if (charType == MULTIPLE_ESCAPE_CHAR_TYPE)
+				{
+					state = 9;
+				}
+				else if (charType == CONSTITUENT_CHAR_TYPE)
+				{
+					x = UpperAlpha(x);
+					token[index++] = (char)character(x);
+					state = 8;
 				}
 				else
-					thirdDispatchArg = NIL;
-					
-				func = dispatchFunction(readtable, character(x), character(y));
-				if (func == UNINITIALIZED || func == NIL)
-					Error("Invalid input form", 0);
-				callret = LispCall4(Funcall, func, stream, y, thirdDispatchArg);
-				if (NumReturnValues == 0)
-					return NIL;
+					Error("Invalid character type");
+				break;
+
+			case 8:
+				y = getCharacter(stream);
+				if (y == Eof)
+					state = 10;
 				else
-					return cons(callret, NIL);
-			}
-			else
-			if (charType == SINGLE_ESCAPE_CHAR_TYPE)
-			{
+				{
+					charType = READTABLE_START(readtable)[character(y) * 2];
+					if (charType == CONSTITUENT_CHAR_TYPE || charType == NON_TERMINATING_MACRO_CHAR_TYPE ||
+						charType == DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE)
+					{
+						y = UpperAlpha(y);
+						token[index++] = (char)character(y);
+						// state stays the same
+					}
+					else if (charType == SINGLE_ESCAPE_CHAR_TYPE)
+					{
+						z = getCharacter(stream);
+						if (z == Eof)
+							Error("Unexpected end of file", 0);
+						token[index++] = (char)character(z);
+						// state stays the same
+					}
+					else if (charType == MULTIPLE_ESCAPE_CHAR_TYPE)
+					{
+						state = 9;
+					}
+					else if (charType == ILLEGAL_CHAR_TYPE)
+					{
+						Error("Illegal character found in input", 0);
+					}
+					else if (charType == TERMINATING_MACRO_CHAR_TYPE ||
+							 charType == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
+					{
+						putbackCharacter(stream, y);
+						state = 10;
+					}
+					else if (charType == WHITESPACE_CHAR_TYPE)
+					{
+						// if read-preserving-whitespace, putback(y) here
+						state = 10;
+					}
+				}
+				break;
+
+			case 9:
 				y = getCharacter(stream);
 				if (y == Eof)
 					Error("Unexpected end of file", 0);
-				else
-					token[index++] = (char)character(y);
-				state = 8;
-			}
-			else
-			if (charType == MULTIPLE_ESCAPE_CHAR_TYPE)
-			{
-				state = 9;
-			}
-			else
-			if (charType == CONSTITUENT_CHAR_TYPE)
-			{
-				x = UpperAlpha(x);
-				token[index++] = (char)character(x);
-				state = 8;
-			}
-			else
-				Error("Invalid character type");
-			break;
 
-		case 8:
-			y = getCharacter(stream);
-			if (y == Eof)
-				state = 10;
-			else
-			{
 				charType = READTABLE_START(readtable)[character(y) * 2];
-				if (charType == CONSTITUENT_CHAR_TYPE
-					|| charType == NON_TERMINATING_MACRO_CHAR_TYPE
-					|| charType == DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE)
+				if (charType == CONSTITUENT_CHAR_TYPE || charType == TERMINATING_MACRO_CHAR_TYPE ||
+					charType == NON_TERMINATING_MACRO_CHAR_TYPE ||
+					charType == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE ||
+					charType == DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE || charType == WHITESPACE_CHAR_TYPE)
 				{
-					y = UpperAlpha(y);
 					token[index++] = (char)character(y);
 					// state stays the same
 				}
-				else
-				if (charType == SINGLE_ESCAPE_CHAR_TYPE)
+				else if (charType == SINGLE_ESCAPE_CHAR_TYPE)
 				{
 					z = getCharacter(stream);
 					if (z == Eof)
@@ -253,75 +287,22 @@ LispObj readExpression(LispObj stream)
 					token[index++] = (char)character(z);
 					// state stays the same
 				}
-				else
-				if (charType == MULTIPLE_ESCAPE_CHAR_TYPE)
+				else if (charType == MULTIPLE_ESCAPE_CHAR_TYPE)
 				{
-					state = 9;
+					state = 8;
 				}
-				else
-				if (charType == ILLEGAL_CHAR_TYPE)
+				else if (charType == ILLEGAL_CHAR_TYPE)
 				{
 					Error("Illegal character found in input", 0);
 				}
-				else
-				if (charType == TERMINATING_MACRO_CHAR_TYPE
-					|| charType == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
-				{
-					putbackCharacter(stream, y);
-					state = 10;
-				}
-				else
- 				if (charType == WHITESPACE_CHAR_TYPE)
-				{
-					// if read-preserving-whitespace, putback(y) here
-					state = 10;
-				}
-			}
-			break;
+				break;
 
-		case 9:
-			y = getCharacter(stream);
-			if (y == Eof)
-				Error("Unexpected end of file", 0);
-
-			charType = READTABLE_START(readtable)[character(y) * 2];
- 			if (charType == CONSTITUENT_CHAR_TYPE
-				|| charType == TERMINATING_MACRO_CHAR_TYPE
-				|| charType == NON_TERMINATING_MACRO_CHAR_TYPE
-				|| charType == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE
-				|| charType == DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE
-				|| charType == WHITESPACE_CHAR_TYPE)
-			{
-				token[index++] = (char)character(y);
-				// state stays the same
-			}
-			else
-			if (charType == SINGLE_ESCAPE_CHAR_TYPE)
-			{
-				z = getCharacter(stream);
-				if (z == Eof)
-					Error("Unexpected end of file", 0);
-				token[index++] = (char)character(z);
-				// state stays the same
-			}
- 			else
-			if (charType == MULTIPLE_ESCAPE_CHAR_TYPE)
-			{
-				state = 8;
-			}
-			else
-			if (charType == ILLEGAL_CHAR_TYPE)
-			{
-				Error("Illegal character found in input", 0);
-			}
-			break;
-			
-		case 10:
-			token[index] = 0;
-			ret = createNumber(token);
-			if (ret != UNINITIALIZED)
-				return list(ret, END_LIST);
-			return list(createSymbol(token), END_LIST);
+			case 10:
+				token[index] = 0;
+				ret = createNumber(token);
+				if (ret != UNINITIALIZED)
+					return list(ret, END_LIST);
+				return list(createSymbol(token), END_LIST);
 		}
 	}
 	return NIL;
@@ -350,8 +331,8 @@ static int validDigit(long c, int rbase)
 {
 	int ext_rbase = 0;
 	if (rbase > 10)
-		ext_rbase = rbase - 10, rbase = 10; 
-	
+		ext_rbase = rbase - 10, rbase = 10;
+
 	if (islower(c))
 		c = toupper(c);
 	if (c >= '0' && c < ('0' + rbase))
@@ -368,11 +349,10 @@ static LispObj validInteger(const char* token)
 	xbool negative = FALSE;
 	long value = 0;
 	long rbase = 10;
-		
+
 	if (*str == '+')
 		str++;
-	else
-	if (*str == '-')
+	else if (*str == '-')
 	{
 		negative = TRUE;
 		str++;
@@ -389,10 +369,10 @@ static LispObj validInteger(const char* token)
 		str++;
 	}
 
-	if (*str == '.')				// allow for trailing period
+	if (*str == '.') // allow for trailing period
 		str++;
-		
-	if (*str != (long) 0)			// if any other trailing characters, invalid
+
+	if (*str != (long)0) // if any other trailing characters, invalid
 		return UNINITIALIZED;
 
 	if (digits > 0)
@@ -411,34 +391,33 @@ static LispObj validFloat(const char* token)
 	int digits = 0;
 	int expDigits = 0;
 	const char* str = token;
-	
+
 	if (*str == '+' || *str == '-')
 		str++;
-		
+
 	// check mantissa
 	while (*str)
 	{
 		if (isdigit(*str))
 			digits++;
-		else
-		if (*str == '.')
+		else if (*str == '.')
 		{
 			decimal++;
 			if (decimal > 1)
-				return 0;		// more than one decimal point!
+				return 0; // more than one decimal point!
 		}
 		else
 			break;
 		str++;
 	}
-	
+
 	if (digits == 0)
 		return UNINITIALIZED;
-		
-	if (*str == 'E' || *str == 'e')			// get exponent
+
+	if (*str == 'E' || *str == 'e') // get exponent
 	{
 		str++;
-		if (*str == '+' || *str == '-')		// allow for sign on exponent
+		if (*str == '+' || *str == '-') // allow for sign on exponent
 			str++;
 
 		while (isdigit(*str))
@@ -449,25 +428,24 @@ static LispObj validFloat(const char* token)
 		if (expDigits == 0)
 			return 0;
 	}
-	else
-		if (*str != (long) 0)
-			return UNINITIALIZED;
+	else if (*str != (long)0)
+		return UNINITIALIZED;
 
 	temp = doubleFloatNode(0);
-	doubleFloat(temp) = atof(token); 
+	doubleFloat(temp) = atof(token);
 	return temp;
 }
 
 void nonTerminatingMacro(LispObj readtable, long c, LispObj func)
 {
-	READTABLE_START(readtable)[c * 2] = NON_TERMINATING_MACRO_CHAR_TYPE;	
+	READTABLE_START(readtable)[c * 2] = NON_TERMINATING_MACRO_CHAR_TYPE;
 	READTABLE_START(readtable)[c * 2 + 1] = func;
 }
 
 LispObj getMacro(LispObj readtable, long c)
 {
 	if (READTABLE_START(readtable)[c * 2] == NON_TERMINATING_MACRO_CHAR_TYPE ||
-			READTABLE_START(readtable)[c * 2] == TERMINATING_MACRO_CHAR_TYPE)
+		READTABLE_START(readtable)[c * 2] == TERMINATING_MACRO_CHAR_TYPE)
 		return READTABLE_START(readtable)[c * 2 + 1];
 	else
 		return NIL;
@@ -475,15 +453,15 @@ LispObj getMacro(LispObj readtable, long c)
 
 void terminatingMacro(LispObj readtable, long c, LispObj func)
 {
-	READTABLE_START(readtable)[c * 2] = TERMINATING_MACRO_CHAR_TYPE;	
+	READTABLE_START(readtable)[c * 2] = TERMINATING_MACRO_CHAR_TYPE;
 	READTABLE_START(readtable)[c * 2 + 1] = func;
 }
 
 xbool isTerminatingMacro(LispObj readtable, long c)
 {
-	if (READTABLE_START(readtable)[c * 2] == TERMINATING_MACRO_CHAR_TYPE
-		|| READTABLE_START(readtable)[c * 2] == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
-			return TRUE;
+	if (READTABLE_START(readtable)[c * 2] == TERMINATING_MACRO_CHAR_TYPE ||
+		READTABLE_START(readtable)[c * 2] == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
+		return TRUE;
 	else
 		return FALSE;
 }
@@ -500,7 +478,7 @@ void addDispatchingNonTerminatingMacro(LispObj readtable, long c)
 {
 	LispObj t1 = 0;
 	t1 = vectorNode(wrapInteger(256));
-	READTABLE_START(readtable)[c * 2] = DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE;	
+	READTABLE_START(readtable)[c * 2] = DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE;
 	READTABLE_START(readtable)[c * 2 + 1] = t1;
 }
 
@@ -514,21 +492,21 @@ void addDispatchingTerminatingMacro(LispObj readtable, long c)
 
 void setDispatchFunction(LispObj readtable, long c, long dispatchChar, LispObj func)
 {
-	if (READTABLE_START(readtable)[c * 2] != DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE
-			&& READTABLE_START(readtable)[c * 2] != DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
+	if (READTABLE_START(readtable)[c * 2] != DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE &&
+		READTABLE_START(readtable)[c * 2] != DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
 		return;
 
 	arrayStart(READTABLE_START(readtable)[c * 2 + 1])[dispatchChar] = func;
 }
 
-// 
+//
 //	getDispatchFunction()
 //	Returns the dispatch function associated with a character pair.
 //
 LispObj dispatchFunction(LispObj readtable, long c, long dispatchChar)
 {
-	if (READTABLE_START(readtable)[c * 2] != DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE
-			&& READTABLE_START(readtable)[c * 2] != DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
+	if (READTABLE_START(readtable)[c * 2] != DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE &&
+		READTABLE_START(readtable)[c * 2] != DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
 		return NIL;
 
 	return arrayStart(READTABLE_START(readtable)[c * 2 + 1])[dispatchChar];
@@ -542,9 +520,9 @@ LispObj dispatchFunction(LispObj readtable, long c, long dispatchChar)
 //
 xbool isDispatchingMacro(LispObj readtable, long c)
 {
-	if (READTABLE_START(readtable)[c * 2] == DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE
-		|| READTABLE_START(readtable)[c * 2] == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
-			return TRUE;
+	if (READTABLE_START(readtable)[c * 2] == DISPATCHING_NON_TERMINATING_MACRO_CHAR_TYPE ||
+		READTABLE_START(readtable)[c * 2] == DISPATCHING_TERMINATING_MACRO_CHAR_TYPE)
+		return TRUE;
 	else
 		return FALSE;
 }
@@ -557,7 +535,7 @@ LispObj readChar(LispObj is)
 		Error("Unexpected end of file", 0);
 	return c;
 }
-	
+
 LispObj peekChar(LispObj is)
 {
 	LispObj c = 0;
@@ -567,7 +545,7 @@ LispObj peekChar(LispObj is)
 	putbackCharacter(is, c);
 	return c;
 }
-	
+
 LispObj peekCharSkippingWS(LispObj readtable, LispObj is)
 {
 	LispObj c = 0;
@@ -590,13 +568,12 @@ LispFunction(read_delimited_list)
 	ret = Cread_delimited_list(LISP_ARG(0), LISP_ARG(1));
 
 	LISP_FUNC_RETURN(ret);
-}	
+}
 
 //
 //		Common Lisp 'read-delimited-list' function.
 //
-LispObj 
-Cread_delimited_list(LispObj ch, LispObj stream)
+LispObj Cread_delimited_list(LispObj ch, LispObj stream)
 {
 	checkStream(stream);
 	checkChar(ch);
@@ -604,7 +581,7 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 	LispObj rt = symbolValue(READTABLE);
 #ifdef _DEBUG
 	fprintf(stderr, "[Cread_delimited_list] RIGHT_PAREN=%p readtable=%p THREAD_HEAP=%p THREAD_HEAP_END=%p\n",
-		(void*)RIGHT_PAREN, (void*)rt, (void*)THREAD_HEAP, (void*)THREAD_HEAP_END);
+			(void*)RIGHT_PAREN, (void*)rt, (void*)THREAD_HEAP, (void*)THREAD_HEAP_END);
 #endif
 
 	LispObj lis = NIL;
@@ -618,9 +595,9 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 	while (TRUE)
 	{
 		c = peekCharSkippingWS(rt, stream);
-		if (c == searchChar)		// if found terminator
+		if (c == searchChar) // if found terminator
 		{
-			c = readChar(stream);		// consume it
+			c = readChar(stream); // consume it
 			if (foundDot == 1)
 				Error("List ends with dot", 0);
 			goto exit;
@@ -639,14 +616,14 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 				continue;
 			}
 		}
-		else	
+		else
 			n = LispCall5(Funcall, READ, stream, T, NIL, T);
 #ifdef _DEBUG
 		fprintf(stderr, "[Cread_delimited_list] n=%p NumReturnValues=%d\n", (void*)n, (int)NumReturnValues);
 #endif
-			
+
 		if (n == UNINITIALIZED)
-			Error("Unexpected end of file", 0); 
+			Error("Unexpected end of file", 0);
 
 		if (NumReturnValues > 0)
 		{
@@ -656,7 +633,7 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 					p = lis = n;
 				else
 				{
-					CDR(p) = n;				
+					CDR(p) = n;
 					p = CDR(p);
 				}
 				foundDot++;
@@ -669,8 +646,8 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 				{
 					LispObj newcons = cons(n, NIL);
 #ifdef _DEBUG
-					fprintf(stderr, "[Cread_delimited_list] cons(%p, NIL) = %p CAR=%p CDR=%p\n",
-						(void*)n, (void*)newcons, (void*)CAR(newcons), (void*)CDR(newcons));
+					fprintf(stderr, "[Cread_delimited_list] cons(%p, NIL) = %p CAR=%p CDR=%p\n", (void*)n,
+							(void*)newcons, (void*)CAR(newcons), (void*)CDR(newcons));
 #endif
 					p = lis = newcons;
 				}
@@ -678,10 +655,10 @@ Cread_delimited_list(LispObj ch, LispObj stream)
 				{
 					LispObj newcons = cons(n, NIL);
 #ifdef _DEBUG
-					fprintf(stderr, "[Cread_delimited_list] cons(%p, NIL) = %p CAR=%p CDR=%p\n",
-						(void*)n, (void*)newcons, (void*)CAR(newcons), (void*)CDR(newcons));
+					fprintf(stderr, "[Cread_delimited_list] cons(%p, NIL) = %p CAR=%p CDR=%p\n", (void*)n,
+							(void*)newcons, (void*)CAR(newcons), (void*)CDR(newcons));
 #endif
-					CDR(p) = newcons;				
+					CDR(p) = newcons;
 					p = CDR(p);
 				}
 				count++;
@@ -696,8 +673,7 @@ exit:
 	fprintf(stderr, "[Cread_delimited_list] return lis=%p\n", (void*)lis);
 #endif
 	return lis;
-}	
-	
+}
 
 //
 //		Macro functions used by the standard Common Lisp read table
@@ -732,8 +708,8 @@ LispFunction(doublequoteMacro)
 			c = getCharacter(stream);
 			if (c == Eof)
 				Error("Unexpected end of file");
-//			if (c == wrapCharacter('n'))
-//				c = ASCII_CR;
+			//			if (c == wrapCharacter('n'))
+			//				c = ASCII_CR;
 		}
 		literal[index++] = (char)character(c);
 	}
@@ -789,9 +765,9 @@ LispFunction(semicolonMacro)
 			putbackCharacter(stream, c);
 			break;
 		}
-			
-		if (c == Eof)				// read characters to end of line
-			break;					// no special handling of EOF required here
+
+		if (c == Eof) // read characters to end of line
+			break; // no special handling of EOF required here
 	}
 
 	LISP_FUNC_RETURN_NO_VALUES();
@@ -821,15 +797,15 @@ LispFunction(bracketedCommentMacro)
 				break;
 			}
 		}
-			
-		if (c == Eof)				// read characters to end of line
-			break;					// no special handling of EOF required here
+
+		if (c == Eof) // read characters to end of line
+			break; // no special handling of EOF required here
 	}
 
 	LISP_FUNC_RETURN_NO_VALUES();
 }
 
-// 
+//
 //	Common Lisp standard backquote macro mechanism.
 //
 LispFunction(backquoteMacro)
@@ -884,8 +860,7 @@ static LispObj backquoteProcess(LispObj s)
 					CDR(np) = cons(eval(backquoteProcess(CAR(CDR(s))), NIL), NIL);
 				return newlis;
 			}
-			else
-			if (n == COMMA_DOT_TOKEN && isCons(CDR(s)))
+			else if (n == COMMA_DOT_TOKEN && isCons(CDR(s)))
 			{
 				if (!isCons(CAR(CDR(s))))
 					CDR(np) = CAR(CDR(s));
@@ -893,8 +868,7 @@ static LispObj backquoteProcess(LispObj s)
 					CDR(np) = eval(backquoteProcess(CAR(CDR(s))), NIL);
 				return newlis;
 			}
-			else 
-			if (n == COMMA_ATSIGN_TOKEN && isCons(CDR(s)))
+			else if (n == COMMA_ATSIGN_TOKEN && isCons(CDR(s)))
 			{
 				if (!isCons(CAR(CDR(s))))
 					CDR(np) = CAR(CDR(s));
@@ -906,8 +880,7 @@ static LispObj backquoteProcess(LispObj s)
 			CDR(np) = list(cons(LIST, list(list(QUOTE, n, END_LIST), END_LIST)), END_LIST);
 			np = CDR(np);
 		}
-		else
-		if (CAR(n) == COMMA_TOKEN && isCons(CDR(n)))
+		else if (CAR(n) == COMMA_TOKEN && isCons(CDR(n)))
 		{
 			if (!isCons(CAR(CDR(n))))
 				CDR(np) = list(list(LIST, CAR(CDR(n)), END_LIST), END_LIST);
@@ -915,8 +888,7 @@ static LispObj backquoteProcess(LispObj s)
 				CDR(np) = list(list(LIST, eval(backquoteProcess(CAR(CDR(n))), NIL), END_LIST), END_LIST);
 			np = CDR(np);
 		}
-		else
-		if (CAR(n) == COMMA_DOT_TOKEN && isCons(CDR(n)))
+		else if (CAR(n) == COMMA_DOT_TOKEN && isCons(CDR(n)))
 		{
 			if (!isCons(CAR(CDR(n))))
 				CDR(np) = cons(CAR(CDR(n)), NIL);
@@ -924,8 +896,7 @@ static LispObj backquoteProcess(LispObj s)
 				CDR(np) = list(eval(backquoteProcess(CAR(CDR(n))), NIL), END_LIST);
 			np = CDR(np);
 		}
-		else
-		if (CAR(n) == COMMA_ATSIGN_TOKEN && isCons(CDR(n)))
+		else if (CAR(n) == COMMA_ATSIGN_TOKEN && isCons(CDR(n)))
 		{
 			if (!isCons(CAR(CDR(n))))
 				CDR(np) = cons(CAR(CDR(n)), NIL);
@@ -942,7 +913,7 @@ static LispObj backquoteProcess(LispObj s)
 	}
 
 	if (s != NIL)
-		CDR(np) = list(list(QUOTE, s, END_LIST), END_LIST);	// handle CDR of dot expression	
+		CDR(np) = list(list(QUOTE, s, END_LIST), END_LIST); // handle CDR of dot expression
 	return newlis;
 }
 
@@ -985,8 +956,8 @@ LispFunction(poundBackslashMacro)
 {
 	LISP_FUNC_BEGIN(3);
 	LispObj stream = LISP_ARG(0);
-//	LispObj sub_char = LISP_ARG(1);
-//	LispObj arg = LISP_ARG(2);
+	//	LispObj sub_char = LISP_ARG(1);
+	//	LispObj arg = LISP_ARG(2);
 
 	ret = getCharacter(stream);
 	if (ret == Eof)
@@ -1013,13 +984,12 @@ LispFunction(commaMacro)
 	if (c == wrapCharacter('@'))
 	{
 		x = LispCall2(Funcall, symbolFunction(READ), stream);
-		ret = list(COMMA_ATSIGN_TOKEN, x, END_LIST); 
+		ret = list(COMMA_ATSIGN_TOKEN, x, END_LIST);
 	}
-	else
-	if (c == wrapCharacter('.'))
+	else if (c == wrapCharacter('.'))
 	{
 		x = LispCall2(Funcall, symbolFunction(READ), stream);
-		ret = list(COMMA_DOT_TOKEN, x, END_LIST); 
+		ret = list(COMMA_DOT_TOKEN, x, END_LIST);
 	}
 	else
 	{
@@ -1031,7 +1001,7 @@ LispFunction(commaMacro)
 	LISP_FUNC_RETURN(ret);
 }
 
-static unsigned char InputUnderflowBuffer[8092];	// based on 4096 char stream buffers
+static unsigned char InputUnderflowBuffer[8092]; // based on 4096 char stream buffers
 
 //
 //	Returns number of chars in buffer.
@@ -1068,13 +1038,12 @@ LispObj consoleUnderflow(LispObj s)
 	while (TerminalInputBuf.numchars() == 0) // loop until some input
 	{
 		if (g_batch_input_done)
-			return 0;  // EOF — no more input coming
+			return 0; // EOF — no more input coming
 		PLSingleLock myLock(TerminalInputBuf.charsAvailable(), TRUE);
 	}
-	num = TerminalInputBuf.getCharsInBuffer(InputUnderflowBuffer,
-				 integer(streamInputBufferLength(s)));
+	num = TerminalInputBuf.getCharsInBuffer(InputUnderflowBuffer, integer(streamInputBufferLength(s)));
 
-	if (streamBinary(s) == NIL)		// if character stream, remove CR characters
+	if (streamBinary(s) == NIL) // if character stream, remove CR characters
 		charsRead = compressLineFeedsIntoBuffer((unsigned long)num);
 	else
 		charsRead = (unsigned long)num;
@@ -1094,7 +1063,7 @@ LispFunction(Console_Chars_Available)
 	BOOL result = 0;
 	ret = NIL;
 	event = TerminalInputBuf.charsAvailable();
-	result = event->Lock(10);		// timeout of 10 ms
+	result = event->Lock(10); // timeout of 10 ms
 	if (result == TRUE)
 	{
 		if (TerminalInputBuf.numchars() > 0)
@@ -1120,18 +1089,16 @@ LispObj fileUnderflow(LispObj s)
 	charArrayStart(streamInputBuffer(s))[0] = 0;
 	charArrayStart(streamInputBuffer(s))[2047] = 0;
 
-	ret = ReadFile(
-		(void*)lispIntegerToLong(streamHandle(s)),	// handle of file to read 
-		InputUnderflowBuffer,						// address of buffer that receives data
-		integer(streamInputBufferLength(s)),		// number of bytes to read
-		&charsRead,								// address of number of bytes read
-		NULL);									// overlapped structure
+	ret = ReadFile((void*)lispIntegerToLong(streamHandle(s)), // handle of file to read
+				   InputUnderflowBuffer, // address of buffer that receives data
+				   integer(streamInputBufferLength(s)), // number of bytes to read
+				   &charsRead, // address of number of bytes read
+				   NULL); // overlapped structure
 
 	if (!ret)
-		Error("Could not read from file ~A, error code = ~A", 
-			s, createLispInteger(GetLastError()));
+		Error("Could not read from file ~A, error code = ~A", s, createLispInteger(GetLastError()));
 
-	if (streamBinary(s) == NIL)		// if character stream, remove CR characters
+	if (streamBinary(s) == NIL) // if character stream, remove CR characters
 	{
 		charsRead = compressLineFeedsIntoBuffer(charsRead);
 	}
@@ -1169,8 +1136,6 @@ void putbackCharacter(LispObj stream, LispObj c)
 	if (streamInputBufferPos(stream) == 0)
 		Error("Cannot put back character");
 	if (c == wrapCharacter(ASCII_NEWLINE))
-		streamLineNumber(stream) = 
-			streamLineNumber(stream) - wrapInteger(1);
+		streamLineNumber(stream) = streamLineNumber(stream) - wrapInteger(1);
 	streamInputBufferPos(stream) = streamInputBufferPos(stream) - wrapInteger(1);
 }
-
