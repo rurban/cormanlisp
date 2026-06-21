@@ -1567,7 +1567,9 @@ LispFunction(Char_Upcase)
 	LispObj ch = LISP_ARG(0);
 
 	checkCharacter(ch);
-	ret = islower(character(ch)) ? wrapCharacter(toupper(character(ch))) : ch;
+	unsigned int code = character(ch);
+	if (code > 0x10FFFF) code = ch; // corrupted, return as-is
+	ret = (code < 256 && islower(code)) ? wrapCharacter(toupper(code)) : ch;
 
 	LISP_FUNC_RETURN(ret);
 }
@@ -1578,7 +1580,9 @@ LispFunction(Char_Downcase)
 	LispObj ch = LISP_ARG(0);
 
 	checkCharacter(ch);
-	ret = isupper(character(ch)) ? wrapCharacter(tolower(character(ch))) : ch;
+	unsigned int code = character(ch);
+	if (code > 0x10FFFF) code = ch;
+	ret = (code < 256 && isupper(code)) ? wrapCharacter(tolower(code)) : ch;
 
 	LISP_FUNC_RETURN(ret);
 }
