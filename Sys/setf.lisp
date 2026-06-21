@@ -21,7 +21,7 @@
 		((or (not (symbolp ret))(eq sym ret)) ret)
 		(setf sym ret)))
 
-(defun get-setf-expander-function (name) 
+(defun get-setf-expander-function (name)
 	(declare (ignore name))
 	nil)	;; redefined later
 
@@ -35,7 +35,7 @@
                     ,store-form)
                 `(let* ,bindings
                     (multiple-value-bind ,stores ,value ,store-form))))))
-    
+
 ;;;
 ;;;		Common Lisp SETF macro.
 ;;;    To do: handle case where a local function shadows the registered place name.
@@ -50,11 +50,11 @@
 			(if (symbolp place)
 				(setf place (expand-symbol-macros place)))		;; catch any symbol macros
 			:try-again
-            
+
             ;; handle THE form as a place (CLHS: Section 5.1.2.4)
             (if (and (consp place) (eq (car place) 'the) (cdr place) (cddr place))
                 (setq value (list 'the (cadr place) value) place (caddr place)))
-            
+
 			(if (symbolp place)
 				(setq form-list (cons `(setq ,place ,value) form-list))
 				(if (and (consp place)		;; check for APPLY special case
@@ -68,9 +68,9 @@
                             ;; expansion function has been defined with DEFINE-SETUP-EXPANDER
 							(setq form-list (cons (expand-with-expander-func expander-func place value) form-list))
                             ;; otherwise try default expansion method
-							(let ((expansion-func (get-setf-function (car place))) 
+							(let ((expansion-func (get-setf-function (car place)))
 								  (value-last-p (setf-function-value-last-p (car place))))
-                                
+
                                 ;; if no expansion was found, try macroexpanding the place form
                                 ;; as long as the expansion results in a new form (it was a macro) go
                                 ;; back and try again
@@ -104,13 +104,13 @@
                                                     (let ((sym (gensym)))
                                                         (push `(,sym ,x) inits)
                                                         (push sym syms)))
-                                                (setq form-list 
-                                                    (cons 
+                                                (setq form-list
+                                                    (cons
                                                         `(let* (,@(nreverse inits))
                                                             (,expansion-func ,value ,@(nreverse syms))) form-list)))))
 									(if value-last-p
                                         (if (consp value-last-p) ;; if defsetf long form
-                                            
+
                                             (multiple-value-bind (dummies vals newval setter getter)
                                                 (funcall expansion-func place nil)
                             	                (declare (ignore getter))
@@ -118,7 +118,7 @@
                                                     (cons `(let* (,@(mapcar #'list dummies vals))
                                                         (multiple-value-bind ,newval ,value ,setter))
                                                         form-list)))
-                                            
+
                                            ;; (setq form-list (cons (funcall expansion-func place value) form-list))
 										    (setq form-list (cons `(funcall ,expansion-func ,@(cdr place) ,value) form-list)))
 										(setq form-list (cons `(funcall ,expansion-func ,value ,@(cdr place)) form-list))))))))))
@@ -132,7 +132,7 @@
 ;;
 (defmacro defun (name lambda-list &rest forms)
   (let ((doc nil)
-        (lambda-form nil) 
+        (lambda-form nil)
         (declarations nil)
         (setf-form nil)
         (original-name name)
@@ -144,7 +144,7 @@
             (setq setf-form (cadr name))
             (setq block-name (cadr name))
             (setq name (setf-function-symbol name)))
-        
+
         ;; look for declarations and doc string
         (do* ((f forms (cdr f)))
             ((null f) (setq forms f))
@@ -153,7 +153,7 @@
                 (if (and (consp (car f)) (eq (caar f) 'declare))
                     (push (car f) declarations)
                     (progn (setq forms f) (return)))))
-        (setq lambda-form 
+        (setq lambda-form
             `(lambda ,lambda-list ,@(nreverse declarations) (block ,block-name ,@forms)))
 
         `(progn (setf (symbol-function ',name) (function ,lambda-form))
@@ -165,7 +165,7 @@
 (defun (setf ccl::function-documentation) (val fun) (setf (getf (uref (uref fun function-code-buffer-offset) compiled-code-info-offset) 'documentation) val))
 (defun ccl::macro-lambda-list () nil)
 (defun (setf ccl::macro-lambda-list) (val list) (declare (ignore val list)) nil)
- 
+
 ;;
 ;;	Common Lisp 'defmacro' macro.
 ;;	This redefines the built-in special form.
@@ -191,14 +191,14 @@
 					(push (car f) declarations)
 					(progn (setq forms f) (return)))))
 
-		(setq lambda-form 
+		(setq lambda-form
 			`(lambda (form &optional env)
-				(declare (ignore env ,@(unless lambda-list '(form)))) 
-				(macro-bind ,lambda-list 
+				(declare (ignore env ,@(unless lambda-list '(form))))
+				(macro-bind ,lambda-list
 					form
-					,@(nreverse declarations) 
+					,@(nreverse declarations)
 					(block ,name ,@forms))))
-		
+
 		`(progn (setf (macro-function ',name) (function ,lambda-form))
                                      ,@(when setf-form `((register-setf-function ',setf-form ',name)))
                                      (setf (ccl::macro-lambda-list (symbol-function ',name)) ',lambda-list)
@@ -207,8 +207,8 @@
 
 (defmacro defsetf (sym first &rest rest)
 	(if (symbolp first) ;; if short form
-		`(progn 
-			(register-setf-function ',sym ',first t) 
+		`(progn
+			(register-setf-function ',sym ',first t)
 			',sym)
 		`(progn
 			(register-setf-function ',sym
@@ -233,7 +233,7 @@
 
 ;;;;
 ;;;;	Common Lisp FMAKUNBOUND function.
-;;;;		
+;;;;
 (defun fmakunbound (function-specifier)
   (if (consp function-specifier)
       (%fmakunbound (get-setf-function (cadr function-specifier)))
@@ -281,7 +281,7 @@
 ;;;	Common Lisp (SETF REST) function.
 ;;;
 (defun (setf rest)(val x) (setf (cdr x) val))
-	
+
 ;;;
 ;;;	Common Lisp (SETF VALUES) macro.
 ;;;
@@ -314,18 +314,18 @@
 			(push (car x) places)
 			(push (cadr x) value-forms)
 			(push (gensym) temp-syms))
-		
+
 		(setf places (nreverse places))
 		(setf value-forms (nreverse value-forms))
 		;; no need to reverse the generated symbols
-		
+
 		(do ((s temp-syms (cdr s))
 			 (v value-forms (cdr v))
 			 (p places (cdr p)))
 			((endp s))
 			(push `(,(car s) ,(car v)) var-forms)
 			(push `(setf ,(car p) ,(car s)) setf-forms))
-		
+
 		`(let ,(nreverse var-forms)
 			,@(nreverse setf-forms)
 			nil)))
@@ -373,5 +373,3 @@
 	(declare (ignore host))
 	#| we don't currently do anything with these |#
 	val)
-
-			

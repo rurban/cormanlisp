@@ -12,7 +12,7 @@
 
 (in-package "COMMON-LISP")
 
-;;; 
+;;;
 ;;; Common Lisp GET-SETF-EXPANSION function.
 ;;;
 (defun get-setf-expansion (place &optional environment)
@@ -24,12 +24,12 @@
 		   (writer-form nil)
 		   (reader-form nil))
 		(if (symbolp place)
-			(return-from get-setf-expansion 
-				(values 
-					nil 
-					nil 
-					store-vars 
-					`(setq ,place ,(car store-vars)) 
+			(return-from get-setf-expansion
+				(values
+					nil
+					nil
+					store-vars
+					`(setq ,place ,(car store-vars))
 					place)))
 		(if (and (consp place)		;; check for APPLY special case
 				(eq (car place) 'apply)
@@ -43,7 +43,7 @@
 				(setf vars (nreverse vars) vals (nreverse vals))
 				(setf reader-form `(apply ,(cadr place) ,@vars))
 				(setq writer-form
-                    (if (setf-function-value-last-p (car place)) 
+                    (if (setf-function-value-last-p (car place))
 					   `(apply (quote ,(get-setf-function name)) ,@vars ,(car store-vars))
                        `(apply (quote ,(get-setf-function name)) ,(car store-vars) ,@vars))))
 			(let ()
@@ -52,7 +52,7 @@
 					(push x vals))
 				(setf vars (nreverse vars) vals (nreverse vals))
 				(setf reader-form (cons (car place) vars))
-				(setf writer-form 
+				(setf writer-form
                     (if (setf-function-value-last-p (car place))
                         `(,(get-setf-function (car place)) ,@vars ,(car store-vars))
                         `(,(get-setf-function (car place)) ,(car store-vars) ,@vars)))))
@@ -126,7 +126,7 @@
 						(push y subform-temps))
 					(push (cdr res) new-places))
 				(push x new-places)))
-		(setf subform-temps (nreverse subform-temps) 
+		(setf subform-temps (nreverse subform-temps)
 			  new-places (nreverse new-places))
 		(let ((temps '())
 			  (place1 (first new-places)))
@@ -156,7 +156,7 @@
 						(push y subform-temps))
 					(push (cdr res) new-places))
 				(push x new-places)))
-		(setf subform-temps (nreverse subform-temps) 
+		(setf subform-temps (nreverse subform-temps)
 			  new-places (nreverse new-places))
 		(let ((temps '())
 			  (setf-forms '())

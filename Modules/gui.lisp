@@ -227,7 +227,7 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
     (register-class windows-mdi-child-class-name 'gui-mdi-child-wndproc)
     (setf *message-hash-table* (make-hash-table))
     (setf *window-table* (make-hash-table)))
-    
+
 ;;;
 ;;; Map win32 window handles and gui window instances
 ;;;
@@ -240,7 +240,7 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 ;; object. The mapping will replace any existing mapping for that
 ;; HWND in the window table.
 (defun map-window (hwnd window)
-	(setf (gethash (ct:foreign-ptr-to-int hwnd) *window-table*) 
+	(setf (gethash (ct:foreign-ptr-to-int hwnd) *window-table*)
 		window))
 
 ;; Remove the mapping for HWND
@@ -276,8 +276,8 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 (defclass <status-bar-control> (<control-window>))
 (defclass <richedit-control> (<control-window>))
 
-;;; Class for main windows frames. When one of these is destroyed 
-;;; then the message loop is terminated, which usually results in 
+;;; Class for main windows frames. When one of these is destroyed
+;;; then the message loop is terminated, which usually results in
 ;;; an application closing down.
 (defclass <frame> (<window>))
 
@@ -289,7 +289,7 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 ;;;
 ;;; MDI support
 ;;;
-(defclass <mdi-frame> (<main-menu-mixin> <frame>) 
+(defclass <mdi-frame> (<main-menu-mixin> <frame>)
 	((client :accessor mdi-client :initform nil)))
 
 (defclass <mdi-child-window> (<window>) ())
@@ -305,14 +305,14 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 
 (defun size-window (window width height)
     (PostMessage (window-hwnd window) WM_SIZE SIZE_RESTORED (logior (ash height 16) width)))
-		
+
 (defun instantiate-message ())		;; forward declaration
 
 ;;;
 ;;; Generic functions on <window>
 ;;;
 
-;; Methods added to this generic function will perform the 
+;; Methods added to this generic function will perform the
 ;; actual message handling. Methods should be specialized on the
 ;; window and/or message parameter to perform specific handling.
 (defgeneric handle-message (window message wparam lparam))
@@ -350,9 +350,9 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 (defmethod print-object ((message <message>) stream)
     (print-unreadable-object (message stream :identity t)
         (format stream "~:(~S~) id: ~S"
-            (class-name (class-of message)) 
+            (class-name (class-of message))
             (message-id message))))
-                                                      
+
 (defclass <ncdestroy-message> 	        (<message>))
 (defclass <nccreate-message>            (<message>))
 (defclass <create-message>              (<message>))
@@ -411,11 +411,11 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 (defclass <notifyformat-message>        (<message>))
 (defclass <queryuistate-message>        (<message>))
 (defclass <geticon-message>             (<message>))
-                                                                                
+
 (defun instantiate-message (id)
 	(or (gethash id *message-hash-table*)
-		(setf (gethash id *message-hash-table*) 
-			(make-instance 
+		(setf (gethash id *message-hash-table*)
+			(make-instance
 				(cond
 					((= id WM_CREATE)                   '<create-message>)
 					((= id WM_DESTROY)                  '<destroy-message>)
@@ -430,15 +430,15 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 					((= id WM_SHOWWINDOW) 	            '<showwindow-message>)
 					((= id WM_SETTEXT) 	                '<settext-message>)
                     ((= id WM_WINDOWPOSCHANGING)        '<windowposchanging-message>)
-                    ((= id WM_CHILDACTIVATE)            '<childactivate-message>) 
+                    ((= id WM_CHILDACTIVATE)            '<childactivate-message>)
                     ((= id WM_NCPAINT)                  '<ncpaint-message>)
                     ((= id WM_ERASEBKGND)               '<erasebkgnd-message>)
                     ((= id WM_WINDOWPOSCHANGED)         '<windowposchanged-message>)
-                    ((= id WM_STYLECHANGING)            '<stylechanging-message>)                                  
-                    ((= id WM_STYLECHANGED)             '<stylechanged-message>)                                  
-                    ((= id WM_NCHITTEST)                '<nchittest-message>)                                  
+                    ((= id WM_STYLECHANGING)            '<stylechanging-message>)
+                    ((= id WM_STYLECHANGED)             '<stylechanged-message>)
+                    ((= id WM_NCHITTEST)                '<nchittest-message>)
                     ((= id WM_SETCURSOR)                '<setcursor-message>)
-                                                                                                          
+
                     ((= id WM_MOUSEMOVE)                '<mousemove-message>)
                     ((= id WM_MOUSEACTIVATE)            '<mouseactivate-message>)
 
@@ -451,9 +451,9 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
                     ((= id WM_MBUTTONDOWN)              '<mbuttondown-message>)
                     ((= id WM_MBUTTONUP)                '<mbuttonup-message>)
                     ((= id WM_MBUTTONDBLCLK)            '<mbuttondblclk-message>)
-                                                                                
-                    ((= id WM_NCMOUSEMOVE)              '<ncmousemove-message>) 
-                    ((= id WM_NCLBUTTONDOWN)            '<nclbuttondown-message>) 
+
+                    ((= id WM_NCMOUSEMOVE)              '<ncmousemove-message>)
+                    ((= id WM_NCLBUTTONDOWN)            '<nclbuttondown-message>)
                     ((= id WM_NCLBUTTONUP)              '<nclbuttonup-message>)
                     ((= id WM_NCLBUTTONDBLCLK)          '<nclbuttondblclk-message>)
                     ((= id WM_NCRBUTTONDOWN)            '<ncrbuttondown-message>)
@@ -473,7 +473,7 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
                     ((= id WM_NOTIFYFORMAT)             '<notifyformat-message>)
                     ((= id WM_QUERYUISTATE)             '<queryuistate-message>)
                     ((= id WM_GETICON)                  '<geticon-message>)
-                                                                                                                                            
+
                     (t 						           '<message>))
 				:id id))))
 
@@ -487,7 +487,7 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 	(UpdateWindow (window-hwnd window)))
 
 (defmethod call-default-handler ((window <window>) message wparam lparam)
-	(DefWindowProc (window-hwnd window) (message-id message) wparam lparam))	
+	(DefWindowProc (window-hwnd window) (message-id message) wparam lparam))
 
 (defmethod process-command ((window <window>) command-id wparam lparam)
 	(declare (ignore wparam lparam))
@@ -495,11 +495,11 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 		(if func
 			(progn (funcall func) t)
 			nil)))
-	
+
 (defmethod handle-message ((window <window>)(message <timer-message>) wparam lparam)
 	(declare (ignore window message wparam lparam))
 	(call-next-method))	;; default handler does nothing
-	
+
 (defmethod handle-message ((window <window>) (message <size-message>) wparam lparam)
 	(declare (ignore message wparam))
    	(setf (width window) (LOWORD lParam))
@@ -525,17 +525,17 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 	(call-next-method))
 
 (defun begin-paint (window)
- 	(setf (window-hdc window) 
+ 	(setf (window-hdc window)
 		(BeginPaint (window-hwnd window) (window-paintstruct window))))
 
 (defun end-paint (window)
  	(EndPaint (window-hwnd window) (window-paintstruct window))
     (setf (window-hdc window) nil))
-     
+
 #|
 (defmethod handle-message :before ((window <window>) (message <paint-message>) wparam lparam)
 	(declare (ignore message wparam lparam))
-	(setf (window-hdc window) 
+	(setf (window-hdc window)
 		(BeginPaint (window-hwnd window) (window-paintstruct window))))
 
 (defmethod handle-message :after ((window <window>) (message <paint-message>) wparam lparam)
@@ -543,7 +543,7 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 	(EndPaint (window-hwnd window) (window-paintstruct window))
 	(setf (window-hdc window) nil))
 |#
-(defmethod create-window ((window <window>) 
+(defmethod create-window ((window <window>)
 		&key class-name ex-style caption style x y width height parent menu param)
     (let ((hwnd
                 (CreateWindowEx (or ex-style 0)
@@ -554,9 +554,9 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
         			(or y CW_USEDEFAULT)
         			(or width CW_USEDEFAULT)
         			(or height CW_USEDEFAULT)
-        			(cond 
-                        ((typep parent '<window>)(window-hwnd parent)) 
-                        ((null parent) ct:null) 
+        			(cond
+                        ((typep parent '<window>)(window-hwnd parent))
+                        ((null parent) ct:null)
                         (t parent))
         			(or menu NULL)
         			(cl::get-application-instance)
@@ -564,7 +564,7 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
         (when (or (null hwnd) (and (foreignp hwnd)(cpointer= null hwnd)))
 			(error "Null window handle"))
         (setf (window-hwnd window) hwnd)
-        (map-window hwnd window)    ;; set up mapping from hwnd to the window object 
+        (map-window hwnd window)    ;; set up mapping from hwnd to the window object
 		(SetWindowText hwnd (ct:create-c-string (or caption "")))
         (let ((rect (get-window-rect window)))
             (setf (xpos window) (rect-x rect) (ypos window) (rect-y rect)
@@ -575,12 +575,12 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 
 ;; Client applications usually call this when handling a resize (WM_SIZE) event
 (defmethod set-position ((window <window>) x y width height)
-    (setf (xpos window) x 
+    (setf (xpos window) x
           (ypos window) y
           (width window) width
           (height window) height)
-    (win:MoveWindow (window-hwnd window) x y width height TRUE)) 
-   
+    (win:MoveWindow (window-hwnd window) x y width height TRUE))
+
 (defmethod handle-message :after ((window <frame>) (message <ncdestroy-message>) wparam lparam)
 	(declare (ignore window message wparam lparam))
 	(PostQuitMessage 0))
@@ -596,13 +596,13 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 	(declare (ignore window message wparam lparam))
     (call-next-method))
 
-(defmethod create-window ((window <subclassed-window-mixin>) 
+(defmethod create-window ((window <subclassed-window-mixin>)
 		&key class-name ex-style caption style x y width height parent menu param)
     ;; create the window
     (call-next-method window :class-name class-name :ex-style ex-style
             :caption caption :style style :x x :y y :width width :height height
             :parent parent :menu menu :param param)
-    
+
 	(let* ((hwnd (window-hwnd window))
            (orig-wndproc (SetWindowLong hwnd GWL_WNDPROC (ct:foreign-ptr-to-int (get-callback-procinst 'gui-wndproc)))))
         (setf (window-wndproc window) (ct:int-to-foreign-ptr orig-wndproc))
@@ -623,14 +623,14 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 						;; add to the main menu bar
 						(InsertMenu
 							(menu-hmenu menu-mixin)
-							position 
+							position
 							(logior MF_ENABLED MF_STRING MF_BYPOSITION MF_POPUP)
 							(cl::foreign-ptr-to-int new-menu)
 							(create-c-string name))
 						;; add submenu to a menu
 						(InsertMenu
-							(find-named-menu (get-main-menu) parent) 
-							position 
+							(find-named-menu (get-main-menu) parent)
+							position
 							(logior MF_ENABLED MF_STRING MF_BYPOSITION MF_POPUP)
 							(cl::foreign-ptr-to-int new-menu)
 							(create-c-string name)))))
@@ -657,47 +657,47 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 			(call-next-method)))
     0)
 
-(defmethod create-window ((window <main-menu-mixin>) 
+(defmethod create-window ((window <main-menu-mixin>)
 		&key class-name ex-style caption style x y width height parent menu param)
 	(if menu
 		(call-next-method)
-		(call-next-method window 
+		(call-next-method window
 			:class-name class-name
 			:ex-style ex-style
-			:caption caption 
-			:style style 
-			:x x 
-			:y y 
-			:width width 
-			:height height 
-			:parent parent 
+			:caption caption
+			:style style
+			:x x
+			:y y
+			:width width
+			:height height
+			:parent parent
 			:menu (menu-hmenu window)
             :param param)))
-				
-(defmethod create-window ((window <mdi-frame>) 
+
+(defmethod create-window ((window <mdi-frame>)
 		&key class-name ex-style caption (style 0) x y width height parent menu param)
     (declare (ignore class-name))
-	(call-next-method window 
+	(call-next-method window
 			:class-name windows-mdi-frame-class-name
 			:ex-style ex-style
-			:caption caption 
-			:style (logior style WS_OVERLAPPEDWINDOW WS_CLIPCHILDREN) 
-			:x x 
-			:y y 
-			:width width 
-			:height height 
-			:parent parent 
+			:caption caption
+			:style (logior style WS_OVERLAPPEDWINDOW WS_CLIPCHILDREN)
+			:x x
+			:y y
+			:width width
+			:height height
+			:parent parent
 			:menu (or menu (menu-hmenu window))
             :param param)
 	(create-menu window '(:menu "Window") nil 1)
-    
+
     ;; create the mdi frame client window
 	(with-fresh-foreign-block (ccs 'CLIENTCREATESTRUCT)
 		(with-c-struct (s ccs CLIENTCREATESTRUCT)
 			(setf hWindowMenu (find-named-menu (menu-hmenu window) "Window") idFirstChild 100)
         	(let ((client (make-instance '<subclassed-window-mixin>)))
-                (create-window client 
-                    :class-name "MDICLIENT" 
+                (create-window client
+                    :class-name "MDICLIENT"
                     :style (logior WS_CHILD WS_CLIPCHILDREN WS_CLIPSIBLINGS WS_VISIBLE WS_MAXIMIZE)
              		:x 0
             		:y 0
@@ -709,19 +709,19 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
                 (setf (mdi-client window) client))))
     (DrawMenuBar (window-hwnd window)))
 
-(defmethod create-window ((window <mdi-child-window>) 
+(defmethod create-window ((window <mdi-child-window>)
 		&key class-name (ex-style 0) caption (style 0) x y width height parent menu param)
     (declare (ignore menu class-name))
-    (call-next-method window 
+    (call-next-method window
 			:class-name windows-mdi-child-class-name
 			:ex-style (logior WS_EX_MDICHILD ex-style)
-			:caption caption 
-			:style (logior style WS_OVERLAPPEDWINDOW WS_CLIPCHILDREN) 
+			:caption caption
+			:style (logior style WS_OVERLAPPEDWINDOW WS_CLIPCHILDREN)
 			:x (or x CW_USEDEFAULT)
-			:y (or y CW_USEDEFAULT) 
-			:width (or width CW_USEDEFAULT) 
-			:height (or height CW_USEDEFAULT) 
-			:parent parent 
+			:y (or y CW_USEDEFAULT)
+			:width (or width CW_USEDEFAULT)
+			:height (or height CW_USEDEFAULT)
+			:parent parent
 			:menu ct:null
             :param param))
 
@@ -751,15 +751,15 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
             (let ((rect (ct:cref WINDOWINFO wi rcClient)))
             	(with-c-struct (s rect RECT)
                     (make-rect :x left :y top :width (- right left) :height (- bottom top))))))
-             
+
 (defmethod call-default-handler ((window <mdi-frame>) message wparam lparam)
-	(DefFrameProc 
-        (window-hwnd window) 
-        (if (mdi-client window) 
+	(DefFrameProc
+        (window-hwnd window)
+        (if (mdi-client window)
             (window-hwnd (mdi-client window))
-            ct:null) 
-        (message-id message) 
-        wparam 
+            ct:null)
+        (message-id message)
+        wparam
         lparam))
 
 (defmethod call-default-handler ((window <mdi-child-window>) message wparam lparam)
@@ -768,21 +768,21 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 (defmethod process-command ((window <mdi-frame>) command-id wparam lparam)
 	(declare (ignore wparam lparam))
 	(let* ((func (gethash command-id (command-table window))))
-		(cond 
+		(cond
 			(func (funcall func) t)
 			(t
-				(let ((active-child-hwnd 
+				(let ((active-child-hwnd
 							(ct:int-to-foreign-ptr
 								(SendMessage (window-hwnd (mdi-client window)) WM_MDIGETACTIVE 0 0))))
 					(if (IsWindow active-child-hwnd)
 						(SendMessage active-child-hwnd WM_COMMAND wparam lparam)))
 				nil))))	;; call DefFrameProc
-         
+
 ;;;
 ;;; Main windows procedure
 ;;;
 (ct:defun-callback gui-wndproc ((hwnd HWND)(id UINT)(wParam WPARAM)(lParam LPARAM))
-;    (format t "GUI-WNDPROC: ~A ~A ~A ~A~%" (find-window hwnd) (instantiate-message id) wParam lParam)(force-output)	
+;    (format t "GUI-WNDPROC: ~A ~A ~A ~A~%" (find-window hwnd) (instantiate-message id) wParam lParam)(force-output)
 	(let ((window (find-window hwnd)))
 		(if (null window)
 			(DefWindowProc hwnd id wParam lParam)
@@ -852,7 +852,7 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
         (setf *trace-messages* nil)
         (dolist (x message-list)
             (setf *trace-messages* (remove x *trace-messages* :test 'eq)))))
-        
+
 (defmacro trace-message (&rest messages)
     `(register-trace-message ',messages))
 
@@ -864,11 +864,10 @@ HLOCAL WINAPI LocalAlloc(UINT uFlags, SIZE_T uBytes);
 
 (defmethod format-trace-message (window (message <size-message>) wparam lparam)
     (declare (ignore wparam))
-    (format nil "~A ~A width:~A height:~A" (class-name (class-of message)) 
+    (format nil "~A ~A width:~A height:~A" (class-name (class-of message))
         window (loword lparam) (hiword lparam)))
 
 (defmethod format-trace-message (window (message <move-message>) wparam lparam)
     (declare (ignore wparam))
-    (format nil "~A ~A x:~A y:~A" (class-name (class-of message)) 
+    (format nil "~A ~A x:~A y:~A" (class-name (class-of message))
         window (loword lparam) (hiword lparam)))
-

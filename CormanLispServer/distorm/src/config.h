@@ -8,7 +8,6 @@ Copyright (C) 2003-2016 Gil Dabah
 This library is licensed under the BSD license. See the file COPYING.
 */
 
-
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -19,7 +18,6 @@ This library is licensed under the BSD license. See the file COPYING.
 #include <stdint.h>
 
 #include "../include/distorm.h"
-
 
 /*
  * 64 bit offsets support:
@@ -64,7 +62,7 @@ This library is licensed under the BSD license. See the file COPYING.
 
 /* Set endianity (supposed to be LE though): */
 #ifdef __BIG_ENDIAN__
-	#define BE_SYSTEM
+#define BE_SYSTEM
 #endif
 
 /* End of __GCC__ */
@@ -109,7 +107,7 @@ This library is licensed under the BSD license. See the file COPYING.
 
 /* Set endianity (supposed to be LE though): */
 #if !defined(_M_IX86) && !defined(_M_X64)
-	#define BE_SYSTEM
+#define BE_SYSTEM
 #endif
 
 #endif /* #elif _MSC_VER */
@@ -133,38 +131,40 @@ This library is licensed under the BSD license. See the file COPYING.
  * These functions can read from the stream safely!
  * Swap endianity of input to little endian.
  */
-static _INLINE_ int16_t RSHORT(const uint8_t *s)
+static _INLINE_ int16_t RSHORT(const uint8_t* s)
 {
 	return s[0] | (s[1] << 8);
 }
-static _INLINE_ uint16_t RUSHORT(const uint8_t *s)
+static _INLINE_ uint16_t RUSHORT(const uint8_t* s)
 {
 	return s[0] | (s[1] << 8);
 }
-static _INLINE_ int32_t RLONG(const uint8_t *s)
+static _INLINE_ int32_t RLONG(const uint8_t* s)
 {
 	return s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24);
 }
-static _INLINE_ uint32_t RULONG(const uint8_t *s)
+static _INLINE_ uint32_t RULONG(const uint8_t* s)
 {
 	return s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24);
 }
-static _INLINE_ int64_t RLLONG(const uint8_t *s)
+static _INLINE_ int64_t RLLONG(const uint8_t* s)
 {
-	return s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24) | ((uint64_t)s[4] << 32) | ((uint64_t)s[5] << 40) | ((uint64_t)s[6] << 48) | ((uint64_t)s[7] << 56);
+	return s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24) | ((uint64_t)s[4] << 32) | ((uint64_t)s[5] << 40) |
+		   ((uint64_t)s[6] << 48) | ((uint64_t)s[7] << 56);
 }
-static _INLINE_ uint64_t RULLONG(const uint8_t *s)
+static _INLINE_ uint64_t RULLONG(const uint8_t* s)
 {
-	return s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24) | ((uint64_t)s[4] << 32) | ((uint64_t)s[5] << 40) | ((uint64_t)s[6] << 48) | ((uint64_t)s[7] << 56);
+	return s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24) | ((uint64_t)s[4] << 32) | ((uint64_t)s[5] << 40) |
+		   ((uint64_t)s[6] << 48) | ((uint64_t)s[7] << 56);
 }
 #else
 /* Little endian macro's will just make the cast. */
-#define RSHORT(x) *(int16_t *)x
-#define RUSHORT(x) *(uint16_t *)x
-#define RLONG(x) *(int32_t *)x
-#define RULONG(x) *(uint32_t *)x
-#define RLLONG(x) *(int64_t *)x
-#define RULLONG(x) *(uint64_t *)x
+#define RSHORT(x) *(int16_t*)x
+#define RUSHORT(x) *(uint16_t*)x
+#define RLONG(x) *(int32_t*)x
+#define RULONG(x) *(uint32_t*)x
+#define RLLONG(x) *(int64_t*)x
+#define RULLONG(x) *(uint64_t*)x
 #endif
 
 #endif /* CONFIG_H */

@@ -87,7 +87,7 @@
 ;; together into a c string with null bytes terminating each one
 (defun make-filter-string (filters)
 	(let ((index 0)
-		  (cstr (ct:malloc 
+		  (cstr (ct:malloc
 			(+ (reduce #'+ (mapcar #'length filters)) (length filters) 1))))
 		(dolist (f filters)
 			(dotimes (i (length f))
@@ -121,29 +121,27 @@
 	(setf (cref OPENFILENAME *open-file-info* lpTemplateName) ct:null))
 
 ;;
-;;	Returns: 
+;;	Returns:
 ;;		NIL    (if the user cancelled)
 ;;		The pathname of the selected file (if successful)
 ;;
 (defun get-open-file-name (&optional (filetypes '("All Files (*.*)" "*.*")))
 	"GET-OPEN-FILE-NAME &optional filetypes
-	 Example: (GET-OPEN-FILE-NAME 	
+	 Example: (GET-OPEN-FILE-NAME
 				'(\"Text Files (*.TXT)\" 	\"*.txt\"
 				\"All Files (*.ASC)\" \"*.*\"))"
-						
+
 	(let ((file-name (ct:malloc _MAX_PATH))
 		  (title-name (ct:malloc (+ _MAX_FNAME _MAX_EXT))))
 
 		(init-open-file (cl::get-application-main-window) filetypes)
-	
+
 		(setf (cref OPENFILENAME *open-file-info* lpstrFile) file-name)
 		(setf (cref OPENFILENAME *open-file-info* lpstrFileTitle) title-name)
-		(setf (cref OPENFILENAME *open-file-info* Flags) 
+		(setf (cref OPENFILENAME *open-file-info* Flags)
 			(logior OFN_HIDEREADONLY OFN_CREATEPROMPT))
 
 		(setf (cref LPSTR file-name 0) 0)
 		(setf (cref LPSTR title-name 0) 0)
 		(if (GetOpenFileName *open-file-info*)
 			(pathname (ct:c-string-to-lisp-string file-name)))))
-
-

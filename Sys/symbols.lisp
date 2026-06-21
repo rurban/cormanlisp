@@ -29,12 +29,12 @@
 		(error "The symbol ~A has been declared constant, and may not be assigned to" sym))
 	(rplaca (uref sym symbol-value-offset) val)
 	val)
-	 
+
 (defun define-constant (sym val doc-string)
 	(if (and (constantp sym)(not (equal (symbol-value sym) val)))
 		(warn "Redefining constant ~A with previous value ~A and new value ~A"
 			sym (symbol-value sym) val))
-			 
+
 	(let ()
 		(%symbol-set-flags 0 sym)
 		(setf (symbol-value sym) val)
@@ -44,7 +44,7 @@
 			(setf (documentation sym 'variable) doc-string))
 		sym))
 
-(defun define-special-variable (sym doc-string)			 
+(defun define-special-variable (sym doc-string)
 	(let ()
 		(%symbol-set-flags 0 sym)
 		;(setf (symbol-value sym) val)
@@ -52,18 +52,18 @@
 		(if doc-string
 			(setf (documentation sym 'variable) doc-string))
 		sym))
-		 
+
 ;;;
 ;;;	Common Lisp DEFCONSTANT macro.
 ;;;
-(defmacro defconstant (sym val &optional doc-string) 
-	`(eval-when (:compile-toplevel :load-toplevel :execute) 
+(defmacro defconstant (sym val &optional doc-string)
+	`(eval-when (:compile-toplevel :load-toplevel :execute)
         (define-constant ',sym ,val ,doc-string)))
 
 ;;;
 ;;;	Common Lisp DEFPARAMETER macro.
 ;;;
-(defmacro defparameter (sym val &optional doc-string) 
+(defmacro defparameter (sym val &optional doc-string)
 	(let ((_ (gensym)))
 		`(let ((,_ (define-special-variable ',sym ,doc-string)))
 			(setf (symbol-value ',sym) ,val) ,_)))
@@ -71,7 +71,7 @@
 ;;;
 ;;;	Common Lisp DEFVAR macro.
 ;;;
-(defmacro defvar (sym &rest val-and-doc-string) 
+(defmacro defvar (sym &rest val-and-doc-string)
 	(let* ((_res (gensym))
 		   (_has-val (not (null val-and-doc-string)))
 		   (_doc (when (and _has-val

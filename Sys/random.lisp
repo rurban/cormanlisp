@@ -56,7 +56,7 @@
 (defvar rand-seed 0)
 
 (declaim (ftype (function () real) rand1))	  ;; forward reference
- 
+
 (defstruct (random-state
 	    (:constructor make-random-object))
   (j 24 :type index)
@@ -108,8 +108,8 @@
 
 ;;; random-chunk  --  Internal
 ;;;
-;;; This function generates fixnums between 0 and random-upper-bound, 
-;;; inclusive.  For the algorithm to work random-upper-bound must be an 
+;;; This function generates fixnums between 0 and random-upper-bound,
+;;; inclusive.  For the algorithm to work random-upper-bound must be an
 ;;; even positive fixnum.  State is the random state to use.
 ;;;
 (declaim (ftype (function (random-state) random-chunk) random-chunk))
@@ -165,8 +165,8 @@
 	(let ((state (or state *random-state*)))
 		(* arg
 			(- (%make-double-float
-					(dpb 
-						(logxor (ash (random-chunk state) 
+					(dpb
+						(logxor (ash (random-chunk state)
 								(- 53 random-chunk-length))
 							(random-chunk state))
 						double-float-significand-byte
@@ -219,14 +219,3 @@
 ;;((	(t (error 'simple-type-error :expected-type '(real (0)) :datum arg
 ;;				:format-control "Argument is not a positive real number: ~S"
 ;;				:format-arguments (list arg)))))
-
-
-
-
-
-
-
-
-
-
-

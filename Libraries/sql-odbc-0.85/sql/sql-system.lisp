@@ -5,8 +5,8 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
-;; "sql-odbc-documentation.lisp" 
+;; Documentation and the license agreement can be found in file
+;; "sql-odbc-documentation.lisp"
 
 (in-package :common-lisp-user)
 
@@ -25,7 +25,7 @@
     (:package "COMMON-LISP-USER"
      :default-pathname "sql:sql;")
     :members ("sql-package"
-              "sql-class" 
+              "sql-class"
               "sql-expressions"
               "sql-functional-interface"
               "sql-streams")
@@ -36,7 +36,7 @@
 
 #+allegro
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  (defsystem :sql 
+  (defsystem :sql
     (:default-pathname "sql:sql;"
       :default-package :sql)
     (:serial

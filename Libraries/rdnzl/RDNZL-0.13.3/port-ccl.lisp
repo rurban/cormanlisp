@@ -264,7 +264,7 @@ before the Lisp images exits."
 (defmacro with-standard-io-syntax (&body body)
   `(let ((*package* (find-package :user))
 	 (*print-array* t)
-	 (*print-base* 10)                                  
+	 (*print-base* 10)
 	 (*print-case* :upcase)
 	 (*print-circle* nil)
 	 (*print-escape* t)

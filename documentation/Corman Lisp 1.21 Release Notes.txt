@@ -18,6 +18,5 @@ off various features of the editor. These will be saved automatically
 each time you exit the IDE.
 
 Automatic prototyping of Common Lisp functions occurs when you
-are working in the editor. This may be turned off in the 
+are working in the editor. This may be turned off in the
 Preferences dialog.
-

@@ -52,13 +52,13 @@ typedef struct _header
 				 (file-path)
 				 (root (make-pathname :device (pathname-device path) :directory (pathname-directory path))))
 				((>= pos length))
-				(setf header (ct:int-to-foreign-ptr (+ addr pos))) 
-				(setf file-name 
+				(setf header (ct:int-to-foreign-ptr (+ addr pos)))
+				(setf file-name
 					(ct:c-string-to-lisp-string (ct:cref header header name)))
 				(if (or (null file-name) (= (length file-name) 0))
 					(return))
 				(setf file-path (merge-pathnames file-name root))
-				(setf file-length 
+				(setf file-length
 					(parse-integer (ct:c-string-to-lisp-string (ct:cref header header size))
 							:junk-allowed t
 							:radix 8))
@@ -75,7 +75,7 @@ typedef struct _header
   (let ((gzpath (namestring (truename (merge-pathnames "HyperSpec-7-0.tar.gz"))))
 		(tarpath (namestring (truename (merge-pathnames "HyperSpec-7-0.tar"))))
 		(hyperspec-path (namestring (truename (merge-pathnames "hyperspec/")))))
-	
+
 	;; unless the Hyperspec is already installed at this location, extract
 	;; it to that location
 	(unless (probe-file (merge-pathnames "Front\\Contents.htm" hyperspec-path))
@@ -88,10 +88,3 @@ typedef struct _header
 	(setf *hyperspec-local-path* hyperspec-path)))
 
 (install-hyperspec)
-
-
-
-        
-
-
-		

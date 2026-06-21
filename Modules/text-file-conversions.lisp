@@ -16,10 +16,10 @@
 
 (defun unix-to-windows (filename)
 	(let* ((input-path (pathname filename))
-		   (output-path (make-pathname 
+		   (output-path (make-pathname
 							:name (concatenate 'string (pathname-name input-path) "-temp")
-							:directory (pathname-directory input-path) 
-							:device (pathname-device input-path) 
+							:directory (pathname-directory input-path)
+							:device (pathname-device input-path)
 							:type (pathname-type input-path)))
 		   (is (open input-path :direction :input :element-type 'integer))
 		   (os (open output-path :direction :output :element-type 'integer)))
@@ -31,10 +31,10 @@
 
 (defun mac-to-windows (filename)
 	(let* ((input-path (pathname filename))
-		   (output-path (make-pathname 
+		   (output-path (make-pathname
 							:name (concatenate 'string (pathname-name input-path) "-temp")
-							:directory (pathname-directory input-path) 
-							:device (pathname-device input-path) 
+							:directory (pathname-directory input-path)
+							:device (pathname-device input-path)
 							:type (pathname-type input-path))))
 	   (with-open-file (is input-path :direction :input )
 			(with-open-file (os output-path :direction :output)

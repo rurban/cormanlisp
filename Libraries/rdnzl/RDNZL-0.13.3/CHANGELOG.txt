@@ -71,13 +71,13 @@ Fixed bug in reader syntax (reported by Michael Goffioul)
 
 Version 0.10.4
 2006-09-04
-Fixed typo in apropos.lisp (reported by Dean O'Connor) 
+Fixed typo in apropos.lisp (reported by Dean O'Connor)
 
 Version 0.10.3
 2006-08-25
 Added Excel example
 Fixed bug in AREF*
-Changed package handling in system definition (thanks to Christophe Rhodes)	
+Changed package handling in system definition (thanks to Christophe Rhodes)
 
 Version 0.10.2
 2006-08-10

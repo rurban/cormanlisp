@@ -5,12 +5,12 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
 ;; In this file the platform specific code is isolated.
-;; The code in this file consists mostly of wrapper functions and macros 
+;; The code in this file consists mostly of wrapper functions and macros
 ;; around the platform-dependent foreign function interface.
 
 ;; This file contains MCL specific code.
@@ -18,7 +18,7 @@
 (defpackage "FFC"
   (:use "COMMON-LISP" "CCL")
   (:import-from "CCL" "WITH-CSTR")
-  (:export "*FOREIGN-MODULE*" "DEFINE-FOREIGN-FUNCTION" 
+  (:export "*FOREIGN-MODULE*" "DEFINE-FOREIGN-FUNCTION"
     "MAKE-RECORD"
     "%WITH-TEMPORARY-ALLOCATION" "%WITH-SQL-POINTER" "%GET-CSTRING"
     "%CSTRING-INTO-STRING"
@@ -37,7 +37,7 @@
     "%PUT-WORD"
     "%PUT-SHORT"
     "%PUT-LONG"
-    "%NEW-CSTRING" 
+    "%NEW-CSTRING"
     "%NULL-PTR"
     "STRING-PTR" "SQL-HANDLE" "SQL-HANDLE-PTR"
     "%GET-BINARY" "%PUT-BINARY" "%NEW-BINARY"))
@@ -51,13 +51,13 @@
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
   (import 'ccl::with-cstr)
-  
+
   (ccl::def-mactype :string-ptr (find-mactype :ptr))
   (ccl::def-mactype :sql-handle (find-mactype :ptr))
   (ccl::def-mactype :sql-handle-ptr (find-mactype :ptr))
-  
+
   ;(setf *foreign-module* "vsi:ODBC$DriverMgr")
-  
+
   (defun mac-to-lisp-type (mac-type)
     (ecase (ccl::make-keyword mac-type)
       ((:ptr :sql-handle :sql-handle-ptr) t)
@@ -171,12 +171,12 @@
         (t (error "not yet implemented"))))
 
 (defmacro %with-sql-pointer ((ptr-var) &body body)
-  `(%stack-block ((,ptr-var #.(ccl::record-field-length :ptr))) 
+  `(%stack-block ((,ptr-var #.(ccl::record-field-length :ptr)))
      ,@body))
 
 ;; bindings is a list of (var type &optional size)
 (defmacro %with-temporary-allocation (bindings &body body)
-  (let ((args ())) 
+  (let ((args ()))
     (dolist (binding bindings) ; use destructuring-bind to make this clearer!
       (if (cddr binding)
         (push (list (car binding)

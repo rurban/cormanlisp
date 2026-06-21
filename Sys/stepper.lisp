@@ -16,7 +16,7 @@
 (defun eval-hook-function (form &rest env)
 	(let ((*hooklevel* (+ *hooklevel* 1)))
 		(format t "~%Form: ~A" form)
-		(let ((values (multiple-value-list 
+		(let ((values (multiple-value-list
 						(evalhook form #'eval-hook-function nil env))))
 			(format t "~%Value:~{ ~A~}" values)
 			(values-list values))))

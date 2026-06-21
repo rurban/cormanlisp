@@ -29,8 +29,8 @@
 	;(declare (ignore default))
 	(do* ((plist (symbol-plist sym))
 		  (p plist (cddr p)))
-		 ((null p) 
-		  (progn 
+		 ((null p)
+		  (progn
 			(set-symbol-plist (cons attr (cons val plist)) sym)
 			val))
 		 (if (eq (car p) attr)
@@ -120,7 +120,7 @@
 				(return-from string-equal nil)))
 		t))
 
-(defun number-types-eq (x y) 
+(defun number-types-eq (x y)
 	(cond
 		((integerp x) (integerp y))
 		((double-float-p x)   (double-float-p y))
@@ -154,15 +154,15 @@
 	(equal x y))
 
 (defun sublis (alist tree &key key (test #'eql) test-not)
-	(let ((match (assoc tree alist 
-					:key key 
-					:test test 
+	(let ((match (assoc tree alist
+					:key key
+					:test test
 					:test-not test-not)))
 		(if match (cdr match)
 			(if (not (consp tree)) tree
-				(cons (sublis alist (car tree) 
+				(cons (sublis alist (car tree)
 						:key key :test test :test-not test-not)
-					  (sublis alist (cdr tree) 
+					  (sublis alist (cdr tree)
 						:key key :test test :test-not test-not))))))
 
 (defun min-sequence-length (sequences)
@@ -185,15 +185,15 @@
 				(if ret (return ret))))))
 
 (defun %once-only-forms (form)
-	(let* 
+	(let*
 		((args (rest form)) ; raw form arguments
-		 (letlist 
+		 (letlist
 			(let ((newlist nil))
 				(dolist (x form)
 					(when (and (consp x) (not (eq (car form) 'the)))
 						(push `(,(gensym) ,x) newlist)))
 				(nreverse newlist)))
-		 (revlist 
+		 (revlist
 			(let ((newlist nil))
 				(dolist (x letlist)
 					(push (cons (second x) (first x)) newlist))
@@ -204,40 +204,40 @@
 (defmacro incf (form &optional (delta 1))
 	(if (and (consp form) (some #'consp form))
 		(let ((retval (%once-only-forms form)))
-			`(let ,(car retval) 
+			`(let ,(car retval)
 				(setf ,(cdr retval) (+ ,(cdr retval) ,delta))))
 		`(setf ,form (+ ,form ,delta))))
 
 (defmacro decf (form &optional (delta 1))
 	(if (and (consp form) (some #'consp form))
 		(let ((retval (%once-only-forms form)))
-			`(let ,(car retval) 
+			`(let ,(car retval)
 				(setf ,(cdr retval) (- ,(cdr retval) ,delta))))
 		`(setf ,form (- ,form ,delta))))
 
 (defmacro prog1 (first-x &rest rest-x)
 	(let ((sym (gensym)))
-		`(let* ((,sym ,first-x)) 
+		`(let* ((,sym ,first-x))
 			,@rest-x
 			,sym)))
 
-(defmacro prog2 (first-x second-x &rest rest-x) 
+(defmacro prog2 (first-x second-x &rest rest-x)
 	(let ((sym (gensym)))
-		`(let* ((,sym (progn ,first-x ,second-x))) 
+		`(let* ((,sym (progn ,first-x ,second-x)))
 			,@rest-x
 			,sym)))
 
 (defmacro push (val form)
 	(if (and (consp form) (some #'consp form))
 		(let ((retval (%once-only-forms form)))
-			`(let ,(car retval) 
+			`(let ,(car retval)
 				(setf ,(cdr retval) (cons ,val ,(cdr retval)))))
 		`(setf ,form (cons ,val ,form))))
 
 (defmacro pop (form)
 	(if (and (consp form) (some #'consp form))
 		(let ((retval (%once-only-forms form)))
-			`(let ,(car retval) 
+			`(let ,(car retval)
 				(prog1 (first ,(cdr retval))
 					(setf ,(cdr retval) (rest ,(cdr retval))))))
 		`(prog1 (first ,form) (setf ,form (rest ,form)))))
@@ -264,33 +264,33 @@
 			(return i))))
 
 (defun adjoin (item list &key key (test #'eql) test-not)
-	(if (member (if key (funcall key item) item) list 
-			:key key :test test :test-not test-not) 
-		list 
+	(if (member (if key (funcall key item) item) list
+			:key key :test test :test-not test-not)
+		list
 		(cons item list)))
 
 (defmacro defun (name lambda-list &rest forms)
-	(let ((doc-form nil) 
-		  (lambda-form nil) 
+	(let ((doc-form nil)
+		  (lambda-form nil)
 		  (declarations nil))
 
 		;; look for declarations and doc string
 		(do* ((f forms (cdr f)))
 			((null f) (setq forms f))
 			(if (and (stringp (car f)) (null doc-form) (cdr f))
-				(setq doc-form 
+				(setq doc-form
 					`((setf (documentation ',name 'function) ,(car f))))
 				(if (and (consp (car f)) (eq (caar f) 'declare))
 					(push (car f) declarations)
 					(progn (setq forms f) (return)))))
 
-		(setq lambda-form 
+		(setq lambda-form
 			`(lambda ,lambda-list ,@(nreverse declarations)
-				(block ,name ,@forms))) 		
+				(block ,name ,@forms)))
 		`(progn
 			,@doc-form
 			(setf (symbol-function ',name) (function ,lambda-form))
-			',name))) 
+			',name)))
 
 (defun set-property (plist property val)
 	(do* ((p plist (cddr p)))
@@ -304,7 +304,7 @@
 		`(let ((,sym ,val))
 			(setf ,plist (set-property ,plist ,property ,sym))
 			,sym)))
-	
+
 (register-setf-function 'getf '|(SETF GETF)|)
 
 ;;;
@@ -316,7 +316,7 @@
 	(setf (uref symbol symbol-plist-offset) val))
 
 ;;;
-;;; At the start, the property list of this symbol is used as the 
+;;; At the start, the property list of this symbol is used as the
 ;;; documentation registry.
 ;;; During booting, a hash-table is assigned to this variable, and it
 ;;; becomes the registry.
@@ -344,18 +344,18 @@
 (defun |(SETF CADR)| (val list)
 	(setf (car (cdr list)) val))
 (register-setf-function 'cadr '|(SETF CADR)|)
-	 
+
 ;
 ;	Common Lisp 'multiple-value-setq' macro
 ;
 (defmacro multiple-value-setq (varlist form)
-	(let ((setq-forms nil) 
-		  (value-list-sym (gensym)) 
+	(let ((setq-forms nil)
+		  (value-list-sym (gensym))
 		  (return-form-sym (gensym)))
 		(do ((v varlist (cdr v)) (count 0 (1+ count)))
 			((null v))
-			(push 
-				`(setq ,(car v) (nth ,count ,value-list-sym)) 
+			(push
+				`(setq ,(car v) (nth ,count ,value-list-sym))
 				setq-forms))
 		`(let* ((,value-list-sym (multiple-value-list ,form))
 				(,return-form-sym (car ,value-list-sym)))
@@ -377,7 +377,7 @@
 				(progn (setq forms f) (return))))
 
 		`(let ,vars
-			,@(nreverse declarations) 
+			,@(nreverse declarations)
 			(multiple-value-setq ,vars ,value-form)
 			,@forms)))
 
@@ -401,8 +401,8 @@
 	(push module-name *modules*)
 	module-name)
 
-(defun parse-integer (string 
-		&key (start 0) 
+(defun parse-integer (string
+		&key (start 0)
 			 (end (length string))
 			 (radix 10)
 			 (junk-allowed nil)
@@ -426,21 +426,21 @@
 		(cond
 			(n (progn
 				(cond
-					((eq state :finished) 
+					((eq state :finished)
 					 (if (not junk-allowed)
 						(error "Invalid integer parsed: ~A" string)
 						(progn (setq end i) (return)))))
 				(setq result (+ (* result radix) n))
 				(setq state :collecting)))
-			
+
 			((member c (list (int-char 13) (int-char 32) (int-char 9)))	;; '(#\Newline #\Space #\Tab)
 				(cond
 					((eq state :collecting) (setq state :finished))
 					((eq state :initial) nil)	; don't do anything
 					((eq state :finished) nil)))
-			(t 
+			(t
 				(if (not junk-allowed)
-					(error "Invalid integer parsed: ~A" string)  ;; string  
+					(error "Invalid integer parsed: ~A" string)  ;; string
 					(progn (setq end i) (return))))))
 
 	(if (eq state :initial)
@@ -459,7 +459,7 @@
 (defconstant adjustable-array-header-min-size		5)
 
 
-(defun adjustable-array-p (a) 
+(defun adjustable-array-p (a)
 	(and (uvectorp a)(= (uvector-type-bits a) uvector-array-tag)))
 
 (defun array-has-fill-pointer-p	(a)
@@ -470,7 +470,7 @@
 	(let ((fp (uref a adjustable-array-fill-pointer-offset)))
 		(if (>= fp 0) t nil)))
 
-(defun fill-pointer (a) 
+(defun fill-pointer (a)
 	(unless (adjustable-array-p a)
 		(if (arrayp a)
 			(error "Array ~A does not have a fill pointer" a)
@@ -497,7 +497,7 @@
 ;
 ;	Common Lisp ARRAY-ELEMENT-TYPE function
 ;
-(defun array-element-type (a) 
+(defun array-element-type (a)
 	(unless (arrayp a)
 		(error "Not an array: ~A" a))
 	(array-type a))
@@ -558,17 +558,17 @@
 		(setf (uref vec 1) size)
 		(register-untagged-values vec 2)
 		vec))
-	 
+
 ;;;
 ;;;	Common Lisp MAKE-ARRAY function
 ;;;
-(defun make-array (dimensions 
-	&key (element-type t) 
+(defun make-array (dimensions
+	&key (element-type t)
 		 (initial-element nil supplied-initial-element)
 		 (initial-contents nil supplied-initial-contents)
-		 adjustable 
-		 fill-pointer 
-		 (displaced-to nil) 
+		 adjustable
+		 fill-pointer
+		 (displaced-to nil)
 		 (displaced-index-offset 0))
 	(if (integerp dimensions)
 		(setq dimensions (list dimensions)))
@@ -595,7 +595,7 @@
 				 (setq vec (allocate-byte-vector num-cells)))
 				((eq element-type 't)
 				 (setq vec (allocate-generic-vector num-cells))))
-		
+
 			(if (eq array-type 'adjustable)
 				(let ()
 					(setq a (alloc-uvector header-size uvector-array-tag))
@@ -607,7 +607,7 @@
 						(setf (uref a (+ adjustable-array-dim1-offset i)) (car d))
 					(setq d (cdr d))))
 				(setq a vec))
-					 		
+
 			(if supplied-initial-element
 				(array-initialize-element a initial-element)
 				(if supplied-initial-contents
@@ -627,7 +627,7 @@
 ;;;	Common Lisp VECTOR-PUSH function.
 ;;;
 (defun vector-push (new-element vector)
-	(unless (array-has-fill-pointer-p vector) 
+	(unless (array-has-fill-pointer-p vector)
 		(error "Vector does not have a fill pointer: ~A" vector))
 	(let ((pos (fill-pointer vector)))
 		(if (>= pos (array-dimension vector 0))
@@ -646,7 +646,7 @@
 ;;;
 ;;;	Common Lisp ALPHANUMERICP function.
 ;;;
-(defun alphanumericp (x) 
+(defun alphanumericp (x)
 	(or (alpha-char-p x) (not (null (digit-char-p x)))))
 
 ;;;
@@ -671,7 +671,7 @@
 	(unless end (setq end (length s)))
 	(let ((copy (make-array (length s) :element-type 'character)))
 		(dotimes (i (length s))
-			(setf (elt copy i) 
+			(setf (elt copy i)
 				(if (and (>= i start) (< i end))
 					(char-upcase (elt s i))
 					(elt s i))))
@@ -699,7 +699,7 @@
 	(unless end (setq end (length s)))
 	(let ((copy (make-array (length s) :element-type 'character)))
 		(dotimes (i (length s))
-			(setf (elt copy i) 
+			(setf (elt copy i)
 				(if (and (>= i start) (< i end))
 					(char-downcase (elt s i))
 					(elt s i))))
@@ -734,7 +734,7 @@
 			(setq term (not (alphanumericp c)))
 			(setf (elt copy i)
 				(if (and (>= i start) (< i end))
-					(if new-word 
+					(if new-word
 						(char-upcase c)
 						(char-downcase c))
 					c))
@@ -758,7 +758,7 @@
 			(setq term (not (alphanumericp c)))
 			(if (and (>= i start) (< i end))
 				(setf (elt s i)
-					(if new-word 
+					(if new-word
 						(char-upcase c)
 						(char-downcase c))))
 			(if term		;; is word terminator
@@ -769,14 +769,14 @@
 ;
 ;	Common Lisp LENGTH function.
 ;
-(defun length (x) 
+(defun length (x)
 	(if (vectorp x)
-		(if (array-has-fill-pointer-p x) 
-			(fill-pointer x) 
+		(if (array-has-fill-pointer-p x)
+			(fill-pointer x)
 			(array-dimension x 0))
-		(let ((length 0)) 
-			(tagbody loop 
-				(if (null x) (return-from length length)) 
+		(let ((length 0))
+			(tagbody loop
+				(if (null x) (return-from length length))
 				(setq x (cdr x))
 				(setq length (+ 1 length))
 				(go loop)))))
@@ -784,11 +784,11 @@
 ;
 ;	Common Lisp REMOVE function.
 ;
-(defun remove (item sequence 
+(defun remove (item sequence
 		&key from-end (test #'eql) test-not (start 0) end count key)
-	(unless (sequencep sequence) 
+	(unless (sequencep sequence)
 		(error "Not a sequence: ~A" sequence))
-	(unless (integerp end) 
+	(unless (integerp end)
 		(setq end (length sequence)))
 	(if test-not (setq test #'(lambda (x y) (not (funcall test-not x y)))))
 
@@ -809,7 +809,7 @@
 					(let ((test-element element))
 						(if key (setq test-element (funcall key test-element)))
 						(if (and (funcall test item test-element) (> count 0))
-							(progn 
+							(progn
 								(decf count)
 								(setq remove-it t)))))
 				(unless remove-it (push element p)))
@@ -824,13 +824,13 @@
 					(let ((test-element element))
 						(if key (setq test-element (funcall key test-element)))
 						(if (and (funcall test item test-element) (> count 0))
-							(progn 
+							(progn
 								(decf count)
 								(setq remove-it t)))))
 				(unless remove-it (push element p))))
 		(setq p (nreverse p))
 		(if (vectorp sequence)
-			(make-array (length p) 
+			(make-array (length p)
 				:element-type (array-element-type sequence)
 				:initial-contents p)
 			p)))
@@ -957,7 +957,7 @@
       (%map-N function (cons list more-lists) t nil)
       (%map-1 function list t nil))
   list)
-		 
+
 ;;;
 ;;;	Common Lisp FUNCTION-LAMBDA-EXPRESSION function.
 ;;;
@@ -1006,8 +1006,8 @@
 ;;;	Common Lisp COPY-TREE function.
 ;;;
 (defun copy-tree (tree)
-	(if (consp tree) 
-		(cons (copy-tree (car tree)) (copy-tree (cdr tree))) 
+	(if (consp tree)
+		(cons (copy-tree (car tree)) (copy-tree (cdr tree)))
 		tree))
 
 ;;;
@@ -1017,7 +1017,7 @@
 	(if (consp tree)
 		(if (eq (car tree) 'quote)
 			(cons 'quote (cdr tree))
-			(cons (copy-tree (car tree)) (copy-tree (cdr tree)))) 
+			(cons (copy-tree (car tree)) (copy-tree (cdr tree))))
 		tree))
 
 ;;;;
@@ -1031,9 +1031,9 @@
         (cond
             ((and (listp form) (eq 'progn (first form)))
             ;; Make sure multiple values are returned correctly
-             (do ((subforms (cdr form) (cdr subforms))) 
+             (do ((subforms (cdr form) (cdr subforms)))
                  (())
-                 (if (null (cdr subforms)) 
+                 (if (null (cdr subforms))
                         (return-from eval (eval (first subforms)))
                         (eval (first subforms)))))
             (t (let ((compiled-form (compile-form (copy-tree-unquoted form))))
@@ -1073,7 +1073,7 @@
 ;;;;
 (defun butlast (list &optional (n 1))
 	(if (minusp n)
-		(error "Integer must not be negative: ~A" n))	
+		(error "Integer must not be negative: ~A" n))
 	(let* ((conses (length list))
 		   (result-conses (- conses n))
 		   (result nil))
@@ -1088,7 +1088,7 @@
 ;;;;
 (defun nbutlast (list &optional (n 1))
 	(if (minusp n)
-		(error "Integer must not be negative: ~A" n))	
+		(error "Integer must not be negative: ~A" n))
 	(let* ((conses (length list))
 		   (result-conses (- conses n))
 		   (result list))
@@ -1137,7 +1137,7 @@
 ;;;	Common Lisp CONSTANTLY function.
 ;;;
 (defun constantly (value)
-	#'(lambda (&rest arguments) 
+	#'(lambda (&rest arguments)
 		(declare (ignore arguments))
 		value))
 
@@ -1165,5 +1165,3 @@
 		(unless (listp x) (error "Not a list: ~A" x))
 		(if ret (rplacd (last ret) list) (setq ret list))
 		ret))
- 
-    

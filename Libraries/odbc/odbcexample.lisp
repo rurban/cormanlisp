@@ -62,7 +62,7 @@ given handle of the given type."
 	     (SQLGetDiagRec handle-type handle
 			    rec-number
 			    pstate
-			    pnerr 
+			    pnerr
 			    pdata 1024 psize)))
       (do* ((rn 1 (1+ rn))
 	    (rc (get-error rn) (get-error rn)))

@@ -21,10 +21,10 @@
 		(setq root-val (symbol-value root-sym))
 		(unless (integerp root-val) (return-from reg-lookup nil))
 		(setf (ct:cref (win:HKEY *) keyptr 0)(cl::int-to-foreign-ptr root-val))
-		(setq k1 
+		(setq k1
 			(open-subkey keyptr key1))
 		(if (null k1)
-			(return-from reg-lookup nil))		
+			(return-from reg-lookup nil))
 		(dotimes (i (- num-args 1))
 			(setq k2 (open-subkey k1 (car args)))
 			(close-reg-entry k1)
@@ -50,10 +50,10 @@
 		(setq root-val (symbol-value root-sym))
 		(unless (integerp root-val) (return-from reg-set nil))
 		(setf (ct:cref (win:HKEY *) keyptr 0)(cl::int-to-foreign-ptr root-val))
-		(setq k1 
+		(setq k1
 			(open-subkey keyptr key1))
 		(if (null k1)
-			(return-from reg-set nil))		
+			(return-from reg-set nil))
 		(dotimes (i (- num-args 2))
 			(setq k2 (open-subkey k1 (car args)))
 			(close-reg-entry k1)
@@ -67,9 +67,9 @@
 
 (defun open-subkey (hkey subkey-name)
 	(let* ((hkptr (ct:malloc (ct:sizeof '(win:HKEY *))))
-		   (ret (win:RegOpenKeyEx 
-					(ct:cref (win:HKEY *) hkey 0) 
-					(ct:create-c-string subkey-name) 
+		   (ret (win:RegOpenKeyEx
+					(ct:cref (win:HKEY *) hkey 0)
+					(ct:create-c-string subkey-name)
 					0 (logior win:KEY_READ win:KEY_WRITE) hkptr)))
 		(if (= ret win:ERROR_SUCCESS)
 			hkptr
@@ -84,8 +84,8 @@
 	(let* ((buf nil)
 		   (bufsize (ct:malloc (ct:sizeof 'win:LPDWORD)))
 		   (cname (ct:create-c-string name))
-		   (ret (win:RegQueryValueEx 
-					(ct:cref (win:HKEY *) hkey 0) 
+		   (ret (win:RegQueryValueEx
+					(ct:cref (win:HKEY *) hkey 0)
 					cname
 					null
 					null
@@ -94,8 +94,8 @@
 		(if (/= ret win:ERROR_SUCCESS)
 			(return-from reg-query-value nil))
 		(setq buf (ct:malloc (ct:cref win:LPDWORD bufsize 0)))
-		(setq ret (win:RegQueryValueEx 
-						(ct:cref (win:HKEY *) hkey 0) 
+		(setq ret (win:RegQueryValueEx
+						(ct:cref (win:HKEY *) hkey 0)
 						cname
 						null
 						null
@@ -106,8 +106,8 @@
 		(ct:c-string-to-lisp-string buf)))
 
 (defun reg-set-value (hkey name data)
-	(let* ((ret (win:RegSetValueEx 
-					(ct:cref (win:HKEY *) hkey 0) 
+	(let* ((ret (win:RegSetValueEx
+					(ct:cref (win:HKEY *) hkey 0)
 					(ct:create-c-string name)
 					0
 					win:REG_SZ
@@ -121,10 +121,8 @@
 ;; example:
 
 (reg-lookup "HKEY_CLASSES_ROOT"
-	"CLSID" 	
+	"CLSID"
 	"{00000010-0000-0010-8000-00AA006D2EA4}"
 	"ProgID"
 	"")
 |#
-
-

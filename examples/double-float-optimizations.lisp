@@ -40,7 +40,7 @@
 
 ;;;
 ;;; Generates the same code for a double-float number as for an array of double floats of length 1.
-;;; This usage is possibly not a good idea, because the actual number in z and temp gets 
+;;; This usage is possibly not a good idea, because the actual number in z and temp gets
 ;;; changed, and Common Lisp normally treats double-float as an immutable object (i.e if
 ;;; the value were shared, the shared copy would be changed.
 ;;;

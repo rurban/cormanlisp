@@ -38,7 +38,7 @@
     (if (> (length list) n) (cons (car list) (remove-last-n n (cdr list)))))
 
 (defun truncate-command-history (length)
-    (setf *command-history* 
+    (setf *command-history*
         (remove-last-n (- (length *command-history*) length) *command-history*)))
 
 (defun add-command (cmd)
@@ -55,21 +55,21 @@
 
 
 (defun copyright-notice-short ()
-	(format nil "Corman Lisp ~A  (Patch level ~D)~%;; Copyright ~A Corman Technologies Inc. See LICENSE.txt for license information." 
+	(format nil "Corman Lisp ~A  (Patch level ~D)~%;; Copyright ~A Corman Technologies Inc. See LICENSE.txt for license information."
 			(cl::lisp-implementation-version-string)
             ccl::*cormanlisp-patch-level*
 			(if (= (cl::cormanlisp-client-type) 1) "(c)" (int-char 169))))
-	
+
 (defun copyright-notice ()
-  (format nil ";; ~A~%~A" 
+  (format nil ";; ~A~%~A"
 		  (copyright-notice-short)
 		  (multiple-value-bind (registered version name organization days-remaining)
 			  (cl::registration-info)
 			(declare (ignore registered version organization days-remaining))
 			(format nil ";; User: ~A." name))))
-				
+
 (defun version-caption ()
-    (format nil "Corman Lisp ~A  (Patch level ~D)" 
+    (format nil "Corman Lisp ~A  (Patch level ~D)"
 			(cl::lisp-implementation-version-string)
             ccl::*cormanlisp-patch-level*))
 
@@ -109,7 +109,7 @@
 					(progn
 						(setq normal-exit nil)
 						(setq *read-level* 0)
-						(write *top-level-prompt* :escape nil) 
+						(write *top-level-prompt* :escape nil)
 						(setq expr (read *standard-input* nil 'Eof nil))
 						(if (eq expr 'quit)
 							(return 'quit))
@@ -120,9 +120,9 @@
 						(unwind-protect
 							(setq result (multiple-value-list (eval expr)))
 							(editor-set-default-message))
-						
+
 						(update-toplevel-globals expr result)
-						(if (null result) 
+						(if (null result)
 							(force-output)
 							(dolist (i result)
 								(write i)
@@ -138,4 +138,3 @@
 
 (setq *top-level* #'top-level)
 (setq *package* (find-package "COMMON-LISP-USER"))
-

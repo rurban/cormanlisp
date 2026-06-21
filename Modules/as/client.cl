@@ -2,11 +2,11 @@
 ;;
 ;; client.cl
 ;;
-;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA 
+;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA
 ;;
 ;; This code is free software; you can redistribute it and/or
 ;; modify it under the terms of the version 2.1 of
-;; the GNU Lesser General Public License as published by 
+;; the GNU Lesser General Public License as published by
 ;; the Free Software Foundation, as clarified by the AllegroServe
 ;; prequel found in license-allegroserve.txt.
 ;;
@@ -15,11 +15,11 @@
 ;; merchantability or fitness for a particular purpose.  See the GNU
 ;; Lesser General Public License for more details.
 ;;
-;; Version 2.1 of the GNU Lesser General Public License is in the file 
+;; Version 2.1 of the GNU Lesser General Public License is in the file
 ;; license-lgpl.txt that was distributed with this file.
 ;; If it is not present, you can access it from
 ;; http://www.gnu.org/copyleft/lesser.txt (until superseded by a newer
-;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
+;; version) or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA  02111-1307  USA
 ;;
 ;;
@@ -39,9 +39,9 @@
 
 
 
-(defpackage :net.aserve.client 
+(defpackage :net.aserve.client
   (:use :net.aserve :excl :common-lisp)
-  (:export 
+  (:export
 		"CLIENT-REQUEST"
 		"CLIENT-REQUEST-CLOSE"
 		"CLIENT-REQUEST-COOKIES"
@@ -84,7 +84,7 @@
    (method	; :get, :put, etc
     :initarg :method
     :accessor client-request-method)
-   
+
    (headers ; alist of  ("headername" . "value")
     :initform nil
     :initarg :headers
@@ -95,7 +95,7 @@
    (socket  ; the socket through which we'll talk to the server
     :initarg :socket
     :accessor client-request-socket)
-   (protocol 
+   (protocol
     ; the protocol value returned by the web server
     ; note, even if the request is for http/1.0, apache will return
     ; http/1.1.  I'm not sure this is kosher.
@@ -110,7 +110,7 @@
     ;		:chunking - read until chunking eof
     :accessor client-request-bytes-left
     :initform nil)
-   
+
    (cookies  ;; optionally a cookie jar for hold received and sent cookies
     :accessor client-request-cookies
     :initarg :cookies
@@ -128,16 +128,16 @@
 		`(let ((start ,i))
 		   (loop
 		     (if* (>= ,i ,max) then (fail))
-		     (if* (eql ,ch (schar ,buffer ,i)) 
+		     (if* (eql ,ch (schar ,buffer ,i))
 			then (return (buf-substr start ,i ,buffer ,downcasep)))
 		     (incf ,i)
 		     )))
-	      
+
 	      (collect-to-eol (buffer i max)
 		;; return a string containing up to the given char
 		`(let ((start ,i))
 		   (loop
-		     (if* (>= ,i ,max) 
+		     (if* (>= ,i ,max)
 			then (return (buf-substr start ,i ,buffer)))
 		     (let ((thisch (schar ,buffer ,i)))
 		       (if* (eq thisch #\return)
@@ -148,18 +148,18 @@
 			  then (return (buf-substr start ,i ,buffer))))
 		     (incf ,i)
 		     )))
-	      
+
 	      (skip-to-not (ch buffer i max &optional (errorp t))
 		;; skip to first char not ch
 		`(loop
-		   (if* (>= ,i ,max) 
-		      then ,(if* errorp 
+		   (if* (>= ,i ,max)
+		      then ,(if* errorp
 			      then `(fail)
 			      else `(return)))
 		   (if* (not (eq ,ch (schar ,buffer ,i)))
 		      then (return))
 		   (incf ,i)))
-	      
+
 	      (buf-substr (from to buffer &optional downcasep)
 		;; create a string containing [from to }
 		;;
@@ -172,13 +172,13 @@
 			   then `(char-downcase (schar ,buffer ii))
 			   else `(schar ,buffer ii))))
 		   res)))
-     
+
      ,@body))
 
 
-(defun do-http-request (uri 
+(defun do-http-request (uri
 			&rest args
-			&key 
+			&key
 			(method  :get)
 			(protocol  :http/1.1)
 			(accept "*/*")
@@ -195,11 +195,11 @@
 			user-agent
 			ssl
 			)
-  
+
   ;; send an http request and return the result as four values:
-  ;; the body, the response code, the headers and the uri 
-  (let ((creq (make-http-client-request 
-	       uri  
+  ;; the body, the response code, the headers and the uri
+  (let ((creq (make-http-client-request
+	       uri
 	       :method method
 	       :protocol protocol
 	       :accept  accept
@@ -216,15 +216,15 @@
 	       )))
 
     (unwind-protect
-	(progn 
-	  
+	(progn
+
 	  (loop
 	    (read-client-response-headers creq)
 	    ; if it's a continue, then start the read again
 	    (if* (not (eql 100 (client-request-response-code creq)))
 	       then (return)))
-	  
-	  (let* ((atype (if* (eq format :text) 
+
+	  (let* ((atype (if* (eq format :text)
 			   then 'character
 			   else '(unsigned-byte 8)))
 		 ans
@@ -233,12 +233,12 @@
 		 (end nil)
 		 body)
 	    (loop
-	
+
 	      (if* (null ans)
 		 then (setq ans (make-array 1024 :element-type atype)
 			    start 0))
-		
-	
+
+
 	      (setq end (client-request-read-sequence ans creq :start start))
 	      (if* (zerop end)
 		 then ; eof
@@ -248,11 +248,11 @@
 		      (push ans res)
 		      (setq ans nil)
 		 else (setq start end)))
-      
-	    ; we're out with res containing full arrays and 
+
+	    ; we're out with res containing full arrays and
 	    ; ans either nil or holding partial data up to but not including
 	    ; index start
-      
+
 	    (if* res
 	       then ; multiple items
 		    (let* ((total-size (+ (* 1024 (length res)) start))
@@ -261,10 +261,10 @@
 			(dolist (arr (reverse res))
 			  (replace bigarr arr :start1 sstart)
 			  (incf sstart (length arr)))
-			(if* ans 
-			   then ; final one 
+			(if* ans
+			   then ; final one
 				(replace bigarr ans :start1 sstart)))
-		
+
 		      (setq body bigarr)
 		      )
 	       else ; only one item
@@ -274,12 +274,12 @@
 		       else (setq body (subseq ans 0 start))))
 
 	    (let (new-location)
-	      
+
 	      (if* (and (member (client-request-response-code creq)
 				'( #.(net.aserve::response-number *response-found*)
-				  #.(net.aserve::response-number 
+				  #.(net.aserve::response-number
 				     *response-moved-permanently*)
-				  #.(net.aserve::response-number 
+				  #.(net.aserve::response-number
 				     *response-see-other*))
 				:test #'eq)
 			(member method '(:get :head) :test #'eq)
@@ -290,7 +290,7 @@
 			  (cdr (assoc "location" (client-request-headers creq)
 				      :test #'equal))))
 		 then ; must do a redirect to get to the real site
-		    
+
 		      (apply #'do-http-request
 			     (net.uri:merge-uris new-location uri)
 			     :redirect
@@ -299,37 +299,37 @@
 				else redirect)
 			     args)
 		 else ; return the values
-		      (values 
+		      (values
 		       body
 		       (client-request-response-code creq)
 		       (client-request-headers  creq)
 		       (client-request-uri creq)
 		       )))))
-      
+
       ; protected form:
       (client-request-close creq))))
 
 
-    
-		
-		
-		
-		
-		
-		
-		      
 
 
 
-(defun make-http-client-request (uri &key 
+
+
+
+
+
+
+
+
+(defun make-http-client-request (uri &key
 				     (method  :get)  ; :get, :post, ....
 				     (protocol  :http/1.1)
-				     keep-alive 
-				     (accept "*/*") 
+				     keep-alive
+				     (accept "*/*")
 				     cookies  ; nil or a cookie-jar
 				     basic-authorization
 				     content
-				     content-length 
+				     content-length
 				     content-type
 				     query
 				     headers
@@ -337,22 +337,22 @@
 				     user-agent
 					 ssl
 				     )
-  
+
 
   (let (host sock port fresh-uri)
-    ;; start a request 
-  
+    ;; start a request
+
     ; parse the uri we're accessing
     (if* (not (typep uri 'net.uri:uri))
        then (setq uri (net.uri:parse-uri uri)
 		  fresh-uri t))
-    
+
     ; make sure it's an http uri
     (case (or (net.uri:uri-scheme uri) :http)
       (:http nil)
       (:https (setq ssl t))
       (t (error "Can only do client access of http or https uri's, not ~s" uri)))
-  
+
     ; make sure that there's a host
     (if* (null (setq host (net.uri:uri-host uri)))
        then (error "need a host in the client request: ~s" uri))
@@ -360,10 +360,10 @@
     ; default the port to 80
 	(setq port (or (net.uri:uri-port uri)
 				(if ssl 443 80)))
-    
+
     (if* proxy
        then ; sent request through a proxy server
-	    (assert (stringp proxy) (proxy) 
+	    (assert (stringp proxy) (proxy)
 	      "proxy value ~s should be a string" proxy)
 	    (let ((parts (net.aserve::split-on-character proxy #\:))
 		  (pport 80)
@@ -376,16 +376,16 @@
 			"proxy port ~s should be an integer"
 			pport))
 	      (setq phost (car parts))
-	      
+
 	      (setq sock (socket:make-socket :remote-host phost
 					     :remote-port pport
 					     :format :bivalent)))
-       else (setq sock 
+       else (setq sock
 	      (socket:make-socket :remote-host host
 				  :remote-port port
 				  :format :bivalent
 					:ssl ssl)))
-    
+
     (if* query
        then (case method
 	      ((:get :put)  ; add info the uri
@@ -400,8 +400,8 @@
 			      query content))
 	       (setq content (query-to-form-urlencoded query)
 		     content-type "application/x-www-form-urlencoded"))))
-		 
-    
+
+
     (net.aserve::format-dif :xmit sock "~a ~a ~a~a"
 			    (string-upcase (string method))
 			    (if* proxy
@@ -415,7 +415,7 @@
     (if* (not (eql 80 port))
        then (net.aserve::format-dif :xmit sock "Host: ~a:~a~a" host port crlf)
        else (net.aserve::format-dif :xmit  sock "Host: ~a~a" host crlf))
-    
+
     ; now the headers
     (if* keep-alive
        then (net.aserve::format-dif :xmit
@@ -424,21 +424,21 @@
     (if* accept
        then (net.aserve::format-dif :xmit
 				    sock "Accept: ~a~a" accept crlf))
-    
+
     (if* content
        then (typecase content
 	      ((array character (*)) nil)
 	      ((array (unsigned-byte 8) (*)) nil)
 	      (t (error "Illegal content array: ~s" content)))
-	    
+
 	    (setq content-length (length content)))
-    
+
     (if* content-length
        then (net.aserve::format-dif :xmit
 				    sock "Content-Length: ~s~a" content-length crlf))
-    
-	    
-    (if* cookies 
+
+
+    (if* cookies
        then (let ((str (compute-cookie-string uri
 					      cookies)))
 	      (if* str
@@ -448,11 +448,11 @@
     (if* basic-authorization
        then (net.aserve::format-dif :xmit sock "Authorization: Basic ~a~a"
 				    (base64-encode
-				     (format nil "~a:~a" 
+				     (format nil "~a:~a"
 					     (car basic-authorization)
 					     (cdr basic-authorization)))
 				    crlf))
-    
+
     (if* user-agent
        then (if* (stringp user-agent)
 	       thenret
@@ -472,22 +472,22 @@
 				    crlf))
     (if* headers
        then (dolist (header headers)
-	      (net.aserve::format-dif :xmit sock "~a: ~a~a" 
+	      (net.aserve::format-dif :xmit sock "~a: ~a~a"
 				      (car header) (cdr header) crlf)))
-    
+
 
     (write-string crlf sock)  ; final crlf
-    
+
     ; send out the content if there is any.
     ; this has to be done differently so that if it looks like we're
     ; going to block doing the write we start another process do the
-    ; the write.  
+    ; the write.
     (if* content
        then (write-sequence content sock))
-    
-    
+
+
     (force-output sock)
-    
+
     (make-instance 'client-request
       :uri uri
       :socket sock
@@ -504,10 +504,10 @@
     (setf (net.uri:uri-port nuri) nil)
     (if* (null (net.uri:uri-path nuri))
        then (setf (net.uri:uri-path nuri) "/"))
-    
+
     (net.uri:render-uri nuri nil)))
-    
-    
+
+
 (defmethod read-client-response-headers ((creq client-request))
   ;; read the response and the headers
   (let ((buff (get-header-line-buffer))
@@ -544,32 +544,32 @@
 	   elseif (equalp protocol "HTTP/1.1")
 	     then (setq protocol :http/1.1)
 	     else (error "unknown protocol: ~s" protocol))
-      
+
 	  (setf (client-request-protocol creq) protocol)
-      
-	  (setf (client-request-response-code creq) 
+
+	  (setf (client-request-response-code creq)
 	    (quick-convert-to-integer response))
-      
+
 	  (setf (client-request-response-comment creq) comment)
-      
-     
+
+
 	  ; now read the header lines
 	  (loop
 	    (if* saveheader
 	       then ; buff2 has the saved header we should work on next
-		    (psetf buff buff2  
+		    (psetf buff buff2
 			   buff2 buff)
 		    (setq len len2
 			  saveheader nil)
 	     elseif (null (setq len (read-socket-line sock buff (length buff))))
 	       then ; eof before header lines
 		    (error "premature eof in headers"))
-	    
-	    
+
+
 	    (if* (eql len 0)
 	       then ; last header line
 		    (return))
-	  
+
 	    ; got header line. Must get next one to see if it's a continuation
 	    (if* (null (setq len2 (read-socket-line sock buff2 (length buff2))))
 	       then ; eof before crlf ending the headers
@@ -592,28 +592,28 @@
 		      )
 	       else ; must be a new header line
 		    (setq saveheader t))
-	  
+
 	    ; parse header
 	    (let ((pos 0)
 		  (headername)
 		  (headervalue))
 	      (macrolet ((fail ()
 			   `(let ((i 0))
-			      (error "header line missing a colon:  ~s" 
+			      (error "header line missing a colon:  ~s"
 				     (collect-to-eol buff i len)))))
 		(setq headername (collect-to #\: buff pos len :downcase)))
-	  
+
 	      (incf pos) ; past colon
 	      (macrolet ((fail ()
 			   `(progn (setq headervalue "")
 				   (return))))
 		(skip-to-not #\space buff pos len)
 		(setq headervalue (collect-to-eol buff pos len)))
-	  
+
 	      (push (cons headername headervalue) headers)))
-      
+
 	  (setf (client-request-headers creq) headers)
-	  
+
 	  ;; do cookie processing
 	  (let ((jar (client-request-cookies creq)))
 	    (if* jar
@@ -624,12 +624,12 @@
 			       (client-request-uri creq)
 			       jar
 			       (cdr headval))))))
-	  
-	  
+
+
 	  (if* (eq :head (client-request-method creq))
 	     then  ; no data is returned for a head request
 		  (setf (client-request-bytes-left creq) 0)
-	   elseif (equalp "chunked" (client-response-header-value 
+	   elseif (equalp "chunked" (client-response-header-value
 				  creq "transfer-encoding"))
 	     then ; data will come back in chunked style
 		  (setf (client-request-bytes-left creq) :chunked)
@@ -638,7 +638,7 @@
 	   elseif (setq val (client-response-header-value
 			     creq "content-length"))
 	     then ; we know how many bytes are left
-		  (setf (client-request-bytes-left creq) 
+		  (setf (client-request-bytes-left creq)
 		    (quick-convert-to-integer val))
 	   elseif (not (equalp "keep-alive"
 			       (client-response-header-value
@@ -647,13 +647,13 @@
 		  (setf (client-request-bytes-left creq) :unknown)
 	     else ; no data in the response
 		  nil)
-	  
-		  
-	  
+
+
+
 	  creq  ; return the client request object
 	  )
       (progn (put-header-line-buffer buff2 buff)))))
-		  
+
 
 
 (defmethod client-request-read-sequence (buffer
@@ -673,14 +673,14 @@
 	    (if* (zerop bytes-left)
 	       then 0  ; eof
 	       else (let ((ans (read-sequence buffer socket :start start
-					      :end (+ start 
-						      (min (- end start) 
+					      :end (+ start
+						      (min (- end start)
 							   bytes-left)))))
 		      (if* (eq ans start)
 			 then 0  ; eof
 			 else (net.aserve::if-debug-action :xmit
-					       (write-sequence 
-						buffer 
+					       (write-sequence
+						buffer
 						net.aserve::*debug-stream*
 						:start start
 						:end
@@ -692,7 +692,7 @@
 		(eq bytes-left :unknown))
        then (handler-case (do ((i start (1+ i))
 			       (stringp (stringp buffer))
-			       (debug-on (member :xmit 
+			       (debug-on (member :xmit
 						 net.aserve::*debug-current*
 						 :test #'eq)))
 			      ((>= i end) (setq last end))
@@ -704,7 +704,7 @@
 				 then (return)
 				 else (if* debug-on
 					 then (write-char
-					       (if* (characterp ch) 
+					       (if* (characterp ch)
 						  then ch
 						  else (code-char ch))
 					       net.aserve::*debug-stream*))
@@ -717,14 +717,14 @@
 		nil))
 	    ; we return zero on eof, regarless of the value of start
 	    ; I think that this is ok, the spec isn't completely clear
-	    (if* (eql last start) 
-	       then 0 
+	    (if* (eql last start)
+	       then 0
 	       else last)
      elseif (eq bytes-left :eof)
        then 0
        else (error "socket not setup for read correctly")
 	    )))
-  
+
 
 (defmethod client-request-close ((creq client-request))
   (close (client-request-socket creq)))
@@ -751,8 +751,8 @@
        then (net.aserve::parse-header-value val)
        else val)))
 
-    
-  
+
+
 
 
 (defun read-socket-line (socket buffer max)
@@ -782,10 +782,10 @@
 	   then ; ignore characters beyone line end
 		(setf (schar buffer i) ch)
 		(incf i))))))
-		
-		
-    
-      
+
+
+
+
 ;; buffer pool for string buffers of the right size for a header
 ;; line
 
@@ -794,7 +794,7 @@
 (defun get-header-line-buffer ()
   ;; return the next header line buffer
   (let (buff)
-    (mp:without-scheduling 
+    (mp:without-scheduling
       (setq buff (pop *response-header-buffers*)))
     (if* buff
        thenret
@@ -808,7 +808,7 @@
 
 
 
-    
+
 
 ;;;;; cookies
 
@@ -816,12 +816,12 @@
   ;; holds all the cookies we've received
   ;; items is a alist where each item has the following form:
   ;; (hostname cookie-item ...)
-  ;; 
+  ;;
   ;; where hostname is a string that must be the suffix
   ;;	of the requesting host to match
   ;; path is a string that must be the prefix of the requesting host
   ;;	to match
-  ;;  
+  ;;
   ;;
   ((items :initform nil
 	  :accessor cookie-jar-items)))
@@ -829,7 +829,7 @@
 ;* for a given hostname, there will be only one cookie with
 ; a given (path,name) pair
 ;
-(defstruct cookie-item 
+(defstruct cookie-item
   path      ; a string that must be the prefix of the requesting host to match
   name	    ; the name of this cookie
   value	    ; the value of this cookie
@@ -840,9 +840,9 @@
 
 (defmethod save-cookie (uri (jar cookie-jar) cookie)
   ;; we've made a request to the given host and gotten back
-  ;; a set-cookie header with cookie as the value 
+  ;; a set-cookie header with cookie as the value
   ;; jar is the cookie jar into which we want to store the cookie
-  
+
   (let* ((pval (car (net.aserve::parse-header-value cookie t)))
 	 namevalue
 	 others
@@ -857,33 +857,33 @@
        then (setq namevalue pval)
        else ; nothing here
 	    (return-from save-cookie nil))
-    
+
     ;; namevalue has the form name=value
     (setq namevalue (net.aserve::split-on-character namevalue #\=
 						    :count 1))
-    
+
     ;; compute path
     (setq path (cdr (net.aserve::assoc-paramval "path" others)))
     (if* (null path)
        then (setq path (or (net.uri:uri-path uri) "/"))
        else ; make sure it's a prefix
-	    (if* (not (net.aserve::match-head-p 
+	    (if* (not (net.aserve::match-head-p
 		       path (or (net.uri:uri-path uri) "/")))
 	       then ; not a prefix, don't save
 		    (return-from save-cookie nil)))
-    
+
     ;; compute domain
     (setq domain (cdr (net.aserve::assoc-paramval "domain" others)))
-    
+
     (if* domain
        then ; one is given, test to see if it's a substring
 	    ; of the host we used
-	    (if* (null (net.aserve::match-tail-p domain 
+	    (if* (null (net.aserve::match-tail-p domain
 						 (net.uri:uri-host uri)))
 	       then (return-from save-cookie nil))
        else (setq domain (net.uri:uri-host uri)))
-    
-    
+
+
     (let ((item (make-cookie-item
 		 :path path
 		 :name  (car namevalue)
@@ -909,7 +909,7 @@
 		     then ; replace this one
 			  (setf (car xx) item)
 			  (return-from save-cookie nil)))
-		
+
 		; no match, must insert based on the path length
 		(do* ((prev nil xx)
 		      (xx (cdr domain-vals) (cdr xx))
@@ -924,15 +924,15 @@
 			  (if* prev
 			     then (setf (cdr prev)
 				    (cons item xx))
-				  
+
 			     else ; at the beginning
 				  (setf (cdr domain-vals)
 				    (cons item (cdr domain-vals))))
 			  (return-from save-cookie nil))))))))
-		  
-      
 
-(defparameter semicrlf 
+
+
+(defparameter semicrlf
     ;; useful for separating cookies, one per line
     (make-array 4 :element-type 'character
 		:initial-contents '(#\; #\return
@@ -945,7 +945,7 @@
 	(path (or (net.uri:uri-path uri) "/"))
 	res
 	rres)
-    
+
     (dolist (hostval (cookie-jar-items jar))
       (if* (net.aserve::match-tail-p (car hostval)
 				     host)
@@ -955,7 +955,7 @@
 					       path)
 		   then ; this one matches
 			(push item res)))))
-    
+
     (if* res
        then ; have some cookies to return
 	    (dolist (item res)
@@ -963,49 +963,6 @@
 	      (push "=" rres)
 	      (push (cookie-item-name item) rres)
 	      (push semicrlf rres))
-	    
+
 	    (pop rres) ; remove first semicrlf
 	    (apply #'concatenate 'string  rres))))
-
-			   
-			   
-   
-    
-    
-  
-
-
-
-
-
-    
-  
-	    
-  
-		 
-
-
-
-
-		      
-			
-					   
-  
-			
-		      
-  
-
-
-		
-		
-
-	    
-    
-	      
-    
-    
-    
-      
-    
-  
-  

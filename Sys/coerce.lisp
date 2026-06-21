@@ -81,13 +81,13 @@
 ;;; partial implementation for now
 (defun coerce (object result-type)
 	(setf result-type (typeexpand-all result-type))
-	(cond 
+	(cond
 		((typep object result-type) object)
-		((eq result-type 'T) object) 
+		((eq result-type 'T) object)
 		((or (eq result-type 'STRING)(eq result-type 'SIMPLE-STRING)
 			 (eq result-type 'BASE-STRING)(eq result-type 'SIMPLE-BASE-STRING))
          (if (sequencep object)
-             (concatenate 'string object)   
+             (concatenate 'string object)
 		     (if (symbolp object)
 			     (symbol-name object)
 	 		     (concatenate 'string object))))
@@ -101,7 +101,7 @@
 	     (concatenate 'vector object))
 		((eq result-type 'CHARACTER)
 			(let ((string (string object)))
-				(if (= (length string) 1) 
+				(if (= (length string) 1)
 					(char string 0)
 					(error "Cannot coerce ~S to a character" object))))
 		((eq result-type 'SINGLE-FLOAT)
@@ -133,13 +133,12 @@
 				(case type
 					(base-string (coerce-to-base-string object result-type))
 					(bit-vector (coerce-to-bit-vector object result-type))
-					(simple-base-string (coerce-to-simple-base-string object result-type))			
-					(simple-bit-vector (coerce-to-simple-bit-vector object result-type))			
-					(simple-string (coerce-to-simple-string object result-type))			
-					(simple-vector (coerce-to-simple-vector object result-type))			
-					(string (coerce-to-string object result-type))			
+					(simple-base-string (coerce-to-simple-base-string object result-type))
+					(simple-bit-vector (coerce-to-simple-bit-vector object result-type))
+					(simple-string (coerce-to-simple-string object result-type))
+					(simple-vector (coerce-to-simple-vector object result-type))
+					(string (coerce-to-string object result-type))
 					(vector (coerce-to-vector object result-type))
-					(otherwise (error "Cannot coerce ~S to type ~A" object  result-type)))))			
-		(t (error "Not implemented: cannot coerce ~S to type ~A" 
+					(otherwise (error "Cannot coerce ~S to type ~A" object  result-type)))))
+		(t (error "Not implemented: cannot coerce ~S to type ~A"
 			object result-type))))
-

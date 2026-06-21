@@ -25,7 +25,7 @@ Some documentation errors were corrected.
 Reini Urban's Autocad support (thanks, Reini!)
 
 The console application has been rewritten as a normal console
-app, supporting i/o redirection and any other native console 
+app, supporting i/o redirection and any other native console
 app features. The source code is much smaller and simpler.
 
 Both the clboot application and the clconsole application are
@@ -38,10 +38,6 @@ with release DLLs as opposed to debug DLLs.
 The code for each of these apps has been modified to always
 look for a copy of CormanLispServer.dll in the same directory
 as the running .exe file. Only if not found there will it use
-the registered COM server version. This should make it 
+the registered COM server version. This should make it
 easier to support having more than one version of Corman Lisp
 apps running on a system.
-
-
-
-

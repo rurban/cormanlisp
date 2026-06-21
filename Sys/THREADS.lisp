@@ -9,36 +9,36 @@
 ;;;;
 
 (in-package :threads)
-(import '(cl::with-synchronization 
-        cl::allocate-critical-section 
-        cl::enter-critical-section 
+(import '(cl::with-synchronization
+        cl::allocate-critical-section
+        cl::enter-critical-section
         cl::leave-critical-section
         cl::deallocate-critical-section))
 (export '(
-        thread-handle 
-        suspend-thread 
-        resume-thread 
+        thread-handle
+        suspend-thread
+        resume-thread
         terminate-thread
 		critical-section
-        cs  
-        initialize 
-        enter 
-        leave 
-        destroy 
+        cs
+        initialize
+        enter
+        leave
+        destroy
         cl::with-synchronization
-        cl::allocate-critical-section 
+        cl::allocate-critical-section
         cl::enter-critical-section
         cl::leave-critical-section
         cl::deallocate-critical-section))
 
 (define-condition exit-thread (condition)
 	((return-value :initarg :return-value :accessor return-value :initform nil))
-	(:report 
+	(:report
 		(lambda (condition stream)
-			(format stream "Thread ~D is exiting with return value ~S." 
+			(format stream "Thread ~D is exiting with return value ~S."
 				ccl:*current-thread-id*
 				(return-value condition)))))
-	
+
 ;;;
 ;;;	Corman Lisp CREATE-THREAD function.
 ;;; There are three ways the thread may be exited:
@@ -54,45 +54,45 @@
 				  (cl::*top-level* func)
 				  (cl::*handler-registry* nil)
 				  (cl::*restart-registry* nil))
-				(declare (special cl::*top-level* 
+				(declare (special cl::*top-level*
 						cl::*handler-registry* cl::*restart-registry*))
 				(unwind-protect
 					(restart-case
 						(block call-thread-func
-							(handler-bind 
-								((win:stack-overflow 
-									(lambda (condition) 
+							(handler-bind
+								((win:stack-overflow
+									(lambda (condition)
 										(format *error-output* "~A~%" condition)
 										(force-output *error-output*)
 										(setf stack-overflow t)
 										(return-from call-thread-func condition)))
-								 (error 
+								 (error
 									(lambda (condition)
 										(if cl::*enable-error-trace*
 											(let ((cl::*enable-error-trace* nil))
 												(setf cl::*error-trace* (cl::stack-trace))))
-										(format *error-output* "~%Error in thread ~D: ~A~%" 
+										(format *error-output* "~%Error in thread ~D: ~A~%"
 												ccl:*current-thread-id* condition)
 										(format *error-output* "Aborting the thread.~%")
 										(force-output *error-output*)
 										(return-from call-thread-func condition)))
-								 (th:exit-thread 
+								 (th:exit-thread
 									(lambda (condition)
-										(setf result (multiple-value-list (return-value condition))) 
+										(setf result (multiple-value-list (return-value condition)))
 										(return-from call-thread-func))))
 								(setf result (multiple-value-list (funcall func)))))
-						(abort () :report 
+						(abort () :report
 								(lambda (stream)
-									(format stream "Abort this thread (~D)." ccl:*current-thread-id*)) 
+									(format stream "Abort this thread (~D)." ccl:*current-thread-id*))
 							(format *error-output* "Aborting thread ~D.~%" ccl:*current-thread-id*)
 							(force-output *error-output*)
 							(return-from create-thread))))
 					(when report-when-finished
-						(format *error-output* 
-							"Thread ~A has terminated and returned value(s) ~S~%" 
+						(format *error-output*
+							"Thread ~A has terminated and returned value(s) ~S~%"
 							ccl:*current-thread-id* result)
 						(force-output *error-output*))))))
-	
+
 ;;;
 ;;;	Corman Lisp EXIT-THREAD function.
 ;;;
@@ -112,7 +112,7 @@
 
 #|
 #! (:export t :library "KERNEL32" :ignore "APIENTRY" :pascal "WINAPI")
-DWORD WINAPI ResumeThread(HANDLE);		
+DWORD WINAPI ResumeThread(HANDLE);
 DWORD WINAPI SuspendThread(HANDLE);
 BOOL  WINAPI TerminateThread(HANDLE,DWORD);
 VOID  WINAPI InitializeCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
@@ -140,7 +140,7 @@ VOID  WINAPI DeleteCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
 ;;;
 ;;;	Critical section class
 ;;;
-(defclass critical-section () 
+(defclass critical-section ()
 	((cs :accessor cs :initform (cl::allocate-critical-section))))
 
 (defmethod enter ((sec critical-section))
@@ -157,7 +157,7 @@ VOID  WINAPI DeleteCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
 	(let ((handle (win:OpenThread win:THREAD_ALL_ACCESS nil thread-id)))
 		(unless (ct:cpointer-null handle)
 			handle)))
-	
+
 ;;;
 ;;;	Corman Lisp SHOW-THREADS function
 ;;;
@@ -166,28 +166,28 @@ VOID  WINAPI DeleteCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
 		(dolist (id thread-ids)
 			;; not done
 			)))
-|#	
+|#
 
 (provide "THREADS")
 
 #|
 ;; test stuff
 (defun doit ()
-	(format t "~D: ~D~%" 
-		*current-thread-id* 
+	(format t "~D: ~D~%"
+		*current-thread-id*
 		(get-internal-run-time))
 	(force-output)
 	(sleep 2))
 
-(th:create-thread 
-	#'(lambda () 
-		(loop 
+(th:create-thread
+	#'(lambda ()
+		(loop
 			(doit))))
 (require :threads)
 (setf c (make-instance 'th:critical-section))
-(dotimes (i 3) 
-	(th:create-thread 
-		#'(lambda () 
+(dotimes (i 3)
+	(th:create-thread
+		#'(lambda ()
 			(format t "Thread ~D is waiting on the critical section.~%" *current-thread-id*)
 			(force-output)
 			(th:enter c)

@@ -15,7 +15,7 @@
 ;; for example: "c:/hyperspec/"
 ;;
 ;(unless *hyperspec-local-path*
-;	(setf *hyperspec-local-path* 
+;	(setf *hyperspec-local-path*
 ;		(concatenate 'string "file://" pl:*cormanlisp-directory* "/HyperSpec/")))
 
 (defvar *hyperspec-version* 7)		;; we support either 4 or 6-7
@@ -43,24 +43,24 @@
                 (if (probe-file (merge-pathnames "HyperSpec/Front/Contents.htm"))
                     (merge-pathnames "HyperSpec/")
                     nil))))
-    
+
 	(let* ((doc-list (gethash sym cl::*documentation-registry*))
 		   (hyperspec-ref (getf doc-list ':hyperspec))
-		   (path (if *hyperspec-local-path* 
-					*hyperspec-local-path* 
+		   (path (if *hyperspec-local-path*
+					*hyperspec-local-path*
 					*hyperspec-internet-path*))
 	       (url (concatenate 'string
 				 (when *hyperspec-local-path* "file:///") ; intriguingly needed for some browsers (at least Chrome and Firefox).
-                                 (namestring path) 
-                                 "Body/" 
-                                 hyperspec-ref 
+                                 (namestring path)
+                                 "Body/"
+                                 hyperspec-ref
                                  (if (= *hyperspec-version* 4) ".html" ""))))
 		(if hyperspec-ref
 		    (if *use-external-browser* (win::shell-execute url "") (cl::display-url url))
 		    (error "The symbol ~A does not have a hyperspec location registered" sym))))
- 
- 
-(defvar hyperspec-refs 
+
+
+(defvar hyperspec-refs
 	(if (= *hyperspec-version* 4)
 		#(
 &ALLOW-OTHER-KEYS                          "sec_3-4-1"
@@ -2032,4 +2032,3 @@ ZEROP                                      "f_zerop.htm#zerop"
 
 (setq hyperspec-refs nil)
 (defparameter *hyperspec-loaded* t) ; defined in "misc-features.lisp"
-

@@ -8,7 +8,7 @@
 ;;;;				Programming Windows 95
 ;;;;
 ;;;;				It may be saved as an application:
-;;;;					
+;;;;
 ;;;;				example:
 ;;;;					(load "examples/sysmets3.lisp")
 ;;;;					(save-application "sysmets3" #'win::sysmets3)
@@ -21,8 +21,8 @@
 (defvar *tm* nil)
 
 (defvar cxChar 0)
-(defvar cxCaps 0) 
-(defvar cyChar 0) 
+(defvar cxCaps 0)
+(defvar cyChar 0)
 (defvar cxClient 0)
 (defvar cyClient 0)
 (defvar iMaxWidth 0)
@@ -91,23 +91,23 @@
 	(let ((hdc NULL)
 		  (buffer)
 		  x y
-		  (iHscrollInc 0) 
+		  (iHscrollInc 0)
 		  (iVscrollInc 0)
 		  iPaintBeg iPaintEnd)
-	
+
 		(cond
 			((= iMsg WM_CREATE)
 				(setf hdc (GetDC hwnd))
 				(GetTextMetrics hdc *tm*)
 				(setf cxChar (cref TEXTMETRIC *tm* tmAveCharWidth))
-				(setf cxCaps 
+				(setf cxCaps
 					(*
 						(if (evenp (cref TEXTMETRIC *tm* tmPitchAndFamily))
 							3
 							2)
 						(truncate cxChar 2)))
-			 	(setf cyChar 
-					(+ (cref TEXTMETRIC *tm* tmHeight) 
+			 	(setf cyChar
+					(+ (cref TEXTMETRIC *tm* tmHeight)
 				  	 (cref TEXTMETRIC *tm* tmExternalLeading)))
 				(ReleaseDC hwnd hdc)
 				(setq iMaxWidth (+ (* 40 cxChar)(* 22 cxCaps)))
@@ -130,7 +130,7 @@
             	(SetScrollRange hwnd SB_HORZ 0 iHscrollMax FALSE)
             	(SetScrollPos   hwnd SB_HORZ iHscrollPos TRUE)
 				(return-from WndProc-sysmets3 0))
-		
+
 			((= iMsg WM_VSCROLL)
 				(let ((scrollcmd (LOWORD wParam)))
 					(cond
@@ -170,13 +170,13 @@
 			((= iMsg WM_PAINT)
 				(setf hdc (BeginPaint hwnd *ps*))
 
-				(setf iPaintBeg 
-					(max 0 
-						(+ iVscrollPos 
+				(setf iPaintBeg
+					(max 0
+						(+ iVscrollPos
 							(- (truncate (cref RECT (cref PAINTSTRUCT *ps* rcPaint) top) cyChar) 1))))
-				(setf iPaintEnd 
+				(setf iPaintEnd
 					(min NUMLINES
-						(+ iVscrollPos 
+						(+ iVscrollPos
 							(truncate (cref RECT (cref PAINTSTRUCT *ps* rcPaint) bottom) cyChar))))
 
 				(do ((i iPaintBeg (+ i 1)))
@@ -184,27 +184,27 @@
 					(setf x (* cxChar (- 1 iHscrollPos)))
 					(setf y (* cyChar (+ (- 1 iVscrollPos) i)))
 
-					(TextOut 
-						hdc 
-						x 
-						y 
+					(TextOut
+						hdc
+						x
+						y
 						(info-label (elt *sysmetrics* i))
 						(ct:c-string-length (info-label (elt *sysmetrics* i))))
 
-					(TextOut 
-						hdc 
-						(+ x (* 22 cxCaps)) 
-						y 
+					(TextOut
+						hdc
+						(+ x (* 22 cxCaps))
+						y
 						(info-desc (elt *sysmetrics* i))
 						(ct:c-string-length  (info-desc (elt *sysmetrics* i))))
 
 					(SetTextAlign hdc (logior TA_RIGHT TA_TOP))
-					(setf buffer 
-						(format nil "~5D" 
+					(setf buffer
+						(format nil "~5D"
 							(GetSystemMetrics (info-index (elt *sysmetrics* i)))))
-					(TextOut 
-						hdc 
-						(+ x (* 22 cxCaps) (* cxChar 40)) 
+					(TextOut
+						hdc
+						(+ x (* 22 cxCaps) (* cxChar 40))
 						y
 						(create-c-string buffer)
 						(length buffer))
@@ -215,7 +215,7 @@
 			((= iMsg WM_DESTROY)
 				(PostQuitMessage 0)
 				(return-from WndProc-sysmets3 0))
-			
+
 			(t	(return-from WndProc-sysmets3 (DefWindowProc hwnd iMsg wParam lParam))))))
 
 
@@ -240,7 +240,7 @@
 		(setf (cref WNDCLASSEX wndclass lpszClassName) (ct:create-c-string szAppName))
 		(setf (cref WNDCLASSEX wndclass hIconSm) (LoadIcon NULL IDI_APPLICATION))
 		(RegisterClassEx wndclass)
-		(setq hwnd 
+		(setq hwnd
 			(CreateWindowEx 0
 				(ct:create-c-string szAppName)				;; window class name
 				(ct:create-c-string "Get System Metrics No. 3") ;; window caption
@@ -268,6 +268,6 @@
 (defun sysmets3 ()
 	(restart-case
 		(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart 'error))))
-			(WinMain-sysmets3 (cl::get-application-instance) 
+			(WinMain-sysmets3 (cl::get-application-instance)
 				null (ct:create-c-string "") SW_SHOW))
 		(error () (return-from sysmets3))))

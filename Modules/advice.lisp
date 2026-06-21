@@ -48,7 +48,7 @@
 
 (defun symbol-function-advised-p (symbol)
   (get symbol 'advice-original))
-  
+
 (defmacro advise (&rest whole)
   (if (null whole)
       ;; just want a list of functions
@@ -98,4 +98,3 @@
 	   1))))
 
 |#
-

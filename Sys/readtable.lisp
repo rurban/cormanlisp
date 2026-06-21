@@ -49,7 +49,7 @@
 ;;
 ;; Common Lisp COPY-READTABLE function
 ;;
-(defun copy-readtable (&optional (from-readtable *readtable*) 
+(defun copy-readtable (&optional (from-readtable *readtable*)
 	to-readtable)
 	(if (null from-readtable)
 		(setq from-readtable *common-lisp-readtable*))
@@ -57,7 +57,7 @@
 		(if (readtablep to-readtable)
 			(setq dest to-readtable)
 			(setq dest (alloc-uvector 4 uvector-readtable-tag)))
-		(setf (uref dest readtable-read-level-offset) 
+		(setf (uref dest readtable-read-level-offset)
 			(uref from-readtable readtable-read-level-offset))
 		(setf (uref dest readtable-backquote-processing-offset)
 			(uref from-readtable readtable-backquote-processing-offset))
@@ -66,11 +66,11 @@
 		(setf (uref dest readtable-table-offset)
 			(make-array '(512) :initial-contents (uref from-readtable readtable-table-offset)))
 		dest))
- 
+
 ;;
 ;; Common Lisp SET-SYNTAX-FROM-CHAR function
 ;;
-(defun set-syntax-from-char (to-char from-char 
+(defun set-syntax-from-char (to-char from-char
 	&optional (to-readtable *readtable*)
 		(from-readtable nil))
 	(if (null from-readtable)
@@ -86,19 +86,19 @@
 ;;
 ;; Common Lisp SET-MACRO-CHARACTER function
 ;;
-(defun set-macro-character (char function 
+(defun set-macro-character (char function
 	&optional (non-terminating-p nil) (readtable *readtable*))
 	(unless (readtablep readtable) (setq readtable *readtable*))
 	(unless (functionp function) (error "Non-function passed to SET-MACRO-CHARACTER"))
 	(let ((table (uref readtable readtable-table-offset))
 		  (index (* (char-int char) 2)))
-		(if non-terminating-p 
+		(if non-terminating-p
 			(setf (elt table index) 'NON-TERMINATING-MACRO-CHAR-TYPE)
 			(setf (elt table index) 'TERMINATING-MACRO-CHAR-TYPE))
 		(setf (elt table (+ index 1)) function)
 		t))
 
-	
+
 ;;
 ;; Common Lisp GET-MACRO-CHARACTER function
 ;;
@@ -115,54 +115,54 @@
 ;;
 ;; Common Lisp MAKE-DISPATCH-MACRO-CHARACTER function
 ;;
-(defun make-dispatch-macro-character (char 
+(defun make-dispatch-macro-character (char
 	&optional (non-terminating-p nil) (readtable *readtable*))
 	(unless (readtablep readtable) (setq readtable *readtable*))
 	(let* ((table (uref readtable readtable-table-offset))
 		   (index (* (char-int char) 2))
-		   (dispatch-table (make-array '(256) 
-			:initial-element 
-				#'(lambda (stream subchar arg) 
+		   (dispatch-table (make-array '(256)
+			:initial-element
+				#'(lambda (stream subchar arg)
 					(error "Invalid dispatch macro character")))))
 		(if non-terminating-p
 			(setf (elt table index) 'DISPATCHING-NON-TERMINATING-MACRO-CHAR-TYPE)
 			(setf (elt table index) 'DISPATCHING-TERMINATING-MACRO-CHAR-TYPE))
 		(setf (elt table (+ index 1)) dispatch-table)
 		t))
-	
+
 ;;
 ;; Common Lisp SET-DISPATCH-MACRO-CHARACTER function
 ;;
-(defun set-dispatch-macro-character (disp-char sub-char function 
+(defun set-dispatch-macro-character (disp-char sub-char function
 	&optional (readtable *readtable*))
 	(unless (readtablep readtable) (setq readtable *readtable*))
 	(unless (functionp function) (error "Non-function passed to SET-DISPATCH-MACRO-CHARACTER"))
 	(if (digit-char-p sub-char)
 		(error "Attempted to create a dispatching macro with a decimal digit"))
-	(setq sub-char (char-upcase sub-char)) 
+	(setq sub-char (char-upcase sub-char))
 	(let* ((table (uref readtable readtable-table-offset))
 		   (index (* (char-int disp-char) 2))
 		   (dispatch-table (elt table (+ index 1))))
 		(unless (vectorp dispatch-table)
 			(error "Not a dispatching macro"))
 		(setf (elt dispatch-table (char-int sub-char)) function)
-		t))  
+		t))
 
 ;;
 ;; Common Lisp GET-DISPATCH-MACRO-CHARACTER function
 ;;
-(defun get-dispatch-macro-character (disp-char sub-char 
+(defun get-dispatch-macro-character (disp-char sub-char
 	&optional (readtable *readtable*))
 	(unless (readtablep readtable) (setq readtable *common-lisp-readtable*))
 	(if (digit-char-p sub-char)
 		(return-from get-dispatch-macro-character nil))
-	(setq sub-char (char-upcase sub-char)) 
+	(setq sub-char (char-upcase sub-char))
 	(let* ((table (uref readtable readtable-table-offset))
 		   (index (* (char-int disp-char) 2))
 		   (dispatch-table (elt table (+ index 1))))
 		(elt dispatch-table (char-int sub-char))))
 
-(set-dispatch-macro-character #\# #\A 
+(set-dispatch-macro-character #\# #\A
 	#'(lambda (stream ch arg)
 		(if (null arg) (setq arg 1))
 		(let* ((dimensions nil)
@@ -172,7 +172,7 @@
 				(push (length f) dimensions)
 				(setq f (car f)))
 			(make-array (nreverse dimensions) :initial-contents initform))))
-			
+
 (set-dispatch-macro-character #\# #\(   ;)
 	#'(lambda (stream ch length)
 		(declare (ignore ch))
@@ -186,15 +186,15 @@
 						(if initform (setq e (pop initform))))
 					a)
 				(make-array (length initform) :initial-contents initform)))))
-				
-(set-dispatch-macro-character #\# #\C 
+
+(set-dispatch-macro-character #\# #\C
 	#'(lambda (stream ch arg)
         (declare (ignore ch arg))
 		(let* ((initform (read stream t nil t)))
             (unless *read-suppress*
                 (complex (car initform) (cadr initform))))))
 
-(set-dispatch-macro-character #\# #\X 
+(set-dispatch-macro-character #\# #\X
 	#'(lambda (stream ch arg)
 		(let* ((*read-base* 16)
 			   (n (read stream t nil t)))
@@ -235,7 +235,7 @@
 			(setq struct-constructor (get struct-name ':STRUCT-CONSTRUCTOR))
 			(unless struct-constructor
 				(error "Cannot find structure constructor for structure ~A" struct-name))
-			
+
 			(apply struct-constructor (cdr initform)))))
 
 (set-dispatch-macro-character #\# #\.
@@ -251,10 +251,10 @@
 		(let* ((n (read stream t nil t)))
 			(eval n))))
 
-(defvar *named-characters* 
-	(list 
-		:Space (int-char 32) 
-		:Tab (int-char 9) 
+(defvar *named-characters*
+	(list
+		:Space (int-char 32)
+		:Tab (int-char 9)
 		:Newline (int-char 10)
 		:Nul (int-char 0)))
 
@@ -266,7 +266,7 @@
 		((or (null i) (string= (symbol-name (car i))(symbol-name sym)))
 		 (cadr i))))
 
-(set-dispatch-macro-character #\# #\\ 
+(set-dispatch-macro-character #\# #\\
 	#'(lambda (stream ch arg)
 		(declare (ignore arg))
 		(unread-char ch stream)							; back up to backslash
@@ -289,10 +289,10 @@
 
 ;(setq *readtable* (copy-readtable *common-lisp-readtable*))
 
-(defun white-space-char (c) 
+(defun white-space-char (c)
 	(eq (readtable-char-type *readtable* c) 'whitespace-char-type))
 
-(defun constituent-char (c) 
+(defun constituent-char (c)
 	(eq (readtable-char-type *readtable* c) 'constituent-char-type))
 
 (defun read-char-skip-white-space (stream)
@@ -308,7 +308,7 @@
 	(declare (ignore recursive-p))
     (cond ((eq stream t) (setq stream *terminal-io*))
           ((eq stream nil) (setq stream *standard-input*))
-          ((not (streamp stream)) 
+          ((not (streamp stream))
            (error "Stream argument to READ-DELIMITED-LIST is not an input stream: ~S." stream)))
     (unless (input-character-stream-p stream)
         (error "Expected an input character stream, got ~A" stream))
@@ -333,11 +333,11 @@
                 (setq startpos (stream-position stream))
 				(setq item (multiple-value-list (read-expression stream t nil t)))
                 (if *read-hook*
-                    (funcall *read-hook* stream startpos 
+                    (funcall *read-hook* stream startpos
                         (stream-position stream) (car item) (if item nil t)))
 				(if item
 					(if (eq (car item) dot-marker)
-						(if found-dot 
+						(if found-dot
 							(error "The list contains two dots: ~A" (nreverse list))
 							(setq found-dot t))
 						(if found-dot
@@ -351,7 +351,7 @@
 (defconstant ascii-newline-char (int-char 10))
 (defconstant ascii-return-char  (int-char 13))
 
-(set-macro-character #\; 
+(set-macro-character #\;
 	#'(lambda (stream ch)
 		(declare (ignore ch))
 		(do ((c (%read-char stream) (%read-char stream)))
@@ -362,7 +362,7 @@
 			(if (null c)
 				(return)))
 		(values)))
-		
+
 ;
 ;	Set up the reader macro which allows for #+ and #- conditional reads
 ;
@@ -374,18 +374,18 @@
 		(return-from %features-member (member feature-list *features*)))
 	(if (consp feature-list)
 		(cond
-			((eq (car feature-list) :and) 
+			((eq (car feature-list) :and)
 			 (every #'%features-member (cdr feature-list)))
-			((eq (car feature-list) :or)  
-			 (some #'%features-member (cdr feature-list)))	
-			((eq (car feature-list) :not) 
+			((eq (car feature-list) :or)
+			 (some #'%features-member (cdr feature-list)))
+			((eq (car feature-list) :not)
 			 (notany #'%features-member (cdr feature-list)))
 			(t (error "~A is not a valid feature" feature-list)))
 		(error "~A is not a valid feature" feature-list)))
 
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* t)
 
-(set-dispatch-macro-character #\# #\+ 
+(set-dispatch-macro-character #\# #\+
 	#'(lambda (stream char int)
 		(declare (ignore char int))
 		(let ((feature nil))
@@ -399,7 +399,7 @@
     				  (read stream t nil t)
                     (values))))))
 
-(set-dispatch-macro-character #\# #\- 
+(set-dispatch-macro-character #\# #\-
 	#'(lambda (stream char int)
 		(declare (ignore char int))
 		(let ((feature nil))
@@ -413,7 +413,7 @@
     				  (read stream t nil t)
                     (values))))))
 
-(set-dispatch-macro-character #\# #\< 
+(set-dispatch-macro-character #\# #\<
 	#'(lambda (stream ch arg)
 		(do ((c (read-char stream t nil t)(read-char stream t nil t))
 			 (chars (list #\< #\#)))
@@ -421,7 +421,7 @@
 							(coerce (nreverse (push c chars)) 'string)))
 			(push c chars))))
 
-(set-dispatch-macro-character #\# #\* 
+(set-dispatch-macro-character #\# #\*
 	#'(lambda (stream char int)
 		(declare (ignore char))
 		(let ((bit-list nil))
@@ -441,12 +441,12 @@
 					(let ((last-bit (car bit-list)))
 						(dotimes (i (- int bits))
 							(push last-bit bit-list))))
-				 (make-array int 
-					:element-type 'bit 
+				 (make-array int
+					:element-type 'bit
 					:initial-contents (nreverse bit-list)))
-				(push (if (char= c #\0) 0 1) bit-list))))) 
+				(push (if (char= c #\0) 0 1) bit-list)))))
 
-(set-dispatch-macro-character #\# #\' 
+(set-dispatch-macro-character #\# #\'
 	#'(lambda (stream char int)
 		(let ((ret (read stream t nil t)))
 			`(function ,ret))))
@@ -454,13 +454,13 @@
 (defun set-read-eq-forms (int form)
 	(setf (getf *read-eq-forms* int) form))
 
-(set-dispatch-macro-character #\# #\= 
+(set-dispatch-macro-character #\# #\=
 	#'(lambda (stream char int)
 		(let ((ret (read stream t nil t)))
 			(set-read-eq-forms int ret)
 			ret)))
 
-(set-dispatch-macro-character #\# #\# 
+(set-dispatch-macro-character #\# #\#
 	#'(lambda (stream char int)
 		(make-eq-form-placeholder int)))
 
@@ -486,17 +486,15 @@
 
 ;; need to override warning here
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* nil)
-(set-dispatch-macro-character #\# #\P 
+(set-dispatch-macro-character #\# #\P
 	#'(lambda (stream char int)
 		(unless (char= (read-char stream) #\")
 			(error "Invalid pathname specification"))
 		(let ((char-list nil))
 			(do ((c (read-char stream) (read-char stream)))
 				((char= c #\")
-				 (values (parse-namestring (make-array (length char-list) 
-					:element-type 'character 
+				 (values (parse-namestring (make-array (length char-list)
+					:element-type 'character
 					:initial-contents (nreverse char-list)))))
-				(push c char-list))))) 
+				(push c char-list)))))
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* t)
-
-

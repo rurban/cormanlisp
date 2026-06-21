@@ -26,7 +26,7 @@
 (defun count-xml-text-hook (string seed)
   (incf (slot-value seed 'characters) (length string))
   seed)
-  
+
 (defun count-xml (in)
   "Parse a toplevel XML element from stream in, counting elements, attributes and characters"
   (start-parse-xml in
@@ -40,8 +40,8 @@
   (with-open-file (in pathname)
     (let ((result (count-xml in)))
       (with-slots (elements attributes characters) result
-        (format t 
-                "~a contains ~d XML elements, ~d attributes and ~d characters.~%" 
+        (format t
+                "~a contains ~d XML elements, ~d attributes and ~d characters.~%"
                 pathname elements attributes characters)))))
 
 ;;;; eof

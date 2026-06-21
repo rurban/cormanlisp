@@ -8,13 +8,13 @@
 ;;;;	History:	4/13/01  RGC  Created.
 ;;;;
 
-(defparameter *vocabulary* 
+(defparameter *vocabulary*
 	(copy-tree
 		'(
 			(boo)
-			(goo) 
-			(gah) 
-			(waa!) 
+			(goo)
+			(gah)
+			(waa!)
 			(hee-hee))))
 
 (defparameter *feedback-percent* 50)  ;; 50
@@ -36,7 +36,7 @@
 (let ((next-next-normal nil))
 	(defun normal-random ()
 		(if next-next-normal
-			(prog1 
+			(prog1
 				next-next-normal
 				(setf next-next-normal nil))
 			(let (v1 v2 (s 1d0))
@@ -60,7 +60,7 @@
 (defun scaled-normal-random (n)
 	(* n (/ (+ e (normal-random)) 2*e)))
 
-;;; 
+;;;
 ;;; Returns a positive integer in the range 0 <= n < max.
 ;;; The probability of any given integer in that range is
 ;;; based on the normal distribution curve i.e. the majority
@@ -75,7 +75,7 @@
 				n))))
 
 (defmacro do-percent ((percent) &rest clauses)
-	"Do this only some percentage of the time, as indicated 
+	"Do this only some percentage of the time, as indicated
 	by the integer percent"
 	`(when (< (random 100) ,percent)
 		,@clauses))
@@ -87,7 +87,7 @@
 (defun read-input-line ()
 	(let ((input-line (progn (clear-input)(read-line))))
 		(read-from-string
-			(concatenate 'string 
+			(concatenate 'string
 				"("
 				(substitute-if #\space #'punctuation-p input-line)
 				")"))))
@@ -103,8 +103,8 @@
 			(let ((result '()))
 				(dolist (x phrase)
 					(dolist (z
-						(mapcar 
-							(lambda (y) 
+						(mapcar
+							(lambda (y)
 								(cons x y))
 							(permute (remove x phrase :count 1))))
 						(push z result)))
@@ -123,7 +123,7 @@
 							(incf end))))
 				(subseq phrase start (+ 1 end)))
 			phrase)))
-									
+
 (defun generate-response ()
 	(let ((num-words (max 1 (normal-random-integer 7)))
 		  (response nil)
@@ -141,7 +141,7 @@
 (defun respond (input)
 	(update-vocabulary input)
 	(let ((response (generate-response)))
-		(do-percent (*feedback-percent*) 
+		(do-percent (*feedback-percent*)
 			(update-vocabulary response))
 		response))
 

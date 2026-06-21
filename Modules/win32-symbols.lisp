@@ -4322,25 +4322,25 @@ YieldTask user32
 (let* ((length (truncate (length *WIN32-SYMBOLS*) 2))
 	   (x (make-array length)))
 	(dotimes (i length)
-		(setf (aref x i) 
-			(make-win32-lib 
+		(setf (aref x i)
+			(make-win32-lib
 				:sym (aref *WIN32-SYMBOLS* (+ i i))
 				:lib (aref *WIN32-SYMBOLS* (+ i i 1)))))
 	;; now sort the array
-	(quicksort x #'string< :key #'win32-lib-sym) 
+	(quicksort x #'string< :key #'win32-lib-sym)
 	(setf *WIN32-SYMBOLS* x))
 
 (defun _bsearch (seq lookup comp-fn low high key)
 	(let* ((mid (truncate (+ low high) 2))
 		   (mid-elt (if key (funcall key (elt seq mid)) (elt seq mid)))
-		   (cmp (funcall comp-fn 
-						(if key (funcall key lookup) lookup) 
+		   (cmp (funcall comp-fn
+						(if key (funcall key lookup) lookup)
 						mid-elt)))
 		(cond ((= cmp 0) (elt seq mid))
 			  ((= low high) nil)
 			  ((< cmp 0) (_bsearch seq lookup comp-fn low (- mid 1) key))
 			  ((> cmp 0) (_bsearch seq lookup comp-fn (+ mid 1) high key)))))
-			 
+
 (defun bsearch (seq lookup comp-fn &key (key nil))
 	(_bsearch seq lookup comp-fn 0 (- (length seq) 1) key))
 
@@ -4356,7 +4356,7 @@ YieldTask user32
 				   (end-char (char str (- len 1))))
 				(if (or (char= end-char #\A)
 						(char= end-char #\W))
-					(setf result 
+					(setf result
 						(bsearch *WIN32-SYMBOLS*
 							(make-win32-lib :sym (subseq str 0 (- len 1)))
 							(lambda (a b) (cond ((string= a b) 0)((string< a b) -1) (t 1)))

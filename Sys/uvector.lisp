@@ -77,31 +77,31 @@
 (defconstant foreign-stack-ptr-offset			1)
 (defconstant foreign-stack-ptr-size				2)
 
-(defun symbol-name (sym) 
+(defun symbol-name (sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
-	(uref sym symbol-name-offset)) 
-(defun set-symbol-name (val sym) 
+	(uref sym symbol-name-offset))
+(defun set-symbol-name (val sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
-	(uref-set val sym symbol-name-offset)) 
-(defun set-symbol-value (val sym) 
+	(uref-set val sym symbol-name-offset))
+(defun set-symbol-value (val sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
-	(rplaca (uref sym symbol-value-offset) val) val) 
-(defun symbol-package (sym) 
+	(rplaca (uref sym symbol-value-offset) val) val)
+(defun symbol-package (sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
-	(uref sym symbol-package-offset)) 
-(defun set-symbol-package (val sym) 
+	(uref sym symbol-package-offset))
+(defun set-symbol-package (val sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
-	(uref-set val sym symbol-package-offset)) 
-(defun symbol-plist (sym) 
+	(uref-set val sym symbol-package-offset))
+(defun symbol-plist (sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
-	(uref sym symbol-plist-offset)) 
-(defun set-symbol-plist (val sym) 
+	(uref sym symbol-plist-offset))
+(defun set-symbol-plist (val sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
-	(uref-set val sym symbol-plist-offset)) 
-(defun symbol-constant-p (sym) 
+	(uref-set val sym symbol-plist-offset))
+(defun symbol-constant-p (sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
 	(/= 0 (logand (uref sym symbol-constant-offset) symbol-constant-flag)))
-(defun symbol-special-p (sym) 
+(defun symbol-special-p (sym)
 	(unless (symbolp sym) (signal-type-error sym 'symbol))
 	(/= 0 (logand (uref sym symbol-constant-offset) symbol-special-flag)))
 
@@ -110,7 +110,7 @@
 		 ((null plist) default)
 		 (if (eq (car plist) attr)
 			(return (cadr plist)))))
-		
+
 (defconstant package-name-offset				1)
 (defconstant package-nicknames-offset			2)
 (defconstant package-use-list-offset			3)
@@ -121,20 +121,20 @@
 (defconstant package-table-offset				8)
 (defconstant package-sync-offset				9)
 
-(defun package-name (p) (uref p package-name-offset)) 
-(defun package-nicknames (p) (uref p package-nicknames-offset)) 
-(defun package-use-list (p) (uref p package-use-list-offset)) 
-(defun package-used-by-list (p) (uref p package-used-by-list-offset)) 
-(defun package-shadowing-symbols (p) (uref p package-shadowing-symbols-offset)) 
-(defun package-capacity (p) (uref p package-capacity-offset)) 
-(defun package-count (p) (uref p package-count-offset)) 
-(defun package-table (p) (uref p package-table-offset)) 
-(defun set-package-table (table p) (uref-set table p package-table-offset)) 
+(defun package-name (p) (uref p package-name-offset))
+(defun package-nicknames (p) (uref p package-nicknames-offset))
+(defun package-use-list (p) (uref p package-use-list-offset))
+(defun package-used-by-list (p) (uref p package-used-by-list-offset))
+(defun package-shadowing-symbols (p) (uref p package-shadowing-symbols-offset))
+(defun package-capacity (p) (uref p package-capacity-offset))
+(defun package-count (p) (uref p package-count-offset))
+(defun package-table (p) (uref p package-table-offset))
+(defun set-package-table (table p) (uref-set table p package-table-offset))
 
-(defun set-package-count (count p) (uref-set count p package-count-offset)) 
-(defun set-package-capacity (capacity p) (uref-set capacity p package-capacity-offset)) 
-(defun package-sync (p) (uref p package-sync-offset)) 
-(defun set-package-sync (sync-obj p) (uref-set sync-obj p package-sync-offset)) 
+(defun set-package-count (count p) (uref-set count p package-count-offset))
+(defun set-package-capacity (capacity p) (uref-set capacity p package-capacity-offset))
+(defun package-sync (p) (uref p package-sync-offset))
+(defun set-package-sync (sync-obj p) (uref-set sync-obj p package-sync-offset))
 
 (defconstant stream-name-offset 				1)
 (defconstant stream-underflow-func-offset 		2)
@@ -201,8 +201,8 @@
 (defun stream-column (stream)
 	(unless (streamp stream) (signal-type-error stream 'stream))
 	(uref stream stream-col-position-offset))
-	 
-;;;; returns the number of cells in an array	
+
+;;;; returns the number of cells in an array
 (defun array-num-cells (array)
 	(let ((dims (array-rank array))
 		  (num 1))
@@ -215,7 +215,7 @@
 	(if (null chars)
 		t
 		(let ((c (car chars)))
-			(dolist (ch (cdr chars)) 
+			(dolist (ch (cdr chars))
 				(if (not (eq c ch))
 					(return-from char= nil)))
 			t)))
@@ -241,14 +241,14 @@
 ;;;;
 ;;;;	Common Lisp NUMERATOR function.
 ;;;;
-(defun numerator (x) 
+(defun numerator (x)
 	(unless (rationalp x) (signal-type-error x 'rational))
 	(if (ratiop x) (uref x ratio-numerator-offset) x))
 
 ;;;;
 ;;;;	Common Lisp DENOMINATOR function.
 ;;;;
-(defun denominator (x) 
+(defun denominator (x)
 	(unless (rationalp x) (signal-type-error x 'rational))
 	(if (ratiop x) (uref x ratio-denominator-offset) 1))
 
@@ -260,47 +260,47 @@
 ;;;;	Common Lisp REALPART function.
 ;;;;
 (defun realpart (x)
-	(unless (numberp x) (signal-type-error x 'number)) 
+	(unless (numberp x) (signal-type-error x 'number))
 	(if (complexp x) (uref x complex-real-offset) x))
 
 ;;;;
 ;;;;	Common Lisp IMAGPART function.
 ;;;;
-(defun imagpart (x) 
+(defun imagpart (x)
 	(unless (numberp x) (signal-type-error x 'number))
 	(if (complexp x) (uref x complex-imaginary-offset) (* 0 x)))
 
 ;;;
 ;;;	Corman Lisp FUNCTION-REFERENCES function.
 ;;;
-(defun function-references (func) 
-	(uref (uref func function-code-buffer-offset) 
+(defun function-references (func)
+	(uref (uref func function-code-buffer-offset)
 		compiled-code-references-offset))
 
-(defun simple-vector-p (x) 
+(defun simple-vector-p (x)
 	(and (uvectorp x)(eq (uvector-type-bits x) uvector-simple-vector-tag)))
 
-(defun simple-char-vector-p (x) 
+(defun simple-char-vector-p (x)
 	(and (uvectorp x)(eq (uvector-type-bits x) uvector-simple-char-vector-tag)))
 
-(defun simple-byte-vector-p (x) 
+(defun simple-byte-vector-p (x)
 	(and (uvectorp x)(eq (uvector-type-bits x) uvector-simple-byte-vector-tag)))
 
-(defun simple-short-vector-p (x) 
+(defun simple-short-vector-p (x)
 	(and (uvectorp x)(eq (uvector-type-bits x) uvector-simple-short-vector-tag)))
 
-(defun simple-double-float-vector-p (x) 
+(defun simple-double-float-vector-p (x)
 	(and (uvectorp x)(eq (uvector-type-bits x) uvector-simple-double-float-vector-tag)))
 
-(defun simple-bit-vector-p (x) 
+(defun simple-bit-vector-p (x)
 	(and (uvectorp x)(eq (uvector-type-bits x) uvector-simple-bit-vector-tag)))
 
-(defun simple-single-float-vector-p (x) 
+(defun simple-single-float-vector-p (x)
 	(and (uvectorp x)(eq (uvector-type-bits x) uvector-simple-single-float-vector-tag)))
 
 (defun alloc-double-float () (alloc-uvector double-float-size uvector-double-float-tag))
 (defun alloc-single-float () (alloc-uvector single-float-size uvector-single-float-tag))
-(defun alloc-bignum (size) 	 
+(defun alloc-bignum (size)
 	(let ((bn (alloc-uvector (+ size 1) uvector-bignum-tag)))
 		(uref-set (* size 2) bn 1)
 		bn))
@@ -323,4 +323,3 @@
 	(cond ((symbolp x) (symbol-constant-p x))
 		  ((consp x) (eq (car x) 'quote))
 		  (t t)))
-

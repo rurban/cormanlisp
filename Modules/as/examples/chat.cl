@@ -1,11 +1,11 @@
 ;;
 ;; chat.cl
 ;;
-;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA 
+;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA
 ;;
 ;; This code is free software; you can redistribute it and/or
 ;; modify it under the terms of the version 2.1 of
-;; the GNU Lesser General Public License as published by 
+;; the GNU Lesser General Public License as published by
 ;; the Free Software Foundation, as clarified by the AllegroServe
 ;; prequel found in license-allegroserve.txt.
 ;;
@@ -14,11 +14,11 @@
 ;; merchantability or fitness for a particular purpose.  See the GNU
 ;; Lesser General Public License for more details.
 ;;
-;; Version 2.1 of the GNU Lesser General Public License is in the file 
+;; Version 2.1 of the GNU Lesser General Public License is in the file
 ;; license-lgpl.txt that was distributed with this file.
 ;; If it is not present, you can access it from
 ;; http://www.gnu.org/copyleft/lesser.txt (until superseded by a newer
-;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
+;; version) or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA  02111-1307  USA
 ;;
 ;;
@@ -81,8 +81,8 @@
   link-color
   alink-color)
 
-(defparameter *normal-style* 
-    (make-color-style 
+(defparameter *normal-style*
+    (make-color-style
      :bgcolor 		"#000000" ; black
      :font-color        "#ffcc66" ; gold
      :vlink-color 	"#ffaaaa" ; red
@@ -90,8 +90,8 @@
      :alink-color       "#aaaaff" ; blue
      ))
 
-(defparameter *white-style* 
-    (make-color-style 
+(defparameter *white-style*
+    (make-color-style
      :bgcolor 		"#ffffff" ; white
      :font-color        "#000000" ; black
      :vlink-color 	"#ff0000" ; red
@@ -133,7 +133,7 @@
 		; list of chat-controller instances
 		:initarg :controllers
 		:accessor controllers)
-   (ustrings :initform nil 
+   (ustrings :initform nil
 	     :initarg :ustrings
 	     :accessor ustrings)
    (master-lock :initform (mp:make-process-lock :name "chat master")
@@ -156,7 +156,7 @@
 
 (defclass chat-controller ()
   ;; describes a whole set of chats
-  
+
   ((chats :initform nil
 	  ; list of chat instances
 	  :initarg :chats
@@ -171,7 +171,7 @@
 	     :initarg :ustrings
 	     :accessor ustrings)
    (secret-key :initarg :secret-key
-	       ;; knowing this key gives you access to 
+	       ;; knowing this key gives you access to
 	       ;; changing the parameters of the chat
 	       :accessor secret-key)
    (controller-uri :initarg :controller-uri
@@ -182,19 +182,19 @@
 			    ;	the secret key for this controller
 			    :reader controller-query-string)
    ))
-   
-   
+
+
 
 (defclass chat ()
   ((name :initarg :name
 	 :reader chat-name
 	 )
-   
+
    (state :initform :open
 	  ; :open or :closed
 	  :initarg :state
 	  :accessor chat-state)
-   
+
    (ustring :initarg :ustring
 	    :accessor ustring)
 
@@ -203,20 +203,20 @@
 	     ;; should be just a name, no directory stuff, so
 	     ;; it can be relative to the chat home
 	     :accessor chat-filename)
-   
+
    (secret-key :initarg :secret-key
 	       ;; to do admin things to this chat
 	       :initform (make-unique-string)
 	       :reader secret-key)
-   
+
    (chat-query-string :initarg :chat-query-string
 		      ;; u=xxxx&c=yyyyyy  indentifies chat
 		      :reader chat-query-string)
    (chat-owner-query-string :initarg :chat-owner-query-string
 		      ;; u=xxxx&c=yyyyyy&s=xxxx  indentifies chat
 			    :reader chat-owner-query-string)
-   
-   
+
+
    (messages :initform (make-array 100)
 	     :accessor chat-messages)
    (message-next :initform 0
@@ -231,26 +231,26 @@
 		    :initarg :message-archive
 		     ;; 1+ last message number archived so far
 		     :accessor chat-message-archive)
-   
-   
+
+
    (message-lock :initform (mp:make-process-lock :name "chat-message")
 		 ; grab this before changing the above
 		 :accessor chat-message-lock)
-   
+
 
    ;; list of people monitoring this chat
    (viewers :initform (make-viewers)
 	    :accessor chat-viewers)
    ))
 
-(defstruct user 
+(defstruct user
   handle	; official handle of the user
   password	; password string
   ustring		; unique string of this user
   )
 
 
-(defstruct viewers 
+(defstruct viewers
   (lock (mp:make-process-lock :name "viewers-lock"))
   list	; list of viewent
   )
@@ -280,7 +280,7 @@
 ;; roles
 ; master-controller - can create controllers.  has a secret key (s)
 ; controller - can create chats, each has a public key (u) and
-;	       a private key (s).  
+;	       a private key (s).
 ; chat - is a collection of posted messages.  has a public key (c)
 ;	 and a controller public key (u) and a secret key (s)
 ;	 Most access the chat using u and c.  If you also know s then
@@ -319,7 +319,7 @@
 ; chatlogincurrent u,c,[s],handle,password
 ;				login as an existing user
 ;
-; 
+;
 ;
 ;
 
@@ -333,28 +333,28 @@
 (defun start-chat (&key port home restart (listeners 10))
   ;; start the chat system going
   (declare (special socket::*dns-configured*))
-  
+
   (unpublish :all t) ; useful during debugging, remove afterwards
-  
+
   (if* (not (stringp home))
      then (error "must specify :home value as a string naming a directory (no trailing slash)"))
-  
+
   (setq *chat-home* home)
-  
-  
-  
+
+
+
   (setq *master-controller* nil)
-  
+
   (if* (not restart)
      then (load-existing-chat *chat-home*)
 	  )
-  
+
   (if* *master-controller*
      then ; we have an existing chat setup
 	  (publish-chat-links)
 	  (start-chat-archiver *master-controller*)
 	  )
-  
+
   (publish :path "/setup-chat" :function 'setup-chat)
 
   ; setup for reverse dns lookups.  don't do reverse lookups if we
@@ -366,17 +366,17 @@
      else (socket:configure-dns :auto t)
 	  (setq *do-dnscheck* socket::*dns-configured*
 		socket::*dns-mode* :acldns))
-  
-  
+
+
   (if* port then (net.aserve:start :port port :listeners listeners))
   )
 
 (defun publish-chat-links ()
 
-  ; debugging only.  builds link to the master controller page 
+  ; debugging only.  builds link to the master controller page
   (publish :path "/xyzz" :function 'quick-return-master)
-  
-  
+
+
   ; post'ed from form in setup-chat
   (publish :path "/new-controller" :function 'new-controller)
 
@@ -392,14 +392,14 @@
   (publish :path "/chatenter" :function 'chatenter)
 
   (publish :path "/chatcontrol" :function 'chatcontrol)
-  
+
   (publish :path "/chatlogin" :function 'chatlogin)
-  
+
   (publish :path "/chatloginnew" :function 'chatloginnew)
-  
-  (publish :path "/chatlogincurrent" 
+
+  (publish :path "/chatlogincurrent"
 	   :function 'chat-login-current)
-  
+
   (publish :path "/chatviewers" :function 'chatviewers)
   )
 
@@ -407,7 +407,7 @@
 (defun load-existing-chat (home)
   ;; read in and build the chat information
   (declare (special user::value1))
-  
+
   (let ((master-file (concatenate 'string home "/cmaster.cl")))
     (if* (probe-file master-file)
        then (load master-file)
@@ -421,12 +421,12 @@
 		  (do ((message (read p nil :eof) (read p nil :eof)))
 		      ((eq message :eof)
 		       ; use everything is archived we've read
-		       (setf (chat-message-archive chat) 
+		       (setf (chat-message-archive chat)
 			 (chat-message-number chat))
 		       )
 		    (if* message
 		       then (add-chat-message chat message)))))))))
-    
+
 (defun dump-existing-chat (home)
   (mp:with-process-lock ((master-lock *master-controller*))
     (labels ((dump-master-chat-controller (masterc)
@@ -434,11 +434,11 @@
 		  :ustrings ',(ustrings masterc)
 		  :secret-key ',(secret-key masterc)
 		  :controllers
-		  (list ,@(mapcar #'dump-chat-controller 
+		  (list ,@(mapcar #'dump-chat-controller
 				  (controllers masterc)))
 		  :users ',(users masterc)
 		  ))
-	     
+
 	     (dump-chat-controller (controller)
 	       `(make-instance 'chat-controller
 		  :chats
@@ -451,7 +451,7 @@
 		  :controller-uri ',(controller-uri controller)
 		  :controller-query-string
 		  ',(controller-query-string controller)))
-	   
+
 	     (dump-chat (chat)
 	       `(make-instance 'chat
 		  :name ',(chat-name chat)
@@ -462,10 +462,10 @@
 		  :chat-query-string ',(chat-query-string chat)
 		  :chat-owner-query-string ',(chat-owner-query-string chat)
 		  ))
-	     
+
 	     )
-	     
-				 
+
+
       (let ((new-master-file (concatenate 'string home "/ncmaster.cl"))
 	    (master-file (concatenate 'string home "/cmaster.cl"))
 	    (value))
@@ -473,8 +473,8 @@
 	(setq value
 	  `(setq user::value1
 	     ,(dump-master-chat-controller *master-controller*)))
-			
-	(with-open-file (p new-master-file 
+
+	(with-open-file (p new-master-file
 			 :direction :output
 			 :if-exists :supersede)
 	  (let ((*package* (find-package *chat-home-package*)))
@@ -482,18 +482,18 @@
 	    (print `(in-package ,*chat-home-package*) p)
 	    (pprint value p)
 	    (terpri p)))
-    
+
 	; success, so make it the official one
 	(ignore-errors (delete-file master-file))
 	(rename-file new-master-file master-file)))))
 
 
-    
-    
-      
-      
-      
-  
+
+
+
+
+
+
 
 (defun quick-return-master (req ent)
   ;; quick hack to get us to the master controller while debugging
@@ -501,14 +501,14 @@
      then (ancient-link-error req ent)
      else (with-http-response (req ent)
 	    (with-http-body (req ent)
-	      (html 
+	      (html
 	       (:html
 		(:body "The master controllers is "
-		       ((:a href 
+		       ((:a href
 			    (format nil "setup-chat?s=~a"
 				    (secret-key *master-controller*)))
 			"here"))))))))
-			   
+
 
 
 (defun setup-chat (req ent)
@@ -521,27 +521,27 @@
 	  (dump-existing-chat *chat-home*)
 	  (do-first-setup-page req ent)
 	  (start-chat-archiver *master-controller*)
-   elseif (not (equal (secret-key *master-controller*) 
+   elseif (not (equal (secret-key *master-controller*)
 		      (request-query-value "s" req)))
      then (with-http-response (req ent)
 	    (with-http-body (req ent)
 	      (html
-	       (:html 
+	       (:html
 		(:head (:title "illegal access"))
 		(:body "You are attempting to gain illegal access to this "
 		       "chat control.  Stop doing this.")))))
-		       
-	    
+
+
      else (with-http-response (req ent)
 	    (with-http-body (req ent)
 	      (html (:head (:title "Chat Setup"))
 		    (:body (:h1 "Chat Setup")
-			   
+
 			   (if* (controllers *master-controller*)
 			      then (html (:h2 "Existing Chat Controllers")
-					 (display-chat-controllers 
+					 (display-chat-controllers
 					  (controllers *master-controller*))))
-			   
+
 			   (:h2 "New Chat Controller")
 			   " This page is used to create a chat controller which "
 			   "then can be use to create chats."
@@ -550,7 +550,7 @@
 			   ((:form :action "new-controller"
 				   :method "POST")
 			    ((:input :type "hidden"
-				     :name "s" 
+				     :name "s"
 				     :value (secret-key *master-controller*)))
 			    ((:input :type "text"
 				     :name "name"
@@ -558,21 +558,21 @@
 				     :maxlength 30))
 			    "Your Name"
 			    :br
-		    
+
 			    ((:input :type "text"
 				     :name "controllername"
 				     :size 30
 				     :maxlength 30))
 			    "Name for this collection of chats"
 			    :br
-		   
-		    
+
+
 			    ((:input :type "submit")))))))))
 
 
 (defun display-chat-controllers (controllers)
   ;; display a table of chat controllers
-  (html 
+  (html
    ((:table :border "1" :cellspacing 1 :cellpadding 3)
     ((:tr :bgcolor "#9999ff")
      (:th "Owner Name")
@@ -582,17 +582,17 @@
       (html (:tr (:td (:princ-safe (owner-name controller)))
 		 (:td (:princ-safe (controller-name controller)))
 		 (:td ((:a :href (format nil "controller?~a"
-					 (controller-query-string 
+					 (controller-query-string
 					  controller)))
 		       "Go To Page"))))))))
-		      
+
 (defun do-first-setup-page (req ent)
-  ;; called when setup-chat is done for the first time 
+  ;; called when setup-chat is done for the first time
   ;; gives the special url that can be used by the chat superadmin
   ;; to give chat controllers to others
-  
+
   (publish-chat-links)
-  
+
   (with-http-response (req ent)
     (with-http-body (req ent)
       (html
@@ -602,7 +602,7 @@
 	       "This is the first access to this chat setup and you "
 	       "are now the chat super-adminstrator."
 	       " This "
-	       ((:a href 
+	       ((:a href
 		    (format nil "setup-chat?s=~a"
 			    (secret-key *master-controller*)))
 		"link")
@@ -611,27 +611,27 @@
 	       " Once you follow the link to the page be sure to bookmark "
 	       " the page since this will be the only way to "
 	       " exert your superadminstrator powers.")))))
-  
+
   )
-	       
+
 
 
 
 (defun new-controller (req ent)
-  
+
   (if* (or (not (eq (request-method req) :post))
-	   (not (equal (secret-key *master-controller*) 
+	   (not (equal (secret-key *master-controller*)
 		       (request-query-value "s" req))))
      then ; someone's playing around
 	  (return-from new-controller
 	    (ancient-link-error req ent)))
-	    
+
   (with-http-response (req ent)
     (let ((query (request-query req)))
-      (let ((controller 
+      (let ((controller
 	     (new-chat-controller
 	      :owner-name (cdr (assoc "name" query :test #'equalp))
-	      :controller-name (cdr (assoc "controllername" query 
+	      :controller-name (cdr (assoc "controllername" query
 					   :test #'equalp))
 	      :secret-key (make-unique-string))))
 	(mp:with-process-lock ((master-lock *master-controller*))
@@ -639,13 +639,13 @@
 
 	(dump-existing-chat *chat-home*)
 	(with-http-body (req ent)
-	  (html 
+	  (html
 	   (:html
 	    (:head (:title "Created New Controller"))
 	    (:body
 	     "A new controller page has been created, go to "
 	     ((:a :href (format nil "controller?~a"
-				(controller-query-string 
+				(controller-query-string
 				 controller)))
 	      "here")
 	     " to see the page"))))))))
@@ -655,35 +655,35 @@
   (let ((controller (controller-from-req req)))
     (if* (or (null controller)
 	     (not (equal (secret-key controller)
-			 (cdr (assoc "s" (request-query req) 
+			 (cdr (assoc "s" (request-query req)
 				     :test #'equalp)))))
        then (ancient-link-error req ent)
        else (with-http-response (req ent)
 	      (with-http-body (req ent)
 		(display-controller-page controller))))))
-  
+
 
 
 (defun display-controller-page (controller)
   ;; display the html for the controller page
-  (html 
-   (:html 
-    (:head (:title "Controller for " 
+  (html
+   (:html
+    (:head (:title "Controller for "
 		   (:princ-safe (controller-name controller))))
-    (:body 
-     (:h1 "Controller for " 
+    (:body
+     (:h1 "Controller for "
 	  (:princ-safe (controller-name controller)))
      (:h2 "Owner is " (:princ-safe
 		       (owner-name controller)))
      (if* (null (chats controller))
 	then (html (:h2 "There are no chats defined yet"))
 	else (display-chat-list (chats controller) t))
-		       
-     ((:form :action 
+
+     ((:form :action
 	     (concatenate 'string
 	       "create-chat?"
 	       (controller-query-string controller))
-			       
+
 	     :method "POST")
       :hr
       (:h2 "Create New Chat")
@@ -700,9 +700,9 @@
       :br
       ((:input :type "submit"
 	       :value "Create Chat")))))))
-			       
-		       
-	   
+
+
+
 
 
 (defun display-chat-list (chats owner-p)
@@ -730,21 +730,21 @@
 					      "chat?"
 					      (chat-owner-query-string chat)))
 				  "Go to Chat as owner"))))))))))
-    
+
 (defun new-chat-controller (&key owner-name controller-name secret-key)
   ;; create a new chat controller object
   (let (ustring)
-    
+
     ; create a unique string to indentify this controller
     (loop
       (setq ustring (make-unique-string))
       (mp:without-scheduling
-	(if* (not (member ustring 
+	(if* (not (member ustring
 			  (ustrings *master-controller*)
 			  :test #'equal))
 	   then (push ustring (ustrings *master-controller*))
 		(return))))
-    
+
     (let ((controller (make-instance 'chat-controller
 			:owner-name owner-name
 			:controller-name controller-name
@@ -752,13 +752,13 @@
 			:ustring ustring
 			:controller-uri (compute-controller-uri ustring)
 			:controller-query-string
-			(format nil "u=~a&s=~a" 
+			(format nil "u=~a&s=~a"
 				ustring
 				secret-key))))
       controller)))
 
-      
-      
+
+
 (defun compute-controller-uri (ustring)
   (format nil "controller?u=~a" ustring))
 
@@ -766,7 +766,7 @@
 (defun make-unique-string ()
   ;; make a unique string that's not one of the other strings
   ;; want it to around five characters long
-  
+
   (let ((time (get-universal-time)))
     ; randomize things
     (dotimes (i (logand time #xf)) (random 10))
@@ -794,14 +794,14 @@
 	      (loop
 		(setq ustring (make-unique-string))
 		(mp:without-scheduling
-		  (if* (not (member ustring (ustrings controller) 
+		  (if* (not (member ustring (ustrings controller)
 				    :test #'equal))
 		     then (push ustring (ustrings controller))
 			  (return))))
-      
+
 	      (let ((chat (make-new-chat controller
 					 :name (request-query-value "name" req)
-					 :filename 
+					 :filename
 					 (request-query-value "filename" req)
 					 :ustring ustring)))
 		(mp:without-scheduling
@@ -853,7 +853,7 @@
 (defun make-new-chat (controller &key name filename ustring)
   ;; make a new chat object
   (let ((secret-key (make-unique-string)))
-    (make-instance 'chat 
+    (make-instance 'chat
       :name name
       :ustring ustring
       :filename filename
@@ -861,7 +861,7 @@
       :chat-query-string (format nil "u=~a&c=~a"
 				 (ustring controller)
 				 ustring)
-      :chat-owner-query-string 
+      :chat-owner-query-string
       (format nil "u=~a&c=~a&s=~a"
 	      (ustring controller)
 	      ustring
@@ -872,7 +872,7 @@
 
 ; chat frames:
 ;
-;  chattop 
+;  chattop
 ;  chatviewers chatenter chatcontrol
 
 (defun chat (req ent)
@@ -881,40 +881,40 @@
   (let ((chat (chat-from-req req))
 	(user (user-from-req req))
 	(qstring))
-    
+
     (if* *chat-hook*
        then (if* (funcall *chat-hook* req ent)
 	       then (return-from chat)))
-    
-    
+
+
     (if* (null chat)
        then (ancient-link-error req ent)
-       else (setq qstring 
+       else (setq qstring
 	      (add-lurk
 	       req
 	       (add-secret req
 			   (add-user req (chat-query-string chat)))))
-	    
+
 	    (format t "qstring ~s~%" qstring) (force-output)
 	    (with-http-response  (req ent)
 	      (with-http-body (req ent)
-		(html 
+		(html
 		 (:html
 		  (:head (:title "chat - "
 				 (:princ-safe (chat-name chat))))
-		  
+
 		  ((:frameset :rows "*,160")
-		   ((:frame :src 
+		   ((:frame :src
 			    (format nil "chattop?~a&count=~d&secs=~d"
 				    qstring
 				    *default-count*
 				    *default-secs*)
 			    :name "chattop")
-		    ((:frameset :cols 
-				(if* user 
+		    ((:frameset :cols
+				(if* user
 				   then "15%,*,20%"
 				   else "*,20%"))
-		     (if* user 
+		     (if* user
 			then (html ((:frame :src
 					    (concatenate 'string
 					      "chatviewers?"
@@ -935,9 +935,9 @@
 
 
 
-	      
-	
-    
+
+
+
 (defun add-user (req current-string)
   ;; if a user has been specified in the chat
   ;; the add it's x string to the current string
@@ -947,7 +947,7 @@
        else current-string)))
 
 (defun add-secret (req current-string)
-  ;; if a secret string has been defined then add it onto the 
+  ;; if a secret string has been defined then add it onto the
   ;; current string
   (let ((val (request-query-value "s" req)))
     (if* val
@@ -955,7 +955,7 @@
        else current-string)))
 
 (defun add-reverse (req current-string)
-  ;; if a reverse value has been defined then add it onto the 
+  ;; if a reverse value has been defined then add it onto the
   ;; current string
   (let ((val (request-query-value "rv" req)))
     (if* val
@@ -963,7 +963,7 @@
        else current-string)))
 
 (defun add-lurk (req current-string)
-  ;; if a lurk has been defined then add it onto the 
+  ;; if a lurk has been defined then add it onto the
   ;; current string
   (let ((val (request-query-value "z" req)))
     (if* val
@@ -975,54 +975,54 @@
   (let* ((chat (chat-from-req req))
 	 (user (user-from-req req))
 	 (is-owner
-	  (equal (and chat (secret-key chat)) 
+	  (equal (and chat (secret-key chat))
 		 (request-query-value "s" req)))
 	 (qstring))
-    
+
     (if* (null chat)
        then (return-from chattop (ancient-link-error req ent)))
 
     (let ((delete (request-query-value "y" req)))
       (if* delete
 	 then (delete-chat-message chat (compute-integer-value delete))))
-    
+
     (let* ((count (or (compute-integer-value
 		       (request-query-value "count" req))
 		      10))
 	   (secs  (or (compute-integer-value
 		       (request-query-value "secs" req))
 		      0)))
-      
+
       (if* (null (request-query-value "z" req))
 	 then (track-viewer chat user req))
-      
+
       (with-http-response (req ent)
-	(setq qstring 
+	(setq qstring
 	  (format nil "~a&count=~d&secs=~d"
 		  (add-lurk
 		   req
-		   (add-reverse 
+		   (add-reverse
 		    req
-		    (add-secret 
+		    (add-secret
 		     req
-		     (add-user 
-		      req 
+		     (add-user
+		      req
 		      (chat-query-string chat)))))
-		  count 
+		  count
 		  secs))
 	(with-http-body (req ent)
-	  (html 
+	  (html
 	   (:html
 	    (:head
 	     (:title "chat frame")
 	     (if* (and secs (> secs 0))
 		then ; setup for auto refresh
 		     (html ((:meta :http-equiv "Refresh"
-				   :content 
+				   :content
 				   (format nil "~d;url=chattop?~a"
 					   secs
 					   qstring)))))
-	      
+
 	     ((:body :if* *background-image*
 		     :background *background-image*
 		     :if* (not *background-image*)
@@ -1032,14 +1032,14 @@
 		     :vlink *top-frame-vlink-color*
 		     :alink *top-frame-alink-color*
 		     )
-	      (show-chat-info chat count 
+	      (show-chat-info chat count
 			      (not (equal "1" (request-query-value
 					       "rv"
 					       req)))
 			      (if* user then (user-handle user))
 			      (if* is-owner then qstring)))))))))))
 
-		     
+
 (defun chatenter (req ent)
   ;;
   ;; this is the window where you enter the post and your handle.
@@ -1052,29 +1052,29 @@
 	 (to-user (user-from-ustring pp))
 	 (qstring))
     (if* (null chat)
-       then (return-from chatenter 
+       then (return-from chatenter
 	      (ancient-link-error req ent)))
-    
+
     (let* ((body (request-query-value "body" req))
 	   (handle (request-query-value  "handle" req)))
-	   
-      (setq qstring 
+
+      (setq qstring
 	(add-secret req
 		    (add-user req
 			      (chat-query-string chat))))
-      
 
-	      
+
+
       (if* (and body (not (equal "" body)))
 	 then ; user added content to the chat
 	      (add-chat-data chat req handle body user to-user purl))
-      
+
       (with-http-response (req ent)
 	(with-http-body (req ent)
 	  (html
 	   (:html
-	    ((:body :bgcolor 
-		    (if* to-user 
+	    ((:body :bgcolor
+		    (if* to-user
 		       then *bottom-frames-private*
 		       else *bottom-frames-bgcolor*))
 	     ((:form :action (concatenate 'string
@@ -1089,12 +1089,12 @@
 			  (:td
 			   (:center
 			    (if* user
-			       then (html 
+			       then (html
 				     (if* to-user
-					then (html 
+					then (html
 					      "Private msg from: ")
 					else (html "From: "))
-				     (:b 
+				     (:b
 				      (:princ-safe
 				       (user-handle user)))
 				     " to "
@@ -1105,26 +1105,26 @@
 						(user-handle
 						 to-user)))
 					 else (html "all"))))
-				    
+
 			       else (html
-				     "Your Name" 
+				     "Your Name"
 				     ((:input :name "handle"
 					      :type "text"
 					      :tabindex 3
 					      :size 20
 					      :value (if* handle then handle else "")))))
-			    " -- " 
+			    " -- "
 			    ((:a :href (format nil "chatlogin?~a" qstring)
 				 :target "_top")
 			     "Login")
 			    " -- &nbsp;&nbsp;&nbsp;"
-			    
+
 			    ((:input :name "send"
 				     :tabindex 2
 				     :value "Send"
 				     :type "submit")))))
 			 (:tr
-			  (:td 
+			  (:td
 			   ((:textarea :name "body"
 				       :tabindex 1
 				       :cols 50
@@ -1142,12 +1142,12 @@
 				    :name "purl"))
 			   " Picture Url")))))
 		  else ; single line
-		       (html 
+		       (html
 			(:table
 			 (:tr
 			  ((:td :colspan 1)
 			   (:center
-			    "Your Name" 
+			    "Your Name"
 			    ((:input :name "handle"
 				     :type "text"
 				     :size 20
@@ -1155,13 +1155,13 @@
 			    ((:input :name "send"
 				     :value "Post Message"
 				     :type "submit")))))
-			 (:tr 
+			 (:tr
 			  (:td
 			   ((:input :type "text"
 				    :name "body"
 				    :size 60
 				    :maxsize 10000)))))))))
-	      
+
 	     ))))))))
 
 
@@ -1171,14 +1171,14 @@
   ; control the updating
   (let ((chat (chat-from-req req))
 	(qstring))
-    
+
     (if* (null chat)
        then (return-from chatcontrol (ancient-link-error req ent)))
-    
+
     (let* ((count (or (request-query-value "count" req) *default-count*))
 	   (secs  (or (request-query-value "secs" req) *default-secs*)))
-      
-      (setq qstring 
+
+      (setq qstring
 	(add-lurk
 	 req
 	 (add-secret req
@@ -1203,7 +1203,7 @@
 	      :br
 	      ((:input :type "text"
 		       :name "count"
-		       :size 4 
+		       :size 4
 		       :value count))
 	      "messages"
 	      :br
@@ -1212,11 +1212,11 @@
 		       :value "1"))
 	      " Reversed"
 	      :br
-		       
+
 	      ((:input :type "submit"
 		       :name "submit"
 		       :value "Update Messages")))))))))))
-		     
+
 
 (defun compute-integer-value (string)
   ;; compute the string to a number
@@ -1228,7 +1228,7 @@
 	      (seen-digit)
 	      )
 	     ((>= i end)
-	      (if* seen-digit 
+	      (if* seen-digit
 		 then ans
 		 else nil))
 	   (let ((digit (- (char-code (schar string i)) #.(char-code #\0))))
@@ -1239,29 +1239,29 @@
 			then (return ans)
 			else (return nil))))))))
 
-  
-    
+
+
 (defun add-chat-data (chat req handle body user to-user purl)
   ;; purl is picture url value
-  (multiple-value-bind (prefix link) 
+  (multiple-value-bind (prefix link)
       (if* (and (stringp purl) (not (equal "" purl)))
 	 then (scan-for-http purl))
     (declare (ignore prefix))
-    
+
     (if* link
        then (if* (and (consp link)
 		      (consp (car link))
 		      (eq :img (caar link)))
 	       thenret  ; valid image url
 	       else (setq link nil)))
-    
+
     (let* ((cvted-body (string-to-lhtml body))
 	   (ipaddr (socket:remote-host
 		    (request-socket req)))
 	   (dns (or #+ignore (socket:ipaddr-to-hostname ipaddr)
 		    (socket:ipaddr-to-dotted ipaddr)))
-	 
-	   (message 
+
+	   (message
 	    (make-message
 	     :number (chat-message-number chat)
 	     :ipaddr ipaddr
@@ -1273,7 +1273,7 @@
 	     :body (if* link
 		      then (cons link cvted-body)
 		      else cvted-body))))
-				     
+
       (mp:with-process-lock ((chat-message-lock chat))
 	(add-chat-message chat message)))))
 
@@ -1289,7 +1289,7 @@
   ;; assume that we've got the lock to do this.
   (let ((messages (chat-messages chat))
 	(message-next (chat-message-next chat)))
-	    
+
     (if* (>= message-next (length messages))
        then ; must grow messages
 	    (let ((nmessages (make-array (+ (length messages) 200))))
@@ -1299,9 +1299,9 @@
 	      (setq messages nmessages)))
     (setf (svref messages message-next)  message)
     (setf (chat-message-next chat) (1+ message-next))
-    (setf (chat-message-number chat) 
+    (setf (chat-message-number chat)
       (1+ (message-number message)))))
-  
+
 
 
 (defun delete-chat-message (chat messagenum)
@@ -1323,9 +1323,9 @@
 		   then (return nil)
 		 elseif (eql (message-number message) number)
 		   then (return message)))))))
-		      
-  
-  
+
+
+
 (defun show-chat-info (chat count recent-first handle ownerp)
   ;; show the messages for all and those private ones for handle
   ;; handle is only non-nil if this is a legit logged in handle
@@ -1351,10 +1351,10 @@
 	    (if* recent-first
 	       then ; tag most recent message
 		    (html ((:div :id "recent"))))
-	    
+
 	    (do ((i first-message (+ i message-increment)))
 		(nil)
-	    
+
 	      (let ((message (svref messages i)))
 		(if* (null message)
 		   then (warn "null message at index ~d" i)
@@ -1373,12 +1373,12 @@
 		   thenret ; skip this message
 		 elseif (eq *show-style* 1)
 		   then
-			(html :newline 
-			      ((:font :color 
+			(html :newline
+			      ((:font :color
 				      (if* (consp (message-to message))
 					 then *private-font-color*
 					 else *public-font-color*))
-			       
+
 			       (:b (:i (:princ-safe (message-handle message))))
 			       (if* (not (message-real message))
 				  then (html " (unverified)"))
@@ -1389,15 +1389,15 @@
 				   then (html " to: "
 					      (:princ-safe (message-to message))))
 				")")
-			      
+
 			       " <!-- "
-			       (:princ (message-number message)) 
+			       (:princ (message-number message))
 			       " "
 			       (:princ (message-dns message))
 			       " --> "
 			       (if* ownerp
 				  then (html
-					((:a :href 
+					((:a :href
 					     (format nil "chattop?y=~a&~a"
 						     (message-number message)
 						     ownerp))
@@ -1408,7 +1408,7 @@
 						*html-stream*)
 			       :br)
 			      :newline)
-		   else 
+		   else
 			(html
 			 :newline
 			 ((:table :border 1 :width "100%" :frame "box")
@@ -1418,7 +1418,7 @@
 			    :br
 			    ((:font :size 1) (:princ (message-time message)))
 			    " <!-- "
-			    (:princ (message-number message)) 
+			    (:princ (message-number message))
 			    " "
 			    (:princ (message-dns message))
 			    " --> "
@@ -1426,9 +1426,9 @@
 			   (:td
 			    (html-print-list (message-body message)
 					     *html-stream*)))))))
-		 
+
 	      (if* (eql i last-message) then (return)))
-	    
+
 	    (if* (not recent-first)
 	       then ; tag most recent message
 		    (html ((:div :id "recent")))))))
@@ -1438,7 +1438,7 @@
   ;; response function for /chatlogin?ucstring"
   (let ((chat (chat-from-req req)))
     (if* chat
-       then (do-chat-login req ent 
+       then (do-chat-login req ent
 			   (add-secret req
 				       (add-user req
 						 (chat-query-string chat)))
@@ -1455,9 +1455,9 @@
 	(:head (:title "Login to Chat"))
 	(:body
 	 (if* failure
-	    then (html (:blink 
+	    then (html (:blink
 			(:b "Error: " (:princ-safe failure) :br :br))))
-	 
+
 	 (:h1 "Login as an existing user")
 	 ((:form :action (format nil "chatlogincurrent?~a" qstring)
 		 :target "_top"
@@ -1476,7 +1476,7 @@
 
 
 (defun chat-login-current (req ent)
-  ;; handle a post to  chatlogincurrent 
+  ;; handle a post to  chatlogincurrent
   (let ((chat (chat-from-req req))
 	(handle (request-query-value "handle" req))
 	(password (request-query-value "password" req)))
@@ -1485,31 +1485,31 @@
 		      :key #'user-handle :test #'equal)))
       (if* (null user)
 	 then (return-from chat-login-current
-		(do-chat-login req ent 
+		(do-chat-login req ent
 			       (add-secret req
 					   (add-user req
 						     (chat-query-string chat)))
 			       "That user name is unknown")))
       (if* (not (equal password (user-password user)))
 	 then (return-from chat-login-current
-		(do-chat-login req ent 
+		(do-chat-login req ent
 			       (add-secret req
 					   (add-user req
 						     (chat-query-string chat)))
 			       "That password is incorrect")))
-      
+
       ; worked, do a redirect
       (with-http-response (req ent :response *response-moved-permanently*)
 	(setf (reply-header-slot-value req "location")
 	  (format  nil "chat?~a&x=~a"
-		   (add-secret req 
+		   (add-secret req
 			       (chat-query-string chat))
 		   (user-ustring user)))
 	(with-http-body (req ent)
 	  (html "redirect"))))))
 
-      
-      
+
+
 (defun chatloginnew (req ent)
   ;; response function when a new user is being defined
   (let* ((handle (request-query-value "handle" req))
@@ -1517,28 +1517,28 @@
 	 (password2 (request-query-value "password2" req))
 	 (chat (chat-from-req req))
 	 (qstring (and chat (chat-query-string chat))))
-    
+
     (if* (null chat)
        then (return-from chatloginnew (ancient-link-error req ent)))
-    
-    
+
+
     (if* (equal "" password)
        then (return-from chatloginnew
 	      (do-chat-login req ent qstring "No password given")))
-    
+
     (if* (not (equal password password2))
        then (return-from chatloginnew
 	      (do-chat-login req ent qstring "Passwords don't match")))
-    
+
     (dolist (user (users *master-controller*))
       (if* (equal (user-handle user) handle)
 	 then (return-from chatloginnew
 		(do-chat-login req ent qstring "That user name exists"))))
-    
+
     ; add new user
     (let (new-ustring)
       (mp:with-process-lock ((master-lock *master-controller*))
-	(loop 
+	(loop
 	  (setq new-ustring (make-unique-string))
 	  (if* (dolist (user (users *master-controller*) t)
 		 (if* (equal new-ustring (user-ustring user))
@@ -1551,57 +1551,57 @@
 			 :ustring new-ustring)
 	      (users *master-controller*))
 	(dump-existing-chat *chat-home*))
-      
+
       ; go to the chat as the user
       (with-http-response (req ent :response
 			       *response-moved-permanently*)
 	(setf (reply-header-slot-value req "location")
-	  (format nil "chat?~a&x=~a" 
+	  (format nil "chat?~a&x=~a"
 		  (add-secret req qstring) new-ustring))
-	(with-http-body (req ent) 
+	(with-http-body (req ent)
 	  "move to the chat")))))
-							   
-    
-    
-      
-    
-    
-    
 
-    
-    
-    
-  
-      
-      
-    
-      
-	
-	
-	 
-       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (defun string-to-lhtml (form)
   ;; convert the string to a list of lhtml forms
   ;;
   ;; break the text into lines separated by :br's.
   ;; look for http://'s in the lines and replace them with
   ;; links or inline images
-  
+
   (let (res (i 0) (start 0) (max (length form)))
     (loop
       ; we go around one last time when (eq i max) in which
       ; case we pretent there's a linefeed at the end
-      (let ((ch 
+      (let ((ch
 	     (if* (>= i max)
 		then #\linefeed
 		else (schar form i))))
-	
+
 	(if* (or (eq ch #\return) (eq ch #\linefeed))
 	   then ; end of line
 		(if* (not (eq start i))
 		   then (let ((line (subseq form start i)))
 			  (loop
-			    (if* (or (null line) 
+			    (if* (or (null line)
 				     (equal line ""))
 			       then (return))
 			    (multiple-value-bind (pref link rest)
@@ -1613,59 +1613,59 @@
 				   else (push pref res)
 					(setq line nil))))))
 		(push :br res)
-		
+
 		(incf i)
 		(if* (and (eq ch #\return)
 			  (< i max)
 			  (eq (schar form i) #\linefeed))
 		   then (incf i) ; past following linefeed
 			)
-		
+
 		(setq start i)
 	   else (incf i))
-	    
+
 	(if* (> i max) then (return))))
     (nreverse res)))
-      
+
 (defun scan-for-http (line)
   ;; look for http:// in the line and if found return it as
   ;; a link or image lhtml
   ;;
-  
+
   (multiple-value-bind (ok whole)
       (match-regexp "http://[^ 	>]+" line :return :index)
     (if* ok
        then ; found one
 	    (let (http)
 	      (setq http (subseq line (car whole) (cdr whole)))
-	    
+
 	      (values
 	       ; value 1 -- everything before the http
-	       (subseq line 0 (car whole)) 
-	       
-	       ; value 2 - the link 
-	     
+	       (subseq line 0 (car whole))
+
+	       ; value 2 - the link
+
 	       (do ((i (1- (length http)) (1- i)))
 		   ((< i 0)
 		    ; didn't find a . .. set to a link
 		    `((:a :href ,http :target "_blank") (:princ-safe ,http)))
-		 
+
 		 (if* (eq (schar http i) #\.)
 		    then ; found a period
 			 (let ((type (subseq http (1+ i))))
 			   (if* (member type '("gif" "jpg" "png")
 					:test #'equalp)
 			      then ; an image link
-				   (return 
+				   (return
 				     `((:img :src ,http)))
 			      else (setq i 0) ; stop search
 				   ))))
-	       
+
 	       ; value 3 - the rest of the line
 	       (subseq line (cdr whole))))
        else line)))
 
-	     
+
 ;; Chat archiver
 ;;
 ;; The chat archiver stores chat info to files
@@ -1688,7 +1688,7 @@
 
       (format t "Chat archiver awoken~%")
       (setq did-work nil)
-    
+
       ; write out the data
       (dolist (controller (controllers master-controller))
 	(dolist (chat (chats controller))
@@ -1702,14 +1702,14 @@
 		    (archive-chat chat)
 		    (setq did-work t)))))
 
-      ; adjust archive time so that we sleep longer when 
+      ; adjust archive time so that we sleep longer when
       ; the chat is inactive.
-      (if* did-work 
+      (if* did-work
 	 then (setq sleep-time 30)
-	 else (setq sleep-time (min (+ sleep-time 30) 
+	 else (setq sleep-time (min (+ sleep-time 30)
 				    (* 30 60) ; 30 minutes
 				    )))
-      
+
       (format t "Chat archiver going to sleep~%")
       (sleep sleep-time))))
 
@@ -1722,8 +1722,8 @@
   (let ((messages (chat-messages chat))
 	(message-next (chat-message-next chat))
 	(message-archive (chat-message-archive chat)))
-    
-    ; we have to find the location of the 
+
+    ; we have to find the location of the
     ; message-archive message
     (if* (> message-next 0)
        then ; it better be greater than 0 since to be zero
@@ -1741,15 +1741,15 @@
 		(do ((i start-to-save (1+ i)))
 		    ((>= i message-next))
 		  (pprint (svref messages i) archive-port)))
-	      
+
 	      (setf (chat-message-archive chat) (1+ last-mnum))))))
-	      
+
 
 (defun archive-filename (chat)
   (format nil "~a/~a" *chat-home* (chat-filename chat)))
 
 
-	
+
 (defmethod set-style ((style color-style))
   (setq *top-frame-bgcolor*     (color-style-bgcolor style)
 	*top-frame-font-color*  (color-style-font-color style)
@@ -1771,8 +1771,8 @@
   (let* ((query-alist (form-urlencoded-to-query uc-string))
 	 (u (cdr (assoc "u" query-alist :test #'equalp)))
 	 (c (cdr (assoc "c" query-alist :test #'equalp))))
-    
-    (let ((chat 
+
+    (let ((chat
 	   (dolist (controller (controllers *master-controller*))
 	     (if* (equal u (ustring controller))
 		then (return
@@ -1781,10 +1781,10 @@
 			    then (return chat))))))))
       (if* (null chat)
 	 then (error "can't find chat with uc-string ~s" uc-string))
-      
+
       (with-open-file (*html-stream* filename :direction :output
 		       :if-exists :supersede)
-	(html 
+	(html
 	 (:head
 	  (:title "Transcript of "
 		  (:princ-safe (chat-name chat))))
@@ -1792,9 +1792,9 @@
 	  (:h1 "Transcript of "
 	       (:princ-safe (chat-name chat)))
 	  (show-chat-info chat (chat-message-next chat) nil nil nil)))))))
-		     
-		     
-			 
+
+
+
 ;;  viewer tracking
 
 (defun track-viewer (chat user req)
@@ -1802,12 +1802,12 @@
   (let* ((time (get-universal-time))
 	 (viewers (chat-viewers chat))
 	 (ipaddr (if* (null user)
-		    then (socket:remote-host 
+		    then (socket:remote-host
 			  (request-socket req))))
 	 (empty-ent))
-    
+
     (mp::with-process-lock ((viewers-lock viewers))
-      
+
       ;; scan list of viewers.
       ;; set emptyent to the first viewent with a null time, thus meaning
       ;;  it's a free entry
@@ -1819,8 +1819,8 @@
 			(setf (viewent-time empty-ent) time
 			      (viewent-user empty-ent) user
 			      (viewent-ipaddr empty-ent) ipaddr)
-		   else 
-			(push (setq empty-ent 
+		   else
+			(push (setq empty-ent
 				(make-viewent :time time
 					      :user user
 					      :ipaddr ipaddr))
@@ -1850,19 +1850,19 @@
 	(user (user-from-req req))
 	(time (get-universal-time))
 	(is-owner
-	  (equal (and chat (secret-key chat)) 
+	  (equal (and chat (secret-key chat))
 		 (request-query-value "s" req)))
 	(qstring)
 	(viewers))
     (if* (null chat)
        then (return-from chatviewers (ancient-link-error req ent)))
-    
+
     (setq qstring
       (add-secret req
 		  (add-user req
 			    (chat-query-string chat))))
     (setq viewers (chat-viewers chat))
-    
+
     (with-http-response (req ent)
       (with-http-body (req ent)
 	(html
@@ -1871,7 +1871,7 @@
 		  :content
 		  (format nil "30;url=chatviewers?~a" qstring)))
 	  (:body
-	   
+
 	   ((:font :size 1)
 	    ((:a :href (concatenate 'string
 			 "chatenter?pp=*&" qstring)
@@ -1885,19 +1885,19 @@
 		       (vuser (viewent-user viewent))
 		       (alive-time (if* vtime then (- time vtime)))
 		       )
-		  
+
 		  (if* (and alive-time
 			    (> alive-time *max-active-time*))
 		     then (setq vtime nil)
 			  (setf (viewent-time viewent) nil))
-		  
+
 		  (if* vtime
 		     then (if* (not (eq vuser user))
 			     then ; list this one
 				  (if* vuser
 				     then ; link to create a private message
 					  (html
-					   ((:a :href 
+					   ((:a :href
 						(format nil
 							"chatenter?pp=~a&~a"
 							(user-ustring vuser)
@@ -1926,36 +1926,36 @@
 						      (socket:ipaddr-to-dotted
 						       (viewent-ipaddr
 							viewent))))
-					    
+
 					  (html
 					   (:princ name)))
 				     else ; ip address
-						    
+
 					  (html
 					   (:princ
 					    (socket:ipaddr-to-dotted
 					     (viewent-ipaddr viewent)))))
-				  (html 
+				  (html
 				   " ("
 				   (:princ (- time vtime))
 				   "s)"
 				   :br))))))))))))))
-						
-					  
-	    
-		   
-    
-  
-      
-			
-    
 
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ;;;;; chat test code
 ;;
 ;;
@@ -1964,24 +1964,24 @@
   (dotimes (i testers)
     (let ((name (format nil "tester-~d" i))
 	  (delay (max 1 (random 10))))
-      
+
       (mp:process-run-function name
 			       #'(lambda ()
 				   (apply #'test-chat
 					  :name name
 					  :delay delay
 					  args))))))
-					  
 
 
-				 
-  
-  
+
+
+
+
 
 
 (defun test-chat (&key uc-string
-		       (count 100) 
-		       (reads 5) 
+		       (count 100)
+		       (reads 5)
 		       (delay 2)
 		       (name "dummy1")
 		       (machine "localhost")
@@ -1995,12 +1995,12 @@
 		 (query-to-form-urlencoded
 		  `(("count" . 10)
 		    ("secs" . 5)))))
-	(post-url 
+	(post-url
 	 (format nil "http://~a:~d/chatenter?~a"
 		 machine
 		 port
 		 uc-string)))
-		  
+
   (dotimes (i count)
     ; post first
     (let ((message (format nil "message ~d from ~a~%" i name)))
@@ -2017,5 +2017,3 @@
 	  :method :get
 	  :protocol protocol)
 	(sleep delay))))))
-      
-	  

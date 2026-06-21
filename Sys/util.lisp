@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	File:		util.lisp
-;;;;	Contents:	
+;;;;	Contents:
 ;;;;	History:	11/9/96  RGC  Created.
 ;;;;
 
@@ -13,7 +13,7 @@
 ;;;
 (defmacro with-output-to-string ((var &optional string) &rest forms)
 	(let ((str-var (gensym)))
-		`(let ((,var (make-string-output-stream)) (ret ,string) ,str-var)	
+		`(let ((,var (make-string-output-stream)) (ret ,string) ,str-var)
 			(unwind-protect
 				(progn
 					(let ()		; establish a let block to allow declarations
@@ -29,12 +29,12 @@
 ;
 ;	Common Lisp MISMATCH function.
 ;
-(defun mismatch (sequence1 sequence2 
+(defun mismatch (sequence1 sequence2
 		&key (from-end nil)
-			 (test #'eql) 
+			 (test #'eql)
 			 (test-not nil)
 			 (key nil)
-			 (start1 0) 
+			 (start1 0)
 			 (start2 0)
 			 (end1 (length sequence1))
 			 (end2 (length sequence2)))
@@ -48,14 +48,14 @@
 	(if from-end
 		;; loop backward
 		(do* ((i1 start1 (1+ i1))
-			  (i2 start2 (1+ i2)) 
+			  (i2 start2 (1+ i2))
 			  x1 x2)
 			((and (>= i1 end1) (>= i2 end2)) nil)
 			(if (>= i1 end1) (return i1))
 			(if (>= i2 end2) (return i1))
 			(setq x1 (elt sequence1 i1))
 			(setq x2 (elt sequence2 i2))
-			(if key 
+			(if key
 				(progn
 					(setq x1 (funcall key x1))
 					(setq x2 (funcall key x2))))
@@ -81,12 +81,12 @@
 ;
 ;	Common Lisp SEARCH function.
 ;
-(defun search (sequence1 sequence2 
+(defun search (sequence1 sequence2
 		&key (from-end nil)
-			 (test #'eql) 
+			 (test #'eql)
 			 (test-not nil)
 			 (key nil)
-			 (start1 0) 
+			 (start1 0)
 			 (start2 0)
 			 (end1 (length sequence1))
 			 (end2 (length sequence2)))
@@ -99,7 +99,7 @@
 
 	(if from-end
 		;; loop backward
-		(do* ((i (1- end2) (1- i)) 
+		(do* ((i (1- end2) (1- i))
 			  compare)
 			((< i start2) nil)
 			(setq compare (mismatch sequence1 sequence2 :test test
@@ -108,7 +108,7 @@
 				(return i)))
 
 		;;; else go forward
-		(do* ((i start2 (1+ i)) 
+		(do* ((i start2 (1+ i))
 			  compare)
 			((>= i end2) nil)
 			(setq compare (mismatch sequence1 sequence2 :test test
@@ -161,7 +161,7 @@
     (let ((temp-var (gensym)))
     	`(let ((,temp-var ,critical-section))
             (if ,temp-var
-                (unwind-protect 
+                (unwind-protect
             		(progn (enter-critical-section ,temp-var)
             			,@body)
             		(leave-critical-section ,temp-var))
@@ -178,4 +178,3 @@
 		`(defun ,name ,lambda-list
 			,@(nreverse decls)
 			(with-synchronization ,sync-object ,@body))))
-

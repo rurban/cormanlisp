@@ -1,7 +1,7 @@
 ;;;; Telnet Listener for Corman Lisp - Version 1.0
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
@@ -33,22 +33,22 @@
 ;;;;
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
-;;;; 
-;;;; Comments, suggestions and bug reports to the author, 
+;;;;
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 16/09/2000 - 1.0 
+;;;; 16/09/2000 - 1.0
 ;;;;              Initial release.
 ;;;;              Requires the multiprocessing and sockets packages.
-;;;;              Very simple listener. Needs more work to enable 
+;;;;              Very simple listener. Needs more work to enable
 ;;;;              rubout handling, more vt100 translation, etc.
 ;;;;
 (require 'sockets)
 (require 'mp)
 
 (defpackage "TELNET-LISTENER"
-	(:use 
-		:COMMON-LISP 
+	(:use
+		:COMMON-LISP
 		:SOCKETS
 		:MP)
 	(:export
@@ -113,7 +113,7 @@
 (defun telnet-toplevel ()
 	"Toplevel read-eval-print loop for the telnet listener."
 	(loop
-		for form = (progn 
+		for form = (progn
 			(format *standard-output* "~&>")
 			(force-output)
 			(read *standard-input* nil :eof))
@@ -144,7 +144,7 @@
 (defun telnet-listener-daemon (port)
 	"Listens for telnet connections on a given port, spawning
 	processes to handle the connections as they occur. Runs
-	indefinitely or until it finds :QUIT in the 
+	indefinitely or until it finds :QUIT in the
 	*mp-server-quit-table* under its port number."
 	(let ((s (make-server-socket ::host "0.0.0.0" :port port)))
 		(setf (gethash port *mp-server-quit-table*) :running)
@@ -180,10 +180,10 @@
 		(setf (gethash port *mp-server-quit-table*) :quit)
 		(process-run-function
 			(format nil "telnet-listener-closer-~A" port)
-			#'(lambda ()		 
+			#'(lambda ()
 				(ignore-errors
 					(with-client-socket (s :host "127.0.0.1" :port port)))))))
-	
+
 (provide 'telnet-listener)
 
 #|

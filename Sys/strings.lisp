@@ -2,7 +2,7 @@
 ;;;;	Copyright (c) Corman Technologies Inc.
 ;;;;	See LICENSE.txt for license information.
 ;;;;	-------------------------------
-;;;;	
+;;;;
 ;;;;	File:		strings.lisp
 ;;;;	Contents:	Corman Lisp string functions.
 ;;;;	History:	3/4/97  RGC  Created.
@@ -31,10 +31,10 @@
 ;;;
 ;;;	Common Lisp string= function.
 ;;;
-(defun string= (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string= (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -52,10 +52,10 @@
 ;;;
 ;;;	Common Lisp string/= function.
 ;;;
-(defun string/= (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string/= (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -72,10 +72,10 @@
 ;;;
 ;;;	Common Lisp string< function.
 ;;;
-(defun string< (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string< (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -94,10 +94,10 @@
 ;;;
 ;;;	Common Lisp string> function.
 ;;;
-(defun string> (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string> (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -116,10 +116,10 @@
 ;;;
 ;;;	Common Lisp string<= function.
 ;;;
-(defun string<= (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string<= (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -138,10 +138,10 @@
 ;;;
 ;;;	Common Lisp string>= function.
 ;;;
-(defun string>= (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string>= (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -160,10 +160,10 @@
 ;;;
 ;;;	Common Lisp string-equal function.
 ;;;
-(defun string-equal (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string-equal (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -181,10 +181,10 @@
 ;;;
 ;;;	Common Lisp string-not-equal function.
 ;;;
-(defun string-not-equal (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string-not-equal (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -201,10 +201,10 @@
 ;;;
 ;;;	Common Lisp STRING-LESSP function.
 ;;;
-(defun string-lessp (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string-lessp (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -223,10 +223,10 @@
 ;;;
 ;;;	Common Lisp STRING-GREATERP function.
 ;;;
-(defun string-greaterp (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string-greaterp (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -245,10 +245,10 @@
 ;;;
 ;;;	Common Lisp STRING-NOT-GREATERP function.
 ;;;
-(defun string-not-greaterp (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string-not-greaterp (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -267,10 +267,10 @@
 ;;;
 ;;;	Common Lisp STRING-NOT-LESSP function.
 ;;;
-(defun string-not-lessp (x y 
-				&key (start1 0) 
-					 (end1 nil) 
-					 (start2 0) 
+(defun string-not-lessp (x y
+				&key (start1 0)
+					 (end1 nil)
+					 (start2 0)
 					 (end2 nil))
 	(ensure-string x)
 	(ensure-string y)
@@ -321,5 +321,3 @@
 (defun make-string (size &key (initial-element #\Space) element-type)
 	(declare (ignore element-type))
 	(make-array size :element-type 'character :initial-element initial-element))
-
-

@@ -14,11 +14,11 @@
 
 (defun uvector-type-of (x)
 	(let ((tag (uvector-type-bits x)))
-		(cond 
+		(cond
 			((eq tag uvector-symbol-tag) 'symbol)
 			((eq tag uvector-function-tag) 'function)
 			((eq tag uvector-kfunction-tag) 'function)
-			((eq tag uvector-structure-tag) 
+			((eq tag uvector-structure-tag)
 				(let ((template (uref x 1)))
 					(if (vectorp template) (elt template 0) 'structure-object)))
 			((eq tag uvector-array-tag) 'array)
@@ -35,7 +35,7 @@
 
 (defun type-of (x)
 	(let ((tag (tag-bits x)))
-		(cond 
+		(cond
 			((eq tag 0) 'fixnum)
 			((eq tag 4) 'cons)
 			((eq tag 1) 'character)
@@ -50,7 +50,7 @@
 (defmacro declare-type-specifier (type-specifier-symbol &rest exprs)
 	`(install-type-specifier ',type-specifier-symbol #'(lambda ,@exprs)))
 
-;;;; Returns true if the passed object is a symbol which 
+;;;; Returns true if the passed object is a symbol which
 ;;;; represents a type.
 (defun is-symbol-type-specifier (sym)
 	(and (symbolp sym) (get sym 'type-discriminator)))
@@ -61,7 +61,7 @@
 ;;;;
 (defun type-expansion (symbol) (get symbol :type-expansion))
 (defun |(SETF TYPE-EXPANSION)| (func symbol) (setf (get symbol :type-expansion) func))
-(register-setf-function 'type-expansion '|(SETF TYPE-EXPANSION)|) 
+(register-setf-function 'type-expansion '|(SETF TYPE-EXPANSION)|)
 
 (defun typeexpand (x)
 	(do ()
@@ -84,7 +84,7 @@
 
 ;;;;
 ;;;;	Common Lisp TYPEP function
-;;;;	
+;;;;
 (defun get-type-discriminator (type-symbol type-expression obj)
 	(declare (ignore obj))
 	(unless (symbolp type-symbol)
@@ -95,12 +95,12 @@
 		type-func))
 
 (defun _typep (object type-expression)
-	(funcall 
-		(get-type-discriminator 
-			(if (consp type-expression)(car type-expression) type-expression) 
+	(funcall
+		(get-type-discriminator
+			(if (consp type-expression)(car type-expression) type-expression)
 			type-expression
-			object) 
-		object 
+			object)
+		object
 		type-expression))
 
 (defun typep (object type-expression)
@@ -150,8 +150,8 @@
                 doc-string
                 declarations
                 forms
-                
-                ;;; use do loop instead of 
+
+                ;;; use do loop instead of
                 ;;; (remove-if-not (function decl-form?) forms)
                 ;;; since remove-if-not is not defined yet
                 (do ((bad-decls nil)
@@ -159,7 +159,7 @@
                     ((not (consp f)) (nreverse bad-decls))
                     (if (funcall (function decl-form?) (car f))
                         (push (car f) bad-decls)))))))
-		
+
 ;;;;
 ;;;;	Common Lisp DEFTYPE macro.
 ;;;;
@@ -169,32 +169,32 @@
         (multiple-value-bind (doc-string decls body-forms bad-decls)
             (parse-doc-decls-body forms)
             (when doc-string
-                (setq doc-form 
+                (setq doc-form
                     `((setf (documentation ',name 'type) ,doc-string))))
             (when bad-decls
                 (dolist (bd bad-decls)
-                    (warn "~A (DEFTYPE ~A ...): ~A~%~A~%" 
-                        "Declaration found in wrong place in" 
-                        name 
+                    (warn "~A (DEFTYPE ~A ...): ~A~%~A~%"
+                        "Declaration found in wrong place in"
+                        name
                         bd
                         ";;;  (The declaration will be ignored.)")
                     (setq body-forms (remove bd body-forms))))
-            (setq lambda-form 
+            (setq lambda-form
                 `(lambda (form &optional env)
                     (declare (ignore env ,@(unless lambda-list '(form))))
                     (block ,name
                         ,@(if lambda-list
-                            `((type-destructuring-bind 
-                                    ,lambda-list 
-                                    (cdr form) 
+                            `((type-destructuring-bind
+                                    ,lambda-list
+                                    (cdr form)
                                     ,@decls
                                     ,@body-forms))
                             `((locally ,@decls ,@body-forms))))))
-            
+
             `(eval-when (:compile-toplevel :load-toplevel :execute)
                 ,@doc-form
                 (setf (type-expansion ',name) (function ,lambda-form))
-                ',name)))) 
+                ',name))))
 
 ;;;; standard type specifiers
 (declare-type-specifier array (x specifier)
@@ -235,7 +235,7 @@
 	(functionp x))
 
 (declare-type-specifier complex (x specifier)
-	(and (complexp x) 
+	(and (complexp x)
 		(let ((type (second specifier)))
 			(or (null type)
 				(and (typep (realpart x) type) (typep (imagpart x) type))))))
@@ -268,7 +268,7 @@
 	(cond
 		((symbolp specifier) (fixnump x))
 		((not (fixnump x)) nil)
-		(t 
+		(t
 		 (let ((low (second specifier))
 			   (high (third specifier)))
 			(if (eq low '*) (setq low nil))
@@ -291,18 +291,18 @@
 	(cond
 		((symbolp specifier) (integerp x))
 		((not (integerp x)) nil)
-		(t 
+		(t
 		 (let ((low (second specifier))
 			   (high (third specifier)))
 			(if (eq low '*) (setq low nil))
 			(if (eq high '*)(setq high nil))
-                
+
             ;; handle exclusive specifiers (listed integer bound)
             (if (and (consp low)(integerp (car low)))
                     (setf low (+ (car low) 1)))
             (if (and (consp high)(integerp (car high)))
                     (setf high (- (car high) 1)))
-                
+
 			(and (if low (>= x low) t) (if high (<= x high) t))))))
 
 (declare-type-specifier keyword (x specifier)
@@ -312,7 +312,7 @@
 (declare-type-specifier list (x specifier)
 	(declare (ignore specifier))
 	(listp x))
-			
+
 (declare-type-specifier nil (x specifier)
 	(declare (ignore specifier x))
 	nil)
@@ -368,7 +368,7 @@
 				(if (eq size '*)
 					t
 					(let ((limit (expt 2 (- size 1))))
-						(and (> size 0) 
+						(and (> size 0)
 							(>= x (- limit))
 							(< x limit))))))))
 
@@ -494,6 +494,3 @@
 (declare-type-specifier boolean (x specifier)
 	(declare (ignore specifier))
 	(or (eq x 't) (eq x 'nil) x))
-
-
-	

@@ -214,7 +214,7 @@ and else-subforms by differing amounts.)
 == Customization (`.lispwords.lua`)
 
 `~/.lispwords.lua`, used by the Lua version, employs a different
-format than `~/.lispwords`. It ``return``s a 
+format than `~/.lispwords`. It ``return``s a
 Lua table, whose keys are strings corresponding to Lisp keywords,
 and whose values are their corresponding Lisp indent numbers.
 Keywords sharing the same Lisp indent number cannot be bunched.
@@ -244,4 +244,4 @@ be specified as follows in `lispwords.json`:
     "unless": 1,
     "do": 2,
     "defun": 2
-  } 
+  }

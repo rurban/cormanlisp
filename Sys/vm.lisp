@@ -8,31 +8,31 @@
 ;;;;
 (in-package :win32)
 
-(defconstant PAGE_NOACCESS          #x01)     
-(defconstant PAGE_READONLY          #x02)     
-(defconstant PAGE_READWRITE         #x04)     
-(defconstant PAGE_WRITECOPY         #x08)     
-(defconstant PAGE_EXECUTE           #x10)     
-(defconstant PAGE_EXECUTE_READ      #x20)     
-(defconstant PAGE_EXECUTE_READWRITE #x40)     
-(defconstant PAGE_EXECUTE_WRITECOPY #x80)     
-(defconstant PAGE_GUARD            #x100)     
-(defconstant PAGE_NOCACHE          #x200)     
-(defconstant MEM_COMMIT           #x1000)     
-(defconstant MEM_RESERVE          #x2000)     
-(defconstant MEM_DECOMMIT         #x4000)     
-(defconstant MEM_RELEASE          #x8000)     
-(defconstant MEM_FREE            #x10000)     
-(defconstant MEM_PRIVATE         #x20000)     
-(defconstant MEM_MAPPED          #x40000)     
-(defconstant MEM_RESET           #x80000)     
-(defconstant MEM_TOP_DOWN       #x100000)     
-(defconstant SEC_FILE           #x800000)     
-(defconstant SEC_IMAGE         #x1000000)     
-(defconstant SEC_RESERVE       #x4000000)     
-(defconstant SEC_COMMIT        #x8000000)     
-(defconstant SEC_NOCACHE      #x10000000)     
-(defconstant MEM_IMAGE         SEC_IMAGE)     
+(defconstant PAGE_NOACCESS          #x01)
+(defconstant PAGE_READONLY          #x02)
+(defconstant PAGE_READWRITE         #x04)
+(defconstant PAGE_WRITECOPY         #x08)
+(defconstant PAGE_EXECUTE           #x10)
+(defconstant PAGE_EXECUTE_READ      #x20)
+(defconstant PAGE_EXECUTE_READWRITE #x40)
+(defconstant PAGE_EXECUTE_WRITECOPY #x80)
+(defconstant PAGE_GUARD            #x100)
+(defconstant PAGE_NOCACHE          #x200)
+(defconstant MEM_COMMIT           #x1000)
+(defconstant MEM_RESERVE          #x2000)
+(defconstant MEM_DECOMMIT         #x4000)
+(defconstant MEM_RELEASE          #x8000)
+(defconstant MEM_FREE            #x10000)
+(defconstant MEM_PRIVATE         #x20000)
+(defconstant MEM_MAPPED          #x40000)
+(defconstant MEM_RESET           #x80000)
+(defconstant MEM_TOP_DOWN       #x100000)
+(defconstant SEC_FILE           #x800000)
+(defconstant SEC_IMAGE         #x1000000)
+(defconstant SEC_RESERVE       #x4000000)
+(defconstant SEC_COMMIT        #x8000000)
+(defconstant SEC_NOCACHE      #x10000000)
+(defconstant MEM_IMAGE         SEC_IMAGE)
 
 (defconstant mem-flag-strings
 (list
@@ -70,7 +70,7 @@
 			((null p))
 			(unless (zerop (logand flags flag))
 				(format out-string "~A " string)))))
- 
+
 
 (ct:defcstruct MEMORY_BASIC_INFORMATION
 	((BaseAddress (:void *))
@@ -81,7 +81,7 @@
 	 (Protect :unsigned-long)
 	 (Type :unsigned-long)))
 
-(ct:defun-dll VirtualQuery 
+(ct:defun-dll VirtualQuery
 		((lpAddress (:void *))
 		 (lpBuffer (:void *))
 		 (dwLength :unsigned-long))

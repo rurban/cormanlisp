@@ -8,13 +8,11 @@ Copyright (C) 2003-2016 Gil Dabah
 This library is licensed under the BSD license. See the file COPYING.
 */
 
-
 #include "prefix.h"
 
 #include "x86defs.h"
 #include "instructions.h"
 #include "../include/mnemonics.h"
-
 
 /*
  * The main purpose of this module is to keep track of all kind of prefixes a single instruction may have.
@@ -24,7 +22,8 @@ This library is licensed under the BSD license. See the file COPYING.
 
 int prefixes_is_valid(unsigned int ch, _DecodeType dt)
 {
-	switch (ch) {
+	switch (ch)
+	{
 		/* for i in xrange(0x40, 0x50): print "case 0x%2x:" % i */
 		case 0x40: /* REX: */
 		case 0x41:
@@ -67,7 +66,8 @@ void prefixes_ignore(_PrefixState* ps, _PrefixIndexer pi)
 	 * If that type of prefix appeared already, set the bit of that *former* prefix.
 	 * Anyway, set the new index of that prefix type to the current index, so next time we know its position.
 	 */
-	if (ps->pfxIndexer[pi] != PFXIDX_NONE) ps->unusedPrefixesMask |= (1 << ps->pfxIndexer[pi]);
+	if (ps->pfxIndexer[pi] != PFXIDX_NONE)
+		ps->unusedPrefixesMask |= (1 << ps->pfxIndexer[pi]);
 }
 
 /* Ignore all prefix. */
@@ -102,11 +102,16 @@ uint16_t prefixes_set_unused_mask(_PrefixState* ps)
 	 * It's not a big problem, because the prefixes_ignore func will ignore it anyway,
 	 * since it wasn't seen earlier. But it's important to know this.
 	 */
-	if (unusedPrefixesDiff & INST_PRE_REX) prefixes_ignore(ps, PFXIDX_REX);
-	if (unusedPrefixesDiff & INST_PRE_SEGOVRD_MASK) prefixes_ignore(ps, PFXIDX_SEG);
-	if (unusedPrefixesDiff & INST_PRE_LOKREP_MASK) prefixes_ignore(ps, PFXIDX_LOREP);
-	if (unusedPrefixesDiff & INST_PRE_OP_SIZE) prefixes_ignore(ps, PFXIDX_OP_SIZE);
-	if (unusedPrefixesDiff & INST_PRE_ADDR_SIZE) prefixes_ignore(ps, PFXIDX_ADRS);
+	if (unusedPrefixesDiff & INST_PRE_REX)
+		prefixes_ignore(ps, PFXIDX_REX);
+	if (unusedPrefixesDiff & INST_PRE_SEGOVRD_MASK)
+		prefixes_ignore(ps, PFXIDX_SEG);
+	if (unusedPrefixesDiff & INST_PRE_LOKREP_MASK)
+		prefixes_ignore(ps, PFXIDX_LOREP);
+	if (unusedPrefixesDiff & INST_PRE_OP_SIZE)
+		prefixes_ignore(ps, PFXIDX_OP_SIZE);
+	if (unusedPrefixesDiff & INST_PRE_ADDR_SIZE)
+		prefixes_ignore(ps, PFXIDX_ADRS);
 	/* If a VEX instruction was found, its prefix is considered as used, therefore no point for checking for it. */
 
 	return ps->unusedPrefixesMask;
@@ -127,7 +132,8 @@ _INLINE_ void prefixes_track_unused(_PrefixState* ps, int index, _PrefixIndexer 
  * Read as many prefixes as possible, up to 15 bytes, and halt when we encounter non-prefix byte.
  * This algorithm tries to imitate a real processor, where the same prefix can appear a few times, etc.
  * The tiny complexity is that we want to know when a prefix was superfluous and mark any copy of it as unused.
- * Note that the last prefix of its type will be considered as used, and all the others (of same type) before it as unused.
+ * Note that the last prefix of its type will be considered as used, and all the others (of same type) before it as
+ * unused.
  */
 void prefixes_decode(const uint8_t* code, int codeLen, _PrefixState* ps, _DecodeType dt)
 {
@@ -145,9 +151,8 @@ void prefixes_decode(const uint8_t* code, int codeLen, _PrefixState* ps, _Decode
 	 * We attach all prefixes to the next instruction, there might be two or more occurrences from the same prefix.
 	 * Also, since VEX can be allowed only once we will test it separately.
 	 */
-	for (index = 0, done = FALSE;
-		 (codeLen > 0) && (code - ps->start < INST_MAXIMUM_SIZE);
-		 code++, codeLen--, index++) {
+	for (index = 0, done = FALSE; (codeLen > 0) && (code - ps->start < INST_MAXIMUM_SIZE); code++, codeLen--, index++)
+	{
 		/*
 		NOTE: AMD treat lock/rep as two different groups... But I am based on Intel.
 
@@ -194,82 +199,86 @@ void prefixes_decode(const uint8_t* code, int codeLen, _PrefixState* ps, _Decode
 			case 0x4d:
 			case 0x4e:
 			case 0x4f:
-				if (dt == Decode64Bits) {
+				if (dt == Decode64Bits)
+				{
 					ps->decodedPrefixes |= INST_PRE_REX;
 					ps->vrex = *code & 0xf; /* Keep only BXRW. */
 					ps->rexPos = code;
 					ps->prefixExtType = PET_REX;
 					prefixes_track_unused(ps, index, PFXIDX_REX);
-				} else done = TRUE; /* If we are not in 64 bits mode, it's an instruction, then halt. */
-			break;
+				}
+				else
+					done = TRUE; /* If we are not in 64 bits mode, it's an instruction, then halt. */
+				break;
 
 			/* LOCK and REPx type: */
 			case PREFIX_LOCK:
 				ps->decodedPrefixes |= INST_PRE_LOCK;
 				prefixes_track_unused(ps, index, PFXIDX_LOREP);
-			break;
+				break;
 			case PREFIX_REPNZ:
 				ps->decodedPrefixes |= INST_PRE_REPNZ;
 				prefixes_track_unused(ps, index, PFXIDX_LOREP);
-			break;
+				break;
 			case PREFIX_REP:
 				ps->decodedPrefixes |= INST_PRE_REP;
 				prefixes_track_unused(ps, index, PFXIDX_LOREP);
-			break;
+				break;
 
 			/* Seg Overide type: */
 			case PREFIX_CS:
 				ps->decodedPrefixes |= INST_PRE_CS;
 				prefixes_track_unused(ps, index, PFXIDX_SEG);
-			break;
+				break;
 			case PREFIX_SS:
 				ps->decodedPrefixes |= INST_PRE_SS;
 				prefixes_track_unused(ps, index, PFXIDX_SEG);
-			break;
+				break;
 			case PREFIX_DS:
 				ps->decodedPrefixes |= INST_PRE_DS;
 				prefixes_track_unused(ps, index, PFXIDX_SEG);
-			break;
+				break;
 			case PREFIX_ES:
 				ps->decodedPrefixes |= INST_PRE_ES;
 				prefixes_track_unused(ps, index, PFXIDX_SEG);
-			break;
+				break;
 			case PREFIX_FS:
 				ps->decodedPrefixes |= INST_PRE_FS;
 				prefixes_track_unused(ps, index, PFXIDX_SEG);
-			break;
+				break;
 			case PREFIX_GS:
 				ps->decodedPrefixes |= INST_PRE_GS;
 				prefixes_track_unused(ps, index, PFXIDX_SEG);
-			break;
+				break;
 
 			/* Op Size type: */
 			case PREFIX_OP_SIZE:
 				ps->decodedPrefixes |= INST_PRE_OP_SIZE;
 				prefixes_track_unused(ps, index, PFXIDX_OP_SIZE);
-			break;
+				break;
 
 			/* Addr Size type: */
 			case PREFIX_ADDR_SIZE:
 				ps->decodedPrefixes |= INST_PRE_ADDR_SIZE;
 				prefixes_track_unused(ps, index, PFXIDX_ADRS);
-			break;
+				break;
 
 			/* Non-prefix byte now, so break 2. */
 			default: done = TRUE; break;
 		}
-		if (done) break;
+		if (done)
+			break;
 	}
 
 	/* 2 Bytes VEX: */
-	if ((codeLen >= 2) &&
-		(*code == PREFIX_VEX2b) &&
-		((code - ps->start) <= INST_MAXIMUM_SIZE - 2)) {
+	if ((codeLen >= 2) && (*code == PREFIX_VEX2b) && ((code - ps->start) <= INST_MAXIMUM_SIZE - 2))
+	{
 		/*
 		 * In 32 bits the second byte has to be in the special range of Mod=11.
 		 * Otherwise it might be a normal LDS instruction.
 		 */
-		if ((dt == Decode64Bits) || (*(code + 1) >= INST_DIVIDED_MODRM)) {
+		if ((dt == Decode64Bits) || (*(code + 1) >= INST_DIVIDED_MODRM))
+		{
 			ps->vexPos = code + 1;
 			ps->decodedPrefixes |= INST_PRE_VEX;
 			ps->prefixExtType = PET_VEX2BYTES;
@@ -283,24 +292,26 @@ void prefixes_decode(const uint8_t* code, int codeLen, _PrefixState* ps, _Decode
 
 			/* -- Convert from VEX prefix to VREX flags -- */
 			vex = *ps->vexPos;
-			if (~vex & 0x80 && dt == Decode64Bits) ps->vrex |= PREFIX_EX_R; /* Convert VEX.R. */
-			if (vex & 4) ps->vrex |= PREFIX_EX_L; /* Convert VEX.L. */
+			if (~vex & 0x80 && dt == Decode64Bits)
+				ps->vrex |= PREFIX_EX_R; /* Convert VEX.R. */
+			if (vex & 4)
+				ps->vrex |= PREFIX_EX_L; /* Convert VEX.L. */
 
 			code += 2;
 		}
 	}
 
 	/* 3 Bytes VEX: */
-	if ((codeLen >= 3) &&
-		(*code == PREFIX_VEX3b) &&
-		((code - ps->start) <= INST_MAXIMUM_SIZE - 3) &&
-		(~ps->decodedPrefixes & INST_PRE_VEX)) {
+	if ((codeLen >= 3) && (*code == PREFIX_VEX3b) && ((code - ps->start) <= INST_MAXIMUM_SIZE - 3) &&
+		(~ps->decodedPrefixes & INST_PRE_VEX))
+	{
 		/*
 		 * In 32 bits the second byte has to be in the special range of Mod=11.
 		 * Otherwise it might be a normal LES instruction.
 		 * And we don't care now about the 3rd byte.
 		 */
-		if ((dt == Decode64Bits) || (*(code + 1) >= INST_DIVIDED_MODRM)) {
+		if ((dt == Decode64Bits) || (*(code + 1) >= INST_DIVIDED_MODRM))
+		{
 			ps->vexPos = code + 1;
 			ps->decodedPrefixes |= INST_PRE_VEX;
 			ps->prefixExtType = PET_VEX3BYTES;
@@ -316,11 +327,14 @@ void prefixes_decode(const uint8_t* code, int codeLen, _PrefixState* ps, _Decode
 			vex = *ps->vexPos;
 			ps->vrex |= ((~vex >> 5) & 0x7); /* Shift and invert VEX.R/X/B to their place */
 			vex = *(ps->vexPos + 1);
-			if (vex & 4) ps->vrex |= PREFIX_EX_L; /* Convert VEX.L. */
-			if (vex & 0x80) ps->vrex |= PREFIX_EX_W; /* Convert VEX.W. */
+			if (vex & 4)
+				ps->vrex |= PREFIX_EX_L; /* Convert VEX.L. */
+			if (vex & 0x80)
+				ps->vrex |= PREFIX_EX_W; /* Convert VEX.W. */
 
 			/* Clear some flags if the mode isn't 64 bits. */
-			if (dt != Decode64Bits) ps->vrex &= ~(PREFIX_EX_B | PREFIX_EX_X | PREFIX_EX_R | PREFIX_EX_W);
+			if (dt != Decode64Bits)
+				ps->vrex &= ~(PREFIX_EX_B | PREFIX_EX_X | PREFIX_EX_R | PREFIX_EX_W);
 
 			code += 3;
 		}
@@ -328,7 +342,8 @@ void prefixes_decode(const uint8_t* code, int codeLen, _PrefixState* ps, _Decode
 
 	/*
 	 * Save last byte scanned address, so the decoder could keep on scanning from this point and on and on and on.
-	 * In addition the decoder is able to know that the last byte could lead to MMX/SSE instructions (preceding REX if exists).
+	 * In addition the decoder is able to know that the last byte could lead to MMX/SSE instructions (preceding REX if
+	 * exists).
 	 */
 	ps->last = code; /* ps->last points to an opcode byte. */
 }
@@ -341,13 +356,18 @@ void prefixes_decode(const uint8_t* code, int codeLen, _PrefixState* ps, _Decode
 void prefixes_use_segment(_iflags defaultSeg, _PrefixState* ps, _DecodeType dt, _DInst* di)
 {
 	_iflags flags = 0;
-	if (dt == Decode64Bits) flags = ps->decodedPrefixes & INST_PRE_SEGOVRD_MASK64;
-	else flags = ps->decodedPrefixes & INST_PRE_SEGOVRD_MASK;
+	if (dt == Decode64Bits)
+		flags = ps->decodedPrefixes & INST_PRE_SEGOVRD_MASK64;
+	else
+		flags = ps->decodedPrefixes & INST_PRE_SEGOVRD_MASK;
 
-	if ((flags == 0) || (flags == defaultSeg)) {
+	if ((flags == 0) || (flags == defaultSeg))
+	{
 		flags = defaultSeg;
 		di->segment |= SEGMENT_DEFAULT;
-	} else if (flags != defaultSeg) {
+	}
+	else if (flags != defaultSeg)
+	{
 		/* Use it only if it's non-default segment. */
 		ps->usedPrefixes |= flags;
 	}
@@ -364,5 +384,6 @@ void prefixes_use_segment(_iflags defaultSeg, _PrefixState* ps, _DecodeType dt, 
 	}
 
 	/* If it's one of the CS,SS,DS,ES and the mode is 64 bits, set segment it to none, since it's ignored. */
-	if ((dt == Decode64Bits) && (flags & INST_PRE_SEGOVRD_MASK32)) di->segment = R_NONE;
+	if ((dt == Decode64Bits) && (flags & INST_PRE_SEGOVRD_MASK32))
+		di->segment = R_NONE;
 }

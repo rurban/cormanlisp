@@ -29,7 +29,7 @@
   (with-slots (stream level) seed
     (indent stream level)
     (format stream "<~a" name)
-    (dolist (attribute (reverse attributes)) 
+    (dolist (attribute (reverse attributes))
       (format stream " ~a=\'" (car attribute))
       (print-string-xml (cdr attribute) stream)
       (write-char #\' stream))
@@ -39,7 +39,7 @@
 
 (defun echo-xml-finish-element-hook (name attributes parent-seed seed)
   (declare (ignore attributes parent-seed))
-  (with-slots (stream level) seed 
+  (with-slots (stream level) seed
     (decf level)
     (indent stream level)
     (format stream "</~a>~%" name)
@@ -51,7 +51,7 @@
     (print-string-xml string stream)
     (terpri stream)
     seed))
-  
+
 (defun echo-xml (in out)
   "Parse a toplevel XML element from stream in, echoing and pretty printing the result to stream out"
   (start-parse-xml in

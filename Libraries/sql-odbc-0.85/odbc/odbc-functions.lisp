@@ -5,7 +5,7 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
@@ -21,7 +21,7 @@
     (values
      (%get-cstring error-message)
      (%get-cstring sql-state)
-     (%get-word msg-length) 
+     (%get-word msg-length)
      (%get-long error-code))))
 
 ; test this: return a keyword for efficiency
@@ -65,29 +65,29 @@
           (progn ,result-code ,@body))))))
 
 (defun %new-environment-handle ()
-  (%with-sql-pointer (phenv) 
+  (%with-sql-pointer (phenv)
     (with-error-handling
       ()
       (SQLAllocEnv phenv)
       (%get-ptr phenv))))
 
 (defun %sql-free-environment (henv)
-  (with-error-handling 
+  (with-error-handling
     (:henv henv)
     (SQLFreeEnv henv)))
 
 (defun %new-db-connection-handle (henv)
-  (%with-sql-pointer (phdbc) 
+  (%with-sql-pointer (phdbc)
     (with-error-handling
       (:henv henv)
       (SQLAllocConnect henv phdbc)
       (%get-ptr phdbc))))
 
 (defun %free-statement (hstmt option)
-  (with-error-handling 
+  (with-error-handling
     (:hstmt hstmt)
-    (SQLFreeStmt 
-     hstmt 
+    (SQLFreeStmt
+     hstmt
      (ecase option
        (:drop $SQL_DROP)
        (:close $SQL_CLOSE)
@@ -106,9 +106,9 @@
   (with-cstr (server-ptr server)
     (with-cstr (uid-ptr uid)
       (with-cstr (pwd-ptr pwd)
-        (with-error-handling 
+        (with-error-handling
           (:hdbc hdbc)
-          (SQLConnect hdbc server-ptr $SQL_NTS uid-ptr 
+          (SQLConnect hdbc server-ptr $SQL_NTS uid-ptr
                       $SQL_NTS pwd-ptr $SQL_NTS))))))
 
 (defun %sql-driver-connect (hdbc connection-string completion-option)
@@ -116,7 +116,7 @@
     (%with-temporary-allocation
      ((complete-connection-str-ptr :string 512)
       (length-ptr :short))
-     (with-error-handling 
+     (with-error-handling
        (:hdbc hdbc)
        (SQLDriverConnect hdbc (%null-ptr) ; no window
                          connection-str-ptr $SQL_NTS
@@ -125,20 +125,20 @@
      (print (%get-cstring complete-connection-str-ptr)))))
 
 (defun %disconnect (hdbc)
-  (with-error-handling 
+  (with-error-handling
     (:hdbc hdbc)
     (SQLDisconnect hdbc)))
 
 (defun %commit (henv hdbc)
-  (with-error-handling 
+  (with-error-handling
     (:henv henv :hdbc hdbc)
-    (SQLTransact 
+    (SQLTransact
      henv hdbc $SQL_COMMIT)))
 
 (defun %rollback (henv hdbc)
-  (with-error-handling 
+  (with-error-handling
     (:henv henv :hdbc hdbc)
-    (SQLTransact 
+    (SQLTransact
      henv hdbc $SQL_ROLLBACK)))
 
 ; col-nr is zero-based in Lisp
@@ -157,7 +157,7 @@
   (with-error-handling
     (:hstmt hstmt)
     (SQLBindParameter hstmt (1+ parameter-nr)
-                      parameter-type ;$SQL_PARAM_INPUT 
+                      parameter-type ;$SQL_PARAM_INPUT
                       c-type ;$SQL_C_CHAR
                       sql-type ;$SQL_VARCHAR
                       precision ;(1- (length str))
@@ -168,15 +168,15 @@
                       )))
 
 (defun %sql-fetch (hstmt)
-  (with-error-handling 
+  (with-error-handling
     (:hstmt hstmt)
     (SQLFetch hstmt)))
 
 (defun %new-statement-handle (hdbc)
-  (%with-sql-pointer (hstmt-ptr) 
-    (with-error-handling 
+  (%with-sql-pointer (hstmt-ptr)
+    (with-error-handling
       (:hdbc hdbc)
-      (SQLAllocStmt hdbc hstmt-ptr) 
+      (SQLAllocStmt hdbc hstmt-ptr)
       (%get-ptr hstmt-ptr))))
 
 (defun %sql-get-info (hdbc info-type)
@@ -217,7 +217,7 @@
       #.$SQL_USER_NAME)
      (%with-temporary-allocation ((info-ptr :string 1024)
                                   (info-length-ptr :short))
-       (with-error-handling 
+       (with-error-handling
          (:hdbc hdbc)
          (SQLGetInfo hdbc info-type info-ptr 1023 info-length-ptr)
          (%get-cstring info-ptr))))
@@ -251,13 +251,13 @@
       #.$SQL_TXN_CAPABLE)
      (%with-temporary-allocation ((info-ptr :short)
                                   (info-length-ptr :short))
-       (with-error-handling 
+       (with-error-handling
          (:hdbc hdbc)
          (SQLGetInfo hdbc info-type info-ptr 255 info-length-ptr)
          (%get-word info-ptr)))
      )
     ;; those returning a long bitmask
-    ((#.$SQL_ALTER_TABLE 
+    ((#.$SQL_ALTER_TABLE
       #.$SQL_BOOKMARK_PERSISTENCE
       #.$SQL_CONVERT_BIGINT
       #.$SQL_CONVERT_BINARY
@@ -304,7 +304,7 @@
       #.$SQL_UNION)
      (%with-temporary-allocation ((info-ptr :long)
                                   (info-length-ptr :short))
-       (with-error-handling 
+       (with-error-handling
          (:hdbc hdbc)
          (SQLGetInfo hdbc info-type info-ptr 255 info-length-ptr)
          (%get-unsigned-long info-ptr)))
@@ -322,11 +322,11 @@
       )
      (%with-temporary-allocation ((info-ptr :long)
                                   (info-length-ptr :short))
-       (with-error-handling 
+       (with-error-handling
          (:hdbc hdbc)
          (SQLGetInfo hdbc info-type info-ptr 255 info-length-ptr)
          (%get-unsigned-long info-ptr))))))
-     
+
 (defun %sql-exec-direct (sql hstmt henv hdbc)
   (with-cstr (sql-ptr sql)
     (with-error-handling
@@ -381,7 +381,7 @@
                                (column-precision-ptr :long)
                                (column-scale-ptr :short)
                                (column-nullable-p-ptr :short))
-    (with-error-handling 
+    (with-error-handling
       (:hstmt hstmt)
       (SQLDescribeParam hstmt parameter-nr column-sql-type-ptr
                         column-precision-ptr column-scale-ptr
@@ -397,36 +397,36 @@
                                (descriptor-length-ptr :short)
                                (numeric-descriptor-ptr :long))
     (with-error-handling
-      (:hstmt hstmt) 
+      (:hstmt hstmt)
       (SQLColAttributes hstmt column-nr descriptor-type descriptor-info-ptr 256
                         descriptor-length-ptr numeric-descriptor-ptr)
       (values
        (%get-cstring descriptor-info-ptr)
        (%get-signed-long numeric-descriptor-ptr)))))
 
-(defun %prepare-describe-columns (hstmt table-qualifier table-owner 
+(defun %prepare-describe-columns (hstmt table-qualifier table-owner
                                    table-name column-name)
   (with-cstr (table-qualifier-ptr table-qualifier)
-    (with-cstr (table-owner-ptr table-owner) 
+    (with-cstr (table-owner-ptr table-owner)
       (with-cstr (table-name-ptr table-name)
         (with-cstr (column-name-ptr column-name)
           (with-error-handling
-            (:hstmt hstmt) 
+            (:hstmt hstmt)
             (SQLColumns hstmt
                         table-qualifier-ptr (length table-qualifier)
                         table-owner-ptr (length table-owner)
                         table-name-ptr (length table-name)
                         column-name-ptr (length column-name))))))))
 
-(defun %describe-columns (hdbc table-qualifier table-owner 
+(defun %describe-columns (hdbc table-qualifier table-owner
                                    table-name column-name)
   (with-statement-handle (hstmt hdbc)
-    (%prepare-describe-columns hstmt table-qualifier table-owner 
+    (%prepare-describe-columns hstmt table-qualifier table-owner
                                table-name column-name)
     (fetch-all-rows hstmt)))
 
 (defun %sql-data-sources (henv &key (direction :first))
-  (%with-temporary-allocation 
+  (%with-temporary-allocation
     ((name-ptr :string #.(1+ $SQL_MAX_DSN_LENGTH))
      (name-length-ptr :short)
      (description-ptr :string 1024)
@@ -447,7 +447,7 @@
 
 (defun sql-to-c-type (sql-type)
   (ecase sql-type
-    ((#.$SQL_CHAR #.$SQL_VARCHAR #.$SQL_LONGVARCHAR 
+    ((#.$SQL_CHAR #.$SQL_VARCHAR #.$SQL_LONGVARCHAR
       #.$SQL_NUMERIC #.$SQL_DECIMAL #.$SQL_BIGINT) $SQL_C_CHAR)
     (#.$SQL_INTEGER $SQL_C_SLONG)
     (#.$SQL_SMALLINT $SQL_C_SSHORT)
@@ -465,7 +465,7 @@
 (defun read-data (data-ptr c-type sql-type out-len-ptr convert-to-string-p)
   (let ((out-len (%get-long out-len-ptr)))
     (cond ((= out-len $SQL_NULL_DATA) *null*)
-          ;((= out-len $SQL_NO_TOTAL) +null+) 
+          ;((= out-len $SQL_NO_TOTAL) +null+)
           ;; obsolete?
           (convert-to-string-p (%get-cstring data-ptr))
           (t (case c-type
@@ -501,8 +501,8 @@
                   (%get-cstring data-ptr))))))))
 
 ;; which value is appropriate?
-(defparameter +max-precision+ 
-  ; 64 
+(defparameter +max-precision+
+  ; 64
   ; 256 ;; works in MCL
   ;512 ;; works in MCL
   #+mcl
@@ -555,12 +555,12 @@
                          (aref out-len-ptrs col-nr) out-len-ptr))))
              ;; the main loop
              (prog1
-               (cond (flatp 
+               (cond (flatp
                       (when (> column-count 1)
                         (error "If more than one column is to be fetched, flatp has to be nil."))
                       (loop until (= (%sql-fetch hstmt) $SQL_NO_DATA_FOUND)
                             collect
-                            (read-data (aref data-ptrs 0) 
+                            (read-data (aref data-ptrs 0)
                                        (aref c-types 0)
                                        (aref sql-types 0)
                                        (aref out-len-ptrs 0)
@@ -570,7 +570,7 @@
                             collect
                             (loop for col-nr from 0 to (1- column-count)
                                   collect
-                                  (read-data (aref data-ptrs col-nr) 
+                                  (read-data (aref data-ptrs col-nr)
                                              (aref c-types col-nr)
                                              (aref sql-types col-nr)
                                              (aref out-len-ptrs col-nr)
@@ -611,7 +611,7 @@
   (set-connection-option hdbc $SQL_AUTOCOMMIT $SQL_AUTOCOMMIT_ON))
 
 (defun %sql-set-pos (hstmt row option lock)
-  (with-error-handling 
+  (with-error-handling
     (:hstmt hstmt)
     (SQLSetPos hstmt row option lock)))
 
@@ -641,10 +641,10 @@
 
 ;(defconstant +null-ptr+ (%null-ptr))
 
-(defun read-data-in-chunks (hstmt column-nr data-ptr c-type sql-type 
+(defun read-data-in-chunks (hstmt column-nr data-ptr c-type sql-type
                                       out-len-ptr convert-to-string-p)
   (declare (ignore sql-type convert-to-string-p)) ; preliminary
-  (let* ((res (%sql-get-data hstmt column-nr c-type data-ptr 
+  (let* ((res (%sql-get-data hstmt column-nr c-type data-ptr
                              +max-precision+ out-len-ptr))
          (out-len (%get-long out-len-ptr))
          (offset 0))
@@ -658,29 +658,29 @@
                         (adjust-array str (+ offset data-length)
                                       :initial-element #\?)
                         (setf offset (%cstring-into-vector
-                                      data-ptr str 
-                                      offset 
+                                      data-ptr str
+                                      offset
                                       data-length)))
                     (error "wrong type. preliminary."))
                while (and (= res $SQL_SUCCESS_WITH_INFO)
                           (equal (sql-state (%null-ptr) (%null-ptr) hstmt)
                                  "01004"))
-               do (setf res (%sql-get-data hstmt column-nr c-type data-ptr 
+               do (setf res (%sql-get-data hstmt column-nr c-type data-ptr
                                            +max-precision+ out-len-ptr)))
          (coerce str 'string)))
       (otherwise
        (let ((str (make-string out-len)))
          (loop do (if (= c-type #.$SQL_CHAR)
                       (setf offset (%cstring-into-vector ;string
-                                    data-ptr str 
-                                    offset 
+                                    data-ptr str
+                                    offset
                                     (min out-len (1- +max-precision+))))
                     (error "wrong type. preliminary."))
-               while 
+               while
                (and (= res $SQL_SUCCESS_WITH_INFO)
                     (equal (sql-state (%null-ptr) (%null-ptr) hstmt)
                            "01004"))
-               do (setf res (%sql-get-data hstmt column-nr c-type data-ptr 
+               do (setf res (%sql-get-data hstmt column-nr c-type data-ptr
                                            +max-precision+ out-len-ptr)
                         out-len (%get-long out-len-ptr)))
          str)))))
@@ -691,7 +691,7 @@
 
 ;; ??
 (defun execute-sql-drop (henv hdbc sql)
-  (%with-sql-pointer (hstmt-ptr) 
+  (%with-sql-pointer (hstmt-ptr)
     (when (= (SQLAllocStmt hdbc hstmt-ptr) $SQL_SUCCESS)
       (let ((hstmt (%get-ptr hstmt-ptr)))
         (with-cstr (sql-ptr sql)
@@ -704,7 +704,7 @@
 #+mcl
 (defun timestamp-to-universal-time (ptr)
   (values
-   (encode-universal-time 
+   (encode-universal-time
     (rref ptr sql-c-timestamp.second)
     (rref ptr sql-c-timestamp.minute)
     (rref ptr sql-c-timestamp.hour)
@@ -723,7 +723,7 @@
 
 #+mcl
 (defun time-to-universal-time (ptr)
-  (encode-universal-time 
+  (encode-universal-time
    (rref ptr sql-c-time.second)
    (rref ptr sql-c-time.minute)
    (rref ptr sql-c-time.hour)
@@ -732,7 +732,7 @@
 #+lispworks
 (defun timestamp-to-universal-time (ptr)
   (values
-   (encode-universal-time 
+   (encode-universal-time
     (fli:foreign-slot-value ptr 'second)
     (fli:foreign-slot-value ptr 'minute)
     (fli:foreign-slot-value ptr 'hour)
@@ -751,7 +751,7 @@
 
 #+lispworks
 (defun time-to-universal-time (ptr)
-  (encode-universal-time 
+  (encode-universal-time
    (fli:foreign-slot-value ptr 'second)
    (fli:foreign-slot-value ptr 'minute)
    (fli:foreign-slot-value ptr 'hour)
@@ -760,7 +760,7 @@
 #+allegro
 (defun timestamp-to-universal-time (ptr)
   (values
-   (encode-universal-time 
+   (encode-universal-time
     (ff:fslot-value-typed 'sql-c-timestamp nil ptr 'second)
     (ff:fslot-value-typed 'sql-c-timestamp nil ptr 'minute)
     (ff:fslot-value-typed 'sql-c-timestamp nil ptr 'hour)
@@ -776,10 +776,10 @@
    (ff:fslot-value-typed nil ptr 'day)
    (ff:fslot-value-typed nil ptr 'month)
    (ff:fslot-value-typed nil ptr 'year)))
-   
+
 #+allegro
 (defun time-to-universal-time (ptr)
-  (encode-universal-time 
+  (encode-universal-time
     (ff:fslot-value-typed nil ptr 'second)
     (ff:fslot-value-typed nil ptr 'minute)
     (ff:fslot-value-typed nil ptr 'hour)
@@ -788,7 +788,7 @@
 #+cormanlisp
 (defun timestamp-to-universal-time (ptr)
   (values
-   (encode-universal-time 
+   (encode-universal-time
 	(ct:cref sql-c-timestamp ptr second)
 	(ct:cref sql-c-timestamp ptr minute)
 	(ct:cref sql-c-timestamp ptr hour)
@@ -807,7 +807,7 @@
 
 #+cormanlisp
 (defun time-to-universal-time (ptr)
-  (encode-universal-time 
+  (encode-universal-time
 	(ct:cref sql-c-time ptr second)
 	(ct:cref sql-c-time ptr minute)
 	(ct:cref sql-c-time ptr hour)

@@ -15,7 +15,7 @@
         "WITH"
         "WITH-TAGS"
         "TAG"
-        "TEXT" 
+        "TEXT"
         "DOCTYPE-HEADER"
         "PAGE"
         "<BR>"
@@ -28,9 +28,9 @@
 ;;;
 ;;; The AS macro is useful where the body is a single string or several strings.
 ;;; Optional keyword/value pairs may proceed the body strings, and these will
-;;; be inserted as parameters to the opening tag. The value may be a number or 
+;;; be inserted as parameters to the opening tag. The value may be a number or
 ;;; a string--if a number, it is converted to a string.
-;;; It concatenates the body strings together. It will generate opening and 
+;;; It concatenates the body strings together. It will generate opening and
 ;;; closing tags. The output will be on separate lines, properly indented, unless
 ;;; the :embedded keyword is passed. If :embedded it true, then the output
 ;;; will be inserted into the current line, which is useful for short expressions
@@ -43,7 +43,7 @@
             ((not (keywordp (car body))))
             (if (eq (car body) ':embedded)
                 (setf embedded (cadr body))
-                (progn            
+                (progn
                     (push (car body) args)
                     (let ((value (cadr body)))
                         (if (numberp value)
@@ -54,13 +54,13 @@
         (if embedded
             `(format t "<~A~{ ~A=\"~A\"~}>~A</~A>" ',tag (list ,@args) (concatenate 'string ,@body) ',tag)
            `(let ((*indent* (+ *indent* *indent-length*)))
-               (format t "~v,0t<~A~{ ~A=\"~A\"~}>~A</~A>~%" 
+               (format t "~v,0t<~A~{ ~A=\"~A\"~}>~A</~A>~%"
                  *indent* ',tag (list ,@args) (concatenate 'string ,@body) ',tag)))))
 
 ;;;
 ;;; The WITH macro is useful where the body contains html which may have embedded tags.
 ;;; Optional keyword/value pairs may proceed the body expressions, and these will
-;;; be inserted as parameters to the opening tag. The value may be a number or 
+;;; be inserted as parameters to the opening tag. The value may be a number or
 ;;; a string--if a number, it is converted to a string.
 ;;; The body expressions which follow any optional key/value pairs are expanded to
 ;;; generate retulting HTML, which is inserted between opening and closing tags.
@@ -85,12 +85,12 @@
         (if (find-if 'stringp body)
             (setf body (mapcar (lambda (x) (if (stringp x) `(text ,x) x)) body)))
         (if single-line
-            `(let ((*indent* (+ *indent* *indent-length*)))         
+            `(let ((*indent* (+ *indent* *indent-length*)))
                  (format t "~v,0t<~A~{ ~A=\"~A\"~}>" *indent* ',tag (list ,@args))
                  ,@body
                  (format t "</~A>~%" ',tag))
-            
-           `(let ((*indent* (+ *indent* *indent-length*)))         
+
+           `(let ((*indent* (+ *indent* *indent-length*)))
                  (format t "~v,0t<~A~{ ~A=\"~A\"~}>~%" *indent* ',tag (list ,@args))
                  ,@body
                  (fresh-line)
@@ -117,12 +117,12 @@
             (setf args (cddr args)))
         (setq outargs (nreverse outargs))
         (if embedded
-            `(format t "<~A~{ ~A=\"~A\"~}/>" ',tag (list ,@outargs))                  
+            `(format t "<~A~{ ~A=\"~A\"~}/>" ',tag (list ,@outargs))
             `(let ((*indent* (+ *indent* *indent-length*)))
                 (format t "~v,0t<~A~{ ~A=\"~A\"~}/>~%" *indent* ',tag (list ,@outargs))))))
 
 ;;;
-;;; Use the TEXT macro as a simple way to insert a series of one or more strings in a 
+;;; Use the TEXT macro as a simple way to insert a series of one or more strings in a
 ;;; WITH macro. These are concatenated together.
 ;;;
 (defmacro text (&rest body)
@@ -146,7 +146,7 @@
 (defmacro with-tags ((&rest tags-and-params) &body body)
     (let ((last-tag (car (last tags-and-params))))
         (if (and last-tag (symbolp last-tag))
-            (setf last-tag (list last-tag)))      
+            (setf last-tag (list last-tag)))
         (if (null last-tag)
             (car body)
             `(with-tags ,(butlast tags-and-params)
@@ -156,7 +156,7 @@
 ;;;
 ;;; Standard HTML DOCTYPE header.
 ;;;
-(defmacro doctype-header () 
+(defmacro doctype-header ()
     `(format t "~A~%" "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">"))
 
 ;;;
@@ -170,5 +170,5 @@
          ,@body))
 
 (define-symbol-macro <BR> (tag br))
-   
+
 (provide :html)

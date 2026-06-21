@@ -1,7 +1,7 @@
 ;;;; Simple socket library for Corman Lisp - Version 1.9
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. See LICENSE.txt for license information.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
@@ -31,23 +31,23 @@
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 05/12/1999 - 1.0 
+;;;; 05/12/1999 - 1.0
 ;;;;              Initial release.
-;;;;              It's quite rough and quickly thrown together but does 
-;;;;              allow using sockets with Corman Lisp 1.3. The API needs 
-;;;;              work and I'm open to suggestions on better ways of doing 
-;;;;              things. Stream integration would be nice. The intent of 
-;;;;              the software was purely an example of using the 
+;;;;              It's quite rough and quickly thrown together but does
+;;;;              allow using sockets with Corman Lisp 1.3. The API needs
+;;;;              work and I'm open to suggestions on better ways of doing
+;;;;              things. Stream integration would be nice. The intent of
+;;;;              the software was purely an example of using the
 ;;;;              WINSOCK API but it may prove useful outside of that.
 ;;;;
 ;;;; 06/12/1999 - 1.1
-;;;;              Added exports to package definition. 
-;;;;              Removed INTERNET-ADDRESS class and associated generic 
+;;;;              Added exports to package definition.
+;;;;              Removed INTERNET-ADDRESS class and associated generic
 ;;;;              functions, replacing with IPADDR-TO-NAME, and similar
-;;;;              functions working on the ipaddr directly. 
+;;;;              functions working on the ipaddr directly.
 ;;;;              HOST-TO-IPADDR can now take host name or dotted address.
 ;;;;              Added example of a server in a thread.
 ;;;;
@@ -55,8 +55,8 @@
 ;;;;              Changed finalization registration of socket class to
 ;;;;              call CLOSE-SOCKET on the object passed to the finalization
 ;;;;              function rather than the closure over the argument to the
-;;;;              INITIALIZE-INSTANCE method. 
-;;;;              Changed READ-SOCKET-LINE to have the similar arguments and eof 
+;;;;              INITIALIZE-INSTANCE method.
+;;;;              Changed READ-SOCKET-LINE to have the similar arguments and eof
 ;;;;              behaviour as READ-LINE.
 ;;;;              Added a buffer to READ-SOCKET-LINE to remove the previous
 ;;;;              behavior of 1 byte reads.
@@ -68,7 +68,7 @@
 ;;;;              WITH-SERVER-ACCEPT and START-SOCKET-SERVER.
 ;;;;
 ;;;; 19/12/1999 - 1.3
-;;;;              Added READ-SOCKET and WRITE-SOCKET. Added example using these 
+;;;;              Added READ-SOCKET and WRITE-SOCKET. Added example using these
 ;;;;              methods.
 ;;;;
 ;;;; 02/03/2000 - 1.4
@@ -98,9 +98,9 @@
 ;;;;              the buffering will get confused. The stream and socket use seperate
 ;;;;              buffers. I'll probably fix this some day.
 ;;;;
-;;;;              Some new examples have been added to show stream use. 
+;;;;              Some new examples have been added to show stream use.
 ;;;;
-;;;;              Added a WINSOCK-ERROR condition for when errors occur. Added 
+;;;;              Added a WINSOCK-ERROR condition for when errors occur. Added
 ;;;;              READ-SOCKET-CHAR. Added convenience macro, WITH-SOCKET-STREAM to create
 ;;;;              a stream for a socket and close it at the end of the macro scope.
 ;;;;
@@ -178,12 +178,12 @@
 (require 'WINSOCK)
 
 (defpackage "SOCKETS"
-	(:use 
-		:COMMON-LISP 
+	(:use
+		:COMMON-LISP
 		:WIN
 		:C-TYPES
 		:WINSOCK)
-	(:export 
+	(:export
 		"START-SOCKETS"
 		"STOP-SOCKETS"
 		"WITH-SOCKETS-STARTED"
@@ -202,7 +202,7 @@
 		"PROXY-SERVER"
 		"GENERIC-PROXY-SERVER"
 		"PROXY-SERVER-HOST"
-		"PROXY-SERVER-PORT"		
+		"PROXY-SERVER-PORT"
 		"LOCAL-SOCKET"
 		"SOCKET-HOST"
 		"SOCKET-PORT"
@@ -249,7 +249,7 @@
 
 (defparameter *socket-buffer-length* 20000
 	"Size of buffer used to read data from the socket stream.")
-	
+
 (defun make-word ( low-byte high-byte )
 	(logior (logand low-byte #xff) (ash (logand high-byte #xff) 8)))
 
@@ -257,14 +257,14 @@
 	((original-error-code :initarg :original-error-code :initform nil :reader winsock-original-error-code)
 		(last-error-code :initarg :last-error-code :initform nil :reader winsock-last-error-code))
 	(:report (lambda (condition stream)
-			(format stream "Winsock error number ~A (WSALastError=~A)." 
+			(format stream "Winsock error number ~A (WSALastError=~A)."
 				(winsock-original-error-code condition)
 				(winsock-last-error-code condition)))))
 
 (defun handle-winsock-error (&optional original-code)
 	"Handle the result of a winsock function returning an error value."
 	(cerror "Winsock Error"
-		'winsock-error 
+		'winsock-error
 		:original-error-code original-code
 		:last-error-code (WSAGetLastError)))
 
@@ -283,7 +283,7 @@
 	"Checks the result of the winsock call and signals an error if it
 	is an INVALID_SOCKET. Otherwise processes the body forms."
 	(declare (ignore nil))
-	`(with-winsock-error-handling 
+	`(with-winsock-error-handling
 		(:error-test #'(lambda (x) (= x INVALID_SOCKET)))
 		,winsock-call
 		,@body))
@@ -292,7 +292,7 @@
 	"Checks the result of the winsock call and signals an error if it
 	is a SOCKET_ERROR. Otherwise processes the body forms."
 	(declare (ignore nil))
-	`(with-winsock-error-handling 
+	`(with-winsock-error-handling
 		(:error-test #'(lambda (x) (= x SOCKET_ERROR)))
 		,winsock-call
 		,@body))
@@ -307,14 +307,14 @@
 			(if (cpointer-null ,pointer-result)
 				(handle-winsock-error)
 				(progn ,pointer-result ,@body)))))
-	
+
 (defvar *sockets-started* t ; WinSock is initialised by the new beta Lisp kenel
 	"Set to T when START-SOCKETS is called.")
 
 (defun start-sockets ()
 	"Initialize the winsock libraries."
 	t)
-		
+
 (defun stop-sockets ()
 	"Shutdown the winsock libraries."
 	nil)
@@ -356,17 +356,17 @@ All: If it is nil, return the first address available otherwise return the list 
     (or (getf addr :dotted) (get-name-info addr :dottedp t :errorp t)))
 
 (defclass base-socket ()
-	((socket-descriptor 
-			:initform nil 
-			:initarg :descriptor 
+	((socket-descriptor
+			:initform nil
+			:initarg :descriptor
 			:accessor socket-descriptor)
 		(read-buffer :initform nil :accessor socket-read-buffer)
-		(read-complete :initform nil :accessor socket-read-complete))	
+		(read-complete :initform nil :accessor socket-read-complete))
 	(:documentation
 		"On finalization the socket will be closed if CLOSE-SOCKET
 		has not already been called."))
 
-(defclass remote-socket (base-socket) 
+(defclass remote-socket (base-socket)
 	((address :initform nil :initarg :address :accessor remote-socket-ipaddr))
 	(:documentation
 		"The socket returned by an ACCEPT-SOCKET call. This socket is
@@ -381,7 +381,7 @@ All: If it is nil, return the first address available otherwise return the list 
 Takes the keywords :HOST, :PORT, and :TYPE on creation of an instance.
 HOST: can be a hostname, a dotted ip address or an addr.
 PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
-		
+
 (defclass client-socket (local-socket) ()
 	(:documentation
 		"Socket used for client programming."))
@@ -420,7 +420,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 
 (defclass proxy-socket-mixin ()
 	((initialized :initform nil :accessor proxy-initialized))
-	(:documentation 
+	(:documentation
 		"Class to mixin with other socket classes to provide the ability
 		to work through a proxy server."))
 
@@ -474,7 +474,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 	'remote-socket)
 
 (defgeneric accept-socket (s)
-	(:documentation 
+	(:documentation
 		"Block until a connection is received on the port for this server
 		socket. When a connection is received, return a REMOTE-SOCKET for
 		communicating with the remote host."))
@@ -486,7 +486,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
             (make-instance (remote-socket-class s) :descriptor as :address (c-to-addr remote)))))
 
 (defgeneric close-socket (s)
-	(:documentation 
+	(:documentation
 		"Close the socket connection. This function does not need
 		to be called explicitly as it will be called during finalization of the
 		object if required."))
@@ -564,10 +564,10 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 
 (defmethod write-socket ((s base-socket) string)
 	(do-ffi-write-socket s string (length string)))
-	
+
 (defgeneric write-socket-line (s string)
 	(:documentation
-		"Send a string across the socket, terminating with a carriage 
+		"Send a string across the socket, terminating with a carriage
 		return and line feed."))
 
 (defmethod write-socket-line ((s base-socket) line)
@@ -613,7 +613,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 					(socket-read-buffer s) 1)))))
 
 (defun socket-data-available (s)
-	"Return the number of bytes available to be read on 
+	"Return the number of bytes available to be read on
 	the socket without blocking."
 	(with-fresh-foreign-block (argp 'ULONG)
 		(setf (cref (:unsigned-long *) argp 0) 0)
@@ -636,7 +636,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 	(when (and (> (length (socket-read-buffer s)) 0)
 			(or (null len)
 				(<= len (length (socket-read-buffer s)))))
-		(return-from populate-socket-read-buffer))	
+		(return-from populate-socket-read-buffer))
 	(with-c-buffer (buffer (+ *socket-buffer-length* 1))
 		(loop
 			(let ((bytes (do-ffi-read-socket s buffer *socket-buffer-length*)))
@@ -662,7 +662,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
     	(when (and (> (length socket-buffer) 0)
     			(or (null len)
     				(<= len (length socket-buffer))))
-    		(return-from populate-socket-binary-read-buffer))	
+    		(return-from populate-socket-binary-read-buffer))
     	(with-c-buffer (buffer (+ *socket-buffer-length* 1))
     		(loop
     			(let ((bytes (do-ffi-read-socket s buffer *socket-buffer-length*)))
@@ -700,7 +700,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 
 ;; Much of the READ-SOCKET-LINE code is based on READ-LINE from the Corman
 ;; Lisp implementation.
-(defmethod read-socket-line ((s base-socket) &optional eof-error-p eof-value)	
+(defmethod read-socket-line ((s base-socket) &optional eof-error-p eof-value)
 	(declare (ignore eof-error-p))
 	(let ((str (make-array 256 :element-type 'character :fill-pointer t)))
 		(setf (fill-pointer str) 0)
@@ -823,9 +823,9 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
                 (setf (cl::stream-input-buffer-pos s) 0)
 			    (setf (cl::stream-input-buffer-num s) real-length)
 			    (setf (socket-read-buffer socket) (subseq (socket-read-buffer socket) real-length))))))
-			
+
 (defun socket-stream-overflow-function (s)
-	"Called by the Corman Lisp library when the stream output buffer 
+	"Called by the Corman Lisp library when the stream output buffer
 	is full."
 	(let* ((buffer (cl::stream-output-buffer s))
 			(buffer-length (cl::stream-output-buffer-pos s))
@@ -848,7 +848,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 	  (setf (cl::stream-output-buffer-pos s) 0)))
 
 (defun socket-stream-binary-overflow-function (s)
-	"Called by the Corman Lisp library when the binary socket stream output buffer 
+	"Called by the Corman Lisp library when the binary socket stream output buffer
 	is full."
 	(let* ((buffer (cl::stream-output-buffer s))
 			(buffer-length (cl::stream-output-buffer-pos s))
@@ -877,9 +877,9 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 	(let ((stream (cl::alloc-uvector cl::stream-size cl::uvector-stream-tag)))
 		(setf (cl::uref stream cl::stream-name-offset) nil)
 		(setf (cl::uref stream cl::stream-subclass-offset) 'socket-stream)
-		(setf (cl::uref stream cl::stream-underflow-func-offset) 
+		(setf (cl::uref stream cl::stream-underflow-func-offset)
             (if binary #'socket-stream-binary-underflow-function #'socket-stream-underflow-function))
-		(setf (cl::uref stream cl::stream-overflow-func-offset) 
+		(setf (cl::uref stream cl::stream-overflow-func-offset)
             (if binary #'socket-stream-binary-overflow-function #'socket-stream-overflow-function))
 		(setf (cl::uref stream cl::stream-position-offset) 0)
 		(setf (cl::uref stream cl::stream-col-position-offset) 0)
@@ -891,13 +891,13 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 		(setf (cl::uref stream cl::stream-interactive-offset) nil)
 		(setf (cl::uref stream cl::stream-element-type-offset) (if binary 'byte 'character))
 		(setf (cl::uref stream cl::stream-associated-streams-offset) nil)
-		(setf (cl::uref stream cl::stream-output-buffer-offset) 
-            (make-array (+ *socket-buffer-length* 0) 
+		(setf (cl::uref stream cl::stream-output-buffer-offset)
+            (make-array (+ *socket-buffer-length* 0)
                 :element-type (if binary 'byte 'character)))
 		(setf (cl::uref stream cl::stream-output-buffer-length-offset) *socket-buffer-length*)
 		(setf (cl::uref stream cl::stream-output-buffer-pos-offset) 0)
-		(setf (cl::uref stream cl::stream-input-buffer-offset) 
-            (make-array *socket-buffer-length* 
+		(setf (cl::uref stream cl::stream-input-buffer-offset)
+            (make-array *socket-buffer-length*
                 :element-type (if binary 'byte 'character)))
 		(setf (cl::uref stream cl::stream-input-buffer-length-offset) *socket-buffer-length*)
 		(setf (cl::uref stream cl::stream-input-buffer-pos-offset) 0)
@@ -921,7 +921,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 (defun socket-stream-p (obj)
     (and (streamp obj)
         (eq (cl::stream-subclass obj) 'socket-stream)))
-   
+
 ;;;
 ;;; Redefined Common Lisp CLOSE function to work with sockets
 ;;;
@@ -949,7 +949,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 
 ;;;
 ;;; Clients must call START-SOCKETS explicitly
-;;;		
+;;;
 ;(unless *sockets-started*
 ;	(start-sockets))
 
@@ -963,11 +963,11 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 ;;;
 ;;; Function GET-HTTP-FILE
 ;;;
-;;; Example: 
+;;; Example:
 #|
- (sockets:get-http-file 
-       "www.cormanlisp.com" 
-       "/CormanLisp/patches/2_5/time.lisp" 
+ (sockets:get-http-file
+       "www.cormanlisp.com"
+       "/CormanLisp/patches/2_5/time.lisp"
        "temp.txt")
 |#
 ;;;
@@ -986,8 +986,8 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
             	(let ((content-length 0))
             		(loop as line = (read-socket-line s)
             			while (and line (> (length line) 0))
-            			do 
-            			(when (equal 
+            			do
+            			(when (equal
             					(string-upcase (subseq line 0 (search ":" line)))
             					"CONTENT-LENGTH")
             				(setq content-length
@@ -1005,7 +1005,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
                     local-name)))))
 
 #|
- 
+
 ;;Example of reading from an HTTP server.
 (start-sockets)
 (let ((s (make-client-socket :host "www.cormanlisp.com" :port 80)))
@@ -1048,15 +1048,15 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 	(let ((content-length 0))
 		(loop as line = (read-socket-line s)
 			while (and line (> (length line) 0))
-			do 
-			(when (equal 
+			do
+			(when (equal
 					(string-upcase (subseq line 0 (search ":" line)))
 					"CONTENT-LENGTH")
 				(setq content-length
 					(parse-integer line :start (+ (search ":" line) 1)))))
 		;; Read contents
 		(read-socket s content-length)))
-				
+
 ;; Same example using stream support
 (with-client-socket (s :host "www.cormanlisp.com" :port 80)
 	(with-socket-stream (stream s)
@@ -1066,7 +1066,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 		(let ((content-length 0))
 			(loop as line = (read-line stream nil :eof)
 				while (and (not (eq line :eof)) (> (length line) 0))
-				do 
+				do
 			(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
 					(setq content-length
 						(parse-integer line :start (+ (search ":" line) 1)))))
@@ -1087,7 +1087,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 			(let ((content-length 0))
 				(loop as line = (read-line stream nil :eof)
 					while (and (not (eq line :eof)) (> (length line) 0))
-					do 
+					do
 				(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
 						(setq content-length
 							(parse-integer line :start (+ (search ":" line) 1)))))
@@ -1096,7 +1096,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 				(let ((contents (make-string content-length)))
 					(read-sequence contents stream)
 					contents)))))
-	   
+
 ;; NNTP - retrieves help text from nntp server and uses with-client-socket
 (with-client-socket (ns :host "news.xtra.co.nz" :port 119)
 	(format t "~A~%" (read-socket-line ns))
@@ -1107,7 +1107,7 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 
 ;; Same example using streams
 (with-client-socket (s :host "news.xtra.co.nz" :port 119)
-	(with-socket-stream (stream s)		
+	(with-socket-stream (stream s)
 		(format t "~A~%" (read-line stream))
 		(write-line "help" stream)
 		(force-output stream)
@@ -1119,9 +1119,9 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 (defun start-server-test (&optional (port 8001))
 	(with-server-socket (s :host "0.0.0.0" :port port)
 		(with-server-accept (remote-socket s)
-			(format t "Connection made ~A ~A~%" 
+			(format t "Connection made ~A ~A~%"
 				(socket-descriptor remote-socket) (socket-descriptor s))
-			(loop 
+			(loop
 				(let ((value (read-socket-line remote-socket nil :eof)))
 				  (when (eq value :eof)
 					(return))
@@ -1155,10 +1155,10 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 			(let ((stream (make-socket-stream rs)))
 				(when (equal (read-line stream) "quit")
 					(return-from start-server-test2))
-				(write-line 
+				(write-line
 					(coerce (make-list 80 :initial-element #\Z) 'string)
 					stream)
-				(write-line 
+				(write-line
 					(coerce (make-list 80 :initial-element #\A) 'string)
 					stream)
 				(force-output stream)))))
@@ -1216,10 +1216,10 @@ PORT: symbol, string or integer. TYPE: :stream (default) or :datagram."))
 			(let ((stream (make-socket-stream rs)))
 				(when (equal (read-line stream) "quit")
 					(return-from start-server-test4))
-				(write-line 
+				(write-line
 					(coerce (make-list 80 :initial-element #\Z) 'string)
 					stream)
-				(write-line 
+				(write-line
 					(coerce (make-list 80 :initial-element #\A) 'string)
 					stream)
 				(force-output stream)))))

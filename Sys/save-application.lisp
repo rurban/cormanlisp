@@ -18,13 +18,13 @@
 		(cond ((string-equal extension ".EXE")
 			   (setq name (subseq filename 0 (- (length filename) 4))))
 			  ((string-equal extension ".ARX")
-			   (setq name (subseq filename 0 (- (length filename) 4))))	
+			   (setq name (subseq filename 0 (- (length filename) 4))))
 			  (t (setq name filename extension ".exe")))
 		(values name extension)))
 ;;;
-;;; AutoCAD ARX needs a version specifier in the filename, 
-;;; either 13, 14 or 15. The application name should carry this name 
-;;; to identify it correctly. But the image name can be common for all 
+;;; AutoCAD ARX needs a version specifier in the filename,
+;;; either 13, 14 or 15. The application name should carry this name
+;;; to identify it correctly. But the image name can be common for all
 ;;; versions so we try to strip the last two numbers.
 ;;; Returned are the filenames without extension.
 ;;;
@@ -50,8 +50,8 @@
 
 ;;;
 ;;;	Corman Lisp SAVE-APPLICATION function.
-;;;		
-(defun save-application (application-name start-function 
+;;;
+(defun save-application (application-name start-function
 						&key (console nil) acad2000 acadr14 acadr13 (static nil))
     ;; accept pathnames as well
     (when (typep application-name 'pathname)
@@ -81,11 +81,11 @@
 			(format t ";; Creating application ~A and image ~A~%"
 				application-file-name
 				image-file-name))
-	
+
 		;; copy the clboot.exe file
 		(if (probe-file application-file-name)
 			(delete-file application-file-name))	;; delete file if it already exists
-		(win32:CopyFile 
+		(win32:CopyFile
 			(ct:create-c-string (concatenate 'string
                                               (%normalize-directory-name *cormanlisp-server-directory*)
                                               boot-app-name))

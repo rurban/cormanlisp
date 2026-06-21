@@ -19,22 +19,22 @@
 
 (defun trace-xml-new-element-hook (name attributes seed)
   (let ((new-seed (cons (1+ (car seed)) (1+ (cdr seed)))))
-    (trace-xml-log (car seed) 
-                   "(new-element :name ~s :attributes ~:[()~;~:*~s~] :seed ~s) => ~s" 
+    (trace-xml-log (car seed)
+                   "(new-element :name ~s :attributes ~:[()~;~:*~s~] :seed ~s) => ~s"
                    name attributes seed new-seed)
     new-seed))
 
 (defun trace-xml-finish-element-hook (name attributes parent-seed seed)
   (let ((new-seed (cons (1- (car seed)) (1+ (cdr seed)))))
     (trace-xml-log (car parent-seed)
-                   "(finish-element :name ~s :attributes ~:[()~;~:*~s~] :parent-seed ~s :seed ~s) => ~s" 
+                   "(finish-element :name ~s :attributes ~:[()~;~:*~s~] :parent-seed ~s :seed ~s) => ~s"
                    name attributes parent-seed seed new-seed)
     new-seed))
 
 (defun trace-xml-text-hook (string seed)
   (let ((new-seed (cons (car seed) (1+ (cdr seed)))))
-    (trace-xml-log (car seed) 
-                   "(text :string ~s :seed ~s) => ~s" 
+    (trace-xml-log (car seed)
+                   "(text :string ~s :seed ~s) => ~s"
                    string seed new-seed)
     new-seed))
 
@@ -42,7 +42,7 @@
   "Parse and trace a toplevel XML element from stream in"
   (start-parse-xml in
 		   (make-instance 'xml-parser-state
-				  :seed (cons 0 0) 
+				  :seed (cons 0 0)
                                   ;; seed car is xml element nesting level
                                   ;; seed cdr is ever increasing from element to element
 				  :new-element-hook #'trace-xml-new-element-hook

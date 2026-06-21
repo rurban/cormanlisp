@@ -17,7 +17,7 @@
 (export '(*addr-size* c-to-addr addr-to-c get-addr-info get-name-info address-family-available-p))
 
 #! (:export t :library "WS2_32")
-/* 
+/*
  * Basic system type definitions, taken from the BSD file sys/types.h.
  */
 typedef unsigned char   u_char;
@@ -368,7 +368,7 @@ struct ip_mreq {
  * This is used instead of -1, since the
  * SOCKET type is unsigned.
  */
-#define INVALID_SOCKET  		0xffffffff 
+#define INVALID_SOCKET  		0xffffffff
 #define SOCKET_ERROR            (-1)
 
 /*
@@ -1016,7 +1016,7 @@ getnameinfo(
       ((ChainLen win32::int)
        (ChainEntries (win32::DWORD MAX_PROTOCOL_CHAIN))))
 (win32:defwintype LPWSAPROTOCOLCHAIN (WSAPROTOCOLCHAIN *))
-            
+
 (win32:defwinstruct WSAPROTOCOL_INFOW
       ((dwServiceFlags1 win32::DWORD)
        (dwServiceFlags2 win32::DWORD)
@@ -1102,7 +1102,7 @@ int PASCAL FAR WSCEnumProtocols(
 
 !#
 
-(defvar *addr-size* 28) 
+(defvar *addr-size* 28)
 
 (defun clear-mem (buffer size) (dotimes (n size) (setf (cref (byte *) buffer n) 0))) ; define calloc?
 

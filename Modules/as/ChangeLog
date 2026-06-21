@@ -3,7 +3,7 @@
 	*  decode.cl: request-query will now convert items in query
 	    strings without values into ("keyname" . "") in the resulting
 	    alist.
-	*  doc/aserve.html - update doc of request-query and 
+	*  doc/aserve.html - update doc of request-query and
 	   request-query-value to reflect what happens with null valued
 	   query elements
 
@@ -15,7 +15,7 @@
 
 2000-08-04  jkf  <jkf@main.verada.com>
 1.1.24
-	*  examples/chat.cl - add user logins and private messages 
+	*  examples/chat.cl - add user logins and private messages
 	        between users.
 
 2000-07-31  jkf  <jkf@main.verada.com>
@@ -29,8 +29,8 @@
 
 2000-07-17  John Foderaro  <jkf@tiger.franz.com>
 1.1.22
-	
-	*  main.cl: incf version 
+
+	*  main.cl: incf version
 
 2000-07-15  John Foderaro  <jkf@tiger.franz.com>
 
@@ -44,7 +44,7 @@
 
 2000-07-01  John Foderaro  <jkf@tiger.franz.com>
 
-	* client.cl - handle the "100 continue" response we seem to 
+	* client.cl - handle the "100 continue" response we seem to
 	 get from IIS whenever we do a post.
 
 2000-06-25  jkf  <jkf@main.verada.com>
@@ -67,7 +67,7 @@
 
 2000-06-08  John Foderaro  <jkf@tiger.franz.com>
 1.1.21
-	* client.cl - do-http-request: 
+	* client.cl - do-http-request:
 	        1. give the redirect arg a numeric
 		   value to prevent infinite redirect loops.
 	        2. handle two other redirect codes
@@ -86,22 +86,22 @@
 	* macs.cl - add note about where to find the if* macro
 	* main.cl - cache result of get-request-body so that it can
 		    safely be called more than once inside a response
-	            function.   Also be sure to call get-request-body 
-	            if the connection is keep-alive and there might 
+	            function.   Also be sure to call get-request-body
+	            if the connection is keep-alive and there might
 	            be a body following the headers.
 	* t-aserve.cl - test enhancment to get-request-body
 	* doc/aserve.html - fix do-http-request documentation to
 	            reflect change made in 1.1.18
-	            
 
-	
+
+
 Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 1.1.19
 	* makefile: set SHELL variable
 	* main.cl: incf version
-	
+
 2000-05-16  John Foderaro  <jkf@tiger.franz.com>
-1.1.18	
+1.1.18
 	* ! Non upward-compatiable change ! - the function
 	   do-http-request returns arguments in a different
 	   order, it now returns the body value first, then the
@@ -110,8 +110,8 @@ Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 	* added query and content-type arguments to do-http-request
 	  and make-http-client-request.  These make it even easier
 	  to send form data to web servers
-	
-	
+
+
 2000-05-16  John Foderaro  <jkf@tiger.franz.com>
 1.1.17
 
@@ -126,12 +126,12 @@ Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 	  - increase header reading buffer size - but we should
 	    make this growable.
 	  - handle cookies with = signs embedded
-	* decode.cl 
+	* decode.cl
 	  - in query-to-form-urlencoded all the values to
 	    be non-strings and in that case use ~a format to stringify them
-        * parse.cl 
+        * parse.cl
 	  - add arg to utility function
-	
+
 2000-05-04  John Foderaro  <jkf@tiger.franz.com>
 1.1.16
 	* request-query can now read from uri and/or post'ed body
@@ -160,7 +160,7 @@ Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 	* main.cl: the default timeout for a with-http-response
 		now comes from *http-response-timeout* and it
 		now defaults to 120 seconds rather than 60.
-	
+
 	* some documention updates
 
 2000-04-23  jkf  <jkf@main.verada.com>
@@ -192,12 +192,12 @@ Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 	    *response-temporary-redirect*
 	  note that netscape 4 doesn't understand *response-temporary-redirect*
           as that's a http/1.1 thing.
-	
+
 	* request-query takes a :handle-post keyword arguments.  When true
 	  (and that's the default) it will automatically read,
 	  extract, parse and cache the query string from the entity body
 	  when the request is a post request.
-	  
+
 2000-03-28  John Foderaro  <jkf@tiger.franz.com>
 
 	* move htmlgen.html from htmlgen/ to doc/ so that it's in
@@ -208,11 +208,11 @@ Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 	* make the debugging output feature based rather than
 	  numeric. see  net.iserve:debug-on
 	* properly do client queries
-	* use setfable reply-header-slot-value to read and set 
+	* use setfable reply-header-slot-value to read and set
 	  headers for the reply that will be sent
 	* always send back HTTP/1.1 as our protocol
 
-	
+
 2000-03-27  John Foderaro  <jkf@tiger.franz.com>
 1.1.10
 	* add headers argument to do-http-request and make-http-client-request
@@ -221,7 +221,7 @@ Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 	  to be returned
 	* fix debugging output when running inside emacs
 	* add client info to documentation.
-	
+
 2000-03-27  John Foderaro  <jkf@tiger.franz.com>
 1.1.9
 
@@ -230,18 +230,18 @@ Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 2000-03-22  John Foderaro  <jkf@tiger.franz.com>
 1.1.8
 	* fix http/0.9 processing
-	
+
 	* make errors in http worker threads, if uncaught (see below)
 	  and if the emacs-lisp interface is running, cause a new
 	  emacs window to appear in which you can debug the problem
-	
+
 	* add net.iserve::*trap-errors* (default t).  If set to
 	  nil then errors in http processing by iserve will result
 	  in error break loops.
 
 	* fixed errors in publish-directory.  Also prevent user from
 	passing ../ in urls to access above the published directory
-	
+
 2000-03-22  John Foderaro  <jkf@tiger.franz.com>
 1.1.7
 	* make initial lisp listerner of standalone version sleep
@@ -249,12 +249,12 @@ Fri May 26 22:42:12 PST 2000  Duane Rettig  <duane@beta>
 	* add t-iserve.cl and begin to add automated tests
 	* add cookies and authorization to client module
 	* load client module into iserve
-	
+
 2000-03-20  John Foderaro  <jkf@tiger.franz.com>
 1.1.6
 	* convert references to neo to iserve
 	* minor fixups in tutorial
-	
+
 2000-03-20  John Foderaro  <jkf@tiger.franz.com>
 1.1.5
 	* include iservelogo.gif in the ftp distribution
@@ -275,7 +275,7 @@ join from acl50 branch
 
 2000-03-15  John Foderaro  <jkf@tiger.franz.com>
 1.1.3
-	* switch to lgpl license.  
+	* switch to lgpl license.
 	* add source-readme.txt to describe what to do with
 	  the source
 
@@ -321,7 +321,7 @@ join from acl50 branch
 	renamed neo to Allegro iServe
 	changed neo package to net.iserve
 	changed htmlgen package to net.html.generator
-	
+
 2000-02-08  John Foderaro  <jkf@tiger.franz.com>
 1.0.9
 
@@ -331,7 +331,7 @@ join from acl50 branch
 
 2000-01-28  John Foderaro  <jkf@tiger.franz.com>
 1.0.8
-	* renamed accessors 
+	* renamed accessors
 
 2000-01-25  John Foderaro  <jkf@tiger.franz.com>
 
@@ -339,7 +339,7 @@ join from acl50 branch
 
 2000-01-25  jkf  <jkf@main.verada.com>
 
-	* use uri package 
+	* use uri package
 
 2000-01-18  John Foderaro  <jkf@tiger.franz.com>
 1.0.7
@@ -374,12 +374,10 @@ join from acl50 branch
 	*  fixed chunking output calls so it works again
 
 1999-10-15  jkf  <jkf@main.verada.com>
-1.0.2	
+1.0.2
 
 	*  added multipart info grabbing and updated the documentatoin
 
 1999-10-13  John Foderaro  <jkf@tiger.franz.com>
 1.0.1
 	*  start changelog
-	
-

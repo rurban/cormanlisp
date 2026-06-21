@@ -2,23 +2,23 @@
 ;;
 ;; examples.cl
 ;;
-;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA 
+;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA
 ;;
 ;; This code is free software; you can redistribute it and/or
 ;; modify it under the terms of the version 2.1 of
-;; the GNU Lesser General Public License as published by 
-;; the Free Software Foundation; 
+;; the GNU Lesser General Public License as published by
+;; the Free Software Foundation;
 ;;
 ;; This code is distributed in the hope that it will be useful,
 ;; but without any warranty; without even the implied warranty of
 ;; merchantability or fitness for a particular purpose.  See the GNU
 ;; Lesser General Public License for more details.
 ;;
-;; Version 2.1 of the GNU Lesser General Public License is in the file 
+;; Version 2.1 of the GNU Lesser General Public License is in the file
 ;; license-lgpl.txt that was distributed with this file.
 ;; If it is not present, you can access it from
 ;; http://www.gnu.org/copyleft/lesser.txt (until superseded by a newer
-;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
+;; version) or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA  02111-1307  USA
 ;;
 ;;
@@ -49,7 +49,7 @@
 
 
 
-(publish :path "/" 
+(publish :path "/"
 	 :content-type "text/html"
 	 :function
 	 #'(lambda (req ent)
@@ -58,7 +58,7 @@
 		 (html
 		  (:head (:title "Welcome to AllegroServe"))
 		  (:body (:center ((:img :src "aservelogo.gif")))
-			 (:h1 "Welcome to AllegroServe") 
+			 (:h1 "Welcome to AllegroServe")
 			 (:p "These links show off some of AllegroServe's capabilities. ")
 			 (:i "This server's host name is "
 			     (:princ-safe (header-slot-value req "host")))
@@ -82,7 +82,7 @@
 			 ((:a :href "local-secret") "Test source based authorization") " This will only work if you can use "
 			 "http:://localhost ... to reach this page" :
 			 :br
-			 ((:a :href "local-secret-auth") 
+			 ((:a :href "local-secret-auth")
 			  "Like the preceding but uses authorizer objects")
 			 :br
 			 ((:a :href "timeout") "Test timeout")
@@ -92,9 +92,9 @@
 			 ((:a :href "missing-link") "Missing Link")
 			 " should get an error when clicked"
 			 )
-		  
+
 		  )))))
-			     
+
 
 
 ;; a very simple page.  This is so simple it doesn't put out the required
@@ -114,7 +114,7 @@
 	 :function #'(lambda (req ent)
 		       (with-http-response (req ent)
 			 (with-http-body (req ent)
-			   (html 
+			   (html
 			    (:html
 			     (:body "Hello World!")))))))
 
@@ -125,7 +125,7 @@
 	 #'(lambda (req ent)
 	     (macrolet ((build-gsgc-table ()
 			  `(html
-			    ,@(mapcar 
+			    ,@(mapcar
 			       #'(lambda (kind)
 				   `(:tr (:td (:princ ,kind))
 					 (:td (:princ-safe
@@ -140,8 +140,8 @@
 				 :expansion-free-percent-old
 				 :quantum
 				 )))))
-			     
-				   
+
+
 	       (with-http-response (req ent)
 		 (with-http-body (req ent)
 		     (html (:head (:title "Allegro gc parameters"))
@@ -151,7 +151,7 @@
 				     :cellspacing "3")
 			     (:tr (:td (:b "gsgc parameter")) (:td (:b "Value")))
 			     (build-gsgc-table)))))))))
-		       
+
 
 
 ;; display a picture from a file.
@@ -163,14 +163,14 @@
 (publish-file :path "/aservelogo.gif" :file (example-file "aservelogo.gif")
 	      :content-type "image/gif")
 
-;; this is a demonstration of how you can return a jpeg 
+;; this is a demonstration of how you can return a jpeg
 ;; image that was created on the fly (rather thsn read from
-;; a file via publish-file). 
-;; We don't want to actually create the image here, so we 
+;; a file via publish-file).
+;; We don't want to actually create the image here, so we
 ;; cheat and read it from a file, but it shows that you can
 ;; send any stream of bytes and they will be given the correct
 ;; mime type.
-;; 
+;;
 (publish :path "/pic-gen"
 	 :content-type "image/jpeg"
 	 :function
@@ -187,15 +187,15 @@
 				      :element-type '(unsigned-byte 8))
 
 		       (setq selector (mod (1+ selector) 2))
-		     
+
 		       (loop
 			 (let ((val (read-byte p nil nil)))
-			   (if* (null val) 
-			      then ;eof 
+			   (if* (null val)
+			      then ;eof
 				   (return))
 			   (write-byte val stream)
 			   )))))))))
-	 
+
 
 
 ;; do a redirect to the picture
@@ -208,24 +208,24 @@
 				      :response *response-moved-permanently*)
 	       (setf (reply-header-slot-value req "location") "pic")
 	       (with-http-body (req ent)
-		 ;; this is optional and most likely unnecessary since most 
+		 ;; this is optional and most likely unnecessary since most
 		 ;; browsers understand the redirect response
-		 (html 
+		 (html
 		  (:html
 		   (:head (:title "Object Moved"))
-		   (:body 
+		   (:body
 		    (:h1 "Object Moved")
 		    "The picture you're looking for is now at "
 		    ((:a :href "pic") "This location"))))))))
-		    
-		    
-	 
+
+
+
 
 
 ;;
 ;; here's a form using the 'post' method
 ;;
-(publish :path "/tform" 
+(publish :path "/tform"
 	 :content-type "text/html"
 	 :function
 	 (let ((name "unknown"))
@@ -237,7 +237,7 @@
 					:test #'equal)))
 		   (if* gotname
 		      then (setq name (cdr gotname)))))
-		 
+
 	       (with-http-response (req ent)
 		 (with-http-body (req ent)
 		   (html (:head (:title "test form"))
@@ -250,17 +250,17 @@
 					  :size 10
 					  :name "username"))))))))))
 
-			      
-				    
+
+
 
 ;; example of a form that uses that 'get' method
 ;;
-(publish 
+(publish
  :path "/apropos"
  :content-type "text/html"
  :function
  #'(lambda (req ent)
-     
+
      (let ((lookup (assoc "symbol" (request-query req) :test #'equal)))
        (with-http-response (req ent)
 	 (with-http-body (req ent)
@@ -274,9 +274,9 @@
 			    :size 20
 			    :name "symbol")))
 		  :p
-			
+
 		  (if* lookup
-		     then (html :hr (:b "Apropos") " of " 
+		     then (html :hr (:b "Apropos") " of "
 				(:princ-safe (cdr lookup))
 				:br
 				:br)
@@ -284,27 +284,27 @@
 			    (if* (null ans)
 			       then (html "No Match Found")
 			       else (macrolet ((my-td (str)
-						 `(html ((:td 
+						 `(html ((:td
 							  :bgcolor "blue")
 							 ((:font :color "white"
 								 :size "+1")
 							  (:b ,str))))))
-						       
+
 				      (html ((:table
 					      :bgcolor "silver"
 					      :bordercolor "blue"
 					      :border 3
 					      :cellpadding 3
 					      )
-						   
+
 					     (:tr
 					      (my-td "Symbol")
 					      (my-td "boundp")
 					      (my-td "fboundp"))
-						 
-						   
+
+
 					     (dolist (val ans)
-					       (html (:tr 
+					       (html (:tr
 						      (:td (:prin1-safe val))
 						      (:td (:prin1 (and (boundp val) t)))
 						      (:td (:prin1 (and (fboundp val) t))))
@@ -363,7 +363,7 @@
 			   (html (:head (:title "Secret page"))
 				 (:body "You made it to the secret page"))))
 		  else
-		       (with-http-response (req ent :response 
+		       (with-http-response (req ent :response
 						*response-unauthorized*)
 			 (set-basic-authorization req
 						   "secretserver")
@@ -388,7 +388,7 @@
 			 (with-http-body (req ent)
 			   (html
 			    (:html (:head (:title "Unauthorized"))
-				   (:body 
+				   (:body
 				    "You cannot access this page "
 				    "from your location")))))))))
 
@@ -409,7 +409,7 @@
 
 ;; these two urls show how to transfer a user-selected file from
 ;; the client browser to the server.
-;; 
+;;
 ;; We use two urls (/getfile to put up the form and /getfile-post to
 ;; handle the post action of the form).   We could have done it all
 ;; with one url but since there's a lot of code it helps in the
@@ -428,7 +428,7 @@
 				:action "getfile-got")
 			 "Let me know what file to grab"
 			 :br
-			 ((:input :type "file" 
+			 ((:input :type "file"
 				  :name "thefile"
 				  :value "*.txt"))
 			 :br
@@ -460,12 +460,12 @@
 
 
 
-;; this called with the file from 
+;; this called with the file from
 (publish :path "/getfile-got"
 	 :content-type "text/html"
 	 :function
 	 #'(lambda (req ent)
-	     
+
 	     (with-http-response (req ent)
 	       (let ((h nil)
 		     (counter 0)
@@ -476,14 +476,14 @@
 		   (if* (null (setq h (get-multipart-header req)))
 		      then ; no more items
 			   (return))
-		   ; we can get the filename from the header if 
+		   ; we can get the filename from the header if
 		   ; it was an <input type="file"> item.  If there is
 		   ; no filename, we just create one.
 		   (let ((cd (assoc "content-disposition" h :test #'equalp))
 			 (filename)
 			 (sep))
 		     (if* (and cd (consp (cadr cd)))
-			then (setq filename (cdr (assoc "filename" 
+			then (setq filename (cdr (assoc "filename"
 							(cddr (cadr cd))
 							:test #'equalp)))
 			     (if* filename
@@ -499,12 +499,12 @@
 					    (or (position #\\ filename
 							  :from-end t) -1)))
 				     (setq filename
-				       (subseq filename (1+ sep) 
+				       (subseq filename (1+ sep)
 					       (length filename)))))
 		     (if* (null filename)
 			then (setq filename (format nil "tempfile~d"
 						    (incf counter))))
-		     
+
 		     (push filename files-written)
 		     (with-open-file (pp filename :direction :output
 				      :if-exists :supersede
@@ -512,19 +512,19 @@
 		       (format t "writing file ~s~%" filename)
 		       (let ((buffer (make-array 1024
 						 :element-type '(unsigned-byte 8))))
-			 
-			 (loop (let ((count (get-multipart-sequence 
-					     req 
+
+			 (loop (let ((count (get-multipart-sequence
+					     req
 					     buffer
 					     :raw t)))
 				 (if* (null count) then (return))
 				 (write-sequence buffer pp :end count)))))
-		
+
 		     ))
-	       
-	       
+
+
 		 ;; now send back a response for the browser
-	       
+
 		 (with-http-body (req ent)
 		   (html (:html (:head (:title "form example"))
 				(:body "proceessed the form, files written"
@@ -532,15 +532,15 @@
 					 (html :br "file: "
 					       (:b (:prin1-safe file))))))))))))
 
-	     
+
 
 (publish :path "/cookietest"
 	 :content-type "text/html"
 	 :function
 	 #'(lambda (req ent)
 	     (with-http-response (req ent)
-	       (set-cookie-header req 
-				  :name "froba" 
+	       (set-cookie-header req
+				  :name "froba"
 				  :value "vala"
 				  :path "/"
 				  :expires :never)
@@ -553,7 +553,7 @@
 					      (* 20 60) ; 20 mins
 					      )
 				  )
-				  
+
 	       (with-http-body (req ent)
 		 (html (:head (:title "Cookie Test"))
 		       (:body "you should have a cookie now."
@@ -570,9 +570,9 @@
 		 (with-http-body (req ent)
 		   (html (:head (:title "Cookie results"))
 			 (:body
-			  "The following cookies were returned: " 
+			  "The following cookies were returned: "
 			  (:prin1-safe cookie-info))))))))
-	 
+
 
 
 (publish :path "/timeout"
@@ -608,4 +608,3 @@
 (publish-directory :server *server2*
 		   :prefix "/"
 		   :destination "/home/httpd/html/")
-

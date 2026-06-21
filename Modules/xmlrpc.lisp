@@ -1,7 +1,7 @@
 ;;;; XML-RPC library for Corman Lisp - Version 1.1
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,22 +20,22 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
 ;;;; =====
 ;;;; See the examples at the end of the file for useage. It has been tested
-;;;; with at least version 1.41 of Corman Lisp available at 
+;;;; with at least version 1.41 of Corman Lisp available at
 ;;;; http://www.corman.net
 ;;;;
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 09/10/2000 - 1.0 
+;;;; 09/10/2000 - 1.0
 ;;;;              Initial release.
 ;;;;              Examples at end of file. Still need to implement date/time
 ;;;;              and base64.
@@ -43,10 +43,10 @@
 (require :sockets)
 
 (defpackage "XMLRPC"
-	(:use 
-		:COMMON-LISP 
+	(:use
+		:COMMON-LISP
 		:SOCKETS)
-	(:export 
+	(:export
 		"XML-RPC-SEND"
 		"XMLRPC-FAULT"
 		"XMLRPC-FAULT-CODE"
@@ -160,14 +160,14 @@
 	((fault-code :initarg :fault-code :initform nil :reader xmlrpc-fault-code)
 		(fault-string :initarg :fault-string :initform nil :reader xmlrpc-fault-string))
 	(:report (lambda (condition stream)
-			(format stream "XML-RPC fault code ~A (~A)." 
+			(format stream "XML-RPC fault code ~A (~A)."
 				(xmlrpc-fault-code condition)
 				(xmlrpc-fault-string condition)))))
 
 (enable-meta-syntax)
 (defun parse-response (string &aux (index 0) (end (length string)) last-call-result)
 	"Parse the response from an XML-RPC call and return the value of that call."
-	(labels ((ctoi (d) 
+	(labels ((ctoi (d)
 				(- (char-code d) #.(char-code #\0)))
 			(make-temp-array ()
 				(let ((array (make-array 10 :fill-pointer t)))
@@ -267,8 +267,8 @@
 						  !(check-date)
 						  !(check-double)
 						  !(check-base64)
-						  [$[@(valid-string-char ch) 
-						      !(vector-push-extend ch string-result)] 
+						  [$[@(valid-string-char ch)
+						      !(vector-push-extend ch string-result)]
 						      !(setq last-call-result (array-to-string string-result))]}
 						 "</value>" !(skip-ws)])
 					(progn (setq index old-index) nil)))
@@ -285,7 +285,7 @@
 						[!(skip-ws) "<fault>" !(skip-ws)
 						 !(check-value)
 						 !(skip-ws) "</fault>" !(skip-ws)
-						 !(error 'xmlrpc-fault 
+						 !(error 'xmlrpc-fault
 							:fault-code (gethash "faultCode" last-call-result)
 							:fault-string (gethash "faultString" last-call-result))])
 					(progn (setq index old-index) nil)))
@@ -316,7 +316,7 @@
 					(progn (setq index old-index) nil))))
 		(values (matchit {!(check-payload)}) index last-call-result)))
 (disable-meta-syntax)
-		
+
 
 #|
 (parse-response "123")
@@ -369,7 +369,7 @@
 			(unless (zerop (length args))
 				(setq request (concatenate 'string request "<params>"))
 				(dolist (arg args)
-					(setq request 
+					(setq request
 						(concatenate 'string request
 							(format nil
 								"<param><value>~A</value></param>"
@@ -390,7 +390,7 @@
 					(loop as line = (read-line stream nil :eof)
 						until (or (eq line :eof) (zerop (length line))))
 					(values
-						(parse-response (apply #'concatenate 'string 
+						(parse-response (apply #'concatenate 'string
 								(loop as line = (read-line stream nil :eof)
 									until (or (eq line :eof) (zerop (length line)))
 									collect line))))))))
@@ -423,40 +423,40 @@
 (xml-rpc-send "aggregator.userland.com" "/RPC2" "aggregator.getServiceInfo" 747)
 
 ;; with macro
-(define-xmlrpc-client-method get-state-name 
-	"betty.userland.com" 
-	"/RPC2" 
-	"examples.getStateName" 
+(define-xmlrpc-client-method get-state-name
+	"betty.userland.com"
+	"/RPC2"
+	"examples.getStateName"
 	(state-number))
 
 (define-xmlrpc-client-method hello-world
-	"www.wc.cc.va.us" 
-	"/dtod/xmlrpcb2/code/server.asp" 
-	"helloWorld" 
+	"www.wc.cc.va.us"
+	"/dtod/xmlrpcb2/code/server.asp"
+	"helloWorld"
 	(name))
 
 (define-xmlrpc-client-method get-state-struct
-	"betty.userland.com" 
-	"/RPC2" 
-	"examples.getStateStruct" 
+	"betty.userland.com"
+	"/RPC2"
+	"examples.getStateStruct"
 	(state-structure))
 
 (define-xmlrpc-client-method get-state-list
-	"betty.userland.com" 
-	"/RPC2" 
-	"examples.getStateList" 
+	"betty.userland.com"
+	"/RPC2"
+	"examples.getStateList"
 	(state-list))
 
 (define-xmlrpc-client-method super-hello
-	"www.wc.cc.va.us" 
-	"/dtod/xmlrpcb2/code/server.asp" 
-	"superHello" 
+	"www.wc.cc.va.us"
+	"/dtod/xmlrpcb2/code/server.asp"
+	"superHello"
 	(list))
 
 (define-xmlrpc-client-method get-service-info
-	"aggregator.userland.com" 
-	"/RPC2" 
-	"aggregator.getServiceInfo" 
+	"aggregator.userland.com"
+	"/RPC2"
+	"aggregator.getServiceInfo"
 	(channel))
 
 (get-state-name 41)
@@ -468,9 +468,9 @@
 
 ;; More tests
 (define-xmlrpc-client-method get-service-info
-	"xmlrpc.usefulinc.com" 
-	"/demo/server.php" 
-	"system.listMethods" 
+	"xmlrpc.usefulinc.com"
+	"/demo/server.php"
+	"system.listMethods"
 	(v))
 
 |#

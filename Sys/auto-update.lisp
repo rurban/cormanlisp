@@ -9,9 +9,9 @@
 ;;;;
 (in-package :ccl)
 (export '(
-        *cormanlisp-patch-level* 
+        *cormanlisp-patch-level*
         auto-update
-        patch-rollback 
+        patch-rollback
         *auto-update-enabled*
         *patch-root-directory*
         *patch-server*
@@ -54,14 +54,14 @@
 
 (defun update-patch-index ()
     (ensure-directories-exist (local-patches-directory))
-    (sockets:get-http-file 
+    (sockets:get-http-file
         *patch-server*
         (concatenate 'string *patch-root-directory* "CormanLisp_3_01_patch_index.lisp")
         (merge-pathnames "CormanLisp_3_01_patch_index.lisp"
             (local-patches-directory))))
 
 (defun download-patch (patch)
-    (sockets:get-http-file 
+    (sockets:get-http-file
         *patch-server*
         (format nil "~A~D" *patch-root-directory* (cormanlisp-patch-pathname patch))
         (merge-pathnames (cormanlisp-patch-pathname patch)
@@ -95,24 +95,24 @@
             (load filename)
             (if (cormanlisp-patch-install-func patch)
                 (funcall (cormanlisp-patch-install-func patch))))
-        (format *terminal-io* "Finished loading patch level ~D.~%" 
+        (format *terminal-io* "Finished loading patch level ~D.~%"
             (cormanlisp-patch-level patch))))
 
 (defun patch-upgrade-confirm (new-level)
-    (let ((result (eq 
-                    (win:message-box-yes-no 
-                        (format nil 
+    (let ((result (eq
+                    (win:message-box-yes-no
+                        (format nil
                             (concatenate 'string
                                 "Your patch level is currently ~D. There are new patches available which will "
                                 "bring you up to patch level ~D.~%"
                                 "Would you like to have the new patches installed now?")
-                            ccl:*cormanlisp-patch-level* 
+                            ccl:*cormanlisp-patch-level*
                             new-level)
                         "Install New Updates")
                     'win:IDYES)))
         (unless result
             (win:message-box-ok
-                (concatenate 'string 
+                (concatenate 'string
                     "If you wish to disable automatic update notification, you can "
                     "set the special variable ccl:*AUTO-UPDATE-ENABLED* to NIL "
                     "in the 'init.lisp' file.")
@@ -120,31 +120,31 @@
         result))
 
 (defun patch-rollback-confirm (new-level)
-    (let ((result (eq 
-                    (win:message-box-yes-no 
-                        (format nil 
+    (let ((result (eq
+                    (win:message-box-yes-no
+                        (format nil
                             (concatenate 'string
                                 "Your patch level is currently ~D. Your patch level will "
                                 "be rolled back to level ~D.~%"
                                 "Do you wish to continue with the rollback?")
-                            ccl:*cormanlisp-patch-level* 
+                            ccl:*cormanlisp-patch-level*
                             new-level)
                         "Remove Patches")
                     'win:IDYES)))
         result))
-       
+
 (defun auto-update ()
     (let ((local-index (update-patch-index))
           (save-patch-level ccl:*cormanlisp-patch-level*))
         (unless local-index
-            (format *terminal-io* 
+            (format *terminal-io*
                 (concatenate 'string
                     ";; Could not load auto-update index file. "
                     "This may be because you are not connected to the internet, or because you "
                     "need to configure proxy server settings (see the 'init.lisp' file)~%"))
             (return-from auto-update nil))
         (load local-index)
-        
+
         ;; if the patch level was upgraded, recompile the image
         (when (>  ccl:*cormanlisp-patch-level* save-patch-level)
             (compile-cormanlisp-image))))
@@ -166,7 +166,7 @@
                     (delete-file (cormanlisp-patch-pathname patch))
                     (pop ccl::*patches-installed*)
                     (decf *cormanlisp-patch-level*))))
-        
+
         ;; if the patch level was downgraded, recompile the image
         (when (<  ccl:*cormanlisp-patch-level* save-patch-level)
             (compile-cormanlisp-image)
@@ -179,4 +179,4 @@
         (setf (ccl::cormanlisp-patch-install-func ccl::*patch*) ',install-func)
         (setf (ccl::cormanlisp-patch-uninstall-func ccl::*patch*) ',uninstall-func)
         (setf ccl::*cormanlisp-patch-level* ,level)
-        (push ccl::*patch* ccl::*patches-installed*)))  
+        (push ccl::*patch* ccl::*patches-installed*)))

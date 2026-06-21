@@ -78,8 +78,8 @@ WINGDIAPI void APIENTRY glColor3d (GLdouble red, GLdouble green, GLdouble blue);
 WINGDIAPI void APIENTRY glVertex3d (GLdouble x, GLdouble y, GLdouble z);
 WINGDIAPI void APIENTRY glFlush ();
 WINGDIAPI void APIENTRY glFinish ();
-WINGDIAPI void APIENTRY glRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z); 
- 
+WINGDIAPI void APIENTRY glRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z);
+
 
 /* pixel types */
 #define PFD_TYPE_RGBA        0

@@ -31,8 +31,8 @@ going through 8-bit character funnels, so this feature is not
 too useful as of this release. In the next release we plan
 to have the i/o channels handle 16-bit chars correctly.
 
-DEFUN-DLL generates code which will automatically convert passed 
-character strings to any foreign type which resolves to '(:char *) 
+DEFUN-DLL generates code which will automatically convert passed
+character strings to any foreign type which resolves to '(:char *)
 (such as LPTCSTR). In version 1.3, this only worked if the type
 was actually '(:char *).
 
@@ -46,7 +46,7 @@ Added RATIO class.
 LOAD will not cause files to be left open when an error occurs during
 loading.
 
-CONDITIONS system has been implemented. There are still a couple things 
+CONDITIONS system has been implemented. There are still a couple things
 missing but it is pretty complete. Conditions have been integrated in
 much of the system, but not everywhere.
 
@@ -76,7 +76,7 @@ variable being warned about.
 Declarations are now properly handled in several situations where they
 weren't being, previously. In particular, DEFMETHOD now allows declarations.
 
-A new critical section class (TH:CRITICAL-SECTION) has been added to facilitate 
+A new critical section class (TH:CRITICAL-SECTION) has been added to facilitate
 synchronizing multi-threaded code. Methods on this class: ENTER and LEAVE.
 Note that you must now use (require "THREADS") before accessing thread
 functions or classes.
@@ -112,5 +112,3 @@ large files.
 The documentation has been revised for 1.4.
 
 A new CLOS-based LIFE sample application is included.
-
-

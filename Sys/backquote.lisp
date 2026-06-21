@@ -13,14 +13,14 @@
 
 (provide :backquote)
 
-;; this gets executed before the macro version of in-package is 
+;; this gets executed before the macro version of in-package is
 ;; defined
 (eval-when (:compile-toplevel :load-toplevel :execute)
 	(in-package :common-lisp))
 
 ;; need to override warning here
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* nil)
- 
+
 (defvar *comma* '%COMMA)
 (defvar *comma-atsign* '%COMMA-ATSIGN)
 (defvar *comma-dot* '%COMMA-DOT)
@@ -49,7 +49,7 @@
 	#'(lambda (stream char)
 		(declare (ignore char))
 		(list 'backquote (read stream t nil t))))
-		
+
 (set-macro-character #\,
 	#'(lambda (stream char)
 		(declare (ignore char))
@@ -64,7 +64,7 @@
 
 (defmacro backquote (x)
 	(bq-completely-process x))
-				
+
 (defun bq-completely-process (x)
 	(let ((raw-result (bq-process x)))
 		(bq-remove-tokens (if *bq-simplify*
@@ -84,7 +84,7 @@
 		  (t (do ((p x (cdr p))
 		  		  (q '() (cons (bracket (car p)) q)))
 				 ((atom p)
-				  (cons *bq-append* 
+				  (cons *bq-append*
 				  		(nreconc q (list (list *bq-quote* p)))))
 				(when (eq (car p) *comma*)
 					(unless (null (cddr p)) (error "Malformed ,~S" p))
@@ -94,7 +94,7 @@
 					(error "Dotted ,@~S" p))
 				(when (eq (car p) *comma-dot*)
 					(error "Dotted ,.~S" p))))))
-					
+
 (defun bracket (x)
 	(cond ((atom x)
 			(list *bq-list* (bq-process x)))
@@ -105,7 +105,7 @@
 		  ((eq (car x) *comma-dot*)
 		  	(list *bq-clobberable* (cadr x)))
 		  (t (list *bq-list* (bq-process x)))))
-		  
+
 (defun maptree (fn x)
 	(if (atom x)
 		(funcall fn x)
@@ -207,16 +207,3 @@
 		(t (maptree #'bq-remove-tokens x))))
 
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* t)
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,7 +1,7 @@
 ;;;; Thread Lock library for Corman Lisp - Version 1.0
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
@@ -29,14 +29,14 @@
 ;;;;
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
-;;;; 
-;;;; Comments, suggestions and bug reports to the author, 
+;;;;
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 16/09/2000 - 1.0 
+;;;; 16/09/2000 - 1.0
 ;;;;              Initial release.
 (defpackage "MP-LOCKS"
-	(:use 
+	(:use
 		:COMMON-LISP)
 	(:export
 		"CRITICAL-SECTION"
@@ -79,8 +79,8 @@
 					(setf (aref *cs-list* n) nil))))
 		(cl::leave-critical-section *cs-list-lock*)))
 
-		
-	
+
+
 #|
 ;; Add methods for loading/saving critical section list lock.
 (progn
@@ -92,7 +92,7 @@
 		#'(lambda ()
 			(setf *cs-list-lock* (cl::allocate-critical-section)))))
 |#
-	
+
 (defclass critical-section ()
 	((handle :initform nil :accessor critical-section-handle))
 	(:documentation
@@ -103,10 +103,10 @@
 		(type-of cs)
 		(critical-section-handle cs)))
 
-(defmethod initialize-instance :after ((cs critical-section) &allow-other-keys)	
+(defmethod initialize-instance :after ((cs critical-section) &allow-other-keys)
 	(setf (critical-section-handle cs) (cl::allocate-critical-section))
 	(add-critical-section cs)
-	(ccl:register-finalization cs #'(lambda (x) (remove-critical-section x))))		
+	(ccl:register-finalization cs #'(lambda (x) (remove-critical-section x))))
 
 (defmethod critical-section-enter ((cs critical-section))
 	(cl::enter-critical-section (critical-section-handle cs)))
@@ -128,8 +128,3 @@
 	(make-instance 'critical-section))
 
 (provide 'mp-locks)
-
-
-
-
-	

@@ -37,7 +37,7 @@ Common Lisp Functions:
     It also supports :INCLUDE option. A few other bugs were
     fixed.
 
-    Implemented FILE-WRITE-DATE, READ-SEQUENCE functions. 
+    Implemented FILE-WRITE-DATE, READ-SEQUENCE functions.
 
     Fixed a bug that involved DEFPACKAGE and COMPILE-FILE.
 
@@ -49,7 +49,7 @@ Compiler modifications:
     Added more controls for compiler optimizations.
 
     Added automatic constant folding to the compiler. Constant
-    expressions are more often evaluated at compile time instead 
+    expressions are more often evaluated at compile time instead
     of run time.
 
     Implemented compiler macros (DEFINE-COMPILER-MACRO).
@@ -97,7 +97,7 @@ Misc:
         -image filename
     somewhere on the command line.
 
-    Makefiles added, making it easy to use nmake and VC++ to rebuild 
+    Makefiles added, making it easy to use nmake and VC++ to rebuild
     everything.
 
     Synchronization option added to MAKE-HASH-TABLE.

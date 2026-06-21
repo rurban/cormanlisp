@@ -10,8 +10,8 @@
 ;;;;							  fix to return CLOS instance name and
 ;;;;							  structure names.
 ;;;;				2/15/01  RGC  Minor cleanup to TYPE-OF function.
-;;;;                09/07/07 RGC  Integrated Matthias Hölzl's fixes for SUBTYPEP, OPEN, 
-;;;;                              and BOA constructors. 
+;;;;                09/07/07 RGC  Integrated Matthias Hölzl's fixes for SUBTYPEP, OPEN,
+;;;;                              and BOA constructors.
 ;;;;
 (in-package :common-lisp)
 
@@ -21,8 +21,8 @@
 
 (defmacro defsubtype (t1 (var) &body body)
     (let ((name (intern (concatenate 'string "SUBTYPEP." (symbol-name t1)))))
-        `(progn 
-            (setf (gethash ',t1 *subtype-table*) ',name) 
+        `(progn
+            (setf (gethash ',t1 *subtype-table*) ',name)
             (defun ,name (,var) ,@body))))
 
 (defsubtype array (type) (member type '(atom)))
@@ -85,11 +85,11 @@
 (defun subclassp (c1 c2) (declare (ignore c1 c2)) #| implemented later |#)
 
 (defun subtypep-symbol-types (type-1 type-2)
-	(cond 
+	(cond
 		((eq type-1 type-2) (values t t))
-		((eq type-2 'atom) (values (not (member type-1 '(cons list))) t)) 
+		((eq type-2 'atom) (values (not (member type-1 '(cons list))) t))
 		(t (let ((func (gethash type-1 *subtype-table*)))
-                (if func 
+                (if func
                     (values (if (funcall func type-2) t) t)
                     (let ((c1 (find-class type-1 nil))
                           (c2 (find-class type-2 nil)))
@@ -99,7 +99,7 @@
 
 ;; not fully implemented
 (defun subtypep-list-types (type-1 type-2)
-    (cond ((and (consp type-1) 
+    (cond ((and (consp type-1)
                         (or (eq (car type-1) 'integer)
                                 (eq (car type-1) 'unsigned-byte)
                                 (eq (car type-1) 'signed-byte))
@@ -123,7 +123,7 @@
 		   (subtypep-list-types type-1 type-2))
 		  (t (subtypep-symbol-types type-1 type-2))))
 
-(defconstant uvector-type-table 
+(defconstant uvector-type-table
 #(
 	function			; 0
 	function			; 1
@@ -159,15 +159,15 @@
 	0
 ))
 
-(defconstant type-table 
+(defconstant type-table
 #(
-	fixnum 		
+	fixnum
 	character
-	forward-pointer 
-	short-float 
-	cons 	
+	forward-pointer
+	short-float
+	cons
 	uvector
-	uvector-header 
+	uvector-header
 	short-float
 ))
 

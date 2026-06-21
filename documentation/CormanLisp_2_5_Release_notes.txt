@@ -5,7 +5,7 @@ Roger Corman, Corman Technologies
 
 Corman Lisp 2.5 includes:
 
--improved ANSI Common Lisp compatibility 
+-improved ANSI Common Lisp compatibility
 -enhanced IDE features
 -defect fixes
 -performance improvements
@@ -17,14 +17,14 @@ These notes detail changes made since the Corman Lisp 2.01 release. Please
 see the Corman Lisp 2.01 release notes for information regarding 2.01
 changes (which are also included in this release).
 
-This is a free upgrade to everyone who purchased a license for 
-Corman Lisp 2.0, and is offered at a low upgrade price to 
-registered owners of prior versions of Corman Lisp. 
+This is a free upgrade to everyone who purchased a license for
+Corman Lisp 2.0, and is offered at a low upgrade price to
+registered owners of prior versions of Corman Lisp.
 Licensing details are the same as for previous versions.
 
 IDE:
 
-- Editor now supports automatic syntax colorization of Lisp code. The 
+- Editor now supports automatic syntax colorization of Lisp code. The
   implementation of this is in the file sys/edit-window.lisp and can
   be customized (even live while the editor is running).
 
@@ -52,7 +52,7 @@ IDE:
 
 Compiler and Kernel:
 
-- A NIL block no longer implicitly wraps lambdas. This behavior was 
+- A NIL block no longer implicitly wraps lambdas. This behavior was
   inconsistent with ANSI, and allowed all sorts of non-portable code
   to creep in (the Corman Lisp libraries and example programs, for example).
   The behavior is now consistent with ANSI, and all Corman Lisp code has
@@ -70,23 +70,23 @@ Compiler and Kernel:
   occasional threading problems. Only one thread at a time can manipulate
   packages. This was sometimes resulting in messed up heaps.
 
-- Added proper support for LOAD-TIME-VALUE. It is now 
-  supported properly for LOAD, EVAL, COMPILE and COMPILE-FILE. 
-  LOAD-IMAGE will not cause LOAD-TIME-VALUE to evaluate (I don't 
+- Added proper support for LOAD-TIME-VALUE. It is now
+  supported properly for LOAD, EVAL, COMPILE and COMPILE-FILE.
+  LOAD-IMAGE will not cause LOAD-TIME-VALUE to evaluate (I don't
   believe it should).
 
 - Improvements to DEFSTRUCT to improve COMPILE-FILE with structures.
 
 - Removed warnings on unreferenced dispatching variables in CLOS methods.
 
-- Improved performance of MAKE-ARRAY when :initial-contents 
-  is a large list, and this greatly improves performance of reading long 
+- Improved performance of MAKE-ARRAY when :initial-contents
+  is a large list, and this greatly improves performance of reading long
   literal strings.
 
-- Fixed a code generation problem with BLOCK returns when used a parameter 
+- Fixed a code generation problem with BLOCK returns when used a parameter
   to a function call.
 
-- Fixed a code generation problem, where special declarations were not 
+- Fixed a code generation problem, where special declarations were not
   properly shadowing lexical variable declarations.
 
 - Added GROW-CODE-BUFFER implementation to assembler (to allow arbitrarily
@@ -104,16 +104,16 @@ Compiler and Kernel:
 
 - Added COMPILE-FILE-PATHNAME implementation.
 
-- CLOS class objects are now handled specially by COMPILE-FILE, 
-  making the compiled code much smaller (and work correctly). 
+- CLOS class objects are now handled specially by COMPILE-FILE,
+  making the compiled code much smaller (and work correctly).
 
-- Fixed a bug in the compiler when multiple blocks with the same 
+- Fixed a bug in the compiler when multiple blocks with the same
   name are used in a function.
 
-- Foreign heap blocks with null pointers are no longer saved as size 0 
+- Foreign heap blocks with null pointers are no longer saved as size 0
   blocks when the heap is written.
 
-- Added code to heap loading code to allow for garbage collection to 
+- Added code to heap loading code to allow for garbage collection to
   occur.
 
 - Increased the max number of jump table entries from #x4000 to #x8000.
@@ -129,17 +129,17 @@ Compiler and Kernel:
 
 - Added WIN:WITH-COM-INTERFACE macro.
 
-- Cleaned up some places in the kernel that would occasionally hit an 
+- Cleaned up some places in the kernel that would occasionally hit an
   unexpected debugger breakpoint.
 
 Common Lisp:
 
-- DEFSTRUCT: Included structure definitions are now considered 
+- DEFSTRUCT: Included structure definitions are now considered
   superclasses.
 
 - Added LISTEN implementation.
 
-- When DEFSTRUCT :include option is used, accessors are no longer generated 
+- When DEFSTRUCT :include option is used, accessors are no longer generated
   for included slots.
 
 - DEFSTRUCT: supplied-p args are supported in BOA constructor functions.
@@ -169,7 +169,7 @@ Common Lisp:
 - Fixed a problem with strings separated by ~; in ~[ constructs (FORMAT).
 
 - Included xp.lisp in the standard image. All pretty-printing now uses this
-  (it permanently replaces the previous pretty-printer). This is the one 
+  (it permanently replaces the previous pretty-printer). This is the one
   the ANSI standard was based on.
 
 - New improved macro implementations: DEFSETF, DEFINE-SETF-EXPANDER, PUSH
@@ -202,7 +202,7 @@ Enhancements and fixes from Frank Adrian:
 
 - Replaced DEFPACKAGE macro implementation.
 
- 
+
 Enhancements and fixes from JP Massar:
 
 - Fixed a problem with CASE, TYPECASE
@@ -220,17 +220,17 @@ Enhancements and fixes from JP Massar:
 
 - Added WITH-STANDARD-IO-SYNTAX implementation.
 
-- Added compiler error for erroneous symbol declarations in 
+- Added compiler error for erroneous symbol declarations in
   DO, DO*.
 
 - Fixed READ to handle stream of t or nil correctly.
 
 - GENSYM no longer increments before it is used.
 
-- If a file is loaded with a pathname, a string is saved for 
+- If a file is loaded with a pathname, a string is saved for
   DB:FIND-SOURCE functionality.
 
-- Enhancement to EVAL enhancement for handling of top-level PROGN 
+- Enhancement to EVAL enhancement for handling of top-level PROGN
   forms.
 
 - Change to WITH-OPEN-FILE to avoid trying to close NIL.
@@ -241,7 +241,7 @@ Modules/Libraries:
 
 - Modified build script to list files as they are compiled from the console.
 
-- "LOOP". "DESCRIBE", and "THREADS" packages are now loaded into default 
+- "LOOP". "DESCRIBE", and "THREADS" packages are now loaded into default
   image (no longer auto-loaded).
 
 - New Registry functions added: WIN:REGISTRY-SET, WIN:REGISTRY-LOOKUP
@@ -272,5 +272,3 @@ Code contributors (thanks!):
 -Chris Double
 
 and others...
-
-

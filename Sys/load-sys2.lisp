@@ -13,7 +13,7 @@
         (editor-set-message (format nil "Compiling ~a" filename))
         (progn (format t "Compiling ~a~%" filename)(force-output)))
     (load filename))
-    
+
 (setq cl::*compiler-save-lambdas* nil)
 (setq cl::*compiler-save-table-references* nil)
 
@@ -102,7 +102,7 @@
 ;; Load patches
 (in-package :cl)
 (let ((patch-files
-        (sort (directory 
+        (sort (directory
                     (merge-pathnames "CormanLisp_3_0_patch_??.lisp" (ccl::local-patches-directory)))
             #'string< :key 'namestring)))
     (dolist (f (mapcar 'namestring patch-files))
@@ -118,7 +118,7 @@
 ;(ccl:quasiload "sys\\parse-c-decls.lisp")
 ;; Demote the ct::+c-keywords+ constant defined by the parser to a
 ;; mutable variable to avoid a warning when the autoload above fires.
-(%symbol-set-flags  
+(%symbol-set-flags
 	(logandc2 (%symbol-get-flags 'ct::+c-keywords+) *symbol-constant-flag*)
 	'ct::+c-keywords+)
 
@@ -133,5 +133,3 @@
 (setq cl::*compiler-save-table-references* t)
 (setq cl::*loading-kernel* nil)
 (setq cl::*compress-img* t)
-
-

@@ -37,10 +37,10 @@
   (import-types "System.Windows.Forms"
                 "Application" "Control" "Control+ControlCollection" "DockStyle" "Form"
                 "MessageBox" "KeyPressEventArgs" "KeyPressEventHandler" "TextBox")
-  
+
   (import-types "AproposGUI"
                 "AproposControl")
-  
+
   (use-namespace "System.Windows.Forms")
   (use-namespace "AproposGUI"))
 

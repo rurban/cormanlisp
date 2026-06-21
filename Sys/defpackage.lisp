@@ -51,7 +51,7 @@
 			(let* ((name (verify-symbol-or-string symbol :shadowing-import-from))
 				   (symbol (find-symbol name from-package)))
 				(unless symbol
-					(error "The symbol ~A does not exist in the ~A package.~%~ 
+					(error "The symbol ~A does not exist in the ~A package.~%~
 						But you told :shadowing-import-from (within DEFPACKAGE) to import it."
 						name from))
 				(shadowing-import (list symbol) into-package)))))
@@ -66,7 +66,7 @@
 
 (defun canonicalize-package-designator (pkg-des &optional (allow-nil-for-*package* t))
 	(when (null pkg-des)
-		(if allow-nil-for-*package* 
+		(if allow-nil-for-*package*
 			(setq pkg-des *package*)
 			(error "Nil not allowed for package designator in this context.")))
 	(unless (packagep pkg-des)
@@ -94,7 +94,7 @@
             (spec (car still-to-process) (car still-to-process)))
             ((null still-to-process) nil)
         (let* ((package (canonical-package-name (car spec)))
-               (symbol-names (mapcan 
+               (symbol-names (mapcan
                                #'(lambda (name)
                                    (let ((sym (find-symbol (string name) package)))
                                      (if sym
@@ -144,11 +144,11 @@
 				(:nicknames (setq nicknames (append nicknames (mapcar #'string value))))
 				(:shadow (setq shadow (append shadow (mapcar #'string value))))
 				(:shadowing-import-from (push value shadowing-import-from))
-				(:use 
+				(:use
                     (setq use-supplied-p t)
-                    (setq use 
-                        (remove-duplicates 
-                            (append use 
+                    (setq use
+                        (remove-duplicates
+                            (append use
                                 (mapcar #'(lambda (pkg) (canonicalize-package-designator pkg nil)) value)))))
                	(:import-from (push value import-from))
 				(:intern (setq intern (append intern (mapcar #'string value))))
@@ -162,14 +162,14 @@
                   (setq use default-packages))
 		(unless package
 			(push `(unless (find-package ',name)
-                    (make-package ',name 
-                        :nicknames ',(remove-duplicates nicknames :test #'string-equal) 
-                        :use nil 
+                    (make-package ',name
+                        :nicknames ',(remove-duplicates nicknames :test #'string-equal)
+                        :use nil
                         ,@(when size `(:size ,size)))) forms))
-        (setq use (mapcar (lambda (package) 
+        (setq use (mapcar (lambda (package)
                             (if (packagep package)
                                 (package-name package)
-                                 package)) use))   ;; list package names, not packages 	
+                                 package)) use))   ;; list package names, not packages
 		(when shadow
 		  (push `(shadow ',shadow ',name) forms))
 		(when shadowing-import-from
@@ -202,10 +202,10 @@
 		(declare (ignore table))
 		(dotimes (i size)
 			(if (package-entry-occupied package i)
-				(if (or (null external-only) 
+				(if (or (null external-only)
 						(eq (package-entry-state package i) 'external))
 					(funcall func (package-entry-symbol package i)))))))
-					
+
 ;;;
 ;;;		Common Lisp DO-SYMBOLS macro
 ;;;
@@ -243,7 +243,7 @@
 ;;;		Common Lisp FIND-ALL-SYMBOLS macro
 ;;;
 (defun find-all-symbols (name &aux (list nil))
-	(do-all-symbols (x) 
+	(do-all-symbols (x)
 		(if (string= (symbol-name x) name) (push x list)))
 	list)
 
@@ -269,7 +269,7 @@
 		(dolist (x (cdr props))
 			(format stream ", ~A" x))
 		(format stream "~%")))
-					
+
 ;;;
 ;;;		Common Lisp APROPOS function
 ;;;
@@ -278,8 +278,8 @@
 		(setq string (string-upcase (canonicalize-string-designator string)))
 		(check-type string string)
 		(let ((packages-to-search
-	 	 	  	(if package 
-					(list (find-package package)) 
+	 	 	  	(if package
+					(list (find-package package))
 					(list-all-packages))))
 			(dolist (package packages-to-search)
 				(let ((first-sym t))
@@ -308,7 +308,7 @@
                 (symbol)
                 (when (search string (symbol-name symbol)) (push symbol *apropos-list*))))
         *apropos-list*))
-	 
+
 ;;;; KAP 2003-01-04
 ;;;; with-package-iterator for Corman
 
@@ -335,20 +335,20 @@
                 (cond ((and (package-entry-occupied package current-index)
                             (state-correct-p (package-entry-state package current-index)))
                         (return
-                            (values t (package-entry-symbol package current-index) 
+                            (values t (package-entry-symbol package current-index)
                                 (mask-access (package-entry-state package current-index))
                                 package current-index)))
                     (t (incf current-index)))
                 (unless (< current-index size)
                     (return nil))))))
-		     
+
 (defun generate-package-iterator (package-list &rest symbol-states)
     ;;;; First Iterate over the internal/external when needed
     ;;;; If fininished, check if inherited is specified and iterate over the externals of the use packages
     (let ((state :start)
           (current-package nil)
 	      (current-use-package nil)
-	      (all-packages 
+	      (all-packages
                 (if (listp package-list)
                     (mapcar 'find-package package-list)
                     (find-package package-list)))
@@ -367,7 +367,7 @@
                         (when (and all-packages (not (listp all-packages)))
                             (setq all-packages (list all-packages)))
                         (setq current-package (pop all-packages)
-                            index -1 
+                            index -1
                             state :check-internal-external))
                     (:check-internal-external
                         (if (or i-p e-p)
@@ -375,27 +375,27 @@
                                 (found symbol access apackage new-index)
                                 (get-next-symbol current-package index i-p e-p)
                                 (declare (ignore apackage))
-                                (cond 
-                                    (found (setq index new-index) 
+                                (cond
+                                    (found (setq index new-index)
                                         (return (values found symbol access apackage)))
                                     (t (setq state :check-inherited))))
                             (setq state :check-inherited)))
                     (:check-inherited
-                        (cond 
+                        (cond
                             (ih-p (setq use-packages (package-use-list current-package)
                                     current-use-package (pop use-packages)
                                     index -1
                                     state :do-inherited))
                             (t (setq state :start))))
-                    (:do-inherited 
+                    (:do-inherited
                         (if (null current-use-package)
                             (setq state :start)
                             (multiple-value-bind
                                 (found symbol access apackage new-index)
                                 (get-next-symbol current-use-package index nil t)
                                 (declare (ignore apackage access))
-                                (cond 
-                                    (found (setq index new-index) 
+                                (cond
+                                    (found (setq index new-index)
                                         (return (values found symbol :inherited current-package)))
                                     (t (setq current-use-package (pop use-packages)
                                             index -1)))))))))))
@@ -409,8 +409,5 @@
            (ps (gensym)))
         `(let* ((,ps ,package-list)
                 (,function (generate-package-iterator ,ps ,@symbol-states)))
-            (macrolet ((,lambda () '(funcall ,function))) 
+            (macrolet ((,lambda () '(funcall ,function)))
                 ,@body))))
-
-
-

@@ -46,5 +46,3 @@
 (defvar *current-thread-handle*   *current-thread-handle*)
 (defvar *current-process-id*      *current-process-id*)
 (defvar *current-process-handle*  *current-process-handle*)
-        
-

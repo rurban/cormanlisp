@@ -18,7 +18,7 @@
 
 (define-symbol-macro :pwd (ccl:current-directory))
 
-(define-symbol-macro :cd 
+(define-symbol-macro :cd
     (let ((path (read)))
         (if (symbolp path)
             (setf path (symbol-name path)))
@@ -26,11 +26,10 @@
             (setf path "..\\"))
         (setf (ccl:current-directory) path)))
 
-(define-symbol-macro :lsd 
+(define-symbol-macro :lsd
     (let ((path (pathname (read))))
         (dir-to-console path)))
 
-(define-symbol-macro :ls 
+(define-symbol-macro :ls
     (let ((path "."))
         (dir-to-console path)))
-

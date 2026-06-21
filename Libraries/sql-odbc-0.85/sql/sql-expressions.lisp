@@ -6,12 +6,12 @@
 ;; paul.meurer@hit.uib.no
 ;;
 
-;;; "This software is based on the design of the ODBC interface provided by 
-;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows 
+;;; "This software is based on the design of the ODBC interface provided by
+;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows
 ;;;  Operating System products. This implementation is not the property of
 ;;;  Harlequin and they have no responsibility for its content or accuracy."
 
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
@@ -55,7 +55,7 @@
       ,@(mapcar
          (lambda (name)
            `(setf (slot-value ,exp ',name) ',(slot-value exp name)))
-         (mapcar 
+         (mapcar
            #+mcl #'slot-definition-name
            #-mcl #'clos::slot-definition-name
            #+mcl(class-instance-slots (class-of exp))
@@ -95,7 +95,7 @@
 
 (defclass sql-insert-expression (sql-command-expression)
   ((table :initform nil :initarg :table :accessor exp-table)
-   (parameter-columns :initform () :initarg :parameter-columns 
+   (parameter-columns :initform () :initarg :parameter-columns
                       :accessor exp-parameter-columns)))
 
 ;; are those necessary??
@@ -137,7 +137,7 @@
  (lambda (stream char)
    (declare (ignore char))
    (if *in-sql*
-     ;; the effect of this is that the symbol is masked in (**) 
+     ;; the effect of this is that the symbol is masked in (**)
      ;; and won't get quoted
      (list '%aux-identity (read stream t nil t))
      ;; if ? is encountered outside sql brackets, make it behave in the
@@ -166,10 +166,10 @@
                        (when (and (not (keywordp thing)) ; not necessary
                                   (symbolp thing)) ;; (**)
                          (setf (nth i ,exp-list) `',thing))))
-                   ,exp-list))) 
+                   ,exp-list)))
      (let* ((*in-sql* t)
             (exp-list (read-delimited-list #\] stream t)))
-       (cond ((find-if (lambda (exp) 
+       (cond ((find-if (lambda (exp)
                          (and (consp exp)
                               (not (consp (car exp)))
                               (not (sql-expression-p (car exp)))))
@@ -179,7 +179,7 @@
               (cons 'make-sql-expression exp-list))
              ((and (cdr exp-list)
                    (eq :op (cadr exp-list)))
-              (apply #'sql-operator-exp (car exp-list) (cddr exp-list))) 
+              (apply #'sql-operator-exp (car exp-list) (cddr exp-list)))
              ((or (find '$ exp-list)
                   (find-if-not (lambda (exp)
                                  (or (symbolp exp) (stringp exp)))
@@ -190,7 +190,7 @@
  nil *sql-readtable*)
 
 
-(set-macro-character 
+(set-macro-character
  #\]
  (get-macro-character #\))
  nil *sql-readtable*)
@@ -204,7 +204,7 @@
   (progn ;; why can't it be that elegant in MCL and ACL?
     (editor::set-vector-value
      (slot-value editor::*default-syntax-table* 'editor::table) #\[ 2)
-    (editor::set-vector-value 
+    (editor::set-vector-value
      (slot-value editor::*default-syntax-table* 'editor::table) #\] 3)))
 
 (defun disable-sql-reader-syntax ()
@@ -236,7 +236,7 @@
 (defun make-sql-expression (&rest exp-list)
   (case (car exp-list)
     (apply
-     (apply #'make-sql-expression 
+     (apply #'make-sql-expression
             (append (butlast (cdr exp-list))
                     (car (last exp-list)))))
     (funcall
@@ -271,17 +271,17 @@
 
 ;; merge with sql-operator-exp?
 (defun sql-boolean-exp (op &rest rest)
-  (make-instance 'sql-infix-operator-expression 
-    :op op 
-    :exp-list 
+  (make-instance 'sql-infix-operator-expression
+    :op op
+    :exp-list
     (let ((expressions (delete-if #'null rest)))
       (if (listp (car expressions)) ;; is this safe?
         (car expressions)
         expressions))))
 
 (defun sql-in-predicate-exp (op exp list-or-subquery)
-  (make-instance 'sql-in-predicate-expression 
-    :op op 
+  (make-instance 'sql-in-predicate-expression
+    :op op
     :exp exp
     :list-or-subquery list-or-subquery))
 
@@ -306,7 +306,7 @@
                                 &key &allow-other-keys)
   (write-escaped-sql-string sql-expression stream))
 
-(defmethod write-sql ((sql-expression number) stream 
+(defmethod write-sql ((sql-expression number) stream
                                 &key &allow-other-keys)
   (format stream "~d" sql-expression))
 
@@ -334,7 +334,7 @@
                                     #.(- (char-code #\A) 10)))))))
     hex-string))
 
-(defmethod write-sql ((sql-expression bit-vector) stream 
+(defmethod write-sql ((sql-expression bit-vector) stream
                       &key &allow-other-keys)
   "The bit-vector is converted into a hex string."
   (format stream "'~d'" (bit-vector-to-hex-string sql-expression)))
@@ -344,14 +344,14 @@
   (loop for c across exp
         do (write-char (if (char= c #\-) #\_ c) stream)))
 
-(defmethod write-sql ((sql-expression symbol) stream 
+(defmethod write-sql ((sql-expression symbol) stream
                                 &key &allow-other-keys)
   (let ((expression-string (symbol-name sql-expression)))
     (if (string= expression-string "$")
       (write-char #\? stream) ; translation of parameter marker
       (write-sql-string expression-string stream))))
 
-(defmethod write-sql ((sql-expression null) stream 
+(defmethod write-sql ((sql-expression null) stream
                                 &key &allow-other-keys)
   (declare (ignore sql-expression))
   (write-string "null" stream)
@@ -379,18 +379,18 @@
   (with-slots (sql exp1 exp2 exp3) sql-expression
     (if sql
         (write-string sql stream)
-      (let ((exp1 (if (stringp exp1) 
+      (let ((exp1 (if (stringp exp1)
                       (string-upcase exp1)
                     (symbol-name exp1)))
             (exp2 (cond
                    ((not exp2) nil)
-                   ((stringp exp2) 
+                   ((stringp exp2)
                     (string-upcase exp2))
                    (t
                     (symbol-name exp2))))
             (exp3 (cond
                    ((not exp3) nil)
-                   ((stringp exp3) 
+                   ((stringp exp3)
                     (string-upcase exp3))
                    (t
                     (symbol-name exp3)))))
@@ -418,7 +418,7 @@
            (write-string sql stream))
           (t
            (let ((exp1 (car exp-list)))
-             (case operator 
+             (case operator
                ((not null not-null) ; unary
                 (write-char #\( stream)
                 (when (cdr exp-list)
@@ -480,7 +480,7 @@
               (loop for sublist on exp-list
                     do (write-sql (car sublist) stream)
                     when (cdr sublist)
-                    do (write-string " or " stream))) 
+                    do (write-string " or " stream)))
              (not ; unary
               (write-string "not " stream)
               (write-sql (car exp-list) stream))
@@ -593,7 +593,7 @@
               until (keywordp (car sublist))
               unless (eq sublist expressions)
               do (write-string "," stream)
-              do (write-sql (car sublist) stream)) 
+              do (write-sql (car sublist) stream))
         ;; from
         (write-string " from " stream)
         (write-sql from-exp stream)
@@ -644,7 +644,7 @@
                            collect exp)))
     :order-exp (cadr (member :order-by expressions))))
 
-(defmethod make-insert-expression ((database database) into attributes 
+(defmethod make-insert-expression ((database database) into attributes
                                        values av-pairs query &optional keys)
   (with-output-to-string (stream)
     (write-sql (%make-insert-expression into attributes values av-pairs
@@ -703,18 +703,18 @@
                (when av-pairs
                  (unless values (write-char #\( stream))
                  (loop for ((att val) . rest) on av-pairs
-                       do (progn att ;; to avoid a warning about unused var 
+                       do (progn att ;; to avoid a warning about unused var
                                  (write-sql val stream))
                        while rest
                        do (write-char #\, stream)
                        finally (write-char #\) stream))))))
       :table into
       :parameter-columns (nreverse columns)
-      ;:database database 
+      ;:database database
       )))
 
 
-(defmethod make-update-expression ((database database) table attributes 
+(defmethod make-update-expression ((database database) table attributes
                                        values av-pairs where &optional keys)
   (declare (ignore keys))
   (make-instance 'sql-update-expression
@@ -746,7 +746,7 @@
               (write-sql val stream)
               while rest
               do (write-char #\, stream)))
-      (when where 
+      (when where
         (write-string " where " stream)
         (write-sql where stream)))
     ;:database database
@@ -760,7 +760,7 @@
     (with-output-to-string (stream)
       (write-string "delete from " stream)
       (write-sql table stream)
-      (when where 
+      (when where
         (write-string " where " stream)
         (write-sql where stream)))
     ;:database database
@@ -776,7 +776,7 @@
     (loop for columns on description
           and column in description
           do
-          (cond 
+          (cond
            ((eq (car column) :foreign-key)
             (destructuring-bind (cols ref-keyword foreign-table
                                       foreign-cols) (cdr column)
@@ -811,7 +811,7 @@
                     (t
                      (write-sql type stream)))
               (when (and null-or-primary?
-                         (not (member null-or-primary? 
+                         (not (member null-or-primary?
                                       '(:primary-key :not-null))))
                 (error "Keyword ~s not allowed here." null-or-primary?))
               (when null-or-primary?
@@ -825,10 +825,10 @@
 (defmethod make-drop-table-expression ((database database) name)
   (with-output-to-string (stream)
     (write-string "drop table " stream)
-    (write-sql name stream)))  
+    (write-sql name stream)))
 
 (defmethod make-create-index-expression ((database database)
-                                              index on unique attributes 
+                                              index on unique attributes
                                               &key &allow-other-keys)
   (declare (ignore rest))
   (with-output-to-string (stream)
@@ -864,28 +864,28 @@
     (when force-p (write-string "force " stream)) ; noforce is the default, I suppose
     (write-string "view " stream)
     (write-sql name stream)
-    (when alias 
+    (when alias
       (write-string " (" stream)
       (write-sql alias stream)
       (write-char #\) stream))
     (write-string " as " stream)
     (write-sql as stream)
-    (when check-option 
+    (when check-option
       (write-string " with check option" stream))))
 
 (defmethod make-drop-view-expression ((database database) name)
   (with-output-to-string (stream)
     (write-string "drop view " stream)
-    (write-sql name stream)))  
+    (write-sql name stream)))
 
 ;; we have to take out :database which is a real keyword
 (defun make-generic-execute-expression (&rest rest)
   (with-output-to-string (stream)
     (dolist (exp rest)
       (typecase exp
-        (keyword 
+        (keyword
          (loop for c across (string exp)
-               do (write-char (if (char= c #\-) 
+               do (write-char (if (char= c #\-)
                                 #\Space
                                 (char-downcase c))
                               stream)))

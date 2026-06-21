@@ -36,17 +36,17 @@
 (defconstant ARGS_OFFSET							8)		;; offset from EBP
 
 (defvar *assembler-x86-readtable* (copy-readtable))
-(defvar cormanlisp::*compiler-code-buffer* 
+(defvar cormanlisp::*compiler-code-buffer*
 	(symbol-value 'cormanlisp::*compiler-code-buffer*))
 (defvar cormanlisp::*compiler-collect-jump-table-refs*)
 (defvar cormanlisp::*compiler-collect-var-table-refs*)
-	
+
 (defvar *compiler-code-labels*)
 
 (defun is-byte (x) (and (integerp x) (>= x -128) (<= x 127)))
-(defun needs-reference (obj) (or (uvectorp obj) (consp obj))) 
+(defun needs-reference (obj) (or (uvectorp obj) (consp obj)))
 
-(defun grow-code-buffer () 
+(defun grow-code-buffer ()
     (let* ((buf *compiler-code-buffer*)
            (cbuf (uref buf code-buffer-cbuf-offset))
            (size (uref buf code-buffer-max-code-bytes-offset))
@@ -55,7 +55,7 @@
         (dotimes (i current)
             (setf (elt new-buf i) (elt cbuf i)))
         (setf (uref buf code-buffer-cbuf-offset) new-buf)))
-        
+
 (defun assembler-macro-function (sym) (get sym :assembler-macro))
 (defun expand-assembler-macro (statement)
 	(let* ((func (assembler-macro-function (car statement)))
@@ -68,7 +68,7 @@
 					(push g result))
                 (push x result)))
         (nreverse result)))
-                
+
 (defun uvector-offset (index) (- (* 4 index) uvector-tag))
 
 (defvar *compiler-code-branch-targets* nil)
@@ -85,10 +85,10 @@
 (defun add-branch-target (label code-position distance)
 	(let ((size 4))
 		(if (eq distance :short)
-			(setq size 1)) 
+			(setq size 1))
 		(push (list label code-position size) *compiler-code-branch-targets*)))
 
-(defun add-label (label code-position) 
+(defun add-label (label code-position)
 	(push (cons label code-position) *compiler-code-labels*))
 
 (defun emit-code (bytes)
@@ -132,7 +132,7 @@
 ;;;;
 ;;;;	Compute the twos complement of the number and convert
 ;;;;	to bytes, low byte first.
-;;;;						
+;;;;
 (defun long-bytes (x)
 	(unless (integerp x)
 		(setq x (lisp-object-id x)))
@@ -143,7 +143,7 @@
 		(dotimes (i 4)
 			(let ((byte (mod x #x100)))
 				(if negative
-					(progn 
+					(progn
 						(setq byte (+ (- 255 byte) carry))
 						(if (= byte 256)
 							(progn
@@ -174,8 +174,8 @@
 				 (statement nil))
 				((or (eq token '}) (eq token '}}))
 				 (if inline
-					`(inline-assemble 
-						(encode-assembler-statements 
+					`(inline-assemble
+						(encode-assembler-statements
 							,(nreverse assembler-statements)))
 					`(encode-assembler-statements ,(nreverse assembler-statements))))
 				(if (eq token #\Newline)
@@ -185,32 +185,32 @@
 						(setq statement nil))
 					(push token statement))))))
 
-(set-macro-character #\Newline 
+(set-macro-character #\Newline
 	#'(lambda (stream ch) (declare (ignore stream ch)) #\Newline)
 	nil
 	*assembler-x86-readtable*)
 
-(set-macro-character #\, 
+(set-macro-character #\,
 	#'(lambda (stream ch) (declare (ignore stream ch)) :op-separator)
 	nil
 	*assembler-x86-readtable*)
 
-(set-macro-character #\+ 
+(set-macro-character #\+
 	#'(lambda (stream ch) (declare (ignore stream ch)) '+)
 	nil
 	*assembler-x86-readtable*)
 
-(set-macro-character #\* 
+(set-macro-character #\*
 	#'(lambda (stream ch) (declare (ignore stream ch)) '*)
 	nil
 	*assembler-x86-readtable*)
 
-(set-macro-character #\[ 
+(set-macro-character #\[
 	#'(lambda (stream ch) (declare (ignore stream ch)) :tok-left-brace)
 	nil
 	*assembler-x86-readtable*)
 
-(set-macro-character #\] 
+(set-macro-character #\]
 	#'(lambda (stream ch) (declare (ignore stream ch)) :tok-right-brace)
 	nil
 	*assembler-x86-readtable*)
@@ -241,7 +241,7 @@
 	(setf (get (car p) :register-fpu) i))
 
 ;; mark all branch instructions
-(do ((p '(jmp jz jnz je jne jl jg jnl jng jle jnle jge 
+(do ((p '(jmp jz jnz je jne jl jg jnl jng jle jnle jge
 				jnge jo jno ja jb jae jbe jnb jna jp jnp jc jnc call)
 			(cdr p))
 	 (i 0 (+ i 1)))
@@ -263,7 +263,7 @@
 		(do ((tok (car p) (car p)))
 			((null p) (error "Invalid assembler statement: ~A" statement))
 			(if (eq tok :tok-right-brace)
-				(return `(:register-indirect ,reg1 ,reg2 ,reg2-multiplier 
+				(return `(:register-indirect ,reg1 ,reg2 ,reg2-multiplier
 						,(if negative-disp (- disp) disp))))
 			(if (symbolp tok)
 				(if (get tok :register-32)
@@ -274,7 +274,7 @@
 							(setq reg2 tok)
 							(setq reg2-multiplier (caddr p))
 							(setq p (cddr p)))
-						(if reg1 
+						(if reg1
 							(if reg2
 								(error "Invalid assembler statement: ~A" statement)
 								(setq reg2 tok)	)
@@ -289,12 +289,12 @@
 						(setq disp tok))
 					(error "Invalid assembler statement--token ~A in statement ~A is unknown" tok statement)))
 			(setq p (cdr p)))))
-				
+
 (defun parse-assembly-statement (s)
 	(if (eq s 'inline-assemble)
 		(return-from parse-assembly-statement s))		;; special flag
 	(if (keywordp (car s))
-		(return-from parse-assembly-statement `(declare-label ,(car s))))				
+		(return-from parse-assembly-statement `(declare-label ,(car s))))
 	(let* ((operator (car s))
 		   (op-1 nil)
 		   (op-2 nil)
@@ -331,7 +331,7 @@
 			 (setq p (cdr p)))
    			((member (car p) '(:tok-left-brace dword word byte))
 			 (setq op-1 (parse-indirect-operand (cdr p) s))
-			 (do () ((null p)) 
+			 (do () ((null p))
 				(if (eq (car p) :tok-right-brace)
 					(progn (setq p (cdr p)) (return)))
 				(setq p (cdr p))))
@@ -360,7 +360,7 @@
 			 (setq p (cdr p)))
    			((eq (car p) :tok-left-brace)
 			 (setq op-2 (parse-indirect-operand (cdr p) s))
-			 (do () ((null p)) 
+			 (do () ((null p))
 				(if (eq (car p) :tok-right-brace)
 					(progn (setq p (cdr p)) (return)))
 				(setq p (cdr p))))
@@ -409,7 +409,7 @@
 			((null x) (apply 'vector ret))
 			(push ref ret)
 			(push sym ret))))
-			
+
 (defun assemble (forms name lambda-list)
 	(let ((temp nil)
 		  (*compiler-code-buffer* (make-code-buffer))
@@ -442,31 +442,31 @@
 			(if (consp f)
 				(emit-code (apply (get (car f) 'x86::encoding-func) (cdr f)))
 				(if (keywordp f)
-					(push 
-						(cons f (uref *compiler-code-buffer* code-buffer-code-index-offset)) 
+					(push
+						(cons f (uref *compiler-code-buffer* code-buffer-code-index-offset))
 						*compiler-code-labels*)
 					(unless (eq f 'inline-assemble)
 						(error "Invalid form in assembly block: ~A" f)))))
-	
+
 		;; now need to resolve addresses
 		(resolve-branch-addresses *compiler-code-labels* *compiler-code-branch-targets*)
-		
+
 		(if cl::*code-jump-table-refs*
-			(setf info 
-				(cons 'cl::*code-jump-table-refs* 
+			(setf info
+				(cons 'cl::*code-jump-table-refs*
 					(cons (convert-refs-to-vector cl::*code-jump-table-refs*) info))))
 
 		(if cl::*code-env-table-refs*
-			(setf info 
-				(cons 'cl::*code-env-table-refs* 
+			(setf info
+				(cons 'cl::*code-env-table-refs*
 					(cons (convert-refs-to-vector cl::*code-env-table-refs*) info))))
 
 		(if cl::*code-var-table-refs*
-			(setf info 
-				(cons 'cl::*code-var-table-refs* 
+			(setf info
+				(cons 'cl::*code-var-table-refs*
 					(cons (convert-refs-to-vector cl::*code-var-table-refs*) info))))
-		
-		(cl::create-compiled-function 
+
+		(cl::create-compiled-function
 			(uref *compiler-code-buffer* code-buffer-cbuf-offset)
 			(uref *compiler-code-buffer* code-buffer-code-index-offset)
 			(uref *compiler-code-buffer* code-buffer-refs-offset)
@@ -483,7 +483,7 @@
 					(is-register-32 x)
 					(is-register-16 x)
                     (is-register-fpu x)
-					(member x '(+ - * short near far))) 
+					(member x '(+ - * short near far)))
 				`',x
 				x))
 		x))
@@ -509,17 +509,17 @@
 				(setq setf-form (cadr name))
 				(setq name (cl::setf-function-symbol name))))
 
-		(if setf-form 		
+		(if setf-form
 			`(progn
 				(setf (symbol-function ',name) (assemble ,asm-block ',name ',lambda-list))
 				(cl::register-setf-function ',setf-form ',name)
-				',name) 
+				',name)
 			`(progn
 				(setf (symbol-function ',name) (assemble ,asm-block ',name ',lambda-list))
 				',name))))
 
 (defmacro defop (op params &rest exprs)
-	`(progn 
+	`(progn
 		(setf (get ',op 'x86::encoding-func) #'(lambda ,params (block ,op (let () ,@exprs))))
 		',op))
 
@@ -545,7 +545,7 @@
 				(4 2)
 				(8 3)))
 		(+ (* ss 64) (* (get index-reg :register-32) 8) (get base-reg :register-32))))
-			
+
 (defun mod-reg-rm-byte (op1 op2 &optional imm)
 	(let ((type1 (car op1))
 		  (type2 (car op2))
@@ -560,7 +560,7 @@
 		  (xbytes nil)
 		  (short-size nil)
 		  (memory-direct nil))
-		(cond 
+		(cond
 			((eq type1 :register-32)
 			 (setq width 1)
 			 (setq reg1 (get (cadr op1) :register-32)))
@@ -607,7 +607,7 @@
 			 (setq b (+ #xc0 (* reg1 8) reg2)))
 
 			;; handle mem-reg case
-			((and (eq type1 :register-indirect) 
+			((and (eq type1 :register-indirect)
 				(or (eq type2 :register-32) (eq type2 :register-8)(eq type2 :register-16)
 						(and imm (eq type2 :immediate))))
 			 (if (eq type2 :immediate)
@@ -618,7 +618,7 @@
 						(setq direction 1)
 						(setq direction 0))
 				 	(setq xbytes (if (or (and (= width 1) (= direction 0)) short-size)
-									(if short-size (short-bytes immed)(long-bytes immed)) 
+									(if short-size (short-bytes immed)(long-bytes immed))
 									(list immed)))
 					(if (needs-reference immed)
 						(push (list :reference immed) xbytes))))
@@ -642,15 +642,15 @@
 			(if disp
 				(if (and (is-byte disp)(not memory-direct))
 					(push disp xbytes)
-					(setq xbytes 
+					(setq xbytes
 					  (append
-						(if nil ;; short-size -RGC 
-							(short-bytes disp) 
+						(if nil ;; short-size -RGC
+							(short-bytes disp)
 							(long-bytes disp))
 						xbytes)))))
 
 			;; handle reg-mem case
-			((and (eq type2 :register-indirect) 
+			((and (eq type2 :register-indirect)
 				(or (eq type1 :register-32) (eq type1 :register-8)(eq type1 :register-16)))
 			 (progn
 				(setq direction 1)
@@ -672,9 +672,9 @@
 				(if disp
 					(if (and (is-byte disp)(not memory-direct))
 						(setq xbytes (list disp))
-						(setq xbytes 
+						(setq xbytes
 							(if nil ;; short-size -RGC
-								(short-bytes disp) 
+								(short-bytes disp)
 								(long-bytes disp)))))))
 
 			;; handle reg-immediate case
@@ -688,7 +688,7 @@
 					(setq direction 0))
 
 			 	(setq xbytes (if (or (and (= width 1) (= direction 0)) short-size)
-								(if short-size (short-bytes immed)(long-bytes immed)) 
+								(if short-size (short-bytes immed)(long-bytes immed))
 								(list immed)))
 				(if (needs-reference immed)
 					(push (list :reference immed) xbytes))))
@@ -734,7 +734,7 @@
 					(setq mode 0)
 					(if (is-byte disp)
 						(setq mode 1)
-						(setq mode 2)))	
+						(setq mode 2)))
 				(if (or (third op) (eq (second op) 'esp))	;; if there is a second register
 					(progn
 						(setq sib (calc-sib op))
@@ -753,15 +753,15 @@
 
 (defun standard-2-op (op1 op2 b1 b2 oc1 oc2 inc-mrm)
 	;; check for special case first of immed to accumulator
-	(if (and (eq (car op1) :register-32) 
+	(if (and (eq (car op1) :register-32)
 			 (eq (cadr op1) 'eax)
 			 (eq (car op2) :immediate))
 		(return-from standard-2-op `(,b1 ,@(long-bytes (cadr op2))))
-		(if (and (eq (car op1) :register-8) 
+		(if (and (eq (car op1) :register-8)
 				 (eq (cadr op1) 'al)
 				 (eq (car op2) :immediate))
 			(return-from standard-2-op `(,b2 ,(cadr op2)))))
-			  
+
 	(let ((opcode))
 		(multiple-value-bind (mrm-byte sib direction width extra-bytes)
 			(mod-reg-rm-byte op1 op2)
@@ -785,7 +785,7 @@
 			;; check for shift by one
 			(if (eq (car op2) :immediate)
 				(if (eq (cadr op2) 1)
-					`(,(+ #xd0 width) ,(+ mrm-byte b) ,@(if sib (list sib)) 
+					`(,(+ #xd0 width) ,(+ mrm-byte b) ,@(if sib (list sib))
 							,@(nreverse (cdr (nreverse extra-bytes))))	;; drop last byte (1)
 					`(,(+ #xc0 width) ,(+ mrm-byte b) ,@(if sib (list sib)) ,@extra-bytes))
 				(error "Invalid statement: ~A" *current-statement*)))))
@@ -870,7 +870,7 @@
 (defop clts () '(#x0f #x06))
 (defop cmc () '(#xf5))
 
-(defop cmp (op1 op2) 
+(defop cmp (op1 op2)
 	(let ((result (standard-2-op op1 op2 #x3d #x3c #x80 #x38 #x38)))
 		(if (= (car result) #x82)
 			(setf (car result) #x80))	;; turn off the s bit--unnecessary
@@ -948,7 +948,7 @@
 		(mod-reg-rm-byte-single op)
 		(declare (ignore direction width))
 		`(#xd9 ,(+ mrm-byte #x10) ,@(if sib (list sib)) ,@extra-bytes)))
-	
+
 (defop fstp (op)
     (if (is-register-fpu (cadr op))
         `(#xdd ,(+ #xd8 (get (cadr op) ':register-fpu)))
@@ -1217,7 +1217,7 @@
 			(multiple-value-bind (mrm-byte sib direction width extra-bytes)
 				(mod-reg-rm-byte-single op)
 				(declare (ignore direction width))
-				`(#xff ,(+ mrm-byte #x20) ,@(if sib (list sib)) ,@extra-bytes)))))			
+				`(#xff ,(+ mrm-byte #x20) ,@(if sib (list sib)) ,@extra-bytes)))))
 
 (defop lahf () '(#x9f))
 
@@ -1232,18 +1232,18 @@
 (defop mov (op1 op2)
 	;; check for special case first of immed to register
 	;; if immed is larger than a byte then this will result in a smaller instruction
-	(if (and (eq (car op1) :register-32) 
+	(if (and (eq (car op1) :register-32)
 			 (eq (car op2) :immediate))
 		(return-from mov `(,(+ #xb8 (get (cadr op1) :register-32))
 					,@(if (needs-reference (cadr op2)) (list (list :reference (cadr op2))))
 					,@(long-bytes (cadr op2))))
-		(if (and (eq (car op1) :register-8) 
+		(if (and (eq (car op1) :register-8)
 			 	 (eq (car op2) :immediate))
 			(return-from mov `(,(+ #xb0 (get (cadr op1) :register-8)) ,(cadr op2)))
-            (if (and (eq (car op1) :register-16) 
+            (if (and (eq (car op1) :register-16)
 			 	 (eq (car op2) :immediate))
                 (return-from mov `(#x66 ,(+ #xb8 (get (cadr op1) :register-16)) ,@(short-bytes (cadr op2)))))))
-			  
+
 	(let ((opcode))
 		(multiple-value-bind (mrm-byte sib direction width extra-bytes prefix-bytes)
 			(mod-reg-rm-byte op1 op2)
@@ -1254,12 +1254,12 @@
 			(setq opcode (+ opcode (* direction 2) width))
 
 			`(,@prefix-bytes
-			    ,opcode ,mrm-byte 
+			    ,opcode ,mrm-byte
 				,@(if sib (list sib))
-				,@(if (and 
+				,@(if (and
 						(eq (car op2) :immediate)
 						(needs-reference (cadr op2)))
-					 (list (list :reference (cadr op2)))) 
+					 (list (list :reference (cadr op2))))
 				,@extra-bytes))))
 
 (defop mul (op) (standard-1-op op #x20))
@@ -1293,10 +1293,10 @@
 	(if (eq (first op) :immediate)
 		(if (is-byte (second op))
 			(return-from push `(#x6a ,(second op)))
-			(return-from push 
+			(return-from push
 				`(#x68
 							,@(if (needs-reference (second op)) (list (list :reference (cadr op))))
-							,@(long-bytes (second op))))))	
+							,@(long-bytes (second op))))))
 	(multiple-value-bind (mrm-byte sib direction width extra-bytes)
 		(mod-reg-rm-byte-single op)
 		(declare (ignore direction width))
@@ -1309,7 +1309,7 @@
 (defop rcl (op1 op2) (standard-shift-op op1 op2 #x10))
 (defop rcr (op1 op2) (standard-shift-op op1 op2 #x18))
 
-(defop ret (&optional imm16) 
+(defop ret (&optional imm16)
 	(if imm16
 		(progn
 			(unless (consp imm16)
@@ -1338,8 +1338,8 @@
 				`(#x0f ,,byte2 ,mrm-byte ,@(if sib (list sib)) ,@extra-bytes)))
 		,@(let ((synonym-forms nil))
 			(dolist (name2 synonyms synonym-forms)
-				(push 
-					`(setf (get ',name2 'x86::encoding-func) (get ',name1 'x86::encoding-func)) 
+				(push
+					`(setf (get ',name2 'x86::encoding-func) (get ',name1 'x86::encoding-func))
 					synonym-forms)))))
 
 ;; define all the Setcc operators
@@ -1371,11 +1371,11 @@
 
 (defop test (op1 op2)
 	;; check for special case first of immed to accumulator
-	(if (and (eq (car op1) :register-32) 
+	(if (and (eq (car op1) :register-32)
 			 (eq (cadr op1) 'eax)
 			 (eq (car op2) :immediate))
 		(return-from test `(#xa9 ,@(long-bytes (cadr op2))))
-		(if (and (eq (car op1) :register-8) 
+		(if (and (eq (car op1) :register-8)
 				 (eq (cadr op1) 'al)
 				 (eq (car op2) :immediate))
 			(return-from test `(#xa8 ,(cadr op2)))))
@@ -1395,14 +1395,14 @@
 
 (defop xchg (op1 op2)
 	;; check for special case first of reg to accumulator
-	(if (and (eq (car op1) :register-32) 
+	(if (and (eq (car op1) :register-32)
 			 (eq (cadr op1) 'eax)
 			 (eq (car op2) :register-32))
 		(return-from xchg `(,(+ #x90 (get (cadr op2) :register-32))))
-		(if (and (eq (car op1) :register-32) 
+		(if (and (eq (car op1) :register-32)
 				 (eq (cadr op2) 'eax)
 				 (eq (car op2) :register-32))
-			(return-from xchg `(,(+ #x90 (get (cadr op1) :register-32))))))	  
+			(return-from xchg `(,(+ #x90 (get (cadr op1) :register-32))))))
 	(let ((opcode #x86))
 		(multiple-value-bind (mrm-byte sib direction width extra-bytes)
 			(mod-reg-rm-byte op1 op2)
@@ -1418,17 +1418,17 @@
 (defop add-env-table-ref (sym)
 	(if pl::*compiler-collect-jump-table-refs*
 		(let ((current-ip (uref *compiler-code-buffer* code-buffer-code-index-offset)))
-			(setf cl::*code-env-table-refs* 
-				(cons (- current-ip 4) 
+			(setf cl::*code-env-table-refs*
+				(cons (- current-ip 4)
 					(cons (second sym) cl::*code-env-table-refs*)))))
 	'())
-			
+
 ;; called for side-effect only, emits no code bytes
 (defop add-jump-table-ref (sym)
 	(if pl::*compiler-collect-jump-table-refs*
 		(let ((current-ip (uref *compiler-code-buffer* code-buffer-code-index-offset)))
-			(setf cl::*code-jump-table-refs* 
-				(cons (- current-ip 4) 
+			(setf cl::*code-jump-table-refs*
+				(cons (- current-ip 4)
 					(cons (second sym) cl::*code-jump-table-refs*)))))
 	'())
 
@@ -1436,8 +1436,8 @@
 (defop add-var-table-ref (sym)
 	(if pl::*compiler-collect-var-table-refs*
 		(let ((current-ip (uref *compiler-code-buffer* code-buffer-code-index-offset)))
-			(setf cl::*code-var-table-refs* 
-				(cons (- current-ip 4) 
+			(setf cl::*code-var-table-refs*
+				(cons (- current-ip 4)
 					(cons (second sym) cl::*code-var-table-refs*)))))
 	'())
 
@@ -1450,7 +1450,7 @@
 			mov  edi, [esi + env-offset]
 			add-env-table-ref sym
 		}))
-			
+
 (defasm-macro callf (sym)
 	(let* ((env-offset (* (uref sym symbol-jump-table-offset) 4))
 		   (jump-offset	(+ env-offset 4)))
@@ -1584,7 +1584,7 @@
 ;;;;
 ;;;; utility functions
 ;;;;
-(defun xaddress (func) 
+(defun xaddress (func)
 	(if (symbolp func)
 		(setq func (symbol-function func)))
 	(let ((*print-base* 16))
@@ -1594,5 +1594,3 @@
 (setq *encoding-assembler-macro* nil)
 
 (in-package :common-lisp)
-
-

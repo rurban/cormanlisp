@@ -2,11 +2,11 @@
 ;;
 ;; log.cl
 ;;
-;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA 
+;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA
 ;;
 ;; This code is free software; you can redistribute it and/or
 ;; modify it under the terms of the version 2.1 of
-;; the GNU Lesser General Public License as published by 
+;; the GNU Lesser General Public License as published by
 ;; the Free Software Foundation, as clarified by the AllegroServe
 ;; prequel found in license-allegroserve.txt.
 ;;
@@ -15,11 +15,11 @@
 ;; merchantability or fitness for a particular purpose.  See the GNU
 ;; Lesser General Public License for more details.
 ;;
-;; Version 2.1 of the GNU Lesser General Public License is in the file 
+;; Version 2.1 of the GNU Lesser General Public License is in the file
 ;; license-lgpl.txt that was distributed with this file.
 ;; If it is not present, you can access it from
 ;; http://www.gnu.org/copyleft/lesser.txt (until superseded by a newer
-;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
+;; version) or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA  02111-1307  USA
 ;;
 ;;
@@ -39,7 +39,7 @@
 (defun logmess (message)
   (multiple-value-bind (csec cmin chour cday cmonth cyear)
       (decode-universal-time (get-universal-time))
-    
+
     (format t "~a: ~2,'0d/~2,'0d/~2,'0d - ~2,'0d:~2,'0d:~2,'0d - ~a~%"
 	    (mp:process-name sys:*current-process*)
 	    cmonth cday (mod cyear 100)
@@ -52,7 +52,7 @@
 
 
 (defun log-timed-out-request-read (socket)
-  (logmess (format nil "No request read from address ~a" 
+  (logmess (format nil "No request read from address ~a"
 		   (socket::ipaddr-to-dotted #+cormanlisp 0 #-cormanlisp (socket::remote-host socket)))))
 
 
@@ -67,10 +67,10 @@
 			     then (response-number obj)
 			     else 999)))
 		(length  (request-reply-content-length req))
-	
+
 		(stream (wserver-log-stream
 			 (request-wserver req))))
-    
+
 	    (format stream
 		    "~a - - [~a] ~s ~s ~s~%"
 		    #-cormanlisp (socket:ipaddr-to-dotted ipaddr) #+cormanlisp ipaddr
@@ -78,10 +78,3 @@
 		    (request-raw-request req)
 		    code
 		    (or length -1)))))
-
-	    	
-    
-    
-    
-    
-  

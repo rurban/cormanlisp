@@ -24,7 +24,7 @@
 (with-transaction
   (execute-command "create table test (id integer, c shortstring)"))
 
-(create-table 
+(create-table
  [test1]
  '((id longword)
    ;(c shortstring)

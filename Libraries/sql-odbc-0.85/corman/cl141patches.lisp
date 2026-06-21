@@ -3,7 +3,7 @@
 ;;;; Patch done by Chris Double - chris@double.nz
 ;;;; Available from http://www.double.nz/cl
 ;;;;
-;;;; Additional official patches exist at http://www.corman.net 
+;;;; Additional official patches exist at http://www.corman.net
 ;;;; that must be applied before applying this patch.
 (in-package :common-lisp)
 
@@ -42,7 +42,7 @@
 				(:documentation (setq documentation value))))
 		(unless package
 			(push `(unless (find-package ,name)
-					(make-package ,name :nicknames ',nicknames :use nil)) forms))		
+					(make-package ,name :nicknames ',nicknames :use nil)) forms))
 		(if shadow
 			(push `(shadow ',shadow ,name) forms))
 		(if shadowing-import-from
@@ -51,7 +51,7 @@
 			(push `(use-package ',use ,name) forms))
 		(if import-from
 			(let* ((package (car import-from))
-					(symbols (mapcar #'(lambda (x) 
+					(symbols (mapcar #'(lambda (x)
 								(find-symbol x package)) (cdr import-from))))
 				(push `(import ',symbols ,name) forms)))
 		(if intern
@@ -67,4 +67,3 @@
 		`(eval-when (:load-toplevel :compile-toplevel :execute)
 			,@(nreverse forms))))
 (in-package :common-lisp-user)
-

@@ -20,7 +20,7 @@
 (defun parse-xml (stream &key (output-type :lxml))
   "Parse a character stream as XML and generate a DOM of output-type, defaulting to :lxml"
   (parse-xml-dom stream output-type))
-  
+
 (defun parse-xml-string (string &key (output-type :lxml))
   "Parse a string as XML and generate a DOM of output-type, defaulting to :lxml"
   (with-input-from-string (stream string)
@@ -50,21 +50,21 @@
 ;;; shared/common support functions
 
 (defun print-spaces (n stream &optional (preceding-newline t))
-  (when preceding-newline 
+  (when preceding-newline
     (terpri stream))
-  (loop :repeat n 
+  (loop :repeat n
         :do (write-char #\Space stream)))
 
 (defun print-solitary-tag (tag stream)
-  (write-char #\< stream) 
-  (print-identifier tag stream) 
+  (write-char #\< stream)
+  (print-identifier tag stream)
   (write-string "/>" stream))
 
 (defun print-closing-tag (tag stream)
-  (write-string "</" stream) 
-  (print-identifier tag stream) 
+  (write-string "</" stream)
+  (print-identifier tag stream)
   (write-char #\> stream))
-  
+
 (defun print-attribute (name value stream)
   (write-char #\space stream)
   (print-identifier name stream t)

@@ -5,19 +5,19 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
 ;; In this file the platform specific code is isolated.
-;; The code in this file consists mostly of wrapper functions and macros 
+;; The code in this file consists mostly of wrapper functions and macros
 ;; around the platform-dependent foreign function interface.
 
 ;; This file contains LWW specific code.
 
 (defpackage "FFC"
   (:use "COMMON-LISP")
-  (:export "*FOREIGN-MODULE*" "DEFINE-FOREIGN-FUNCTION" 
+  (:export "*FOREIGN-MODULE*" "DEFINE-FOREIGN-FUNCTION"
     "MAKE-RECORD"
     "%WITH-TEMPORARY-ALLOCATION" "%WITH-SQL-POINTER" "%GET-CSTRING"
     "%CSTRING-INTO-STRING"
@@ -37,7 +37,7 @@
     "%PUT-WORD"
     "%PUT-SHORT"
     "%PUT-LONG"
-    "%NEW-CSTRING" 
+    "%NEW-CSTRING"
     "%NULL-PTR"
     "%PTR-EQL"
     "%GET-BINARY" "%PUT-BINARY" "%NEW-BINARY"
@@ -72,7 +72,7 @@
 
 (defmacro with-cstr ((ptr str) &body body)
   `(fli:with-foreign-string (,ptr element-count byte-count
-                                  :external-format 
+                                  :external-format
                                   #+win32 win32:*multibyte-code-page-ef*
                                   #-win32 :latin-1) ; for Linux
        ,str
@@ -87,7 +87,7 @@
     (intern str (find-package 'keyword))))
 
 (defun %new-ptr (type &optional bytecount)
-  (fli:allocate-foreign-object :type 
+  (fli:allocate-foreign-object :type
                     (if bytecount
                       (list type bytecount)
                       type)))
@@ -103,7 +103,7 @@
   '(fli:make-pointer :address 0 :type :void))
 
 (defmacro %ptr-eql (ptr1 ptr2)
-  `(= (fli:pointer-address ,ptr1) 
+  `(= (fli:pointer-address ,ptr1)
       (fli:pointer-address ,ptr2)))
 
 (defmacro %address-to-pointer (address)
@@ -139,7 +139,7 @@
 
 #+conses-too-much
 (defun %get-cstring (ptr)
-  (fli:convert-from-foreign-string 
+  (fli:convert-from-foreign-string
    ptr :external-format win32:*multibyte-code-page-ef*))
 
 (defun %get-cstring (ptr &optional (start 0))
@@ -150,7 +150,7 @@
           (fli:incf-pointer ptr) ; better use offset??
           (incf size))
     (let ((str (make-string size)))
-      (loop do 
+      (loop do
             (fli:incf-pointer ptr -1)
             (decf size)
             (setf (char str size)
@@ -183,7 +183,7 @@
 
 (defmacro define-foreign-function (c-name args result-type &key documentation module)
   (let ((name-list (list (intern (string-upcase c-name)) c-name :source)))
-    `(fli:define-foreign-function 
+    `(fli:define-foreign-function
          ,name-list
          ,args
        :result-type ,result-type
@@ -205,7 +205,7 @@
 
 (defmacro %with-temporary-allocation (bindings &body body)
   (let ((simple-types ())
-        (strings ())) 
+        (strings ()))
     (dolist (binding bindings)
       (case (cadr binding)
         (:string (push (list (car binding)

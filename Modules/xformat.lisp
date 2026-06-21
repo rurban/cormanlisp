@@ -13,19 +13,19 @@
 ;;;
 ;;; Written by William Lott, with lots of stuff stolen from the previous
 ;;; version by David Adam and later rewritten by Bill Maddox.
-;;; 
+;;;
 
 #|  -RGC 10/1/99
 Functions that we need to implement still:
-output-object 
+output-object
 pprint-tab
-pp:pretty-stream-p 
-PPRINT-NEWLINE 
+pp:pretty-stream-p
+PPRINT-NEWLINE
 pprint-indent
-MAKE-CASE-FROB-STREAM 
+MAKE-CASE-FROB-STREAM
 handler-bind
-line-length 
-PPRINT-LOGICAL-BLOCK 
+line-length
+PPRINT-LOGICAL-BLOCK
 pprint-pop
 |#
 
@@ -63,7 +63,7 @@ pprint-pop
     (unless (and (listp x)
 		 (= (length x) 2))
       (error "Malformed iterate variable spec: ~S." x)))
-  
+
   `(labels ((,name ,(mapcar #'first binds) ,@body))
      (,name ,@(mapcar #'second binds))))
 
@@ -234,7 +234,7 @@ pprint-pop
    (arguments :reader format-error-arguments :initarg :arguments :initform nil)
    (control-string :reader format-error-control-string
 		   :initarg :control-string
-		   :initform *default-format-error-control-string*) 
+		   :initform *default-format-error-control-string*)
    (offset :reader format-error-offset :initarg :offset
 	   :initform *default-format-error-offset*)
    (print-banner :reader format-error-print-banner :initarg :print-banner
@@ -370,7 +370,7 @@ pprint-pop
 ;;; Used by the expander stuff.  Initially starts as T, and gets set to NIL
 ;;; if someone needs to do something strange with the arg list (like use
 ;;; the rest, or something).
-;;; 
+;;;
 (defvar *only-simple-args*)
 
 ;;; *ORIG-ARGS-AVAILABLE* -- internal.
@@ -379,13 +379,13 @@ pprint-pop
 ;;; If someone doesn't like this, they (throw 'need-orig-args nil) and we try
 ;;; again with it bound to T.  If this is T, we don't try to do anything
 ;;; fancy with args.
-;;; 
+;;;
 (defvar *orig-args-available* nil)
 
 ;;; *SIMPLE-ARGS* -- internal.
 ;;;
 ;;; Used by the expander stuff.  List of (symbol . offset) for simple args.
-;;; 
+;;;
 (defvar *simple-args*)
 
 
@@ -405,7 +405,7 @@ pprint-pop
         ~&            Does a FRESH-LINE
 
          where n is the width of the field in which the object is printed.
-  
+
   DESTINATION controls where the result will go.  If DESTINATION is T, then
   the output is sent to the standard output stream.  If it is NIL, then the
   output is returned in a string as the value of the call.  Otherwise,
@@ -584,7 +584,7 @@ pprint-pop
 ;;;
 ;;; This macro is used to extract the next argument from the current arg list.
 ;;; This is the version used by format directive interpreters.
-;;; 
+;;;
 (defmacro next-arg (&optional offset)
   `(progn
      (when (null args)
@@ -884,7 +884,7 @@ pprint-pop
 	  (*print-length* (and atsignp *print-length*)))
       (output-object (next-arg) stream))))
 
-
+
 ;;;; Integer outputting.
 
 ;;; FORMAT-PRINT-NUMBER does most of the work for the numeric printing
@@ -1022,13 +1022,13 @@ pprint-pop
 	"fifth" "sixth" "seventh" "eighth" "ninth")
   "Table of ordinal ones-place digits in English")
 
-(defconstant ordinal-tens 
+(defconstant ordinal-tens
   #(nil "tenth" "twentieth" "thirtieth" "fortieth"
 	"fiftieth" "sixtieth" "seventieth" "eightieth" "ninetieth")
   "Table of ordinal tens-place digits in English")
 
 (defun format-print-small-cardinal (stream n)
-  (multiple-value-bind 
+  (multiple-value-bind
       (hundreds rem) (truncate n 100)
     (when (plusp hundreds)
       (write-string (svref cardinal-ones hundreds) stream)
@@ -1135,7 +1135,7 @@ pprint-pop
 			   (t i))))))
 	  ((zerop start))))
 
-
+
 ;;;; Plural.
 
 (def-format-directive #\P (colonp atsignp params end)
@@ -1221,13 +1221,13 @@ pprint-pop
    (t
     (let ((spaceleft w))
       (when (and w (or atsign (minusp number))) (decf spaceleft))
-      (multiple-value-bind 
+      (multiple-value-bind
 	  (str len lpoint tpoint)
 	  (ccl::flonum-to-string (abs number) spaceleft d k)
 	;;if caller specifically requested no fraction digits, suppress the
 	;;optional trailing zero
 	(when (and d (zerop d)) (setq tpoint nil))
-	(when w 
+	(when w
 	  (decf spaceleft len)
 	  ;;optional leading zero
 	  (when lpoint
@@ -1321,7 +1321,7 @@ pprint-pop
 	      (multiple-value-bind
 		  (fstr flen lpoint)
 		  (ccl::flonum-to-string num spaceleft fdig k fmin)
-		(when w 
+		(when w
 		  (decf spaceleft flen)
 		  (when lpoint
 		    (if (> spaceleft 0)
@@ -1342,7 +1342,7 @@ pprint-pop
 					 (format-exponent-marker number))
 				     stream)
 			 (write-char (if (minusp expt) #\- #\+) stream)
-			 (when e 
+			 (when e
 			   ;;zero-fill before exponent if necessary
 			   (dotimes (i (- e (length estr)))
 			     (write-char #\0 stream)))
@@ -1383,7 +1383,7 @@ pprint-pop
 			      w 1 0 #\space t))))
 
 (defun format-general-aux (stream number w d e k ovf pad marker atsign)
-  (multiple-value-bind (ignore n) 
+  (multiple-value-bind (ignore n)
 		       (ccl::scale-exponent (abs number))
     (declare (ignore ignore))
     ;;Default d if omitted.  The procedure is taken directly
@@ -1391,7 +1391,7 @@ pprint-pop
     ;;very efficient, since we generate the digits twice.
     ;;Future maintainers are encouraged to improve on this.
     (unless d
-      (multiple-value-bind (str len) 
+      (multiple-value-bind (str len)
 			   (ccl::flonum-to-string (abs number))
 	(declare (ignore str))
 	(let ((q (if (= len 1) 1 (1- len))))
@@ -1436,7 +1436,7 @@ pprint-pop
 			  (decimal-string number)
 			  w 1 0 #\space t)))
 
-
+
 ;;;; line/page breaks and other stuff like that.
 
 (def-format-directive #\% (colonp atsignp params)

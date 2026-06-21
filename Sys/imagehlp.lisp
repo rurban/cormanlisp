@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	File:		imagehlp.lisp
-;;;;	Contents:	Interfaces to Microsoft IMAGEHLP facility 
+;;;;	Contents:	Interfaces to Microsoft IMAGEHLP facility
 ;;;;				for Corman Lisp.
 ;;;;	History:	3/26/97  RGC  Created.
 ;;;;
@@ -37,7 +37,7 @@
     (e_lfanew LONG)))                   ;; File address of new exe header
 
 (defwintype PIMAGE_DOS_HEADER (IMAGE_DOS_HEADER *))
-		
+
 (defwinstruct IMAGE_FILE_HEADER
 	((Machine WORD)
 	 (NumberOfSections WORD)
@@ -53,7 +53,7 @@
 	((VirtualAddress DWORD)
 	 (Size DWORD)
 	))
-  
+
 (defwintype PIMAGE_DATA_DIRECTORY (IMAGE_DATA_DIRECTORY *))
 (defwinconstant IMAGE_NUMBEROF_DIRECTORY_ENTRIES     16)
 
@@ -116,14 +116,14 @@
 	 (Characteristics DWORD)
 	))
 (defwintype PIMAGE_SECTION_HEADER (IMAGE_SECTION_HEADER *))
-(defwinconstant IMAGE_SIZEOF_SECTION_HEADER          40) 
+(defwinconstant IMAGE_SIZEOF_SECTION_HEADER          40)
 
 (defwintype LIST_ENTRY :long)	;; temp type
 (defwinstruct LIST_ENTRY
 	((Flink (LIST_ENTRY *))
 	 (Blink (LIST_ENTRY *))
 	))
-(defwintype PLIST_ENTRY (LIST_ENTRY *)) 
+(defwintype PLIST_ENTRY (LIST_ENTRY *))
 (defwintype BOOLEAN :unsigned-char)
 
 (defwinstruct LOADED_IMAGE
@@ -168,7 +168,7 @@
 	 (MaxNameLength DWORD)
 	 (Name (:char 64))
 	))
-(defwintype PIMAGEHLP_SYMBOL (IMAGEHLP_SYMBOL *)) 	
+(defwintype PIMAGEHLP_SYMBOL (IMAGEHLP_SYMBOL *))
 
 ;; Directory Entries
 
@@ -187,7 +187,7 @@
 (defwinconstant IMAGE_DIRECTORY_ENTRY_IAT           12)  ;; Import Address Table
 
 
-;; BOOL MapAndLoad(LPSTR ImageName, LPSTR DllPath, PLOADED_IMAGE LoadedImage, 
+;; BOOL MapAndLoad(LPSTR ImageName, LPSTR DllPath, PLOADED_IMAGE LoadedImage,
 ;;					BOOL DotDll, BOOL ReadOnly);
 
 (defwinapi MapAndLoad
@@ -209,7 +209,7 @@
    :entry-name "UnMapAndLoad"
    :linkage-type :pascal)
 
-;; PVOID ImageRvaToVa(PIMAGE_NT_HEADERS NtHeaders, PVOID Base, 
+;; PVOID ImageRvaToVa(PIMAGE_NT_HEADERS NtHeaders, PVOID Base,
 ;;						ULONG Rva, PIMAGE_SECTION_HEADER *LastRvaSection);
 (defwinapi ImageRvaToVa
 	((NtHeaders PIMAGE_NT_HEADERS)
@@ -221,8 +221,8 @@
    :entry-name "ImageRvaToVa"
    :linkage-type :pascal)
 
-(defwinapi FindDebugInfoFile 
-	((FileName LPSTR) 
+(defwinapi FindDebugInfoFile
+	((FileName LPSTR)
 	 (SymbolPath LPSTR)
 	 (DebugFilePath LPSTR))
    :return-type HANDLE
@@ -230,7 +230,7 @@
    :entry-name "FindDebugInfoFile"
    :linkage-type :pascal)
 
-(defwinapi FindExecutableImage 
+(defwinapi FindExecutableImage
 	((FileName LPSTR)
 	 (SymbolPath LPSTR)
 	 (ImageFilePath LPSTR))
@@ -302,11 +302,11 @@ SymGetSymFromAddr(
 
 (getcurrentprocess)
 ;;;	BOOL GetProcessTimes(
-;;;		HANDLE hProcess,			// specifies the process of interest 
+;;;		HANDLE hProcess,			// specifies the process of interest
 ;;;		LPFILETIME lpCreationTime,	// when the process was created
-;;;		LPFILETIME lpExitTime,		// when the process exited 
-;;;		LPFILETIME lpKernelTime,	// time the process has spent in kernel mode 
-;;;		LPFILETIME lpUserTime 		// time the process has spent in user mode 
+;;;		LPFILETIME lpExitTime,		// when the process exited
+;;;		LPFILETIME lpKernelTime,	// time the process has spent in kernel mode
+;;;		LPFILETIME lpUserTime 		// time the process has spent in user mode
 ;;;		);
 (defwinapi GetProcessTimes (
 		(hProcess :long)

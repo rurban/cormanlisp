@@ -34,7 +34,7 @@
 ;;;
 #|
 (setf sockets:*default-proxy-server*
-    (make-instance 'sockets:generic-proxy-server 
+    (make-instance 'sockets:generic-proxy-server
         :host "proxy.myserver.com"      ;; your proxy server name or IP address
         :port 8080))                    ;; your proxy server port ID
 |#
@@ -49,21 +49,21 @@
 ;;; To define a custom color:
 ;;; example: (defconstant red (win:RGB 255 0 0))
 ;;;
-(setf ide:comment-format 
-    (ide:make-text-format 
+(setf ide:comment-format
+    (ide:make-text-format
         :color ide:dark-green
         :italic t))
 
-(setf ide:keyword-format 
-    (ide:make-text-format 
+(setf ide:keyword-format
+    (ide:make-text-format
         :color ide:blue))
 
-(setf ide:lisp-symbol-format 
-    (ide:make-text-format 
+(setf ide:lisp-symbol-format
+    (ide:make-text-format
         :bold t))
 
-(setf ide:string-format 
-    (ide:make-text-format 
+(setf ide:string-format
+    (ide:make-text-format
         :color (win:RGB #xa0 #x00 #x00)
         :italic t))
 
@@ -86,11 +86,11 @@
 											   (namestring *cormanlisp-directory*))))
   (when (probe-file (merge-pathnames "Front\\Contents.htm" hyperspec-install-path))
 	(setq *hyperspec-local-path* (namestring hyperspec-install-path))))
-  
+
 ;;; set your own declaration symbols list
 ;; eg. (setf ide:*declaration-symbols* '("defun" "define-symbol-macro")) or
 ;;     (setf ide:*declaration-symbols* (append ide:*declaration-symbols* '("defwinconstant" "defwinapi")))
-(setf ide:*declaration-symbols* '("defun" "defconstant" "defparameter" "defvar" "defclass" 
+(setf ide:*declaration-symbols* '("defun" "defconstant" "defparameter" "defvar" "defclass"
                                "defmacro" "defmethod" "defasm" "defop" "defgeneric"
                                "deftype" "defstruct" "defsetf" "defpackage" "in-package"))
 
@@ -104,4 +104,3 @@
 
 ;; export from CL package
 (export (find-symbol "LOAD-DEFAULT-IMAGE" 'cl) 'cl)
-

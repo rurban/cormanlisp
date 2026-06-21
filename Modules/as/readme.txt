@@ -34,7 +34,7 @@ htmlgen.html -- documentation on the html generation system
 examples.cl -- load this into lisp to publish sample urls.  Read  this file
             to see how publishing is done.
 
-examples.fasl -- just a compiled version of examples.cl 
+examples.fasl -- just a compiled version of examples.cl
 
 
 other files are present to support the examples in examples/examples.cl.
@@ -44,11 +44,11 @@ other files are present to support the examples in examples/examples.cl.
 == running the web server
 
 1. cd to the directory containing the distribution and start Allegro cl 5.0.1
-   (or start Allegro cl 5.0.1 and use the toplevel ":cd" command to cd 
+   (or start Allegro cl 5.0.1 and use the toplevel ":cd" command to cd
    to the directory containing the iserve distribution).
 
 2. load aserve.fasl
-    
+
         user(1): :ld aserve.fasl
 
 3. load the examples (either the compiled or source version)
@@ -70,14 +70,6 @@ other files are present to support the examples in examples/examples.cl.
 Notes:
     steps 3 and 4 can be interchanged.
 
-    if you're running on a PC (or running as root on Unix) you can allocate 
+    if you're running on a PC (or running as root on Unix) you can allocate
     port 80, so you don't have to specify a port when running
     the iserve:start function.
-
-
-
-
-    
-       
-
-

@@ -77,8 +77,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -98,7 +98,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-andc1 (src1 src2 dest)
 	{
@@ -109,8 +109,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -132,7 +132,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-andc2 (src1 src2 dest)
 	{
@@ -143,8 +143,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -166,7 +166,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-eqv (src1 src2 dest)
 	{
@@ -177,8 +177,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -200,7 +200,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-ior (src1 src2 dest)
 	{
@@ -211,8 +211,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -232,7 +232,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-nand (src1 src2 dest)
 	{
@@ -243,8 +243,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -266,7 +266,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-nor (src1 src2 dest)
 	{
@@ -277,8 +277,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -300,7 +300,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-orc1 (src1 src2 dest)
 	{
@@ -311,8 +311,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -334,7 +334,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-orc2 (src1 src2 dest)
 	{
@@ -345,8 +345,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -368,7 +368,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-xor (src1 src2 dest)
 	{
@@ -379,8 +379,8 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = src1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = src2
 		mov		edi, [ebp + (+ ARGS_OFFSET 0)]	;; edi = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -400,7 +400,7 @@
 		pop		edi
 		pop		ebp
 		ret
-	})		
+	})
 
 (x86:defasm %bit-not (src dest)
 	{
@@ -409,8 +409,8 @@
 		push	ebx
 		mov		eax, [ebp + (+ ARGS_OFFSET 4)]	;; eax = src
 		mov		edx, [ebp + (+ ARGS_OFFSET 0)]	;; edx = dest
-		mov		ecx, [eax + (uvector-offset 0)] 	
-		shr		ecx, 8							
+		mov		ecx, [eax + (uvector-offset 0)]
+		shr		ecx, 8
 		dec		ecx								;; ecx = number of 8-byte blocks
 		begin-atomic
 	:loop
@@ -429,7 +429,7 @@
 		pop		ebx
 		pop		ebp
 		ret
-	})		
+	})
 
 (defun initialize-simple-bit-vector (vec element)
 	(declare (ignore vec))	;; only referenced from assembler
@@ -446,7 +446,7 @@
 		mov		ecx, -1
 	:t1
 		dec		edx
-		cmp		edx, 0		
+		cmp		edx, 0
 		je		short :done
 		mov		[eax + edx*8 + (uvector-offset 0)], ecx
 		mov		[eax + edx*8 + (uvector-offset 1)], ecx
@@ -455,14 +455,14 @@
 		end-atomic
 		mov		ecx, 1
 	}})
-			
+
 (defun check-2-bit-arrays (bit-array1 bit-array2)
 	(unless (bit-array-p bit-array1)
 		(error "Not a bit array: ~S" bit-array1))
 	(unless (bit-array-p bit-array2)
 		(error "Not a bit array: ~S" bit-array2))
 	(unless (equal-rank-and-dimensions bit-array1 bit-array2)
-		(error "Bit arrays do not have the same rank and dimensions: ~S, ~S" 
+		(error "Bit arrays do not have the same rank and dimensions: ~S, ~S"
 			bit-array1 bit-array2)))
 
 (defun check-1-bit-array (bit-array)
@@ -480,7 +480,7 @@
 (defun bit-array-vector (bit-array)
 	(if (adjustable-array-p bit-array)
 		(uref bit-array adjustable-array-vector-offset)
-		bit-array))		
+		bit-array))
 ;;;
 ;;;	Common Lisp BIT-AND function.
 ;;;
@@ -492,7 +492,7 @@
 			(bit-array-vector bit-array2)
 			(bit-array-vector result))
 		result))
-		 	 
+
 ;;;
 ;;;	Common Lisp BIT-ANDC1 function.
 ;;;

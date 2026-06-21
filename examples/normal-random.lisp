@@ -8,14 +8,14 @@
 ;;;;	History:	4/13/01  RGC  Created.
 ;;;;
 #|
-Returns the next pseudorandom, Gaussian ("normally") distributed 
-double value with mean 0.0 and standard deviation 1.0 from this 
-random number generator's sequence. 
-The general contract of nextGaussian is that one double value, 
-chosen from (approximately) the usual normal distribution with 
-mean 0.0 and standard deviation 1.0, is pseudorandomly generated 
+Returns the next pseudorandom, Gaussian ("normally") distributed
+double value with mean 0.0 and standard deviation 1.0 from this
+random number generator's sequence.
+The general contract of nextGaussian is that one double value,
+chosen from (approximately) the usual normal distribution with
+mean 0.0 and standard deviation 1.0, is pseudorandomly generated
 and returned.
- 
+
 
  synchronized public double nextGaussian() {
     if (haveNextNextGaussian) {
@@ -23,7 +23,7 @@ and returned.
             return nextNextGaussian;
     } else {
             double v1, v2, s;
-            do { 
+            do {
                     v1 = 2 * nextDouble() - 1;   // between -1.0 and 1.0
                     v2 = 2 * nextDouble() - 1;   // between -1.0 and 1.0
                     s = v1 * v1 + v2 * v2;
@@ -34,16 +34,16 @@ and returned.
             return v1 * multiplier;
     }
  }
-This uses the polar method of G. E. P. Box, M. E. Muller, and 
-G. Marsaglia, as described by Donald E. Knuth in The Art of 
-Computer Programming, Volume 2: Seminumerical Algorithms, section 
-3.4.1, subsection C, algorithm P. Note that it generates two 
-independent values at the cost of only one call to Math.log 
+This uses the polar method of G. E. P. Box, M. E. Muller, and
+G. Marsaglia, as described by Donald E. Knuth in The Art of
+Computer Programming, Volume 2: Seminumerical Algorithms, section
+3.4.1, subsection C, algorithm P. Note that it generates two
+independent values at the cost of only one call to Math.log
 and one call to Math.sqrt.
 
 Returns:
-the next pseudorandom, Gaussian ("normally") distributed double value 
-with mean 0.0 and standard deviation 1.0 from this random number 
+the next pseudorandom, Gaussian ("normally") distributed double value
+with mean 0.0 and standard deviation 1.0 from this random number
 generator's sequence.
 |#
 
@@ -54,7 +54,7 @@ generator's sequence.
 (let ((next-next-normal nil))
 	(defun normal-random ()
 		(if next-next-normal
-			(prog1 
+			(prog1
 				next-next-normal
 				(setf next-next-normal nil))
 			(let (v1 v2 (s 1d0))
@@ -78,7 +78,7 @@ generator's sequence.
 (defun scaled-normal-random (n)
 	(* n (/ (+ e (normal-random)) 2*e)))
 
-;;; 
+;;;
 ;;; Returns a positive integer in the range 0 <= n < max.
 ;;; The probability of any given integer in that range is
 ;;; based on the normal distribution curve i.e. the majority
@@ -91,4 +91,3 @@ generator's sequence.
 			(if (>= n max)
 				(- max 1)
 				n))))
-

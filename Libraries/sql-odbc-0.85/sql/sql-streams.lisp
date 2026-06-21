@@ -5,8 +5,8 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
-;; "sql-odbc-documentation.lisp" 
+;; Documentation and the license agreement can be found in file
+;; "sql-odbc-documentation.lisp"
 
 (in-package :sql)
 
@@ -39,14 +39,14 @@
 (defclass sql-stream (fundamental-stream)
   ((query :initarg :query :reader stream-query)
    (column :initarg :column :reader sql-stream-column)
-   ;; data is read in in chunks from the database. 
+   ;; data is read in in chunks from the database.
    (buffer :initform nil)
    (buffer-size :initform 1024
-                :initarg :buffer-size 
+                :initarg :buffer-size
                 :reader stream-buffer-size)
    ;; read- or write-position in the buffer
    (buffer-position :initform 0))
-  (:documentation 
+  (:documentation
    "Abstract stream class (subclass of FUNDAMENTAL-STREAM) designed primarily for
 input and output of long data."))
 
@@ -80,12 +80,12 @@ input and output of long data."))
 (defmacro bind-execute-with-stream ((query &rest parameters) &body body)
   "Binds values to the parameters of a prepared insert statement and executes the query.
 The last parameter value should be a list of the form (:stream <stream-var> [size]),
-where <var> is a variable bound to a SQL-STREAM (for output) in the body, and size is 
+where <var> is a variable bound to a SQL-STREAM (for output) in the body, and size is
 an optional value denoting the size of the stream. (This is necessary for drivers returning
 \"Y\" for info type $SQL_NEED_LONG_DATA_LEN, e.g. the DataDirect Oracle drivers.)"
   (let* (;; list of :stream, stream-var and (optionally) size
-         (last-parameter (car (last parameters))) 
-         (simple-parameters 
+         (last-parameter (car (last parameters)))
+         (simple-parameters
           (progn (assert (and (consp last-parameter)
                               (eq :stream (car last-parameter))))
                  (butlast parameters)))
@@ -96,8 +96,8 @@ an optional value denoting the size of the stream. (This is necessary for driver
        (db-execute-parameterized ,query (sql-expression ,query) ,@new-parameters)
        (let ((,stream-var (make-sql-stream ,query :column ,(1- (length parameters))
                                            :direction :output)))
-         (open-sql-stream ,stream-var) 
-         (prog1 ;; unwind-protect? 
+         (open-sql-stream ,stream-var)
+         (prog1 ;; unwind-protect?
            (progn ,@body)
            (close ,stream-var))))))
 
@@ -110,14 +110,14 @@ an optional value denoting the size of the stream. (This is necessary for driver
 (defclass sql-chunk-stream (sql-stream)
   ((next-chunk :initform nil :reader next-chunk)
    (chunk-length :initform 1024
-                 :initarg :chunk-length 
+                 :initarg :chunk-length
                  :reader stream-chunk-length)))
 
 (defmethod make-sql-stream ((query query) column
                                &key
                                (stream-class 'sql-chunk-stream)
                                (direction :output))
-  (make-instance stream-class :query query 
+  (make-instance stream-class :query query
                  :column column
                  :direction direction))
 
@@ -134,15 +134,15 @@ an optional value denoting the size of the stream. (This is necessary for driver
 
 (defun peek-chunk (stream)
   (with-slots (next-chunk) stream
-    (or next-chunk 
+    (or next-chunk
         (setf next-chunk (read-chunk stream)))))
 
 (defmacro bind-execute-with-stream ((query &rest parameters) &body body)
   "Binds values to the parameters of a prepared statement and executes the query.
 To be used in the body of the WITH-PREPARED-COMMAND macro."
   (let* (;; list of :stream, stream-var and (optionally) size
-         (last-parameter (car (last parameters))) 
-         (simple-parameters 
+         (last-parameter (car (last parameters)))
+         (simple-parameters
           (progn (assert (and (consp last-parameter)
                               (eq :stream (car last-parameter))))
                  (butlast parameters)))
@@ -150,12 +150,12 @@ To be used in the body of the WITH-PREPARED-COMMAND macro."
          (new-parameters (append simple-parameters
                                  (list (list 'list :stream (caddr last-parameter))))))
     `(progn
-       (db-execute-parameterized 
+       (db-execute-parameterized
         (or query *default-query* *default-database*) ,@new-parameters)
        (let ((,stream-var (make-sql-stream ,query ,(1- (length parameters))
                                            :direction :input)))
-         (db-open-stream ,query ,stream-var) 
-         (prog1 
+         (db-open-stream ,query ,stream-var)
+         (prog1
            (progn ,@body)
            (db-close-stream ,query ,stream-var))))))
 

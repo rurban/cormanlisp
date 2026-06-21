@@ -134,7 +134,7 @@
 ;;;  POSITION-IF-NOT
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-(defun position (item sequence 
+(defun position (item sequence
 		      &key from-end (test #'eql) test-not (start 0) end key)
 	(%funcall-with-elements-and-indices
 		(if test-not
@@ -149,7 +149,7 @@
 		sequence
 		from-end start end key))
 
-(defun position-if (test sequence 
+(defun position-if (test sequence
 			 &key from-end (start 0) end key)
   (%funcall-with-elements-and-indices
    #'(lambda (elt orig-elt index)
@@ -190,7 +190,7 @@
 		sequence
 		from-end start end key))
 
-(defun find-if (test sequence 
+(defun find-if (test sequence
 		&key from-end (start 0) end key)
   (%funcall-with-elements-and-indices
    #'(lambda (elt orig-elt index)
@@ -200,7 +200,7 @@
    sequence
    from-end start end key))
 
-(defun find-if-not (test sequence 
+(defun find-if-not (test sequence
 		&key from-end (start 0) end key)
   (%funcall-with-elements-and-indices
    #'(lambda (elt orig-elt index)
@@ -217,7 +217,7 @@
 ;;;  COUNT-IF-NOT
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-(defun count (item sequence 
+(defun count (item sequence
 		   &key from-end (test #'eql) test-not (start 0) end key)
   (let ((count 0))
     (%funcall-with-elements-and-indices
@@ -234,7 +234,7 @@
      from-end start end key)
     count))
 
-(defun count-if (test sequence 
+(defun count-if (test sequence
 		&key from-end (start 0) end key)
   (let ((count 0))
     (%funcall-with-elements-and-indices
@@ -246,7 +246,7 @@
      from-end start end key)
     count))
 
-(defun count-if-not (test sequence 
+(defun count-if-not (test sequence
 		&key from-end (start 0) end key)
   (let ((count 0))
     (%funcall-with-elements-and-indices
@@ -310,7 +310,7 @@
 ;;;  VB 12/27/1998 -- also fixed non-HyperSpec behaviour when
 ;;;  :from-end is true.
 
-(defun mismatch (sequence1 sequence2 
+(defun mismatch (sequence1 sequence2
 			   &key from-end
 			   (test #'eql) test-not
 			   key
@@ -402,9 +402,9 @@
 	(values #'(lambda () (aref sequence (setq i (+ i step))))
 		#'(lambda () (setq i (setq base (+ base step))))))))
 
-(defun search (sequence1 sequence2 
+(defun search (sequence1 sequence2
 	       &key (from-end nil)
-			 (test #'eql) 
+			 (test #'eql)
 			 test-not
 			 key
 			 (start1 0) (start2 0)
@@ -486,8 +486,8 @@
 	  (if from-end
 	      result
 	      (nreverse result))))))
-  
-(defun remove-if (test sequence 
+
+(defun remove-if (test sequence
 		       &key (from-end nil)
 		       (start 0)
 		       end
@@ -495,7 +495,7 @@
 		       (key nil))
   (%remove-if test sequence start end from-end count key))
 
-(defun remove-if-not (test sequence 
+(defun remove-if-not (test sequence
 			   &key (from-end nil)
 			   (start 0)
 			   end
@@ -505,7 +505,7 @@
 	      sequence start end
 	      from-end count key))
 
-(defun remove (item sequence 
+(defun remove (item sequence
 		    &key (from-end nil)
 		    (test #'eql)
 		    (test-not nil)
@@ -593,7 +593,7 @@
   (cond ((listp sequence)
 	 (copy-list sequence))
 	((vectorp sequence)
-	 (make-array (length sequence) 
+	 (make-array (length sequence)
 		     :element-type (array-element-type sequence)
 		     :initial-contents sequence))
 	(t
@@ -605,7 +605,7 @@
 ;;;  DELETE-DUPLICATES
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-(defun remove-duplicates (sequence 
+(defun remove-duplicates (sequence
 			  &key from-end (test #'eql) test-not (start 0) end key)
   (let (length)
     (multiple-value-setq (length end)
@@ -720,7 +720,7 @@
 	      (incf src2)
 	      (incf dst)))))
   target)
-  
+
 (defun merge (result-type sequence1 sequence2 predicate &key key)
   (cond ((and (listp sequence1) (listp sequence2))
 	 (let ((result (merge-lists sequence1 sequence2 predicate key)))
@@ -883,8 +883,8 @@
 	     (push x reversed-list))
 	   reversed-list))
 	((vectorp sequence)
-	 (let* ((reversed-vector 
-		 (make-array (length sequence) 
+	 (let* ((reversed-vector
+		 (make-array (length sequence)
 			     :element-type (array-element-type sequence)
 			     :initial-contents sequence))
 		(length (length sequence))
@@ -940,21 +940,21 @@
 	      result
 	      (nreverse result))))))
 
-(defun substitute (newitem olditem sequence 
+(defun substitute (newitem olditem sequence
 			   &key (test #'eql) test-not
 			        from-end (start 0) end count key)
-  (when test-not 
+  (when test-not
     (setq test #'(lambda (x y) (not (funcall test-not x y)))))
   (%substitute-if newitem
 		  #'(lambda (elt) (funcall test olditem elt))
 		  sequence
 		  start end from-end count key))
 
-(defun substitute-if (newitem test sequence 
+(defun substitute-if (newitem test sequence
 			      &key from-end (start 0) end count key)
   (%substitute-if newitem test sequence start end from-end count key))
 
-(defun substitute-if-not (newitem test sequence 
+(defun substitute-if-not (newitem test sequence
 				  &key from-end (start 0) end count key)
   (%substitute-if newitem
 		  #'(lambda (elt) (not (funcall test elt)))
@@ -1002,21 +1002,21 @@
 	    (%nsubst-list-if newitem predicate sequence start end count))
 	sequence)))
 
-(defun nsubstitute (newitem olditem sequence 
+(defun nsubstitute (newitem olditem sequence
 			   &key (test #'eql) test-not
 			        from-end (start 0) end count key)
-  (when test-not 
+  (when test-not
     (setq test #'(lambda (x y) (not (funcall test-not x y)))))
   (%nsubstitute-if newitem
 		   #'(lambda (elt) (funcall test olditem elt))
 		   sequence
 		   start end from-end count key))
 
-(defun nsubstitute-if (newitem test sequence 
+(defun nsubstitute-if (newitem test sequence
 			      &key from-end (start 0) end count key)
   (%nsubstitute-if newitem test sequence start end from-end count key))
 
-(defun nsubstitute-if-not (newitem test sequence 
+(defun nsubstitute-if-not (newitem test sequence
 				  &key from-end (start 0) end count key)
   (%nsubstitute-if newitem
 		   #'(lambda (elt) (not (funcall test elt)))
@@ -1027,7 +1027,7 @@
 ;;;  REDUCE
 ;;; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-(defun reduce (function sequence 
+(defun reduce (function sequence
 						&key (key #'identity)
 						from-end
 						(start 0)

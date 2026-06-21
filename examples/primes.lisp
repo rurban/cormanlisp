@@ -6,8 +6,8 @@
 ;;;;		File:		primes.lisp
 ;;;;
 ;;;;		Contents:	Fun with prime numbers.
-;;;;					Common Lisp algorithms to generate all the 
-;;;;					prime numbers between 1 and n. 
+;;;;					Common Lisp algorithms to generate all the
+;;;;					prime numbers between 1 and n.
 ;;;;
 ;;;;		Author:		Roger Corman
 ;;;;
@@ -22,11 +22,11 @@
 			((> i n2) (nreverse result))
 			(block inner
 				(do ((j 2 (1+ j)))
-					((>= j i) 
+					((>= j i)
 					 (progn (if verbose (output-prime i))
 					 	(push i result)))
 					(if (zerop (mod i j))	; if found a divisor
-					 	(return-from inner))))))) 
+					 	(return-from inner)))))))
 
 ;; Alternative method: generally much faster!
 (defun sieve1 (n)
@@ -121,10 +121,10 @@
 ;;; Find the nearest prime number to a given passed integer
 ;;; If two primes are equally close it will choose the lesser one.
 ;;;
-(defun nearest-prime (n) 
+(defun nearest-prime (n)
     (let ((min most-positive-fixnum)
           (closest -1))
-        (dolist (x (sieve5 (+ n 1000)) closest) 
-            (when (< (abs (- x n)) min) 
+        (dolist (x (sieve5 (+ n 1000)) closest)
+            (when (< (abs (- x n)) min)
                 (setf min (abs (- x n)))
                 (setf closest x)))))

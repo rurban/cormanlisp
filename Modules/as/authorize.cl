@@ -2,11 +2,11 @@
 ;;
 ;; authorize.cl
 ;;
-;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA 
+;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA
 ;;
 ;; This code is free software; you can redistribute it and/or
 ;; modify it under the terms of the version 2.1 of
-;; the GNU Lesser General Public License as published by 
+;; the GNU Lesser General Public License as published by
 ;; the Free Software Foundation, as clarified by the AllegroServe
 ;; prequel found in license-allegroserve.txt.
 ;;
@@ -15,11 +15,11 @@
 ;; merchantability or fitness for a particular purpose.  See the GNU
 ;; Lesser General Public License for more details.
 ;;
-;; Version 2.1 of the GNU Lesser General Public License is in the file 
+;; Version 2.1 of the GNU Lesser General Public License is in the file
 ;; license-lgpl.txt that was distributed with this file.
 ;; If it is not present, you can access it from
 ;; http://www.gnu.org/copyleft/lesser.txt (until superseded by a newer
-;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
+;; version) or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA  02111-1307  USA
 ;;
 
@@ -56,30 +56,30 @@
    ))
 
 
-(defmethod authorize ((auth password-authorizer) 
+(defmethod authorize ((auth password-authorizer)
 		  (req http-request)
 		  (ent entity))
   ;; check if this is valid request, return t if ok
   ;; and :done if we've sent a request for a  new name and password
   ;;
   (multiple-value-bind (name password) (get-basic-authorization req)
-    
+
     (if*  name
        then (dolist (pair (password-authorizer-allowed auth))
 	      (if* (and (equal (car pair) name)
 			(equal (cdr pair) password))
 		 then (return-from authorize t))))
 
-    ;; valid name/password not given, ask for it 
-    (with-http-response (req ent :response 
+    ;; valid name/password not given, ask for it
+    (with-http-response (req ent :response
 			     *response-unauthorized*)
       (set-basic-authorization req
 			       (password-authorizer-realm auth))
       (with-http-body (req ent)))
     :done))
-	    
-	    
-  
+
+
+
 
 
 ;; location authorization
@@ -93,7 +93,7 @@
 ;;	:deny		deny immediately
 ;;	(:accept ipaddress [bits])   accept if left 'bits' of the
 ;;			ipaddress match
-;;	(:deny ipaddress [bits])     deny if the left 'bits' of the 
+;;	(:deny ipaddress [bits])     deny if the left 'bits' of the
 ;;			ipaddress match
 ;;
 ;;	bits defaults to 32
@@ -140,7 +140,7 @@
 		(if* (not (member decision '(:accept :deny)))
 		   then (warn "bogus authorization pattern: ~s" pattern)
 			(return-from authorize nil))
-		
+
 		(if* (stringp ipaddress)
 		   then ; check for dotted ip address first
 			(let ((newaddr (socket:dotted-to-ipaddr ipaddress
@@ -149,45 +149,31 @@
 			     then ; success!
 				  (ignore-errors
 				   (setq newaddr (socket:lookup-hostname ipaddress))))
-			  
+
 			  (if* newaddr
-			     then (setf (cadr pattern) 
+			     then (setf (cadr pattern)
 				    (setq ipaddress newaddr))
 			     else ; can't compute the address
 				  ; so we'll not accept and we will deny
 				  ; just to be safe
 				  (warn "can't resolve host name ~s" ipaddress)
 				  (return-from authorize nil))))
-		
-		
+
+
 		(if* (not (and (integerp bits) (<= 1 bits 32)))
 		   then (warn "bogus authorization pattern: ~s" pattern)
 			(return-from authorize nil))
-		
+
 		; now we're finally ready to test things
-		(let ((mask (if* (eql bits 32) 
+		(let ((mask (if* (eql bits 32)
 			       then -1
 			       else (ash -1 (- 32 bits)))))
 		  (if* (eql (logand request-ipaddress mask)
 			    (logand ipaddress mask))
-		     then ; matched, 
+		     then ; matched,
 			  (case decision
 			    (:accept (return-from authorize t))
 			    (:deny   (return-from authorize nil))))))))
-    
+
     t ; the default is to accept
     ))
-
-		
-	      
-			  
-			  
-			  
-			  
-				  
-		
-		
-			
-			
-		
-			 

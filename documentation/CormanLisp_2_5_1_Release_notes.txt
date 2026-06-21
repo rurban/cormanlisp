@@ -7,17 +7,17 @@ Corman Lisp 2.51 changes (since 2.5):
 
 -The HASH-TABLE-COUNT is now set properly.
 
--Fixed a problem when SAVE-IMAGE is called when other threads are 
+-Fixed a problem when SAVE-IMAGE is called when other threads are
  active (such as in the IDE). Other threads are now suspended.
 
 -Added check of *compiler-fold-constants* var when symbol constant is folded.
 
 -Fixed a problem with %chars-to-float implementation (reading of floats).
 
--Fixed DEFSTRUCT to handle named structures of specified types (to generate a 
+-Fixed DEFSTRUCT to handle named structures of specified types (to generate a
  predicate).
 
--Changed :encoding-func property to x86::encoding-func to conform to common 
+-Changed :encoding-func property to x86::encoding-func to conform to common
  lisp standard.
 
 -Converted projects to Visual Studio 2003.
@@ -31,7 +31,7 @@ Corman Lisp 2.51 changes (since 2.5):
 -Added Windows DebugBreak() call to Win32 functions.
 
 -Added support for :readably option to WRITE function.
- This provides ANSI compatibility and corrects an issue with 
+ This provides ANSI compatibility and corrects an issue with
  ct:TRANSCRIBE-FILE.
 
 -Fixed a problem with ISQRT and certain bignums.
@@ -52,22 +52,22 @@ Corman Lisp 2.51 changes (since 2.5):
 
 -Fixed a problem with DEFSETF long form.
 
--Fixed a problem with pretty-printing, having to do 
- with how the column position is retrieved when writing to a stream 
+-Fixed a problem with pretty-printing, having to do
+ with how the column position is retrieved when writing to a stream
  other than the console.
 
--DECODE-UNIVERSAL-TIME now handles daylight time in a manner 
- consistent with other common lisp implementations (I couldn't understand 
- the standard) and the time zone does not include the adjustment for daylight 
+-DECODE-UNIVERSAL-TIME now handles daylight time in a manner
+ consistent with other common lisp implementations (I couldn't understand
+ the standard) and the time zone does not include the adjustment for daylight
  time.
 
--Fixed a problem with gc.lisp when the lisp heap grows--it will generate an 
+-Fixed a problem with gc.lisp when the lisp heap grows--it will generate an
  error rather than crashing if the reserve area is exceeded.
 
--If the array being allocated exceeeds the array size limit an error will be 
+-If the array being allocated exceeeds the array size limit an error will be
  thrown.
 
--Modified garbage collector to try to better handle cases where there are large 
+-Modified garbage collector to try to better handle cases where there are large
  numbers of finalization objects.
 
 -Fixed a bug in the FFI for handling of 16 bit signed and unsigned quantities.
@@ -77,7 +77,7 @@ Corman Lisp 2.51 changes (since 2.5):
 
 Corman Lisp 2.5 includes:
 
--improved ANSI Common Lisp compatibility 
+-improved ANSI Common Lisp compatibility
 -enhanced IDE features
 -defect fixes
 -performance improvements
@@ -89,14 +89,14 @@ These notes detail changes made since the Corman Lisp 2.01 release. Please
 see the Corman Lisp 2.01 release notes for information regarding 2.01
 changes (which are also included in this release).
 
-This is a free upgrade to everyone who purchased a license for 
-Corman Lisp 2.0, and is offered at a low upgrade price to 
-registered owners of prior versions of Corman Lisp. 
+This is a free upgrade to everyone who purchased a license for
+Corman Lisp 2.0, and is offered at a low upgrade price to
+registered owners of prior versions of Corman Lisp.
 Licensing details are the same as for previous versions.
 
 IDE:
 
-- Editor now supports automatic syntax colorization of Lisp code. The 
+- Editor now supports automatic syntax colorization of Lisp code. The
   implementation of this is in the file sys/edit-window.lisp and can
   be customized (even live while the editor is running).
 
@@ -124,7 +124,7 @@ IDE:
 
 Compiler and Kernel:
 
-- A NIL block no longer implicitly wraps lambdas. This behavior was 
+- A NIL block no longer implicitly wraps lambdas. This behavior was
   inconsistent with ANSI, and allowed all sorts of non-portable code
   to creep in (the Corman Lisp libraries and example programs, for example).
   The behavior is now consistent with ANSI, and all Corman Lisp code has
@@ -142,23 +142,23 @@ Compiler and Kernel:
   occasional threading problems. Only one thread at a time can manipulate
   packages. This was sometimes resulting in messed up heaps.
 
-- Added proper support for LOAD-TIME-VALUE. It is now 
-  supported properly for LOAD, EVAL, COMPILE and COMPILE-FILE. 
-  LOAD-IMAGE will not cause LOAD-TIME-VALUE to evaluate (I don't 
+- Added proper support for LOAD-TIME-VALUE. It is now
+  supported properly for LOAD, EVAL, COMPILE and COMPILE-FILE.
+  LOAD-IMAGE will not cause LOAD-TIME-VALUE to evaluate (I don't
   believe it should).
 
 - Improvements to DEFSTRUCT to improve COMPILE-FILE with structures.
 
 - Removed warnings on unreferenced dispatching variables in CLOS methods.
 
-- Improved performance of MAKE-ARRAY when :initial-contents 
-  is a large list, and this greatly improves performance of reading long 
+- Improved performance of MAKE-ARRAY when :initial-contents
+  is a large list, and this greatly improves performance of reading long
   literal strings.
 
-- Fixed a code generation problem with BLOCK returns when used a parameter 
+- Fixed a code generation problem with BLOCK returns when used a parameter
   to a function call.
 
-- Fixed a code generation problem, where special declarations were not 
+- Fixed a code generation problem, where special declarations were not
   properly shadowing lexical variable declarations.
 
 - Added GROW-CODE-BUFFER implementation to assembler (to allow arbitrarily
@@ -176,16 +176,16 @@ Compiler and Kernel:
 
 - Added COMPILE-FILE-PATHNAME implementation.
 
-- CLOS class objects are now handled specially by COMPILE-FILE, 
-  making the compiled code much smaller (and work correctly). 
+- CLOS class objects are now handled specially by COMPILE-FILE,
+  making the compiled code much smaller (and work correctly).
 
-- Fixed a bug in the compiler when multiple blocks with the same 
+- Fixed a bug in the compiler when multiple blocks with the same
   name are used in a function.
 
-- Foreign heap blocks with null pointers are no longer saved as size 0 
+- Foreign heap blocks with null pointers are no longer saved as size 0
   blocks when the heap is written.
 
-- Added code to heap loading code to allow for garbage collection to 
+- Added code to heap loading code to allow for garbage collection to
   occur.
 
 - Increased the max number of jump table entries from #x4000 to #x8000.
@@ -201,17 +201,17 @@ Compiler and Kernel:
 
 - Added WIN:WITH-COM-INTERFACE macro.
 
-- Cleaned up some places in the kernel that would occasionally hit an 
+- Cleaned up some places in the kernel that would occasionally hit an
   unexpected debugger breakpoint.
 
 Common Lisp:
 
-- DEFSTRUCT: Included structure definitions are now considered 
+- DEFSTRUCT: Included structure definitions are now considered
   superclasses.
 
 - Added LISTEN implementation.
 
-- When DEFSTRUCT :include option is used, accessors are no longer generated 
+- When DEFSTRUCT :include option is used, accessors are no longer generated
   for included slots.
 
 - DEFSTRUCT: supplied-p args are supported in BOA constructor functions.
@@ -241,7 +241,7 @@ Common Lisp:
 - Fixed a problem with strings separated by ~; in ~[ constructs (FORMAT).
 
 - Included xp.lisp in the standard image. All pretty-printing now uses this
-  (it permanently replaces the previous pretty-printer). This is the one 
+  (it permanently replaces the previous pretty-printer). This is the one
   the ANSI standard was based on.
 
 - New improved macro implementations: DEFSETF, DEFINE-SETF-EXPANDER, PUSH
@@ -274,7 +274,7 @@ Enhancements and fixes from Frank Adrian:
 
 - Replaced DEFPACKAGE macro implementation.
 
- 
+
 Enhancements and fixes from JP Massar:
 
 - Fixed a problem with CASE, TYPECASE
@@ -292,17 +292,17 @@ Enhancements and fixes from JP Massar:
 
 - Added WITH-STANDARD-IO-SYNTAX implementation.
 
-- Added compiler error for erroneous symbol declarations in 
+- Added compiler error for erroneous symbol declarations in
   DO, DO*.
 
 - Fixed READ to handle stream of t or nil correctly.
 
 - GENSYM no longer increments before it is used.
 
-- If a file is loaded with a pathname, a string is saved for 
+- If a file is loaded with a pathname, a string is saved for
   DB:FIND-SOURCE functionality.
 
-- Enhancement to EVAL enhancement for handling of top-level PROGN 
+- Enhancement to EVAL enhancement for handling of top-level PROGN
   forms.
 
 - Change to WITH-OPEN-FILE to avoid trying to close NIL.
@@ -313,7 +313,7 @@ Modules/Libraries:
 
 - Modified build script to list files as they are compiled from the console.
 
-- "LOOP". "DESCRIBE", and "THREADS" packages are now loaded into default 
+- "LOOP". "DESCRIBE", and "THREADS" packages are now loaded into default
   image (no longer auto-loaded).
 
 - New Registry functions added: WIN:REGISTRY-SET, WIN:REGISTRY-LOOKUP
@@ -344,5 +344,3 @@ Code contributors (thanks!):
 -Chris Double
 
 and others...
-
-

@@ -7,7 +7,7 @@
 ;; Last Modified By  - Tim Bradshaw (tfb at lostwithiel)
 ;; Update Count	     - 4
 ;; Status	     - Unknown
-;; 
+;;
 ;; $Id$
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -58,7 +58,7 @@ ashtable.
 See Norvig P269-275.
 
 Note this function may not work on self-recursive functions because the
-compiler can optimize away self-calls in various ways.  
+compiler can optimize away self-calls in various ways.
 DEF-MEMOIZED-FUNCTION should work for those cases as it is careful to ensure
 the function can not be inlined like this."
   (declare (type symbol fn-name)
@@ -150,7 +150,7 @@ compilers optimizing away self calls & stuff like that."
 MEMOIZE-FUNCTION and DEF-MEMOIZED-FUNCTION.  If code that uses this is
 compiled (either by COMPILE or COMPILE-FILE, then the table of memoized
 results will be unique, if interpreted then a new table may be generated for
-each use.  The function `names' are generalised in the same way as for 
+each use.  The function `names' are generalised in the same way as for
 DEF-MEMOIZED-FUNCTION."
   ;; this is a pretty hairy macro, perhaps unnecessarily so.  It uses
   ;; an interestingly-large amount of the features of CL.  The use of
@@ -169,7 +169,7 @@ DEF-MEMOIZED-FUNCTION."
 			    ;; decide what test to use for the
 			    ;; hashtable.
 			    fspec
-			    (list fspec :key '(function first) 
+			    (list fspec :key '(function first)
 				  :test '(function eql)))
 		      (let ((htn (make-symbol "HT"))	;hashtable name
 			    (kn (make-symbol "K"))	;key from arglist name
@@ -206,5 +206,3 @@ DEF-MEMOIZED-FUNCTION."
 ;;; indentation for zmacs
 #+Genera
 (pushnew 'memoized-labels zwei:*definition-list-functions*)
-
-

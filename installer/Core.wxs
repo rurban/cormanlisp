@@ -125,7 +125,7 @@ See the 'LICENSE.txt' file for the additional details.
       <ComponentRef Id="cmp_init.lisp" />
       <ComponentRef Id="cmp_LICENSE.txt" />
       <ComponentRef Id="cmp_DiStormLicense" />
-      
+
       <ComponentRef Id="cmp_RDNZL.dll" />
       <ComponentRef Id="cmp_libssl_1_1.dll" />
       <ComponentRef Id="cmp_libcrypto_1_1.dll" />
@@ -133,4 +133,3 @@ See the 'LICENSE.txt' file for the additional details.
     </ComponentGroup>
   </Fragment>
 </Wix>
-

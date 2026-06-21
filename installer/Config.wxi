@@ -73,7 +73,7 @@ See the 'LICENSE.txt' file for the additional details.
       4 - Reduce the frequency of progress messages.
   -->
   <?define MSIFASTINSTALL=5 ?>
-  
+
   <!-- Paths to directories -->
   <?define SysDirectoryPath=".\Sys" ?>
   <?define LibrariesDirectoryPath=".\Libraries" ?>
@@ -85,4 +85,3 @@ See the 'LICENSE.txt' file for the additional details.
   <?define HyperSpecDirectoryPath=".\HyperSpec" ?>
 
 </Include>
-

@@ -26,7 +26,7 @@
     begin-atomic
         mov     ecx, #x00008000
         shl     ecx, 13
-        mov 	[eax + (uvector-offset 2)], ecx                            
+        mov 	[eax + (uvector-offset 2)], ecx
         mov 	ecx, [eax + (uvector-offset 1)]    ;; set sign bit
     end-atomic
         add     ecx, 8
@@ -85,7 +85,7 @@
         cmp     [edx + (uvector-offset 2) + eax*4], ecx
         jne     :next1
         dec     eax
-        jg     :loop 
+        jg     :loop
     :next1
         inc     eax
         shl     eax, 3
@@ -94,7 +94,7 @@
         pop     ebp
         ret
     })
-    
+
 (defasm bignum-negative (b)
     {
         push    ebp
@@ -110,7 +110,7 @@
     :done
         pop     ebp
         ret
-    })    
+    })
 
 ;; sign should be 1 (negative) or 0 (positive)
 (defasm bignum-set-sign (b sign)
@@ -124,7 +124,7 @@
         or      ecx, ecx
         jz      short :neg
         or      al, 8
-    :neg        
+    :neg
         mov     [edx + (uvector-offset 1)], eax
         mov     eax, edx
         mov     ecx, 1
@@ -157,9 +157,9 @@
         ;; now copy original to new one
         mov     edx, [ebp + ARGS_OFFSET]
         mov     ecx, [edx + (uvector-offset 0)]
-        xor     cl, cl                 
+        xor     cl, cl
         shr     ecx, 5
-    
+
         ;; eax = new object
         ;; edx = original object
         ;; ecx = number of 64-bit cells in heap object
@@ -168,7 +168,7 @@
         sub     ecx, 8
         jl      short :done
         mov     ebx, [edx + (uvector-offset 0) + ecx]
-        mov     [eax + (uvector-offset 0) + ecx], ebx     
+        mov     [eax + (uvector-offset 0) + ecx], ebx
         mov     ebx, [edx + (uvector-offset 1) + ecx]
         mov     [eax + (uvector-offset 1) + ecx], ebx
         jmp     short :loop
@@ -190,16 +190,16 @@
         push    ebx
 
         mov     edx, [ebp + (+ ARGS_OFFSET 4)]  ; edx = b1
-        mov     ebx, [ebp + (+ ARGS_OFFSET 0)]  ; ebx = b2   
-     
+        mov     ebx, [ebp + (+ ARGS_OFFSET 0)]  ; ebx = b2
+
         mov     ecx, [edx + (uvector-offset 1)]
         shr     ecx, 4                          ; ecx = num cells
         dec     ecx
     begin-atomic
-    
+
     :loop
         cmp     ecx, 0
-        jl      short :next1    
+        jl      short :next1
         mov     eax, [edx + ecx * 4 + (uvector-offset 2)]
         mov     [ebx + ecx * 4 + (uvector-offset 2)], eax
         dec     ecx
@@ -211,7 +211,7 @@
         mov     dl, [ebx + (uvector-offset 1)]
         and     dl, #xf0
         or      dl, al
-        mov     [ebx + (uvector-offset 1)], dl 
+        mov     [ebx + (uvector-offset 1)], dl
         mov     eax, 0
         mov     ecx, 1
     end-atomic
@@ -247,7 +247,7 @@
         mov     [ebx + ecx*4 + (uvector-offset 2)], eax
         dec     ecx
         jmp     short :loop
-     
+
     :done
         mov     eax, 0
         mov     ecx, 1
@@ -256,7 +256,7 @@
         pop     ebp
         ret
     })
-             
+
 ;;;
 ;;; Return a copy of a bignum with the sign flipped.
 ;;;
@@ -274,7 +274,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 ;;;
 ;;; Like bignum-negate, but does not copy the bignum (make sure it is not shared)
@@ -290,7 +290,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })  
+    })
 
 (defasm bignum-reduce (b)
     {
@@ -329,7 +329,7 @@
         push    ebp
         mov     ebp, esp
         push    ebx
-        push    [ebp + ARGS_OFFSET] 
+        push    [ebp + ARGS_OFFSET]
         callp   bignum-reduce
         add     esp, 4
         mov     edx, [eax + (uvector-offset 1)]
@@ -337,7 +337,7 @@
         and     edx, 8      ;; edx = sign bit
         shr     ecx, 4      ;; ecx = untagged length
         cmp     ecx, 1
-    begin-atomic  
+    begin-atomic
         jg     short :done  ;; more than one cell, it is already normalized
         mov     ebx, [eax + (uvector-offset 2)] ;; ebx = word
         or      edx, edx
@@ -380,7 +380,7 @@
 
         mov     ecx, -1
         mov     edx, [ebp + (+ ARGS_OFFSET 4)]
-    begin-atomic  
+    begin-atomic
         shr     edx, 3                          ;; edx = b2-len
         jmp     short :t1
 	:loop1
@@ -394,11 +394,11 @@
         pop     edx
 	:t1
         inc     ecx
-        
+
         cmp     ecx, edx
         jl      short :loop1
         dec     ecx
-        mov     edx, [ebp + (+ ARGS_OFFSET 12)]  
+        mov     edx, [ebp + (+ ARGS_OFFSET 12)]
         shr     edx, 3                          ;; edx = b1-len
         xor     ebx, ebx
         jmp     short :t2
@@ -410,7 +410,7 @@
         inc     ecx
         cmp     ecx, edx
         jl	    short :loop2
-    
+
         xor     edx, edx
         xor     eax, eax
     end-atomic
@@ -422,7 +422,7 @@
         pop     ebp
         ret
     })
-                                   
+
 (defun add-bignums (b1 b2)
     (let ((b1len (bignum-significant-length b1))
           (b2len (bignum-significant-length b2))
@@ -435,11 +435,11 @@
                 (return-from add-bignums (sub-bignums b2 (bignum-negate b1))))
             (if (bignum-negative b2)
                 (return-from add-bignums (sub-bignums b1 (bignum-negate b2)))))
-        
+
         (setq dest-size (+ 1 (max b1len b2len)))
         (setq result (cl::alloc-bignum dest-size))
         (dotimes (i dest-size)
-            (setf (uref result (+ i 2)) 0))     ;; clear all the cells    
+            (setf (uref result (+ i 2)) 0))     ;; clear all the cells
         (if (< b1len b2len)
             (add-bignum-words b2 b2len b1 b1len result)
             (add-bignum-words b1 b1len b2 b2len result))
@@ -474,7 +474,7 @@
   	:t1
         inc     ecx
         push    edx
-        mov     edx, [ebp + (+ ARGS_OFFSET 4)]  
+        mov     edx, [ebp + (+ ARGS_OFFSET 4)]
         shr     edx, 3                          ;; edx = b2len
         cmp     ecx, edx
         pop     edx
@@ -486,19 +486,19 @@
         sub     eax, edx
         mov     edx, 0
         adc     edx, 0
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax       
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
 	:t2
         inc     ecx
         push    edx
-        mov     edx, [ebp + (+ ARGS_OFFSET 12)]  
+        mov     edx, [ebp + (+ ARGS_OFFSET 12)]
         shr     edx, 3                          ;; edx = b1len
         cmp     ecx, edx
-        pop     edx        
+        pop     edx
         jl	    short :loop2
- 
+
         xor     edx, edx
         xor     eax, eax
-    end-atomic   
+    end-atomic
         pop     edi
         pop     esi
         pop     ebx
@@ -515,7 +515,7 @@
         mov     ebp, esp
         push    ebx
         push    edi
-    
+
         push    [ebp + (+ ARGS_OFFSET 4)]   ;; push b1
         callp   bignum-significant-length
         add     esp, 4
@@ -528,7 +528,7 @@
         jle     short :next1
     :gt
         mov     eax, 8
-        jmp     short :done        
+        jmp     short :done
     :next1
         je      short :eq-length
     :lt
@@ -548,7 +548,7 @@
         jb      short :lt
         sub     ecx, 4
         jge     short :loop
-        
+
         xor     eax, eax
     :done
         mov     ecx, 1
@@ -582,7 +582,7 @@
         (setq dest-size (max b1len b2len))
         (setq result (cl::alloc-bignum dest-size))
         (dotimes (i dest-size)
-            (setf (uref result (+ i 2)) 0))     ;; clear all the cells    
+            (setf (uref result (+ i 2)) 0))     ;; clear all the cells
         (if (>= (bignum-abs-compare b1 b2) 0)
             (progn
                 (setf negative b1sign)
@@ -590,7 +590,7 @@
             (progn
                 (setf negative (not b1sign))
                 (sub-bignum-words b2 b2len b1 b1len result)))
- 
+
         (if negative
             (bignum-flip-sign result))
         (normalize-bignum result)))
@@ -602,7 +602,7 @@
         push    ebx
         push    esi
         push    edi
-    
+
         push    0                               ; [ebp - 16] = i
         push    0                               ; [ebp - 20] = carry
         push    0                               ; [ebp - 24] = overflow
@@ -614,7 +614,7 @@
         mov     edi, [ebp - 16]                 ; edi = i
         cmp     edi, eax                        ; i < (b2len*4) ?
         jge     :done
-        
+
         xor     eax, eax
 		mov     [ebp - 20], eax					; carry = 0
 		mov     [ebp - 24], eax					; overflow = 0
@@ -623,9 +623,9 @@
 		push	[edx + edi + (uvector-offset 2)]
         pop     [ebp - 28]                      ; temp = b2[i]
 		mov		ecx, 0							; j = 0
-		mov		ebx, [ebp + (+ ARGS_OFFSET 0)]  ; ebx = result    
+		mov		ebx, [ebp + (+ ARGS_OFFSET 0)]  ; ebx = result
 		jmp		short :end_test
-    
+
 	:loop1
 		mov		eax, [ebp + (+ ARGS_OFFSET 16)] ; eax = b1
 		mov		eax, [eax + ecx + (uvector-offset 2)]; eax = b1[j]
@@ -638,7 +638,7 @@
 		mov		[ebp - 20], edi                 ; clear carry
 		jnc		short :t3
 		inc		[ebp - 20]                      ; inc carry flag
-	:t3 
+	:t3
         mov		edi, [ebp - 16]                 ; edi = i
 		add		edi, ecx                        ; edi = i + j
 		add		[ebx + edi + (uvector-offset 2)], eax    ; result[i+j] = eax
@@ -660,7 +660,7 @@
 		mov		[ebx + edi + (uvector-offset 2)], eax
         mov     edi, [ebp - 16]                 ; edi = i
         add     edi, 4
-        mov     [ebp - 16], edi                 ; i += 4    
+        mov     [ebp - 16], edi                 ; i += 4
         jmp     :loop0
     :done
         add     esp, 16                         ; clear temp vars
@@ -672,7 +672,7 @@
     end-atomic
         mov     esp, ebp
         pop     ebp
-        ret                     
+        ret
     })
 
 (defun multiply-bignums (b1 b2)
@@ -688,19 +688,19 @@
         (setq dest-size (+ b1len b2len))
         (setq result (cl::alloc-bignum dest-size))
         (dotimes (i dest-size)
-            (setf (uref result (+ i 2)) 0))     ;; clear all the cells    
+            (setf (uref result (+ i 2)) 0))     ;; clear all the cells
         (if (< b1len b2len)
             (mul-bignum-words b2 b2len b1 b1len result)
             (mul-bignum-words b1 b1len b2 b2len result))
         (if negative
             (bignum-flip-sign result))
-        (normalize-bignum result)))              
+        (normalize-bignum result)))
 
 ;; All four args should be single cell bignums.
 ;; The denom should already have been checked for zero.
 ;; This does not update the signs of the resulting quotient or remainder.
 ;; It returns the quotient.
-(defasm divide-single-cell-bignums (num denom quotient remainder) 
+(defasm divide-single-cell-bignums (num denom quotient remainder)
     {
         push    ebp
         mov     ebp, esp
@@ -731,7 +731,7 @@
 ;; If not, it can be used for optimized division algorithm--and this
 ;; will return the half-word as a (positive) fixnum in this case. Otherwise
 ;; this function returns NIL.
-;;                    
+;;
 (defasm bignum-fits-in-half-word (b)
     {
         push    ebp
@@ -744,7 +744,7 @@
         jz      short :fits
         mov     eax, [esi]
         jmp     short :done
-    :fits            
+    :fits
         mov     eax, [eax + (uvector-offset 2)]
         shl     eax, 3          ; wrap integer
     :done
@@ -794,15 +794,15 @@
         mov     ebp, esp
         push    ebx
         mov     eax, [ebp + (+ ARGS_OFFSET 12)] ; eax = b
-        mov     ebx, [ebp + (+ ARGS_OFFSET 8)]  ; ebx = index 
+        mov     ebx, [ebp + (+ ARGS_OFFSET 8)]  ; ebx = index
     begin-atomic
         shr     ebx, 3
         mov     edx, [ebp + (+ ARGS_OFFSET 4)]  ; edx = high
         mov     ecx, [ebp + (+ ARGS_OFFSET 0)]  ; ecx = low
         shr     edx, 3
         mov     [eax + (+ (uvector-offset 2) 2) + ebx*4], dx
-        shr     ecx, 3  
-        mov     [eax + (+ (uvector-offset 2) 0) + ebx*4], cx 
+        shr     ecx, 3
+        mov     [eax + (+ (uvector-offset 2) 0) + ebx*4], cx
         mov     ecx, 1
         pop     ebx
     end-atomic
@@ -852,7 +852,7 @@
         mov     edi, [ebp + (+ ARGS_OFFSET 4)]  ; edi = b2
     begin-atomic
         mov     ecx, [ebp + (+ ARGS_OFFSET 8)]
-        shr     ecx, 3                          ; ecx = untagged i1    
+        shr     ecx, 3                          ; ecx = untagged i1
         mov     edx, [ebp + (+ ARGS_OFFSET 0)]
         shr     edx, 3                          ; edx = untagged i2
         mov     ebx, [eax + ecx * 4 + (uvector-offset 2)]   ; ebx = untagged cell-1
@@ -875,8 +875,8 @@
         pop     ebp
         ret
     })
-        
-;; Given an index to a bignum cell which has at least one bit set, 
+
+;; Given an index to a bignum cell which has at least one bit set,
 ;; return (32 - <the index of the highest bit>).
 ;; If the cell = #xf0000000, returns 0.
 ;; If the cell = #x00000001, returns 31
@@ -921,10 +921,10 @@
     begin-atomic
         shr     ecx, 3                          ; untagged int bit-shift
         shr     edx, 2                          ; untagged word-shift * 2
-        add     edi, edx                        ; offset dest by word-shift * 2        
-        mov     edx, [ebp + (+ ARGS_OFFSET 12)] 
+        add     edi, edx                        ; offset dest by word-shift * 2
+        mov     edx, [ebp + (+ ARGS_OFFSET 12)]
         shr     edx, 2                          ; edx = untagged src-len * 2
-    
+
         xor     ebx, ebx                        ; i = 0
     :loop
         cmp     ebx, edx        ;; i = src-len * 2?
@@ -944,8 +944,8 @@
     end-atomic
         pop     ebp
         ret
-    })    
-     
+    })
+
 (defasm shift-bignum-words-right (src src-len dest bit-shift word-shift)
     {
         push    ebp
@@ -960,21 +960,21 @@
         mov     ecx, [ebp + (+ ARGS_OFFSET 4)]  ; ecx = bit-shift
     begin-atomic
         shr     ecx, 3                          ; untagged int bit-shift
-        mov     edx, [ebp + (+ ARGS_OFFSET 12)] 
+        mov     edx, [ebp + (+ ARGS_OFFSET 12)]
         shr     edx, 2                          ; edx = untagged src-len * 2
         mov     [ebp - 16], edx                 ; [ebp - 16] = untagged src-len * 2
         xor     ebx, ebx                        ; i = 0
-        
+
         mov     edx, [ebp + (+ ARGS_OFFSET 0)]  ; edx = word-shift
         test    edx, edx
         jnz     short :next1
         xor     eax, eax
         mov     ax, [esi + (uvector-offset 2)]
-        shr     eax, cl 
-        mov     bx, [edi + (uvector-offset 2)]       
+        shr     eax, cl
+        mov     bx, [edi + (uvector-offset 2)]
         add     eax, ebx
         mov     [edi + (uvector-offset 2)], ax
-    :next1     
+    :next1
         mov     ebx, 1                          ; i = 1
         mov     edx, [ebp + (+ ARGS_OFFSET 0)]  ; edx = word-shift
         shr     edx, 3
@@ -988,21 +988,21 @@
         xor     eax, eax
         mov     ax, [esi + ebx * 2 + (uvector-offset 2)]
         shl     eax, 16
-        shr     eax, cl    
+        shr     eax, cl
         cmp     ebx, [ebp - 20]                 ; i >= (word-shift + 1)
         jl      short :next2
         add     [edi + ebx * 2 + (uvector-offset 2)], eax
         jmp     short :next-loop
     :next2
-        mov     edx, [ebp + (+ ARGS_OFFSET 0)] 
+        mov     edx, [ebp + (+ ARGS_OFFSET 0)]
         shr     edx, 3                          ; edx = untagged word-shift
-        cmp     ebx, edx                        ; i = word-shift?     
+        cmp     ebx, edx                        ; i = word-shift?
         jne     short :next-loop
         xor     edx, edx
-        mov     dx, [edi + ebx * 2 + (+ 2 (uvector-offset 2))] 
-        shr     eax, 16      
+        mov     dx, [edi + ebx * 2 + (+ 2 (uvector-offset 2))]
+        shr     eax, 16
         add     eax, edx
-        mov     [edi + ebx * 2 + (+ 2 (uvector-offset 2))], ax           
+        mov     [edi + ebx * 2 + (+ 2 (uvector-offset 2))], ax
     :next-loop
         inc     ebx
         jmp     short :loop
@@ -1018,27 +1018,27 @@
         pop     ebp
         ret
     })
-        
+
 (defun shift-bignum-words (b src-len res result-len bits)
     (let (shift-dir
           word-shift
           bit-shift)
-        
+
         ;; make sure destination bits are cleared
         (dotimes (i result-len)
             (setf (uref res (+ i 2)) 0))
-        
+
         (if (< bits 0)
             (setq shift-dir 'right bits (- bits))
             (setq shift-dir 'left))
-        
+
         (multiple-value-setq (word-shift bit-shift)
             (truncate bits 16))
-        
+
         (if (eq shift-dir 'left)
             (shift-bignum-words-left b src-len res bit-shift word-shift)
-            (shift-bignum-words-right b src-len res bit-shift word-shift)))) 
-                           
+            (shift-bignum-words-right b src-len res bit-shift word-shift))))
+
 (defun bignum-shift (b shift signed-shift)
     (let* ((word-length (bignum-significant-length b))
            (bit-length (* word-length 32))
@@ -1066,12 +1066,12 @@
         (dotimes (i max)
             (let ((shift (if negative (- i) i)))
                 (if (/= (bignum-shift b1 shift nil) (ash b1 shift))
-                    (format t "!!!!Invalid result: b=~A, shift=~A, result=~A~%" 
+                    (format t "!!!!Invalid result: b=~A, shift=~A, result=~A~%"
                         b1 shift (bignum-shift b1 shift nil))
-                    (format t "Valid result: b=~A, shift=~A, result=~A~%"  
+                    (format t "Valid result: b=~A, shift=~A, result=~A~%"
                         b1 shift (bignum-shift b1 shift nil)))))))
 |#
-        
+
 (defun divide-bignums (b1 b2)
     (bignum-divide b1 b2 nil))
 
@@ -1096,7 +1096,7 @@
         shr     ecx, 1                          ; ecx = untagged bi * 4
         mov     eax, [ebx + ecx + (uvector-offset 2)]   ; eax = lower 32-bits
         mov     ebx, [ebp + (+ ARGS_OFFSET 12)] ; ebx = d
-        mov     ecx, [ebp + (+ ARGS_OFFSET 8)]  ; ecx = di 
+        mov     ecx, [ebp + (+ ARGS_OFFSET 8)]  ; ecx = di
         shr     ecx, 1                          ; ecx = untagged di * 4
         div     [ebx + ecx + (uvector-offset 2)]; divide by d, eax = quotient (32-bits)
         mov     ebx, [ebp + (+ ARGS_OFFSET 4)]  ; ebx = q
@@ -1110,8 +1110,8 @@
         pop     ebx
         pop     ebp
         ret
-    })        
-       
+    })
+
 ;; Subtract multiple q * b from a, where a and b
 ;; are values of n digits. The remainder a - q * b
 ;; will be less than b and must not be negative.
@@ -1125,7 +1125,7 @@
         push    ebx
         push    edi
         push    esi
-    
+
         mov     ebx, [ebp + (+ ARGS_OFFSET 20)] ; ebx = a
         mov     ecx, [ebp + (+ ARGS_OFFSET 16)] ; ecx = ai
     begin-atomic
@@ -1143,7 +1143,7 @@
         cmp     ecx, edx                        ; i = n?
         je      short :next1
         mov     eax, [edi + ecx*4 + (uvector-offset 2)] ; eax = b[i]
-        mov     edx, [ebp + (+ ARGS_OFFSET 0)]  ; edx = q 
+        mov     edx, [ebp + (+ ARGS_OFFSET 0)]  ; edx = q
         mul     [edx + (uvector-offset 2)]      ; edx:eax = b[i]*q
         sub     [ebx + ecx*4 + (uvector-offset 2)], eax ; a[i] -= Lo
         adc     esi, 0                          ; if (a[i] > d) carry++;
@@ -1153,7 +1153,7 @@
         adc     esi, 0                          ; carry = (a[i + 1] > d);
         inc     ecx
         jmp     short :loop1
-    
+
     :next1
         cmp     esi, 0
         je      short :done
@@ -1166,12 +1166,12 @@
     :loop2
         mov     edx, [ebp + (+ ARGS_OFFSET 4)]  ; ecx = n
         shr     edx, 3                          ; ecx = untagged n
-        cmp     ecx, edx                        ; i = n?        
+        cmp     ecx, edx                        ; i = n?
         je      short :loop2-done
         mov     edx, [ebx + ecx*4 + (uvector-offset 2)] ; edx = a[i]
         mov     eax, esi                        ; eax = carry
-        mov     esi, 0                              
-        add     edx, eax                        ; edx = a[i] + carry          
+        mov     esi, 0
+        add     edx, eax                        ; edx = a[i] + carry
         cmp     edx, eax                        ; d < carry ?
         jae     short :next2
         inc     esi                             ; carry = d < carry;
@@ -1197,7 +1197,7 @@
         pop     ebp
         ret
     })
-               
+
 (defun bignum-divide (num denom include-rem)
     (bignum-reduce num)
     (bignum-reduce denom)
@@ -1217,18 +1217,18 @@
           n
           Lq
           q)
-        
+
         ;; error on division by zero
         (if (eq denom-len 0)
             (cl::signal-division-by-zero (list num denom)))
-        
+
         ;; bail early if num < denom
         (if (< (bignum-abs-compare num denom) 0)
             (return-from bignum-divide
                 (if include-rem
                     (cons 0 (normalize-bignum num))
                     0)))
-        
+
         ;; optimize for case where both bignums fit in 32 bits
         (when (and (= num-len 1) (= denom-len 1))
             (setq quotient (cl::alloc-bignum 1))
@@ -1242,7 +1242,7 @@
                         (cons (normalize-bignum quotient)
                               (normalize-bignum remainder))))
                 (return-from bignum-divide (normalize-bignum quotient))))
-        
+
         ;; Optimize for case where denominator fits into a half word.
         ;; This is much more efficient than the following general-case algorithm.
         (setq half-word-denom (bignum-fits-in-half-word denom))
@@ -1271,12 +1271,12 @@
                         (cons (normalize-bignum quotient)
                               (normalize-bignum remainder))))
                 (return-from bignum-divide (normalize-bignum quotient))))
-        
+
         (setq r (- denom-len 1))
         (setq x (calc-shift-bits denom r))
         (setq denom (bignum-shift denom x nil))
         (setq num (bignum-shift num x nil))
-        
+
         ;; Possibly second action according to C. J. Mifsud
         (if (and (> r 0) (= (bignum-cell-compare denom r denom (- r 1)) -1))
             (progn
@@ -1290,9 +1290,9 @@
                 (setq denom (normalize-bignum temp))
                 (setq second-done t))
             (setq second-done nil))
-        
+
         (setq r (- (bignum-length denom) 1))
-        (setq n (- (bignum-length num) 1))                        
+        (setq n (- (bignum-length num) 1))
         (setq Lq (- n r))
         (if (>= (bignum-cell-compare num n denom r) 0)
             (progn
@@ -1304,22 +1304,22 @@
                 (setq quotient (cl::alloc-bignum Lq))))
         (copy-bignum num remainder)
         (setq q (cl::alloc-bignum 1))
-        
+
         (do ((k n (- k 1)))
             ((<= k r))
             (dd-quotient remainder k remainder (- k 1) denom r q 0)
             (subtract-mul remainder (- k (+ r 1)) denom 0 (+ r 1) q)
             (copy-bignum-cells q 0 quotient (- k (+ r 1)) 1))
-        
+
         (bignum-reduce quotient)
         (bignum-set-sign quotient (if quot-neg 1 0))
-        
+
         (if include-rem
             (progn
                 (if second-done
                     (setq remainder (bignum-divide remainder uint-max-bignum nil)))
                 (if (> x 0)
-                    (setq remainder (ash remainder (- x))) 
+                    (setq remainder (ash remainder (- x)))
                     (if (bignump remainder)
                         (bignum-reduce remainder)))
                 (if (bignump remainder)
@@ -1329,7 +1329,7 @@
                     (if rem-neg
                         (setq remainder (- remainder))))
                 (return-from bignum-divide (cons (normalize-bignum quotient) remainder))))
-        (normalize-bignum quotient)))          
+        (normalize-bignum quotient)))
 
 (defun divide-bignums (b1 b2)
     (bignum-divide b1 b2 nil))
@@ -1374,14 +1374,14 @@
         je      short :done     ; positive number--nothing to do
         shr     ecx, 4          ; ecx = num cells
         mov     edx, 0          ; i = 0
-        
+
         ;; flip all the bits
     :loop1
         not     [eax + edx*4 + (uvector-offset 2)]
         inc     edx             ; i++
         cmp     edx, ecx        ; i < len?
         jl      short :loop1
-    
+
         ;; add one to the result
         mov     edx, 0          ; i = 0
     :loop2
@@ -1393,8 +1393,8 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })      
-        
+    })
+
 ;;
 ;; BIGNUM-2C-TO-SM converts (in place) a twos complement bignum
 ;;	to a signed magnitude representation.
@@ -1411,14 +1411,14 @@
         test    edx, [eax + ecx*4 + (uvector-offset 1)]
         je      short :positive
         mov     edx, 0          ; i = 0
-        
+
         ;; flip all the bits
     :loop1
         not     [eax + edx*4 + (uvector-offset 2)]
         inc     edx             ; i++
         cmp     edx, ecx        ; i < len?
         jl      short :loop1
-    
+
         ;; add one to the result
         mov     edx, 0          ; i = 0
     :loop2
@@ -1437,7 +1437,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })      
+    })
 
 ;;;
 ;;;	xorBignumWords()
@@ -1453,7 +1453,7 @@
         push    esi
         push    1                             ;; carry1 = [ebp - 16]
         push    1                             ;; carry2 = [ebp - 20]
-     
+
         mov     ecx, [ebp + (+ ARGS_OFFSET 12)]     ;; ecx = b1-len
         cmp     ecx, [ebp + (+ ARGS_OFFSET 4)]     ;; b1-len < b2-len?
         jge     short :next1    ;; ensure b1-len >= b2-len
@@ -1461,7 +1461,7 @@
         mov     eax, [ebp + (+ ARGS_OFFSET 4)]
         mov     [ebp + (+ ARGS_OFFSET 12)], eax
         mov     [ebp + (+ ARGS_OFFSET 4)], ecx
-        mov     ecx, [ebp + (+ ARGS_OFFSET 16)]     ;; ecx = b1          
+        mov     ecx, [ebp + (+ ARGS_OFFSET 16)]     ;; ecx = b1
         mov     eax, [ebp + (+ ARGS_OFFSET 8)]      ;; eax = b2
         mov     [ebp + (+ ARGS_OFFSET 8)], ecx
         mov     [ebp + (+ ARGS_OFFSET 16)], eax
@@ -1492,13 +1492,13 @@
     :next2
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop2  
+    :loop2
         cmp     ecx, esi
         jge     short :next3
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop2                      
+        jmp     short :loop2
     :next3
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -1506,7 +1506,7 @@
         xor     edx, edx
     end-atomic
         jmp     :done
-    
+
     :b1-pos-b2-neg          ;; b1 >= 0, b2 < 0
          ;; b1 >=0, b2 >= 0
     begin-atomic
@@ -1534,14 +1534,14 @@
     :next5
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop4  
+    :loop4
         cmp     ecx, esi
         jge     short :next6
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
         not     eax
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop4                      
+        jmp     short :loop4
     :next6
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -1552,12 +1552,12 @@
         callp   bignum-2c-to-sm
         add     esp, 4
         jmp     :done
-    
-    :b1-negative 
+
+    :b1-negative
         mov     eax, [ebx + (uvector-offset 1)]
         test    eax, 8
-        jne     short :b1-neg-b2-neg    
-        ;; b1 < 0, b2 >= 0 
+        jne     short :b1-neg-b2-neg
+        ;; b1 < 0, b2 >= 0
     begin-atomic
         mov     ecx, 0                              ;; i = 0
         mov     esi, [ebx + (uvector-offset 1)]
@@ -1583,7 +1583,7 @@
     :next8
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop6  
+    :loop6
         cmp     ecx, esi
         jge     short :next10
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
@@ -1596,9 +1596,9 @@
     :next9
         and     [ebp - 16], edx                      ;; carry1 &&= (!tcword)
         pop     edx
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop6                      
+        jmp     short :loop6
     :next10
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -1609,8 +1609,8 @@
         callp   bignum-2c-to-sm
         add     esp, 4
         jmp     :done
-    :b1-neg-b2-neg     
-        ;; b1 < 0, b2 < 0 
+    :b1-neg-b2-neg
+        ;; b1 < 0, b2 < 0
     begin-atomic
         mov     ecx, 0                              ;; i = 0
         mov     esi, [ebx + (uvector-offset 1)]
@@ -1648,7 +1648,7 @@
     :next13
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop8  
+    :loop8
         cmp     ecx, esi
         jge     short :next15
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
@@ -1662,14 +1662,14 @@
         and     [ebp - 16], edx                      ;; carry1 &&= (!tcword)
         pop     edx
         not     eax
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop8                     
+        jmp     short :loop8
     :next15
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
         xor     eax, eax
-        xor     edx, edx    
+        xor     edx, edx
     end-atomic
         push    edi
         callp   bignum-2c-to-sm
@@ -1683,9 +1683,9 @@
 
 (defun xor-bignums (b1 b2)
     (unless (bignump b1)
-        (cl::signal-type-error b1 'integer)) 
+        (cl::signal-type-error b1 'integer))
     (unless (bignump b2)
-        (cl::signal-type-error b2 'integer)) 
+        (cl::signal-type-error b2 'integer))
     (let* ((b1-len (bignum-significant-length b1))
            (b2-len (bignum-significant-length b2))
            (dest-size (if (< b1-len b2-len) b2-len b1-len))
@@ -1707,7 +1707,7 @@
         push    esi
         push    1                             ;; carry1 = [ebp - 16]
         push    1                             ;; carry2 = [ebp - 20]
-     
+
         mov     ecx, [ebp + (+ ARGS_OFFSET 12)]     ;; ecx = b1-len
         cmp     ecx, [ebp + (+ ARGS_OFFSET 4)]     ;; b1-len < b2-len?
         jge     short :next1    ;; ensure b1-len >= b2-len
@@ -1715,7 +1715,7 @@
         mov     eax, [ebp + (+ ARGS_OFFSET 4)]
         mov     [ebp + (+ ARGS_OFFSET 12)], eax
         mov     [ebp + (+ ARGS_OFFSET 4)], ecx
-        mov     ecx, [ebp + (+ ARGS_OFFSET 16)]     ;; ecx = b1          
+        mov     ecx, [ebp + (+ ARGS_OFFSET 16)]     ;; ecx = b1
         mov     eax, [ebp + (+ ARGS_OFFSET 8)]      ;; eax = b2
         mov     [ebp + (+ ARGS_OFFSET 8)], ecx
         mov     [ebp + (+ ARGS_OFFSET 16)], eax
@@ -1746,20 +1746,20 @@
     :next2
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop2  
+    :loop2
         cmp     ecx, esi
         jge     short :next3
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop2                      
+        jmp     short :loop2
     :next3
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
         xor     eax, eax
     end-atomic
         jmp     :done
-    
+
     :b1-pos-b2-neg          ;; b1 >= 0, b2 < 0
          ;; b1 >=0, b2 >= 0
     begin-atomic
@@ -1787,14 +1787,14 @@
     :next5
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop4  
+    :loop4
         cmp     ecx, esi
         jge     short :next6
         mov     eax, 0
         not     eax
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop4                      
+        jmp     short :loop4
     :next6
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -1805,12 +1805,12 @@
         callp   bignum-2c-to-sm
         add     esp, 4
         jmp     :done
-    
-    :b1-negative 
+
+    :b1-negative
         mov     eax, [ebx + (uvector-offset 1)]
         test    eax, 8
-        jne     short :b1-neg-b2-neg    
-        ;; b1 < 0, b2 >= 0 
+        jne     short :b1-neg-b2-neg
+        ;; b1 < 0, b2 >= 0
     begin-atomic
         mov     ecx, 0                              ;; i = 0
         mov     esi, [ebx + (uvector-offset 1)]
@@ -1836,7 +1836,7 @@
     :next8
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop6  
+    :loop6
         cmp     ecx, esi
         jge     short :next10
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
@@ -1849,9 +1849,9 @@
     :next9
         and     [ebp - 16], edx                      ;; carry1 &&= (!tcword)
         pop     edx
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop6                      
+        jmp     short :loop6
     :next10
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -1862,8 +1862,8 @@
         callp   bignum-2c-to-sm
         add     esp, 4
         jmp     :done
-    :b1-neg-b2-neg     
-        ;; b1 < 0, b2 < 0 
+    :b1-neg-b2-neg
+        ;; b1 < 0, b2 < 0
     begin-atomic
         mov     ecx, 0                              ;; i = 0
         mov     esi, [ebx + (uvector-offset 1)]
@@ -1901,14 +1901,14 @@
     :next13
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop8  
+    :loop8
         cmp     ecx, esi
         jge     short :next15
         mov     eax, 0
         not     eax
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop8                     
+        jmp     short :loop8
     :next15
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -1929,7 +1929,7 @@
     (unless (bignump b1)
         (cl::signal-type-error b1 'integer))
     (unless (bignump b2)
-        (cl::signal-type-error b2 'integer)) 
+        (cl::signal-type-error b2 'integer))
     (let* ((b1-len (bignum-significant-length b1))
            (b2-len (bignum-significant-length b2))
            (dest-size (if (< b1-len b2-len) b2-len b1-len))
@@ -1951,7 +1951,7 @@
         push    esi
         push    1                             ;; carry1 = [ebp - 16]
         push    1                             ;; carry2 = [ebp - 20]
-     
+
         mov     ecx, [ebp + (+ ARGS_OFFSET 12)]     ;; ecx = b1-len
         cmp     ecx, [ebp + (+ ARGS_OFFSET 4)]     ;; b1-len < b2-len?
         jge     short :next1    ;; ensure b1-len >= b2-len
@@ -1959,7 +1959,7 @@
         mov     eax, [ebp + (+ ARGS_OFFSET 4)]
         mov     [ebp + (+ ARGS_OFFSET 12)], eax
         mov     [ebp + (+ ARGS_OFFSET 4)], ecx
-        mov     ecx, [ebp + (+ ARGS_OFFSET 16)]     ;; ecx = b1          
+        mov     ecx, [ebp + (+ ARGS_OFFSET 16)]     ;; ecx = b1
         mov     eax, [ebp + (+ ARGS_OFFSET 8)]      ;; eax = b2
         mov     [ebp + (+ ARGS_OFFSET 8)], ecx
         mov     [ebp + (+ ARGS_OFFSET 16)], eax
@@ -1990,13 +1990,13 @@
     :next2
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop2  
+    :loop2
         cmp     ecx, esi
         jge     short :next3
         mov     eax, 0
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop2                      
+        jmp     short :loop2
     :next3
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -2004,7 +2004,7 @@
         xor     edx, edx
     end-atomic
         jmp     :done
-    
+
     :b1-pos-b2-neg          ;; b1 >= 0, b2 < 0
          ;; b1 >=0, b2 >= 0
     begin-atomic
@@ -2032,13 +2032,13 @@
     :next5
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop4  
+    :loop4
         cmp     ecx, esi
         jge     short :next6
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop4                      
+        jmp     short :loop4
     :next6
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -2046,12 +2046,12 @@
         xor     edx, edx
     end-atomic
         jmp     :done
-    
-    :b1-negative 
+
+    :b1-negative
         mov     eax, [ebx + (uvector-offset 1)]
         test    eax, 8
-        jne     short :b1-neg-b2-neg    
-        ;; b1 < 0, b2 >= 0 
+        jne     short :b1-neg-b2-neg
+        ;; b1 < 0, b2 >= 0
     begin-atomic
         mov     ecx, 0                              ;; i = 0
         mov     esi, [ebx + (uvector-offset 1)]
@@ -2077,13 +2077,13 @@
     :next8
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop6  
+    :loop6
         cmp     ecx, esi
         jge     short :next10
         mov     eax, 0
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop6                      
+        jmp     short :loop6
     :next10
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -2091,9 +2091,9 @@
         xor     edx, edx
     end-atomic
         jmp     :done
-    
-    :b1-neg-b2-neg     
-        ;; b1 < 0, b2 < 0 
+
+    :b1-neg-b2-neg
+        ;; b1 < 0, b2 < 0
     begin-atomic
         mov     ecx, 0                              ;; i = 0
         mov     esi, [ebx + (uvector-offset 1)]
@@ -2131,7 +2131,7 @@
     :next13
         mov     esi, [edx + (uvector-offset 1)]
         shr     esi, 4                              ;; esi = b1-len
-    :loop8  
+    :loop8
         cmp     ecx, esi
         jge     short :next15
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
@@ -2145,9 +2145,9 @@
         and     [ebp - 16], edx                      ;; carry1 &&= (!tcword)
         pop     edx
         not     eax
-        mov     [edi + ecx*4 + (uvector-offset 2)], eax 
+        mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
-        jmp     short :loop8                     
+        jmp     short :loop8
     :next15
         add     esp, 8     ;; pop carry1, carry2
         pop     esi
@@ -2168,7 +2168,7 @@
     (unless (bignump b1)
         (cl::signal-type-error b1 'integer))
     (unless (bignump b2)
-        (cl::signal-type-error b2 'integer)) 
+        (cl::signal-type-error b2 'integer))
     (let* ((b1-len (bignum-significant-length b1))
            (b2-len (bignum-significant-length b2))
            (dest-size (if (< b1-len b2-len) b2-len b1-len))
@@ -2188,7 +2188,7 @@
         push    ebx
         push    edi
         push    1                             ;; carry1 = [ebp - 12]
-     
+
         mov     ecx, [ebp + (+ ARGS_OFFSET 4)]     ;; ecx = b1-len
         mov     edx, [ebp + (+ ARGS_OFFSET 8)]     ;; edx = b1
         mov     ecx, 0                              ;; i = 0
@@ -2209,10 +2209,10 @@
         inc     ecx
         jmp     short :loop1
     :next1
-        jmp     short :done    
-    
-    :b1-negative 
-       ;; b1 < 0 
+        jmp     short :done
+
+    :b1-negative
+       ;; b1 < 0
         mov     edi, [ebp + (+ ARGS_OFFSET 0)]      ;; edi = result
     :loop2
         cmp     ecx, ebx
@@ -2263,12 +2263,12 @@
     begin-atomic
         mov     edi, eax                        ; edi = result
         mov     edx, [ebp + (+ ARGS_OFFSET 4)]  ; edx = b
-        mov     ebx, [edx + (uvector-offset 1)] ; ebx = len 
-        shr     ebx, 4  
+        mov     ebx, [edx + (uvector-offset 1)] ; ebx = len
+        shr     ebx, 4
         mov     ecx, 0
     :loop
         cmp     ecx, ebx
-        jge     short :next1   
+        jge     short :next1
         mov     eax, [edx + ecx*4 + (uvector-offset 2)]
         mov     [edi + ecx*4 + (uvector-offset 2)], eax
         inc     ecx
@@ -2280,7 +2280,7 @@
         mov     dl, [edi + (uvector-offset 1)]
         and     dl, #xf0
         or      dl, al
-        mov     [edi + (uvector-offset 1)], dl 
+        mov     [edi + (uvector-offset 1)], dl
         xor     edx, edx
         mov     eax, edi
         mov     ecx, 1
@@ -2328,12 +2328,12 @@
         jz      short :next3
         add     eax, 4
         shr     ecx, 4
-    :next3           
+    :next3
         test    ecx, #x0000000c
         jz      short :next4
         add     eax, 2
         shr     ecx, 2
-    :next4 
+    :next4
         test    ecx, #x00000002
         jz      short :next5
         add     eax, 1
@@ -2346,6 +2346,3 @@
         pop     ebp
         ret
     })
-              
-    
-                  

@@ -14,7 +14,7 @@
 ;;;; The implementation makes heavy use of (UNSIGNED-BYTE 32) arithmetic;
 ;;;; if your CL implementation does not implement unboxed arithmetic on
 ;;;; such numbers, performance will likely be greater in a 16-bit
-;;;; implementation. 
+;;;; implementation.
 ;;;;
 ;;;; A test framework has be included; enable it before compilation by
 ;;;; adding :sha-testing to *FEATURES*.  After doing so, compiling, and
@@ -273,7 +273,7 @@ available."
                          (logxor (aref block (- i 14))
                                  (aref block (- i 16))))
                         1))))
-    
+
 (defun fill-block (block buffer offset)
   "Convert a complete 64 byte input vector segment into the given 80
 word SHA1 block.  This currently works on (unsigned-byte 8) and

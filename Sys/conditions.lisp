@@ -58,10 +58,10 @@
 		(if report-func
 			(setq report-definition
 				`(defmethod print-object ((x ,name) stream)
-					(if *print-escape* 
+					(if *print-escape*
 						(call-next-method)
 						(funcall (function ,report-func) x stream)))))
-					
+
 		`(let ((class
 				(defclass ,name ,parent-types ,slot-specifiers
 					,(remove ':report class-options :key 'first))))
@@ -77,7 +77,7 @@
 
 (defmethod print-object ((condition condition) stream)
 	(if (simple-condition-format-control condition)
-		(apply #'format stream 
+		(apply #'format stream
 				(simple-condition-format-control condition)
 				(simple-condition-format-arguments condition))
 		(call-next-method)))
@@ -105,7 +105,7 @@
 (define-condition arithmetic-error (error)
 	((operation :initarg :operation :accessor arithmetic-error-operation :initform "<unknown>")
 	 (operands :initarg :operands :accessor arithmetic-error-operands :initform "<unknown>"))
-	(:report 
+	(:report
 		(lambda (condition stream)
 			(format stream "Arithmetic error: operation = ~A, operands = ~A"
 				(arithmetic-error-operation condition)
@@ -113,7 +113,7 @@
 
 (define-condition division-by-zero (arithmetic-error)
     ()
-    (:report 
+    (:report
 		(lambda (condition stream)
 			(format stream "Division by zero error: operation = ~A, operands = ~A"
 				(arithmetic-error-operation condition)
@@ -123,15 +123,15 @@
 (define-condition floating-point-invalid-operation (arithmetic-error))
 (define-condition floating-point-overflow (arithmetic-error)
     ()
-    (:report 
+    (:report
 		(lambda (condition stream)
 			(format stream "Floating point overflow: operation = ~A, operands = ~A"
 				(arithmetic-error-operation condition)
 				(arithmetic-error-operands condition)))))
-    
+
 (define-condition floating-point-underflow (arithmetic-error)
     ()
-    (:report 
+    (:report
 		(lambda (condition stream)
 			(format stream "Floating point underflow: operation = ~A, operands = ~A"
 				(arithmetic-error-operation condition)
@@ -139,28 +139,28 @@
 
 (define-condition cell-error (error)
 	((name :initarg :name :accessor cell-error-name))
-	(:report 
+	(:report
 		(lambda (condition stream)
 			(format stream "Cell error: name = ~A"
 				(cell-error-name condition)))))
 
 (define-condition unbound-slot (cell-error)
 	()
-	(:report 
+	(:report
 		(lambda (condition stream)
 			(format stream "The slot ~S is unbound"
 				(cell-error-name condition)))))
 
 (define-condition unbound-variable (cell-error)
 	()
-	(:report 
+	(:report
 		(lambda (condition stream)
 			(format stream "The variable ~S is unbound"
 				(cell-error-name condition)))))
 
 (define-condition undefined-function (cell-error)
 	()
-	(:report 
+	(:report
 		(lambda (condition stream)
 			(format stream "The function ~S is undefined"
 				(cell-error-name condition)))))
@@ -168,9 +168,9 @@
 (define-condition control-error (error)
 	((format-control :initarg :format-control :accessor simple-condition-format-control)
 	 (format-arguments :initarg :format-arguments :accessor simple-condition-format-arguments))
-	(:report 
+	(:report
 		(lambda (condition stream)
-			(apply #'format stream 
+			(apply #'format stream
 				(simple-condition-format-control condition)
 				(simple-condition-format-arguments condition)))))
 
@@ -185,7 +185,7 @@
 
 (define-condition file-error (error)
 	((pathname :initarg :pathname :accessor file-error-pathname))
-	(:report 
+	(:report
 		(lambda (condition stream)
 			(format stream "File error: name = ~A"
 				(file-error-pathname condition))
@@ -207,9 +207,9 @@
 		(dolist (x bindings)
             (unless (type-specifier-p (first x))
                 (warn "Invalid type specifier in HANDLER-BIND clause: ~A" (first x)))
-			(push `(list ',(first x) ,(second x)) binding-forms))		
-		`(let ((*handler-registry* 
-					(cons ,(cons 'list (nreverse binding-forms)) 
+			(push `(list ',(first x) ,(second x)) binding-forms))
+		`(let ((*handler-registry*
+					(cons ,(cons 'list (nreverse binding-forms))
 						*handler-registry*)))
 			,@forms)))
 ;;;
@@ -240,13 +240,13 @@
 						  (var-form (second x))
 						  (body (cddr x))
 						  (go-target (gensym)))
-						(push `(,type 
+						(push `(,type
 								#'(lambda (temp)
 									(setq ,let-temp temp)
 									(go ,go-target)))
 							bind-clauses)
 						(push go-target target-clauses)
-						(push `(return-from ,block-sym 
+						(push `(return-from ,block-sym
 									(let (,@(if var-form (list (list (car var-form) let-temp))))
 										,@body)) target-clauses)))
 				`(block ,block-sym
@@ -278,7 +278,7 @@
 			(setq func (caar trace))
 			(unless (symbolp func)
 				(return))
-			(if (not 
+			(if (not
 					(or (eq func caller-name)
 						(eq func 'error)
 						(eq func 'cerror)
@@ -288,7 +288,7 @@
 				(return))
 			(setq trace (cdr trace)))
 		func))
-	
+
 ;;;
 ;;;	Corman Lisp DEBUGGER function.
 ;;;	Currently, this simply creates a copy of the stack frame,
@@ -296,8 +296,8 @@
 ;;; function debug:dump-error-stack), and aborts to the top level.
 ;;;
 (defun debugger () ;; stub, redefined later
-	(format *error-output* 
-			";;; An error occurred in function ~A:~%;;; ~A~%" 
+	(format *error-output*
+			";;; An error occurred in function ~A:~%;;; ~A~%"
 			*error-function* *debug-condition*)
 	(format *error-output* ";;; Aborting to top level.~%")
 	(force-output *error-output*)
@@ -312,8 +312,8 @@
 			   (*debugger-hook* nil))
 			(funcall previous condition previous)))
 	(let ((*debug-condition* condition)
-		  (*error-function* 
-				(if *enable-error-trace* 
+		  (*error-function*
+				(if *enable-error-trace*
 					(stack-trace-and-calling-function 'invoke-debugger (stack-trace)))))
 		(declare (special *debug-condition* *error-function*))
 		(debugger)))
@@ -322,8 +322,8 @@
 ;;;	Redefine this kernel function now, to use condition.
 ;;;
 (defun %unbound-variable (sym)
-	(error 'unbound-variable :name sym))	
-				
+	(error 'unbound-variable :name sym))
+
 (defun %undefined-function(func-name)
 	#'(lambda (&rest x)
 		(declare (ignore x))
@@ -332,7 +332,7 @@
 ;;;
 ;;;	Common Lisp RESTART type.
 ;;;
-(defclass restart () 
+(defclass restart ()
 	((name :accessor restart-name :initarg :name)
 	 (function :accessor restart-function :initarg :function)
 	 (test-function :accessor restart-test-function :initarg :test-function)
@@ -340,11 +340,11 @@
 	 (interactive-function :accessor restart-interactive-function :initarg :interactive-function)))
 
 (defun make-restart (name function &key test report interactive)
-	(make-instance 'restart 
-		:name name 
-		:function function 
+	(make-instance 'restart
+		:name name
+		:function function
 		:test-function test
-		:report-function report 
+		:report-function report
 		:interactive-function interactive))
 
 ;;;
@@ -354,7 +354,7 @@
 	(let ((restart-exprs nil))
 		(dolist (r restart-clauses)
 			(push `(make-restart ',(first r) ,(second r) ,@(cddr r)) restart-exprs))
-		`(let ((*restart-registry* 
+		`(let ((*restart-registry*
 					(append (list ,@(nreverse restart-exprs)) *restart-registry*)))
 			,@forms)))
 
@@ -363,9 +363,9 @@
 ;;;
 (defun compute-restarts (&optional condition)
 	(if condition
-		(remove-if-not 
+		(remove-if-not
 			(lambda (restart)
-				(let ((test-function (restart-test-function restart))) 
+				(let ((test-function (restart-test-function restart)))
 					(or (null test-function)
 						(funcall (restart-test-function restart) condition))))
 			*restart-registry*)
@@ -391,9 +391,9 @@
 ;;;
 (defun invoke-restart (restart &rest arguments)
 	(let ((found (find-restart restart)))
-		(unless found 
-			(error 'control-error 
-				:format-control "No active restart of type ~A was found" 
+		(unless found
+			(error 'control-error
+				:format-control "No active restart of type ~A was found"
 				:format-arguments (list restart)))
 		(apply (restart-function found) arguments)))
 
@@ -419,9 +419,9 @@
 				(do ((x (cddr clause) (cddr x)))
 					((null x))
 					(cond ((eq (car x) ':report)
-						   (setf report 
-								(if (stringp (cadr x)) 
-									`(function 
+						   (setf report
+								(if (stringp (cadr x))
+									`(function
 										(lambda (stream)
 											(write-string ,(cadr x) stream)))
 									(cadr x))))
@@ -433,9 +433,9 @@
 				;; check for anonymous restart--must include an interactive function
 				(if (and (null name) (null interactive))
 					(error "An anonymous restart must have an :INTERACTIVE function defined: ~A" clause))
-				
-				(push `(,name 
-						#'(lambda (&rest temp) 
+
+				(push `(,name
+						#'(lambda (&rest temp)
 							(setq ,temp-sym temp)
 							(go ,tag-sym))
 						 :test ,test :interactive ,interactive :report ,report)
@@ -468,8 +468,8 @@
 (defun signal (datum &rest arguments)
 	(let ((condition
 				(cond ((stringp datum)
-					   (funcall 'make-condition 'simple-condition 
-						:format-control datum 
+					   (funcall 'make-condition 'simple-condition
+						:format-control datum
 						:format-arguments arguments))
 					  ((symbolp datum)
 					   (apply 'make-condition datum arguments))
@@ -496,8 +496,8 @@
 	;;(apply 'signal datum arguments)	;; give handlers the first crack at it
 	(let ((condition
 				(cond ((stringp datum)
-					   (funcall 'make-condition 'simple-error 
-						:format-control datum 
+					   (funcall 'make-condition 'simple-error
+						:format-control datum
 						:format-arguments arguments))
 					  ((symbolp datum)
 					   (apply 'make-condition datum arguments))
@@ -517,18 +517,18 @@
 
 	;;	(if *ignore-errors*
 	;;		(throw 'common-lisp::%error nil))
-		
+
 		;; not handled, so invoke debugger
 		(invoke-debugger condition)))
 
 (defun create-condition (datum args)
 	(let ((condition
 			(cond ((null datum)
-				   (make-condition 'simple-error 
+				   (make-condition 'simple-error
 							:format-control "" :format-arguments '()))
 				  ((stringp datum)
-				   (make-condition 'simple-error 
-					:format-control datum 
+				   (make-condition 'simple-error
+					:format-control datum
 					:format-arguments args))
 				  ((symbolp datum)
 				   (apply 'make-condition datum args))
@@ -551,14 +551,14 @@
 						(let ((*handler-registry* (cdr x)))
 							(funcall (second y) condition)))))
 	;;		(if *ignore-errors*
-	;;			(throw 'common-lisp::%error nil))		
+	;;			(throw 'common-lisp::%error nil))
 			;; not handled, so invoke debugger
 			(invoke-debugger condition))
-		(continue (&optional condition) 
-			:report (lambda (stream) 
+		(continue (&optional condition)
+			:report (lambda (stream)
 				(apply 'format stream continue-format-control arguments))
-			(declare (ignore condition)) 
-			(return-from cerror nil)))) 				
+			(declare (ignore condition))
+			(return-from cerror nil))))
 
 ;;;
 ;;; Common Lisp CTYPECASE macro.
@@ -584,9 +584,9 @@
                                     actions)))))
                 clauses))
         (setf valid-types (nreverse valid-types))
-        (setf clauses 
-            (append clauses 
-                `((t (cerror "Enter a value of a correct type" 'type-error 
+        (setf clauses
+            (append clauses
+                `((t (cerror "Enter a value of a correct type" 'type-error
                             :datum ,new-symbol :expected-type '(or ,@valid-types))
                      (fresh-line *debug-io*)
                      (format *debug-io* "?~%")
@@ -602,23 +602,23 @@
 ;;;
 (defun invoke-restart-interactively (restart)
 	(let ((found (find-restart restart)))
-		(unless found 
-			(error 'control-error 
-				:format-control "No active restart of type ~A was found" 
-				:format-arguments (list restart)))	
+		(unless found
+			(error 'control-error
+				:format-control "No active restart of type ~A was found"
+				:format-arguments (list restart)))
 		(apply (restart-function found)
             (when (restart-interactive-function found)
                 (funcall (restart-interactive-function found))))))
-	
+
 (defun assert-body (datum args interactive)
 	(restart-bind
 		((continue
 				(lambda (&optional condition)
 					(declare (ignore condition))
 					(return-from assert-body nil))
-			:report 
-			(lambda (stream) 
-				(format stream "~A" 
+			:report
+			(lambda (stream)
+				(format stream "~A"
 					"You will be prompted for one or more new values."))
 			:interactive
 			interactive))
@@ -636,16 +636,16 @@
 	;;(print (list 'places places 'datum datum))
 	(let ((loop-tag (gensym)))
 		(if (null places)
-            `(block assert 
+            `(block assert
                 (restart-bind
                     ((continue
                         (lambda (&optional condition)
                             (declare (ignore condition))
                             (return-from assert nil))))
-                    (unless ,test-form 
+                    (unless ,test-form
                         (let ((condition (create-condition ,(or datum ''error) (list ,@args))))
 			                 (error condition)))))
-            
+
             (let ((forms nil)
 				  (sym (gensym)))
 				(dolist (x places)
@@ -662,7 +662,7 @@
 ;;;
 ;;;	Common Lisp ABORT function.
 ;;;
-(defun abort (&optional condition) 
+(defun abort (&optional condition)
 	(declare (ignore condition))
 	(invoke-restart 'abort))
 
@@ -671,13 +671,13 @@
 ;;;
 (defun continue (&optional condition)
 	(declare (ignore condition))
-	(let ((r (find-restart 'continue))) 
+	(let ((r (find-restart 'continue)))
 		(if r (invoke-restart r))))
 
 ;;;
 ;;;	Common Lisp MUFFLE-WARNING function.
 ;;;
-(defun muffle-warning (&optional condition) 
+(defun muffle-warning (&optional condition)
 	(declare (ignore condition))
 	(invoke-restart 'muffle-warning))
 
@@ -686,7 +686,7 @@
 ;;;
 (defun store-value (value &optional condition)
 	(declare (ignore condition))
-	(let ((r (find-restart 'store-value))) 
+	(let ((r (find-restart 'store-value)))
 		(if r (invoke-restart r value))))
 
 ;;;
@@ -694,7 +694,7 @@
 ;;;
 (defun use-value (value &optional condition)
 	(declare (ignore condition))
-	(let ((r (find-restart 'use-value))) 
+	(let ((r (find-restart 'use-value)))
 		(if r (invoke-restart r value))))
 
 (defun conditionp (obj) (typep obj 'condition))
@@ -706,7 +706,7 @@
 (defun break (&optional (format-control "Break") &rest format-arguments)
    (with-simple-restart (continue "Return from BREAK.")
 		(let ((*debugger-hook* nil))
-			(let ((condition 
+			(let ((condition
 						(make-condition 'simple-condition
 							:format-control format-control
 							:format-arguments format-arguments)))
@@ -723,11 +723,11 @@
 			(error 'type-error :datum datum :expected-type 'warning)))
 	(let ((condition
 			(cond ((null datum)
-				   (make-condition 'simple-warning 
+				   (make-condition 'simple-warning
 							:format-control "" :format-arguments '()))
 				  ((stringp datum)
-				   (make-condition 'simple-warning 
-					:format-control datum 
+				   (make-condition 'simple-warning
+					:format-control datum
 					:format-arguments args))
 				  ((symbolp datum)
 				   (apply 'make-condition datum args))
@@ -741,7 +741,7 @@
 ;;;;	Common Lisp IGNORE-ERRORS macro.
 ;;;;
 (defmacro ignore-errors (&rest forms)
-	`(handler-case (progn ,@forms)   
+	`(handler-case (progn ,@forms)
 		(error (condition) (values nil condition))))
 
 ;; redefine this here with new ignore-errors macro call
@@ -776,14 +776,14 @@
 ;;;
 (defun handle-invalid-type (obj typespec orig-form type-name setter)
 	(restart-case
-		(error (make-condition 'check-type-error 
-				:datum obj 
-				:expected-type typespec 
-				:original-form orig-form 
+		(error (make-condition 'check-type-error
+				:datum obj
+				:expected-type typespec
+				:original-form orig-form
 				:type-name type-name))
        (store-value (new-value)
          :report "Enter a value of the correct type."
-         :interactive read-new-value  
+         :interactive read-new-value
          (funcall setter new-value))))
 
 ;;;;
@@ -800,11 +800,11 @@
 				(lambda (,new-value-sym) (setf ,place ,new-value-sym))))))
 
 ;;;
-;;; Internal function SIGNAL-PROGRAM-ERROR. 
+;;; Internal function SIGNAL-PROGRAM-ERROR.
 ;;; Redefined here to use conditions.
 ;;;
 (defun signal-program-error (format &rest args)
-    (error 'program-error 
+    (error 'program-error
         :format-control format
 		:format-arguments args))
 
@@ -817,7 +817,7 @@
         (signal-program-error "Wrong number of arguments")))
 
 ;;;
-;;; Internal function SIGNAL-UNDEFINED-FUNCTION. 
+;;; Internal function SIGNAL-UNDEFINED-FUNCTION.
 ;;; Redefined here to use conditions.
 ;;;
 (defun signal-undefined-function (func-name)
@@ -844,8 +844,8 @@
 #|
 (x86::defcodegen %check-list (form dest) ;; (object)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
     		mov		edx, eax
     		and		edx, 7
     		cmp		edx, cons-tag
@@ -856,7 +856,7 @@
             push    'cl::list
             mov     ecx, 2
             callf   cl::signal-type-error
-            add     esp, 8     
+            add     esp, 8
     	:done
         })
     (if (eq dest :dest-stack)
@@ -885,16 +885,16 @@
 ;;; Internal function SIGNAL-ARITHMETIC-ERROR
 ;;;
 (defun signal-arithmetic-error (operation operands)
-    (error 'arithmetic-error 
-        :operation operation 
+    (error 'arithmetic-error
+        :operation operation
         :operands operands))
 
 ;;;
 ;;; Internal function SIGNAL-DIVISION-BY-ZERO-ERROR
 ;;;
 (defun signal-division-by-zero (operands)
-    (error 'division-by-zero 
-        :operation '/ 
+    (error 'division-by-zero
+        :operation '/
         :operands operands))
 
 ;;;
@@ -921,13 +921,13 @@
 (defun macroexpand-all (x &optional env)
 	(if (and (consp x)(eq (car x) 'quote))
 		(return-from macroexpand-all x))
-		
+
 	;; keep doing compiler macros, macros and inline expansion
 	;; until we go one time through the loop and nothing changes
 	(do ((save x x))
 		(nil)
 		(setq x (expand-compiler-macros x))
-		(setq x (macroexpand x env))   ;; expand top level form	
+		(setq x (macroexpand x env))   ;; expand top level form
 		(setq x (inline-expand x env))
 		(if (eq save x)
 			(return)))
@@ -937,12 +937,11 @@
 			(let* ((result-list (multiple-value-list (ignore-errors (eval-constant-expression x))))
                    (result (car result-list)))
                 (unless (and (null result) (cdr result-list) (typep (cadr result-list) 'condition))
-    				(if (or (consp result) 
-    						(and (symbolp result) 
+    				(if (or (consp result)
+    						(and (symbolp result)
     							(not (keywordp result))
     							(not (eq result t))
     							(not (eq result nil))))
     					(setf result (list 'quote result)))
     				(return-from macroexpand-all result)))))
 	(macroexpand-all-except-top x env))
-

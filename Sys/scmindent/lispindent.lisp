@@ -150,7 +150,7 @@
           (flet ((incr-finished-subforms ()
                                          (unless token-interstice-p
                                            (when paren-stack
-                                             (incf (lparen-num-finished-subforms 
+                                             (incf (lparen-num-finished-subforms
                                                      (car paren-stack))))
                                            (setq token-interstice-p t))))
             ;
@@ -159,7 +159,7 @@
               (let ((c (char curr-line i)))
                 (cond (escapep (setq escapep nil))
                       ((char= c #\\) (setq token-interstice-p nil escapep t))
-                      (inside-stringp (when (char= c #\") 
+                      (inside-stringp (when (char= c #\")
                                         (setq inside-stringp nil)
                                         (incr-finished-subforms)))
                       ((char= c #\;) (incr-finished-subforms) (return))

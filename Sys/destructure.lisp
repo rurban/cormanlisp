@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	File:		destructure.lisp
-;;;;	Contents:	
+;;;;	Contents:
 ;;;;	History:	11/9/96  RGC  Created.
 ;;;;				11/22/98 RGC  &environment parameter no longer causes error
 ;;;;                12/19/02 RGC  Incorporated JP Massar's fix to avoid warning in
@@ -16,7 +16,7 @@
 
 
 (defvar lambda-list-keywords '(&optional &rest &key &aux &body &whole &environment &allow-other-keys))
-(defvar lambda-states '(:initial :whole :required :optional 
+(defvar lambda-states '(:initial :whole :required :optional
 						:rest :key :environment :aux :terminal))
 
 (defun is-lambda-key (sym) (member sym lambda-list-keywords))
@@ -88,9 +88,9 @@
 								(if (eq sym '&allow-other-keys)
 									(setq lambda-list (cdr lambda-list))))
 							(let ((g (gensym)))
-								(push 
-									`(,sym 
-										(let ((,g (member 
+								(push
+									`(,sym
+										(let ((,g (member
 												(intern (symbol-name ',sym) (find-package "KEYWORD")) ,sub-form)))
 											(if ,g (cadr ,g)))) new-bindings)
 								(setq lambda-list (cdr lambda-list)))))
@@ -157,7 +157,7 @@
 							(let ((t3 `(< ,list-counter (length ,form))))
 								(if (null supplied-p)
 									(setq expr `(,sym (if ,t3 (nth ,list-counter ,form) ,init)))
-									(setq expr `(,sym (if ,t3 
+									(setq expr `(,sym (if ,t3
 														(progn (setq ,supplied-p t) (nth ,list-counter ,form))
 														,init))))
 								(incf list-counter)
@@ -187,21 +187,21 @@
 										(error "Invalid form for SUPPLIED-P parameter"))
 									(push `(,supplied-p nil) new-bindings)
 									(setq expr
-										`(,sym 
+										`(,sym
 											(let ((,g (member ',(if named-keyword
                                                                     named-keyword
-                                                                    (intern (symbol-name sym)(find-package "KEYWORD"))) 
+                                                                    (intern (symbol-name sym)(find-package "KEYWORD")))
                                                                     ,sub-form
                                                                 :test #'keyword-test)))
-												(if ,g (progn (setq ,supplied-p t) (cadr ,g)) ,init)))))									
-								(setq expr 
-										`(,sym 
-											(let ((,g (member ',(if named-keyword 
-                                                                    named-keyword       
-                                                                    (intern (symbol-name sym)(find-package "KEYWORD"))) 
+												(if ,g (progn (setq ,supplied-p t) (cadr ,g)) ,init)))))
+								(setq expr
+										`(,sym
+											(let ((,g (member ',(if named-keyword
+                                                                    named-keyword
+                                                                    (intern (symbol-name sym)(find-package "KEYWORD")))
                                                                     ,sub-form
                                                             :test #'keyword-test)))
-												(if ,g (cadr ,g) ,init))))) 
+												(if ,g (cadr ,g) ,init)))))
 							(push expr new-bindings)))
 
 						((eq state :aux)
@@ -226,14 +226,14 @@
   (let* ((temp-sym (gensym))
 	 (bindings (destructure-bind lambda-list temp-sym temp-sym 0)))
     (push `(,temp-sym ,form) bindings)
-    `(let* ,bindings 
+    `(let* ,bindings
        ,@(when (null lambda-list) `((declare (ignore ,temp-sym))))
        ,@forms)))
 
 (defmacro macro-bind (lambda-list form &rest forms)
 	(let* ((temp-sym (gensym))
 		   (bindings (destructure-bind lambda-list temp-sym temp-sym 1)))
-		(if bindings 
+		(if bindings
 			(push `(,temp-sym ,form) bindings))
 		`(let* ,bindings ,@forms)))
 
@@ -241,7 +241,7 @@
 ;;	Common Lisp 'defmacro' macro.
 ;;
 (defmacro defmacro (name lambda-list &rest forms)
-	(let ((doc-form nil) 
+	(let ((doc-form nil)
 		  (lambda-form nil)
 		  (declarations nil))
 
@@ -249,23 +249,23 @@
 		(do* ((f forms (cdr f)))
 			((null f) (setq forms f))
 			(if (and (stringp (car f)) (null doc-form) (cdr f))
-				(setq doc-form 
+				(setq doc-form
 					`((setf (documentation ',name 'macro) ,(car f))))
 				(if (and (consp (car f)) (eq (caar f) 'declare))
 					(push (car f) declarations)
 					(progn (setq forms f) (return)))))
 
-		(setq lambda-form 
-			`(lambda (form &optional env) 
+		(setq lambda-form
+			`(lambda (form &optional env)
 				(declare (ignore env ,@(unless lambda-list '(form))))
-				(macro-bind ,lambda-list 
+				(macro-bind ,lambda-list
 					form
-					,@(nreverse declarations) 
-					(block ,name ,@forms)))) 
+					,@(nreverse declarations)
+					(block ,name ,@forms))))
 		`(progn
 			,@doc-form
 			(setf (macro-function ',name) (function ,lambda-form))
-			',name))) 
+			',name)))
 
 (defun type-destructure-bind (lambda-list form sub-form)
 	(let ((state :required)
@@ -342,7 +342,7 @@
 							(let* ((t1 `(< ,list-counter (length ,form)))
 								   (t2 `(type-nthcar ,list-counter ,form))
 								   (expr
-									(if supplied-p 
+									(if supplied-p
 										`(,sym (if ,t1 (progn (setq ,supplied-p t) ,t2) ,init))
 										`(,sym (if ,t1 ,t2 ,init)))))
 								(incf list-counter)
@@ -360,7 +360,7 @@
 		   (bindings (type-destructure-bind lambda-list temp-symbol temp-symbol)))
 		(if bindings
 			(push `(,temp-symbol ,expr) bindings))
-		`(let* ,bindings 
+		`(let* ,bindings
 			,@forms)))
 
 ;;;;

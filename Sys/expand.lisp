@@ -12,10 +12,10 @@
 ;;;;				12/16/98 RGC  Moved ASSOC, EQL function here from misc.lisp
 ;;;;							  as they are needed earlier during system building.
 ;;;;				7/26/99  VB   Modified macroexpand-var-list.
-;;;;							  Fixes the problem of not expanding a symbol-macro appearing 
-;;;;							  in the init-form of a LET variable list, for example if 
+;;;;							  Fixes the problem of not expanding a symbol-macro appearing
+;;;;							  in the init-form of a LET variable list, for example if
 ;;;;							  FOO in (let ((a foo)) ...) is a symbol-macro.
-;;;;				10/19/99 RGC  MACROEXPAND-ALL performs code inlining as well as 
+;;;;				10/19/99 RGC  MACROEXPAND-ALL performs code inlining as well as
 ;;;;							  macro expansion.
 ;;;;				5/21/01  RGC  Fixed problem with macroexpansion in FLET and LABELS function forms.
 ;;;;
@@ -23,8 +23,8 @@
 ;; need to override warning here
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* nil)
 
-(defun inline-expand (expr &optional env) 
-	;(declare (ignore env)) 
+(defun inline-expand (expr &optional env)
+	;(declare (ignore env))
 	expr)	;; redefined later
 
 (defun compiler-macro-function (name &optional environment) nil)	;; this is redefined later
@@ -73,11 +73,11 @@
 ;;;
 ;;;	Common Lisp EQL function.
 ;;;
-(defun eql (x y) 
-	(or (eq x y) 
-		(and (numberp x) 
-			 (numberp y) 
-			 (= x y) 
+(defun eql (x y)
+	(or (eq x y)
+		(and (numberp x)
+			 (numberp y)
+			 (= x y)
 			 (number-types-eq x y))))
 
 ;;;
@@ -88,8 +88,8 @@
 		(let ((save-test test))
 			(setq test #'(lambda (x y) (not (funcall save-test x y))))))
 	(dolist (a alist)
-		(if (and (consp a) 
-				 (funcall test item 
+		(if (and (consp a)
+				 (funcall test item
 					(if key (funcall key (car a)) (car a))))
 			(return a))))
 
@@ -123,7 +123,7 @@
 (defun macroexpand-all-except-top (x env)
 
 	(unless (consp x) (return-from macroexpand-all-except-top x))
-   
+
    ;; now expand macros for each element of the form
 	(let ((sym (car x)))
 		(cond
@@ -159,7 +159,7 @@
 			((eq sym 'MACROLET)
 				(let ((temp-macro-sym (gensym))
 					  (*lexical-macros* *lexical-macros*)
-					  (macro-list (cadr x)) 
+					  (macro-list (cadr x))
 					  (forms      (cddr x)))
 					(dolist (m macro-list)
 						(eval `(defmacro ,temp-macro-sym ,(cadr m) ,@(cddr m)))
@@ -172,7 +172,7 @@
 						(setq forms (cdr forms)))))
 			((or (eq sym 'FLET)(eq sym 'LABELS))
 				(let ((*lexical-macros* *lexical-macros*)
-					  (func-list (cadr x)) 
+					  (func-list (cadr x))
 					  (forms      (cddr x)))
 					;; lexically defined functions need to shadow macros,
 					;; so we add a macro definition with NIL as the function
@@ -193,7 +193,7 @@
 			((eq sym 'SYMBOL-MACROLET)
 				(let ((temp-macro-sym (gensym))
 					  (*lexical-symbol-macros* *lexical-symbol-macros*)
-					  (macro-list (cadr x)) 
+					  (macro-list (cadr x))
 					  (forms      (cddr x)))
 					(dolist (m macro-list)
 						(push (list (car m) (cadr m)) *lexical-symbol-macros*))
@@ -203,7 +203,7 @@
 						((null forms))
 						(rplaca forms (macroexpand-all (car forms) env))
 						(setq forms (cdr forms)))))
-						
+
       		;; SETQ on SYMBOL-MACROLET'ted symbols must be SETF, so be careful...
       		((and (eq sym 'SETQ) (%nfixup-setq-lexical-symbol-macros (cdr x) env))
 			 (rplaca x 'SETF)
@@ -244,25 +244,25 @@
 						(setq f (funcall *macroexpand-hook* compiler-macro-func f env)))))
 			(if (eq f save)
 				(return f)))))
-	
+
 ;; this function now performs code inlining as well
 ;;
 (defun macroexpand-all (x &optional env)
 	(if (and (consp x)(eq (car x) 'quote))
 		(return-from macroexpand-all x))
-	
+
 ;	(if (constantp x)
 ;		(if (symbolp x)
 ;			(return-from macroexpand-all (list 'quote (symbol-value x)))
 ;			(if (consp x)
 ;				(return-from macroexpand-all (list 'quote (apply (car x) (cdr x)))))))
-	
+
 	;; keep doing compiler macros, macros and inline expansion
 	;; until we go one time through the loop and nothing changes
 	(do ((save x x))
 		(nil)
 		(setq x (expand-compiler-macros x))
-		(setq x (macroexpand x env))   ;; expand top level form	
+		(setq x (macroexpand x env))   ;; expand top level form
 		(setq x (inline-expand x env))
 		(if (eq save x)
 			(return)))
@@ -279,8 +279,8 @@
 		  (form (car x) (car x)))
 		((null x) nil)
 		(if (eq form sym)
-			(return nil)) 
-		(if (and (consp form)(eq (car form) sym)) 
+			(return nil))
+		(if (and (consp form)(eq (car form) sym))
 			(return form))))
 
 (defun symbol-macro-expansion-func (sym &optional env)
@@ -301,11 +301,11 @@
 				(not (get-symbol-macro-expansion x))))
 		(values x nil)
 		(values
-			(if (consp x) 
+			(if (consp x)
 				(funcall *macroexpand-hook* (get-macro-definition (car x)) x env)
 				(funcall *macroexpand-hook* 'symbol-macro-expansion-func x env))
 			t)))
-	
+
 (defun macroexpand (form &optional env)
 	(do* ((x form))
 		((and
@@ -322,8 +322,8 @@
 
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* t)
 
-(defun is-heap-literal (x) 
-	(cond 
+(defun is-heap-literal (x)
+	(cond
 		((symbolp x) nil)
 		((fixnump x) nil)
 		((characterp x) nil)
@@ -345,7 +345,7 @@
 						 (rplaca f (extract-literals (car f)))
 						 (if (cdr f) (rplacd f (extract-literals (cdr f)))))
 						(rplaca f (extract-literals (car f)))))
-					
+
 				(do ((f x (cdr f)))
 					((not (consp (cdr f)))
 					 (rplaca f (extract-literals (car f)))
@@ -365,6 +365,3 @@
 (defun collect-literals (x) x)		;; disable for now
 
 (setq macroexpand-inline nil)
-
-
-             

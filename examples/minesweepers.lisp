@@ -10,7 +10,7 @@
 ;;;;
 ;;;;                This is based on an application by Mat Buckland, from 2002, which was written in C++
 ;;;;                and published online.
-;;;;					
+;;;;
 ;;;;				example:
 ;;;;					(load "examples/minesweepers.lisp")
 ;;;;					(save-application "minesweepers" #'win:minesweepers :static t)
@@ -53,7 +53,7 @@
 (defvar *half-pi* (/ pi 2))
 (defvar *two-pi* (* pi 2))
 (defvar *frames-per-second* 60)
-  
+
 ;; used for the neural network
 (defvar *num-inputs* 4)
 (defvar *num-hidden* 1)
@@ -84,9 +84,9 @@
 
 (defun install-refresh-timer ()
 	(win:SetTimer *app-window* *timer-id* *refresh-milliseconds* NULL))
- 
+
 (defun uninstall-refresh-timer ()
-	(win:KillTimer *app-window* *timer-id*)) 
+	(win:KillTimer *app-window* *timer-id*))
 
 (defstruct point x y)                   ; point struct to store shape vertices
 (defstruct vector2d x y)                ; 2-dimensional vector
@@ -108,11 +108,11 @@
     neurons-per-hidden-layer
     layers)                             ; storage for each layer of neurons including the output layer (vector)
 
-(defstruct genome 
+(defstruct genome
     weights                             ; vector of weights
     fitness)                            ; double float fitness variable
 
-(defstruct genetic-algorithm 
+(defstruct genetic-algorithm
     population                          ; vector of genome
     population-size
     chromo-length                       ; amount of weights per chromo
@@ -124,22 +124,22 @@
     mutation-rate                       ; probability that a chromosones bits will mutate (Try figures around 0.05 to 0.3 ish)
     crossover-rate                      ; probability of chromosones crossing over bits (0.7 is pretty good)
     generation-counter)
-        
+
 (defun sweeper-vertices ()
-  (list 
+  (list
     (make-point :x -1d0 :y -1d0)
     (make-point :x -1d0 :y 1d0)
     (make-point :x -0.5d0 :y 1d0)
     (make-point :x -0.5d0 :y -1d0)
-    
+
     (make-point :x 0.5d0 :y -1d0)
     (make-point :x 1d0 :y -1d0)
     (make-point :x 1d0 :y 1d0)
     (make-point :x 0.5d0 :y 1d0)
-   
+
     (make-point :x -0.5d0 :y -0.5d0)
     (make-point :x 0.5d0 :y -0.5d0)
-    
+
     (make-point :x -0.5d0 :y 0.5d0)
     (make-point :x -0.25d0 :y 0.5d0)
     (make-point :x -0.25d0 :y 1.75d0)
@@ -148,7 +148,7 @@
     (make-point :x 0.5d0 :y 0.5d0)))
 
 (defun mine-vertices ()
-  (list 
+  (list
     (make-point :x -1d0 :y -1d0)
     (make-point :x -1d0 :y 1d0)
     (make-point :x 1d0 :y 1d0)
@@ -162,11 +162,11 @@
     speed
     ltrack                  ; to store output from the ANN
     rtrack
-    fitness                 ; the sweeper's fitness score 
+    fitness                 ; the sweeper's fitness score
     scale                   ; the scale of the sweeper when drawn
     closest-mine)           ; index position of closest mine
-           
-(defstruct controller 
+
+(defstruct controller
 	population              ; storage for the population of genomes (vector)
     sweepers                ; the minesweepers (vector)
     mines                   ; the mines (vector)
@@ -178,25 +178,25 @@
     mine-shape              ; vertex buffer for the mine shape's vertices (vector)
     average-fitness-vector  ; stores the average fitness per generation for use
     best-fitness-vector     ; stores the best fitness per generation
-    
+
     ;; pens (HPEN) for the stats
     red-pen
     blue-pen
     green-pen
     old-pen
-	
+
     hwnd-main               ; handle to the application window
     fast-render-mode        ; toggles the speed at which the simulation runs (if true, do fast render)
 	ticks                   ; cycles per generation
     generation-counter
-    
+
     window-width
     window-height)
 
 (defun debug-msg (msg &rest args)
     (apply 'format *terminal-io* msg args)
     (terpri *terminal-io*)
-    (force-output *terminal-io*)) 
+    (force-output *terminal-io*))
 
 ;;;----------------------------------------------------------------------------
 ;;;	some random number functions.
@@ -230,7 +230,7 @@
 ;;;
 (defun sigmoid (netinput response)
     (/ 1 (+ 1 (exp (/ (- netinput) response)))))
-    
+
 ;;;
 ;;; Return the length of a 2D vector
 ;;;
@@ -282,7 +282,7 @@
     (make-matrix :_11 1 :_12 0 :_13 0
                           :_21 0 :_22 1 :_23 0
                           :_31 0 :_32 0 :_33 1))
-     
+
 ;; multiply two matrices together
 (defun matrix-multiply (m1 m2)
     (make-matrix
@@ -304,7 +304,7 @@
                              :_21 0 :_22 1 :_23 0
                              :_31 x :_32 y :_33 1)))
         (matrix-multiply m temp)))
-    
+
 (defun matrix-scale (m xscale yscale)
     (let ((temp (make-matrix :_11 xscale :_12 0      :_13 0
                              :_21 0      :_22 yscale :_23 0
@@ -329,7 +329,7 @@
                         (* (matrix-_22 m)(point-y (aref points i)))
                         (matrix-_32 m))))
             (setf (point-x (aref points i)) tempx
-                  (point-y (aref points i)) tempy)))) 
+                  (point-y (aref points i)) tempy))))
 
 ;;
 ;;	Sets up the translation matrices for the mines and applies the
@@ -346,27 +346,27 @@
 
 (defun create-neuron (num-inputs)
     ;; we need an additional weight for the bias hence the +1
-    (let ((neuron (make-neuron :num-inputs (+ num-inputs 1) 
+    (let ((neuron (make-neuron :num-inputs (+ num-inputs 1)
                                :weights (make-array (+ num-inputs 1)))))
         (dotimes (i (+ num-inputs 1))
             (setf (aref (neuron-weights neuron) i) (random-clamped)))
         neuron))
 
 (defun create-neuron-layer (num-neurons num-inputs-per-neuron)
-    (let ((neuron-layer (make-neuron-layer :num-neurons num-neurons 
+    (let ((neuron-layer (make-neuron-layer :num-neurons num-neurons
                                            :neurons (make-array num-neurons))))
         (dotimes (i num-neurons)
             (setf (aref (neuron-layer-neurons neuron-layer) i) (create-neuron num-inputs-per-neuron)))
         neuron-layer))
 
 (defun create-neural-net ()
-    (let ((neural-net 
+    (let ((neural-net
                 (make-neural-net :num-inputs *num-inputs*
                                  :num-outputs *num-outputs*
                                  :num-hidden-layers *num-hidden*
                                  :neurons-per-hidden-layer *neurons-per-hidden-layer*
                                  :layers (make-array 0 :fill-pointer t))))
-        
+
         ;; create the layers of the network
         (if (> *num-hidden* 0)
             (let* ((layers (neural-net-layers neural-net)))
@@ -380,7 +380,7 @@
             ;; else no hidden layers, create output layer only
             (vector-push-extend  (create-neuron-layer *num-outputs* *num-inputs*)
                 (neural-net-layers neural-net)))
-        neural-net))                               
+        neural-net))
 
 ;;;
 ;;; returns the total number of weights needed for the net
@@ -401,8 +401,8 @@
 (defun neural-net-get-weights (neural-net) (declare (ignore neural-net)))
 
 ;;; set the neural net's weights vector
-(defun neural-net-set-weights (neural-net vec-weights) 
-    (let ((cweight 0))   
+(defun neural-net-set-weights (neural-net vec-weights)
+    (let ((cweight 0))
         ;; for each layer
         (dotimes (i (1+ (neural-net-num-hidden-layers neural-net)))
             (let ((layer (aref (neural-net-layers neural-net) i)))
@@ -421,51 +421,51 @@
 (defun neural-net-update (neural-net inputs)
     (let ((outputs (make-array 0 :fill-pointer t))
           (weight 0))
-        
+
         ;; first check that we have the correct amount of inputs
         (if (/= (length inputs) *num-inputs*)
             ;; just return an empty vector if incorrect
             (return-from neural-net-update outputs))
-        
+
         ;; for each layer
         (dotimes (i (neural-net-num-hidden-layers neural-net))
             (let ((layer (aref (neural-net-layers neural-net) i)))
                 (if (> i 0)
                     (setf inputs outputs))
-                
+
                 (setf (fill-pointer outputs) 0)  ;; clear the array
                 (setf weight 0)
-                
+
                 ;; For each neuron sum the (inputs * corresponding weights).
                 ;; Throw the total at our sigmoid function to get the output.
                 (dotimes (j (neuron-layer-num-neurons layer))
                     (let* ((netinput 0)
                            (neuron (aref (neuron-layer-neurons layer) j))
                            (num-inputs (neuron-num-inputs neuron)))
-                        
+
                         ;; for each weight
                         (dotimes (k (- num-inputs 1))
                             ;; sum the weights * inputs
                             (incf netinput (* (aref (neuron-weights neuron) k) (aref inputs weight)))
                             (incf weight))
-                        
+
                         ;; add in the bias
                         (incf netinput (* (aref (neuron-weights neuron) (- *num-inputs* 1)) *bias*))
-                        
-                        ;; We can store the outputs from each layer as we generate them. 
+
+                        ;; We can store the outputs from each layer as we generate them.
                         ;; The combined activation is first filtered through the sigmoid function.
                         (vector-push-extend (sigmoid netinput *activation-response*) outputs)
-                        
+
                         (setf weight 0)))))
         outputs))
-                                                           
+
 (defun create-genome (weights fitness)
     (make-genome :weights weights :fitness fitness))
 
 (defun create-genetic-algorithm (pop-size mutation-rate crossover-rate num-weights)
     (let ((ga (make-genetic-algorithm
                     :population (make-array pop-size)
-                    :population-size pop-size 
+                    :population-size pop-size
                     :mutation-rate mutation-rate
                     :crossover-rate crossover-rate
                     :chromo-length num-weights
@@ -486,7 +486,7 @@
                 (setf (aref (genetic-algorithm-population ga) i) genome)))
         ga))
 
-;;; 
+;;;
 ;;; resets all the relevant variables ready for a new generation
 ;;;
 (defun genetic-algorithm-reset (ga)
@@ -513,10 +513,10 @@
                 (when (< (genome-fitness genome) lowest-so-far)
                     (setf lowest-so-far (genome-fitness genome))
                     (setf (genetic-algorithm-worst-fitness ga) lowest-so-far))
-                
+
                 (incf (genetic-algorithm-total-fitness ga) (genome-fitness genome))))
-        (setf (genetic-algorithm-average-fitness ga) 
-            (/ (genetic-algorithm-total-fitness ga)(genetic-algorithm-population-size ga))))) 
+        (setf (genetic-algorithm-average-fitness ga)
+            (/ (genetic-algorithm-total-fitness ga)(genetic-algorithm-population-size ga)))))
 
 ;;;
 ;;; This works like an advanced form of elitism by inserting num-copies
@@ -551,7 +551,7 @@
             ((>= i (length mom)))
             (vector-push-extend (aref dad i) baby1)
             (vector-push-extend (aref mom i) baby2))))
-    
+
 ;;;
 ;;; returns a chromosome based on roulette wheel sampling
 ;;;
@@ -561,10 +561,10 @@
            (fitness-so-far 0))
         (dotimes (i (genetic-algorithm-population-size ga))
             (incf fitness-so-far (genome-fitness (aref (genetic-algorithm-population ga) i)))
-            
+
             ;; if the fitness so far > random number return the chromosome at this point
             (when (>= fitness-so-far slice)
-                (return-from genetic-algorithm-get-chromo-roulette 
+                (return-from genetic-algorithm-get-chromo-roulette
                     (aref (genetic-algorithm-population ga) i))))
 	; chosen
 	))
@@ -579,23 +579,23 @@
         (if (< (rand-float) (genetic-algorithm-mutation-rate ga))
             ;; add or subtract a small value to the weight
             (incf (aref chromosomes i) (* (random-clamped) *max-perturbation*)))))
-    
+
 (defun genetic-algorithm-epoch (ga old-population)
     (setf (genetic-algorithm-population ga) (sort old-population #'< :key #'genome-fitness)) ; sort needed for elitism
-    
+
     ;; reset the appropriate variables
     (genetic-algorithm-reset ga)
-    
+
     ;; calculate best, worst, average and total fitness
     (genetic-algorithm-calculate-fitness ga)
-    
+
     (let ((new-population (make-array 0 :fill-pointer t)))
         (setf *new-population* new-population)
-        ;; Now to add a little elitism we shall add in some copies of the fittest genomes. 
+        ;; Now to add a little elitism we shall add in some copies of the fittest genomes.
         ;; Make sure we add an EVEN number or the roulette wheel sampling will crash.
         (if (evenp (* *num-copies-elite* *num-elite*))
             (genetic-algorithm-grab-n-best ga *num-elite* *num-copies-elite* new-population))
-        
+
         ;; now we enter the GA loop
         (do ()
             ((>= (length new-population) (genetic-algorithm-population-size ga)))
@@ -609,13 +609,13 @@
                 ;; now we mutate
                 (genetic-algorithm-mutate ga baby1)
                 (genetic-algorithm-mutate ga baby2)
-                
+
                 ;; now copy into new population
                 (vector-push-extend (make-genome :weights baby1 :fitness 0) new-population)
                 (vector-push-extend (make-genome :weights baby2 :fitness 0) new-population)))
 
         new-population))
-                                               
+
 (defun create-minesweeper ()
     (let ((minesweeper (make-minesweeper
                     :rotation (* (rand-float) *two-pi*)
@@ -635,7 +635,7 @@
 
 ;;;
 ;;; Resets the sweepers position, fitness and rotation
-;;;           
+;;;
 (defun reset-minesweeper (minesweeper)
     ;; reset the sweeper's position
     (setf (minesweeper-position minesweeper)
@@ -643,7 +643,7 @@
                            :y (* (rand-float) *height*)))
     ;; reset the fitness
     (setf (minesweeper-fitness minesweeper) 0d0)
-    
+
     ;; reset the rotation
     (setf (minesweeper-rotation minesweeper)(* (rand-float) *two-pi*)))
 
@@ -658,48 +658,48 @@
                     (setf closest-object (vector2d- (minesweeper-position minesweeper) (aref mines i)))
                     (setf (minesweeper-closest-mine minesweeper) i))))
         closest-object))
-                            
-(defun minesweeper-update (minesweeper mines) 
+
+(defun minesweeper-update (minesweeper mines)
     (let* ((inputs (make-array 0 :fill-pointer 0))
            (closest-mine (vector2d-normalize (minesweeper-get-closest-mine minesweeper mines))))  ; get the vector2d to the closest mine an normalize it
-        
+
         ;; add in vector to closest mine
         (vector-push-extend (vector2d-x closest-mine) inputs)
         (vector-push-extend (vector2d-y closest-mine) inputs)
-       
+
         ;; add in sweepers direction vector
         (vector-push-extend (vector2d-x (minesweeper-direction minesweeper)) inputs)
         (vector-push-extend (vector2d-y (minesweeper-direction minesweeper)) inputs)
-         
+
         ;; update the brain and get feedback
         (let ((output (neural-net-update (minesweeper-brain minesweeper) inputs)))
             ;; make sure there were no errors in calculating the output
             (if (< (length output) *num-outputs*)
                 (return-from minesweeper-update nil))
-            
+
             ;; assign the outputs to the sweepers left & right tracks
             (setf (minesweeper-ltrack minesweeper) (aref output 0))
             (setf (minesweeper-rtrack minesweeper) (aref output 1))
-            
+
             ;; calculate steering forces, clamping rotation
-            (let ((rot-force 
+            (let ((rot-force
                         (clamp (- (minesweeper-ltrack minesweeper) (minesweeper-rtrack minesweeper))
-                            (- *max-turn-rate*) 
+                            (- *max-turn-rate*)
                             *max-turn-rate*)))
-                
+
                 (incf (minesweeper-rotation minesweeper) rot-force)
                 (setf (minesweeper-speed minesweeper)(+ (minesweeper-ltrack minesweeper) (minesweeper-rtrack minesweeper)))
-                
+
                 ;; update direction
                 (setf (minesweeper-direction minesweeper)
                     (make-vector2d :x (- (sin (minesweeper-rotation minesweeper)))
                                    :y (cos (minesweeper-rotation minesweeper))))
-                
+
                 ;; update position
                 (setf (minesweeper-position minesweeper)
                     (vector2d+ (minesweeper-position minesweeper)
                         (vector2d-multiply (minesweeper-direction minesweeper) (minesweeper-speed minesweeper))))
-                
+
                 ;; wrap around window limits
                 (let ((pos (minesweeper-position minesweeper)))
                     (if (> (vector2d-x pos) *width*)
@@ -710,24 +710,24 @@
                         (setf (vector2d-y pos) 0))
                     (if (< (vector2d-y pos) 0)
                         (setf (vector2d-y pos) *height*)))
-                
+
                 t))))
- 
+
 ;;;
 ;;; Check whether the sweeper hit a mine. If so, return its index. Otherwise return nil.
-;;;       
-(defun minesweeper-check-for-mine (minesweeper mines size) 
-    (let ((dist-to-object 
-                (vector2d- (minesweeper-position minesweeper) 
+;;;
+(defun minesweeper-check-for-mine (minesweeper mines size)
+    (let ((dist-to-object
+                (vector2d- (minesweeper-position minesweeper)
                     (aref mines (minesweeper-closest-mine minesweeper)))))
         (if (< (vector2d-length dist-to-object) (+ size 5))
             (minesweeper-closest-mine minesweeper)
-            nil))) 
+            nil)))
 
 (defun minesweeper-put-weights (minesweeper weights)
-    (neural-net-set-weights (minesweeper-brain minesweeper) weights))   
-         
-(defun create-controller (hwnd) 
+    (neural-net-set-weights (minesweeper-brain minesweeper) weights))
+
+(defun create-controller (hwnd)
     (let ((controller (make-controller
                     :fast-render-mode nil
                     :ticks 0
@@ -745,16 +745,16 @@
         (let ((sweepers (controller-sweepers controller)))
             (dotimes (i *num-sweepers*)
                 (setf (aref sweepers i) (create-minesweeper)))
-              
+
             ;; get/set the total number of weights used in the sweepers
-            (setf (controller-num-weights-in-NN controller) 
+            (setf (controller-num-weights-in-NN controller)
                 (neural-net-number-of-weights (minesweeper-brain (aref sweepers 0))))
 
             ;; initialize the Genetic Algorithm class
             (setf (controller-genetic-algorithm controller)
                 (create-genetic-algorithm *num-sweepers* *mutation-rate* *crossover-rate*
-                    (controller-num-weights-in-NN controller))) 
-            
+                    (controller-num-weights-in-NN controller)))
+
             ;; Get the weights from the genetic-algorithm and insert into the sweepers brains
             (setf (controller-population controller) (genetic-algorithm-population (controller-genetic-algorithm controller)))
             (dotimes (i *num-sweepers*)
@@ -762,32 +762,32 @@
                        (sweeper (aref sweepers i))
                        (neural-net (minesweeper-brain sweeper)))
                     (neural-net-set-weights neural-net vec-weights)))
-            
+
             ;; initialize mines in random positions within the application window
             (dotimes (i *num-mines*)
-                (setf (aref (controller-mines controller) i) 
+                (setf (aref (controller-mines controller) i)
                     (make-vector2d :x (* (rand-float) *width*) :y (* (rand-float) *height*))))
-            
+
             ;; create and save pens for the graph drawing
             (setf (controller-blue-pen controller) (CreatePen PS_SOLID 1 (RGB 0 0 255)))
             (setf (controller-red-pen controller) (CreatePen PS_SOLID 1 (RGB 255 0 0)))
             (setf (controller-green-pen controller) (CreatePen PS_SOLID 1 (RGB 0 150 0)))
             (setf (controller-old-pen controller) nil)
-            
+
             ;; fill the vertex buffers
             (setf (controller-sweeper-shape controller)(apply 'vector (sweeper-vertices)))
             (setf (controller-mine-shape controller)(apply 'vector (mine-vertices))))
         controller))
- 
-(defun controller-fast-render-toggle (controller) 
-    (setf (controller-fast-render-mode controller) 
+
+(defun controller-fast-render-toggle (controller)
+    (setf (controller-fast-render-mode controller)
         (if (controller-fast-render-mode controller) nil t)))
 
-;;; 
+;;;
 ;;; Given a surface to draw on this function displays stats and a crude
 ;;; graph showing best and average fitness
-;;;          
-(defun controller-plot-stats (controller surface) 
+;;;
+(defun controller-plot-stats (controller surface)
     (let* ((best-str (format nil "Best Fitness:       ~A" (genetic-algorithm-best-fitness (controller-genetic-algorithm controller))))
            (ave-str (format nil "Average Fitness:       ~A" (genetic-algorithm-average-fitness (controller-genetic-algorithm controller))))
            (hslice (/ *width* (1+ (controller-generation-counter controller))))
@@ -797,13 +797,13 @@
         ;; show captions
         (TextOut surface 5 20 (create-c-string best-str) (length best-str))
         (TextOut surface 5 40 (create-c-string ave-str) (length ave-str))
-        
+
         ;; plot the best fitness
         (MoveToEx surface 0 *height* NULL)
         (dotimes (i (length (controller-best-fitness-vector controller)))
             (LineTo surface (floor x) (floor (- *height* (* vslice (aref (controller-best-fitness-vector controller) i)))))
             (incf x hslice))
-       
+
         ;; plot the average fitness
         (setf x 0)
         (SelectObject surface (controller-blue-pen controller))
@@ -811,7 +811,7 @@
         (dotimes (i (length (controller-average-fitness-vector controller)))
             (LineTo surface (floor x) (floor (- *height* (* vslice (aref (controller-average-fitness-vector controller) i)))))
             (incf x hslice))
-        
+
         ;; replace the old pen
         (SelectObject surface old-pen)))
 
@@ -819,13 +819,13 @@
     ;; render the stats
     (let ((s (format nil "Generation:          ~D" (controller-generation-counter controller))))
         (TextOut surface 5 0 (create-c-string s) (length s)))
-    
+
     (if (not (controller-fast-render-mode controller)) ;; do not render if running at accelerated speed
         (let ((old-pen (SelectObject surface (controller-green-pen controller)))) ;; keep a record of the old pen
             ;; render the mines
             (dotimes (i (controller-num-mines controller))
-                (let ((mine-vertices                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-                            (world-transform (apply 'vector (mine-vertices)) 
+                (let ((mine-vertices
+                            (world-transform (apply 'vector (mine-vertices))
                                 (aref (controller-mines controller) i)
                                 *mine-scale*
                                 0)))
@@ -834,95 +834,95 @@
                     (dotimes (i (- (length mine-vertices) 1))
                         (LineTo surface (floor (point-x (aref mine-vertices (+ i 1))))
                                         (floor (point-y (aref mine-vertices (+ i 1))))))
-                    (LineTo surface (floor (point-x (aref mine-vertices 0))) (floor (point-y (aref mine-vertices 0)))))) 
-            
+                    (LineTo surface (floor (point-x (aref mine-vertices 0))) (floor (point-y (aref mine-vertices 0))))))
+
             ;; we want the fittest displayed in red
             (SelectObject surface (controller-red-pen controller))
-                
+
             ;; render the sweepers
-            (dotimes (i (controller-num-sweepers controller)) 
+            (dotimes (i (controller-num-sweepers controller))
                 (if (= i *num-elite*)
                     (SelectObject surface old-pen))
                 (let* ((sweeper (aref (controller-sweepers controller) i))
                        (sweeper-vertices         ; grab the sweeper vertices
                             ;; transform the vertex buffer
-                            (world-transform (apply 'vector (sweeper-vertices)) 
+                            (world-transform (apply 'vector (sweeper-vertices))
                                 (minesweeper-position (aref (controller-sweepers controller) i))
                                 *sweeper-scale*
                                 (minesweeper-rotation sweeper))))
                     ;; draw the sweeper left track
-                    (MoveToEx surface (floor (point-x (aref sweeper-vertices 0))) (floor (point-y (aref sweeper-vertices 0))) NULL)        
+                    (MoveToEx surface (floor (point-x (aref sweeper-vertices 0))) (floor (point-y (aref sweeper-vertices 0))) NULL)
                     (dotimes (i 3)
                         (LineTo surface (floor (point-x (aref sweeper-vertices (+ i 1))))
                                         (floor (point-y (aref sweeper-vertices (+ i 1))))))
                     (LineTo surface (floor (point-x (aref sweeper-vertices 0))) (floor (point-y (aref sweeper-vertices 0))))
-                    
+
                     ;; draw the sweeper right track
-                    (MoveToEx surface (floor (point-x (aref sweeper-vertices 4))) (floor (point-y (aref sweeper-vertices 4))) NULL)        
+                    (MoveToEx surface (floor (point-x (aref sweeper-vertices 4))) (floor (point-y (aref sweeper-vertices 4))) NULL)
                     (dotimes (i 3)
                         (LineTo surface (floor (point-x (aref sweeper-vertices (+ i 5))))
                                         (floor (point-y (aref sweeper-vertices (+ i 5))))))
                     (LineTo surface (floor (point-x (aref sweeper-vertices 4))) (floor (point-y (aref sweeper-vertices 4))))
-                    
+
                     (MoveToEx surface (floor (point-x (aref sweeper-vertices 8))) (floor (point-y (aref sweeper-vertices 8))) NULL)
-                    (LineTo surface (floor (point-x (aref sweeper-vertices 9))) (floor (point-y (aref sweeper-vertices 9))))       
-                                  
+                    (LineTo surface (floor (point-x (aref sweeper-vertices 9))) (floor (point-y (aref sweeper-vertices 9))))
+
                     (MoveToEx surface (floor (point-x (aref sweeper-vertices 10))) (floor (point-y (aref sweeper-vertices 10))) NULL)
                     (dotimes (i 5)
                         (LineTo surface (floor (point-x (aref sweeper-vertices (+ i 11))))
                                         (floor (point-y (aref sweeper-vertices (+ i 11))))))))
-            
+
             (SelectObject surface old-pen))      ;; put the old pen back
-        
+
         (controller-plot-stats controller surface)))
 
 ;;;
-;;; Run the sweepers through *num-ticks* cycles. During this loop each sweepers NN is constantly 
+;;; Run the sweepers through *num-ticks* cycles. During this loop each sweepers NN is constantly
 ;;; updated with the appropriate information from its surroundings. The output from the NN is obtained
 ;;; and the sweeper is moved. If it encounters a mine its fitness is updated appropriately.
 ;;;
-(defun controller-update (controller) 
+(defun controller-update (controller)
     (if (< (controller-ticks controller) *num-ticks*)
         (progn
             (incf (controller-ticks controller))
             (dotimes (i (controller-num-sweepers controller))
                 (let ((sweeper (aref (controller-sweepers controller) i))
                       (genome (aref (controller-population controller) i)))
-                    
+
                     ;; update the NN and position
                     (minesweeper-update sweeper (controller-mines controller))
-                
+
                     ;; see if it found a mine
                     (let ((hit (minesweeper-check-for-mine sweeper (controller-mines controller) *mine-scale*)))
                         (when hit
                             ;; we have discovered a mine so increase fitness
                             (incf (minesweeper-fitness sweeper) 1)
-                            
+
                             ;; mine found so replace the mine with another at a random position
-                            (setf (aref (controller-mines controller) hit) 
-                                (make-vector2d :x (* (rand-float) *width*) 
+                            (setf (aref (controller-mines controller) hit)
+                                (make-vector2d :x (* (rand-float) *width*)
                                             :y (* (rand-float) *height*))))
-                            
+
                         ;; update the chromosome fitness score
                         (setf (genome-fitness genome) (minesweeper-fitness sweeper))))))
-        
+
         ;; else, another generation has been completed.
         ;; Time to run the GA and update the sweepers with their new NNs.
         (let ((ga (controller-genetic-algorithm controller)))
-                    
+
             ;; update the stats to be used in our stat window
-            (vector-push-extend (genetic-algorithm-average-fitness ga) 
+            (vector-push-extend (genetic-algorithm-average-fitness ga)
                 (controller-average-fitness-vector controller))
-            (vector-push-extend (genetic-algorithm-best-fitness ga) 
+            (vector-push-extend (genetic-algorithm-best-fitness ga)
                 (controller-best-fitness-vector controller))
-            
+
             ;; increment the generation counter
             (incf (controller-generation-counter controller))
             (debug-msg "Generation ~A" (controller-generation-counter controller))
-            
+
             ;; reset cycles
             (setf (controller-ticks controller) 0)
-            
+
             ;; run the GA to create a new population
             (setf (controller-population controller) (genetic-algorithm-epoch ga (controller-population controller)))
 
@@ -934,7 +934,7 @@
                         (minesweeper-put-weights sweeper (genome-weights (aref (controller-population controller) i))))
                     (reset-minesweeper sweeper)))))
     t)
-			
+
 (ct:defun-callback WndProc ((hwnd HWND)(iMsg UINT)(wParam WPARAM)(lParam LPARAM))
 
   	(incf *messages-processed*)
@@ -950,9 +950,9 @@
         (setf *hdc-backbuffer* (CreateCompatibleDC NULL)) ; create a surface for us to render to (backbuffer)
         (setf *hdc* (GetDC hwnd))
         (setf *bitmap* (CreateCompatibleBitmap *hdc* *width* *height*))
-        (ReleaseDC hwnd *hdc*)            
+        (ReleaseDC hwnd *hdc*)
         (setf *old-bitmap* (SelectObject *hdc-backbuffer* *bitmap*)))
-    
+
     (when (= iMsg WM_KEYUP)
         (debug-msg "WM_KEYUP hwnd=~A, imsg=~A, wParam=~A, lParam=~A" hwnd iMsg wParam lParam)
         (if (= wParam VK_ESCAPE)
@@ -971,7 +971,7 @@
         (setf *bitmap* (CreateCompatibleBitmap *hdc* *width* *height*))
         (ReleaseDC hwnd *hdc*)
         (setf *old-bitmap* (SelectObject *hdc-backbuffer* *bitmap*)))
-    
+
 	(when (= iMsg WM_PAINT)
 	;;	(debug-msg "WM_PAINT hwnd=~A, imsg=~A, wParam=~A, lParam=~A" hwnd iMsg wParam lParam)
         (BeginPaint hwnd *ps*)
@@ -979,19 +979,19 @@
         (controller-render *controller* *hdc-backbuffer*)
         (BitBlt (cref PAINTSTRUCT *ps* hdc) 0 0 *width* *height* *hdc-backbuffer* 0 0 SRCCOPY)
 		(EndPaint hwnd *ps*))
-    
+
 	(when (= iMsg WM_TIMER)
 	;;	(debug-msg "WM_TIMER hwnd=~A, imsg=~A, wParam=~A, lParam=~A" hwnd iMsg wParam lParam)
-        (unless (controller-update *controller*) 
+        (unless (controller-update *controller*)
             (PostQuitMessage 0)) ;; we have a problem, end app
 		(win:InvalidateRect hwnd NULL 1)
         (UpdateWindow hwnd))
-    
+
     (when (= iMsg WM_DESTROY)
 		(debug-msg "WM_DESTROY hwnd=~A, imsg=~A, wParam=~A, lParam=~A" hwnd iMsg wParam lParam)
         (uninstall-refresh-timer)
         (SelectObject *hdc-backbuffer* *old-bitmap*)
-        
+
         ;; clean up our backbuffer objects
 		(DeleteDC *hdc-backbuffer*)
         (DeleteObject *bitmap*)
@@ -1021,13 +1021,13 @@
 		(setf (cref WNDCLASSEX wndclass lpszMenuName) NULL)
 		(setf (cref WNDCLASSEX wndclass lpszClassName) (ct:create-c-string szAppName))
 		(setf (cref WNDCLASSEX wndclass hIconSm) (LoadIcon NULL IDI_APPLICATION))
-		
+
 		(RegisterClassEx wndclass)
-		(setq *app-window* 
+		(setq *app-window*
 			(CreateWindowEx 0
 				(ct:create-c-string szAppName)				;; window class name
 				(ct:create-c-string "Minesweepers") 		;; window caption
-				(logior WS_OVERLAPPEDWINDOW	WS_VISIBLE 
+				(logior WS_OVERLAPPEDWINDOW	WS_VISIBLE
                     WS_CAPTION WS_SYSMENU)					;; window style
 				CW_USEDEFAULT								;; initial x position
 				CW_USEDEFAULT								;; initial y position
@@ -1053,6 +1053,6 @@
 (defun minesweepers ()
 	(restart-case
 		(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart 'error))))
-			(winmain (cl::get-application-instance) 
+			(winmain (cl::get-application-instance)
 				null (ct:create-c-string "") SW_SHOW))
 		(error () (return-from minesweepers))))

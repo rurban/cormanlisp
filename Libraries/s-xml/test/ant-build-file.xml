@@ -11,7 +11,7 @@
   <property name="lib" value="${basedir}/lib" />
   <property name="junit" value="${basedir}/junit" />
   <property name="rsrc" value="${basedir}/rsrc" />
-  
+
   <target name="prepare">
     <!-- Create the time stamp -->
     <tstamp/>
@@ -67,7 +67,7 @@
         includes="log4j.properties" />
     </copy>
   </target>
-  
+
   <target name="c-header" depends="compile">
       <javah destdir="${rsrc}/VC_source" class="be.beta9.libretto.io.ParallelPort">
          <classpath>
@@ -75,7 +75,7 @@
          </classpath>
       </javah>
   </target>
-  
+
   <target name="test-parport" depends="compile">
       <java
       classname="be.beta9.libretto.io.ParallelPortWriter"
@@ -88,7 +88,7 @@
       </classpath>
     </java>
   </target>
-  
+
   <target name="jar-simple" depends="compile">
     <!-- Put everything in ${build} into the a jar file -->
     <jar
@@ -108,7 +108,7 @@
       basedir="${build}"
       manifest="${rsrc}/manifest/libretto.mf"/>
   </target>
-  
+
   <target name="client-jar" depends="background-jar">
     <!-- Put everything in ${build} into the a jar file including all dependecies -->
     <unjar src="${lib}/log4j-core.jar" dest="${build}" />
@@ -147,7 +147,7 @@
       </fileset>
     </jar>
   </target>
-  
+
   <target name="background-jar" depends="compile">
     <!-- Put everything in ${build} into the a jar file including all dependecies -->
     <jar jarfile="${basedir}/background.jar" manifest="${rsrc}/manifest/background-black-window.mf">
@@ -207,7 +207,7 @@
     <delete dir="${build}" />
     <delete dir="${api}" />
   </target>
-  
+
   <target name="api" depends="prepare">
     <!-- Generate javadoc -->
     <javadoc
@@ -219,7 +219,7 @@
       version="true"
       use="true"/>
   </target>
-  
+
   <target name="zip-all" depends="jar, client-jar">
     <zip zipfile="libretto.zip">
     <fileset dir="${basedir}">
@@ -246,7 +246,3 @@
   </target>
 
 </project>
-
-
-
-

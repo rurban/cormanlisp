@@ -81,7 +81,7 @@ describe the syntax in detail.</p>
 <p>The forms are processed from left to right.&nbsp; The most&nbsp; likely effect is that
 html output is generated.&nbsp; The output is sent to the stream htmlgen:*html-stream*.
 &nbsp; The action taken depends on what the form looks like at macro-expansion time.
-&nbsp;&nbsp; The possibilities are: 
+&nbsp;&nbsp; The possibilities are:
 
 <ul>
   <li>string -&nbsp; A string is simply written (using <strong>princ</strong>) to the output
@@ -109,7 +109,7 @@ html output is generated.&nbsp; The output is sent to the stream htmlgen:*html-s
     value thrown away.</li>
 </ul>
 
-<p>Special cases: 
+<p>Special cases:
 
 <ul>
   <li><strong>(:princ </strong>arg1 arg2 .. argn<strong>) </strong>causes the result of
@@ -164,11 +164,11 @@ customization of the table.&nbsp; First we show how to build a table of squares.
         :direction :output
         :if-exists :supersede)
 
-     (html-stream p 
+     (html-stream p
         (:html
          (:head (:title &quot;Test Table&quot;))
-         (:body 
-           (:table 
+         (:body
+           (:table
             (:tr (:td &quot;0&quot;) (:td &quot;0&quot;))
             (:tr (:td &quot;1&quot;) (:td &quot;1&quot;))
             (:tr (:td &quot;2&quot;) (:td &quot;4&quot;))
@@ -219,7 +219,7 @@ around the elements of the table as shown here:</p>
         :direction :output
         :if-exists :supersede)
 
-    (html-stream p 
+    (html-stream p
         (:html
          (:head (:title &quot;Test Table&quot;))
          (:body <strong>
@@ -271,10 +271,10 @@ function to compute a table of any size:</p>
         :direction :output
         :if-exists :supersede)
 
-    (html-stream p 
+    (html-stream p
         (:html
           (:head (:title &quot;Test Table&quot;))
-          (:body 
+          (:body
            ((:table border 2)
             <strong>(dotimes (i count)
               (html (:tr (:td (:princ i))
@@ -334,18 +334,18 @@ function allows us to specify parameters of the table being built:</p>
         :direction :output
         :if-exists :supersede)
 
-     (html-stream p 
+     (html-stream p
         (:html
          (:head (:title &quot;Test Table&quot;))
-         (:body 
+         (:body
            (<strong>(:table border border-width
                 bordercolor border-color
                 bgcolor backg-color
                 cellpadding 3)</strong>
-            (:tr ((:td bgcolor &quot;blue&quot;) 
+            (:tr ((:td bgcolor &quot;blue&quot;)
                   ((:font :color &quot;white&quot; :size &quot;+1&quot;)
                    &quot;Value&quot;))
-                 ((:td bgcolor &quot;blue&quot;) 
+                 ((:td bgcolor &quot;blue&quot;)
                   ((:font :color &quot;white&quot; :size &quot;+1&quot;)
                    &quot;Square&quot;))
             )
@@ -419,13 +419,13 @@ evaluated but the values are.&nbsp;&nbsp; If we evaluate this expression:</p>
         :direction :output
         :if-exists :supersede)
 
-     (html-stream p 
+     (html-stream p
         (:html
           (:head (:title &quot;Test Table&quot;))
-          (:body 
+          (:body
             ((:table border 2)
              (dotimes (i count)
-              (html (:tr 
+              (html (:tr
                (dotimes (j count)
                  (html ((:td <strong>:if* (evenp j) :bgcolor &quot;red&quot;
                              :if* (not (evenp j)):bgcolor &quot;green&quot;</strong>)

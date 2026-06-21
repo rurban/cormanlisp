@@ -39,7 +39,7 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
             (+ low (* high #x100000000))
             (let ((total (+ low (* high #x100000000))))
                 (- (+ 1 (lognot total)))))))
-            
+
 (defun cl::get-internal-run-time ()
     (win:QueryPerformanceCounter internal-run-time-buffer)
     (large-integer-to-lisp-integer internal-run-time-buffer))
@@ -52,16 +52,16 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
 
 ;;;; calibrate the timer
 (defun calibrate-timer ()
-    (let ((tm (get-internal-run-time)) 
+    (let ((tm (get-internal-run-time))
   	      (result-time))
 	(setq tm (- (get-internal-run-time) tm))
 	(setq result-time (/ (float tm) internal-time-units-per-second))
 	(setq calibration-value result-time)))
-	
+
 (defmacro time (x)
 	(let ()
         `(progn (calibrate-timer)
-    		(let* ((tm (get-internal-run-time)) 
+    		(let* ((tm (get-internal-run-time))
     			    (gtm cl::*gc-time-counter*)
     			    (result-time)
     			    (result-gc-time)
@@ -73,7 +73,7 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
     			(setq result-gc-time (/ (float gtm) gc-time-units-per-second))
     			(format t "Total Execution time: ~A seconds~%" (max (- result-time calibration-value) 0))
     			(format t "Time spent garbage collecting: ~A seconds~%" result-gc-time)
-    			(values-list ret)))))	
+    			(values-list ret)))))
 
 (defconstant file-time-1900-01-01 9435484800)
 
@@ -82,7 +82,7 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
 
 (defun universal-time-to-file-time (utime)
 	(* (+ utime  file-time-1900-01-01) 10000000))
-	
+
 ;;;
 ;;; Common Lisp GET-UNIVERSAL-TIME function.
 ;;;
@@ -111,10 +111,10 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
 			(error "Invalid universal time: ~A" utime))
 		(multiple-value-bind (time-zone-offset daylight)
 			(local-time-zone)
-			(unless zone 
+			(unless zone
 				(setq zone time-zone-offset)
 				(setq daylight-p daylight)))
-        
+
         ;; Apparently this function is supposed to return a time zone offset
         ;; which is independent of daylight time i.e. a value valid all year.
         ;; Therefore if daylight is true, we add an hour to the time zone offset to
@@ -125,9 +125,9 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
             (incf zone)
             (if (>= zone 24)
                 (decf zone 24)))
-        
+
 		(decf utime (* zone 3600))
-		(setq stime (file-time-to-system-time 
+		(setq stime (file-time-to-system-time
 						(universal-time-to-file-time utime)))
 		(setq year (first stime))
 		(setq month	(second stime))
@@ -150,11 +150,11 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
 			&optional time-zone)
 	(unless time-zone (setf time-zone (local-time-zone)))
 	(if (<= 0 year 99)
-		(if (>= year 50) 
+		(if (>= year 50)
 			(setq year (+ 1900 year))
-			(setq year (+ 2000 year))))		
+			(setq year (+ 2000 year))))
 	(let ((utime (file-time-to-universal-time
-			(system-time-to-file-time year month 0 
+			(system-time-to-file-time year month 0
 				date hour minute second 0))))
 		(if time-zone (incf utime (* 3600 time-zone)))
 		utime))
@@ -190,11 +190,11 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
 			(if daylight-p "D" "S"))))
 
 ;;;
-;;;	Returns three values: 
+;;;	Returns three values:
 ;;;    the bias (in hours)
 ;;;    daylight-flag (t if daylight time, nil if standard time)
 ;;;    time-zone-name (string)
-;;;                    
+;;;
 (defun cl::local-time-zone ()
 	(ct:with-fresh-foreign-block (tzi 'win:TIME_ZONE_INFORMATION)
 		(ct:with-c-struct (s tzi win:TIME_ZONE_INFORMATION)
@@ -206,13 +206,13 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
 					 (unless local-time-zone-name
 						(setf local-time-zone-name (ct:c-string-to-lisp-string win::StandardName)))
 					 (values (truncate win::Bias 60)
-							 nil 
+							 nil
 							(ct:c-string-to-lisp-string win::StandardName)))
 					((= result win:TIME_ZONE_ID_DAYLIGHT)
 					 (unless local-time-zone-name
 					 	(setf local-time-zone-name (ct:c-string-to-lisp-string win::DaylightName)))
 					 (values (- (truncate win::Bias 60) 1)
-							 t 
+							 t
 							(ct:c-string-to-lisp-string win::DaylightName))))))))
 
 
@@ -220,4 +220,3 @@ BOOL WINAPI QueryPerformanceFrequency(PLARGE_INTEGER);
 ;;; Common Lisp GET-INTERNAL-REAL-TIME function.
 ;;;
 (defun get-internal-real-time () (get-internal-run-time))
-

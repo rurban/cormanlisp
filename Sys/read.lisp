@@ -15,7 +15,7 @@
 (defvar *standard-input* *standard-input*)	;; make it special
 
 ;;
-;; If bound, *READ-HOOK* should be a function (or name a function) 
+;; If bound, *READ-HOOK* should be a function (or name a function)
 ;; which takes the following 5 arguments:
 ;;      stream:     the stream being read
 ;;      startpos:   the beginning character position of the object being read
@@ -25,7 +25,7 @@
 ;;
 ;;      As a special case, when a comment is scanned, the *READ-HOOK* function
 ;;      will be called with the object returned as nil and the commentp flag true.
-;;      
+;;
 (defvar *read-hook* nil)
 
 (defconstant whitespace-char-type							0)
@@ -82,18 +82,18 @@
 (defconstant *upper-case-a-code* (char-int #\A))
 (defconstant *upper-case-z-code* (char-int #\Z))
 
-(defun alpha-char-p (char) 
-	(or 
+(defun alpha-char-p (char)
+	(or
 		(and (>= (char-int char) *lower-case-a-code*)
 			 (<= (char-int char) *lower-case-z-code*))
 		(and (>= (char-int char) *upper-case-a-code*)
 			 (<= (char-int char) *upper-case-z-code*))))
 
-(defun lower-case-p (char) 
+(defun lower-case-p (char)
 	(and (>= (char-int char) *lower-case-a-code*)
 		 (<= (char-int char) *lower-case-z-code*)))
 
-(defun upper-case-p (char) 
+(defun upper-case-p (char)
 	(and (>= (char-int char) *upper-case-a-code*)
 		 (<= (char-int char) *upper-case-z-code*)))
 
@@ -142,7 +142,7 @@
 					(setq value (- value)))
 				(return-from valid-integer-chars (list value chars)))
 			(return-from valid-integer-chars (list nil nil)))))
-	
+
 (defun valid-integer (chars)
 	(let* ((result (valid-integer-chars chars))
 		   (n1 (car result))
@@ -157,14 +157,14 @@
 		   (remaining-chars (cadr result)))
 		(if (and numerator remaining-chars (eq (car remaining-chars) #\/))
 			(let ((denominator (valid-integer (cdr remaining-chars))))
-				(if denominator (/ numerator denominator) nil)))))			
+				(if denominator (/ numerator denominator) nil)))))
 
 (defun create-number-from-chars (chars)
 	(let ((n (valid-integer chars)))
 		(unless n (setq n (%chars-to-float chars)))
 		(unless n (setq n (valid-ratio chars)))
 		n))
-	
+
 (defun package-entry-occupied (package index)
 	(let ((package-vector (package-table package)))
 		(stringp (elt package-vector (* index 3)))))
@@ -261,12 +261,12 @@
 
 ;;
 ;; returns 2 values: the symbol (or nil), and 'internal, 'external or nil
-;; 
+;;
 (defun package-find-symbol (package str)
 	(let ((index (package-find-symbol-index package str)))
 		(if (= index -1)
 			(values nil nil)
-			(values 
+			(values
 				(package-entry-symbol package index)
 				(package-entry-state package index)))))
 
@@ -298,8 +298,8 @@
 						(return)))))
 		(if (not (package-entry-occupied package h))
 			(set-package-entry-string str package h))
-		(set-package-entry-symbol sym package h) 
-		(set-package-entry-state state package h) 
+		(set-package-entry-symbol sym package h)
+		(set-package-entry-state state package h)
 		(set-package-count (+ (package-count package) 1) package)
 		(unless (symbol-package sym)
 			(set-symbol-package package sym))	;; if no home package, make this its home
@@ -322,7 +322,7 @@
 			(progn (setq state 'EXTERNAL) (setq keyword t))
 			(setq state 'INTERNAL))
 		(setq sym (package-add-symbol package str (make-symbol str) state))
-		(if keyword 
+		(if keyword
 			(progn
 				(set-symbol-value sym sym)	;; keywords evaluate to themselves
 				(symbol-set-constant-flag sym)
@@ -340,7 +340,7 @@
 		  c)
 		(dolist (i chars)
 			(if (eq i #\:)		;; look for unescaped colon
-				(progn 
+				(progn
 					(setq found-package-marker t)
 					(return))))
 		(unless found-package-marker
@@ -348,7 +348,7 @@
 				(dolist (x chars)
 					(setq ch-list (cons (if (consp x) (car x) x) ch-list)))
 				(return-from create-symbol-from-chars (intern (coerce (nreverse ch-list) 'string) *package*))))
-					
+
 		(do ()
 			((null chars))
 			(setq c (car chars))
@@ -356,7 +356,7 @@
 				(return))
 			(setq package-chars (cons (if (consp c) (car c) c) package-chars))
 			(setq chars (cdr chars)))
-	
+
 		(if (eq c #\:)
 			(progn
 				(setq package-markers (+ 1 package-markers))
@@ -385,26 +385,26 @@
 			(let ((package (find-package package-name)))
 				(if (null package)
 					(error "Could not find the requested package ~A" package-name))
-				(let ((state 
+				(let ((state
 						(cadr (multiple-value-list (package-find-symbol package symbol-name)))))
 					(if (and (eq state 'internal) (= package-markers 1) (not in-keyword-package))
 						(error "The symbol ~A is not exported by package ~A"
 							symbol-name (package-name package))))
 				(intern symbol-name package))
 			(intern symbol-name *package*))))
-		
-(defun whitespace-char (ch &optional (readtable *readtable*)) 
+
+(defun whitespace-char (ch &optional (readtable *readtable*))
 	(eq (readtable-char-type readtable ch) 'whitespace-char-type))
-			
-(defun read-expression (&optional 
-				(stream *standard-input*) 
-				(eof-error t) 
+
+(defun read-expression (&optional
+				(stream *standard-input*)
+				(eof-error t)
 				(eof-value nil)
 				(recursive-p nil))
 
 	(unless (input-character-stream-p stream)
 		(error "Expected an input character stream, got ~A" stream))
-				
+
 	(do (  (state 1)
 		   (readtable *readtable*)
 			x
@@ -423,7 +423,7 @@
 				((= state 1)
 				 (progn
 					(setq x (%read-char stream))
-					(if (null x) 
+					(if (null x)
 						(if eof-error
 							(error "End-of-file encountered reading from stream ~A" stream)
 							(return eof-value)))
@@ -435,7 +435,7 @@
 						((eq char-type 'whitespace-char-type) nil)
 						((or (eq char-type 'terminating-macro-char-type)
 							 (eq char-type 'non-terminating-macro-char-type))
-						 (return 
+						 (return
 							(funcall (readtable-char-func readtable x) stream x)))
 						((or (eq char-type 'dispatching-terminating-macro-char-type)
 							 (eq char-type 'dispatching-non-terminating-macro-char-type))
@@ -453,7 +453,7 @@
 						 (setq func (readtable-char-dispatch-func readtable x y))
 						 (if (not (functionp func))
 							(error "Invalid input form"))
-						 (return 
+						 (return
 							(funcall func stream y third-dispatch-arg)))
 						((eq char-type 'single-escape-char-type)
 						 (setq y (%read-char-with-error stream))
@@ -529,67 +529,67 @@
 		(progn
 			(if (eq-form-placeholder-p (car form))
 				(let ((n (get-read-eq-form (eq-form-placeholder-index (car form)))))
-					(unless n 
+					(unless n
 						(error "Cannot find definition of #~D# in form being read"
 							(eq-form-placeholder-index (car form))))
 					(rplaca form n))
 				(patch-up-eq-forms (car form) patchups))
 			(if (eq-form-placeholder-p (cdr form))
 				(let ((n (get-read-eq-form (eq-form-placeholder-index (cdr form)))))
-					(unless n 
+					(unless n
 						(error "Cannot find definition of #~D# in form being read"
 							(eq-form-placeholder-index (cdr form))))
 					(rplacd form n))
 				(patch-up-eq-forms (cdr form) patchups)))))
 
 (defun stream-position (stream) 0)  ;; this gets defined later
-						
-(defun read (&optional 
-				(stream *standard-input*) 
-				(eof-error t) 
+
+(defun read (&optional
+				(stream *standard-input*)
+				(eof-error t)
 				(eof-value nil)
 				(recursive-p nil))
 
     (cond ((eq stream t) (setq stream *terminal-io*))
           ((eq stream nil) (setq stream *standard-input*))
-          ((not (streamp stream)) 
+          ((not (streamp stream))
            (error "Stream argument to READ is not a stream: ~S." stream)))
-    
+
     (let ((startpos (stream-position stream)))
     	(if (not recursive-p)
-    		(let ((*read-eq-forms* nil))		
-    
+    		(let ((*read-eq-forms* nil))
+
     			;; this loop allows skipping over read expressions which return
     			;; no values i.e. commented expressions
     			(do ((ret))
     			    (nil)
-    				(setq ret (multiple-value-list 
+    				(setq ret (multiple-value-list
     						(read-expression stream eof-error eof-value recursive-p)))
-    				(if (consp ret) 
+    				(if (consp ret)
     					(progn
     						;; look for read-eq-form-placeholder structures
     						(patch-up-eq-forms (car ret) *read-eq-forms*)
                             (if *read-hook*
-                                (funcall *read-hook* stream startpos 
+                                (funcall *read-hook* stream startpos
                                     (stream-position stream) (car ret) nil))
     						(return (car ret)))
                         (if *read-hook*
-                            (funcall *read-hook* stream startpos 
+                            (funcall *read-hook* stream startpos
                                 (stream-position stream) nil t)))))
-    			
+
     		;; if recursive, do no rebind *read-eq-forms*
     		(do ((ret))
     		    (nil)
-    			(setq ret (multiple-value-list 
+    			(setq ret (multiple-value-list
     					(read-expression stream eof-error eof-value recursive-p)))
     			(if (consp ret)
                     (progn
                         (if *read-hook*
-                            (funcall *read-hook* stream startpos 
+                            (funcall *read-hook* stream startpos
                                 (stream-position stream) (car ret) nil))
                         (return (car ret)))
-                    (if *read-hook* 
-                        (funcall *read-hook* stream startpos 
+                    (if *read-hook*
+                        (funcall *read-hook* stream startpos
                             (stream-position stream) nil t)))))))
 
 ;;;
@@ -634,17 +634,17 @@
 	"We only need to invert the token if the case has been constant."
 	(or (eq cs :upper) (eq cs :lower)))
 
-;; As we accumulate characters in a list, we will list characters 
+;; As we accumulate characters in a list, we will list characters
 ;; i.e. (#\c) when we want to escape them.
-(defun read-expression (&optional 
-				(stream *standard-input*) 
-				(eof-error t) 
+(defun read-expression (&optional
+				(stream *standard-input*)
+				(eof-error t)
 				(eof-value nil)
 				(recursive-p nil)
 		        (interpret-numerically t))
 	(unless (input-character-stream-p stream)
 		(error "Expected an input character stream, got ~A" stream))
-				
+
 	(do (  (state 1)
 		   (readtable *readtable*)
 			x
@@ -665,7 +665,7 @@
 				((= state 1)
 				 (progn
 					(setq x (%read-char stream))
-					(if (null x) 
+					(if (null x)
 						(if eof-error
 							(error "End-of-file encountered reading from stream ~A" stream)
 							(return eof-value)))
@@ -677,7 +677,7 @@
 						((eq char-type 'whitespace-char-type) nil)
 						((or (eq char-type 'terminating-macro-char-type)
 							 (eq char-type 'non-terminating-macro-char-type))
-						 (return 
+						 (return
 							(funcall (readtable-char-func readtable x) stream x)))
 						((or (eq char-type 'dispatching-terminating-macro-char-type)
 							 (eq char-type 'dispatching-non-terminating-macro-char-type))
@@ -695,7 +695,7 @@
 						 (setq func (readtable-char-dispatch-func readtable x y))
 						 (if (not (functionp func))
 							(error "Invalid input form"))
-						 (return 
+						 (return
 							(funcall func stream y third-dispatch-arg)))
 						((eq char-type 'single-escape-char-type)
 						 (setq y (%read-char-with-error stream))
@@ -780,7 +780,7 @@
 							token)))
 				 (when (and interpret-numerically (not has-escape))
 					(setq ret (create-number-from-chars token)))
-                
+
                  ;; Check for dot in list. If the dot was escaped, we will treat it
                  ;; as a regular symbol.
                  (if (and (eq (car token) #\.)(null (cdr token)) (not has-escape))
@@ -803,13 +803,13 @@
 		  (count 0)
 		  (eof-value (cons 'eof nil))
 		  (cormanlisp::*source-file* path))
-		(do ((x 
-				(progn 
+		(do ((x
+				(progn
 					(setq cormanlisp::*source-line* nil)
-					(read istream nil eof-value nil)) 
-				(progn 
+					(read istream nil eof-value nil))
+				(progn
 					(setq cormanlisp::*source-line* nil)
-					(read istream nil eof-value nil)))) 
+					(read istream nil eof-value nil))))
 			((eq x eof-value))
 			(setq count (+ 1 count))
 			(if *load-without-eval*
@@ -817,7 +817,7 @@
 				(progn
 					(setq x (eval x))
 					(if *load-verbose*
-						(progn (write x :stream *standard-output*)(terpri))))))	
+						(progn (write x :stream *standard-output*)(terpri))))))
 		 (close istream)
 		 count))
 
@@ -825,18 +825,16 @@
 (defvar cormanlisp::*compiler-optimize-safety* (symbol-value 'cormanlisp::*compiler-optimize-safety*))
 (defvar cormanlisp::*compiler-optimize-safety* (symbol-value 'cormanlisp::*compiler-optimize-safety*))
 
-(defun compiler-check-args-num () 
+(defun compiler-check-args-num ()
 	(< cormanlisp::*compiler-optimize-speed*
-		cormanlisp::*compiler-optimize-safety*))		
+		cormanlisp::*compiler-optimize-safety*))
 (defun compiler-check-types ()
 	(< cormanlisp::*compiler-optimize-speed*
 		cormanlisp::*compiler-optimize-safety*))
-(defun compiler-check-key-args () 
+(defun compiler-check-key-args ()
 	(< cormanlisp::*compiler-optimize-speed*
 		cormanlisp::*compiler-optimize-safety*))
-(defvar cormanlisp::*compiler-fold-constants* t)		
+(defvar cormanlisp::*compiler-fold-constants* t)
 (defun compiler-fold-constants () cormanlisp::*compiler-fold-constants*)
 (defun compiler-inline-functions () t)
 (defun compiler-eliminate-tail-recursion () nil)
-
-

@@ -23,9 +23,9 @@
 (defun format (dest control-string &rest arguments)
 	(let ((return-value nil))
 		;; check for dest equal to t or nil
-		(cond 
-			((null dest) 
-			 (progn 
+		(cond
+			((null dest)
+			 (progn
 				(setf dest (make-string-output-stream))
 				(setf return-value dest)))
 			((eq dest t) (setf dest *standard-output*)))
@@ -34,7 +34,7 @@
 				(if (functionp control-string)
 					(apply control-string stream arguments)
 					(catch '%format-up-and-out
-						(%format-list stream control-string arguments))))				
+						(%format-list stream control-string arguments))))
 			(catch '%format-up-and-out
 				(if (functionp control-string)
 					(apply control-string dest arguments)
@@ -45,7 +45,7 @@
 ;;; This is like FORMAT, but for use by FORMATTER.
 ;;;
 (defun format-internal (dest control-string &rest arguments)
-	(let ((arg-index 
+	(let ((arg-index
 				(catch '%format-up-and-out
 					(%format-list dest control-string arguments))))
 		(nthcdr arg-index arguments)))
@@ -69,7 +69,7 @@
         (progn
           ;; get parameters
           (incf index)
-          (multiple-value-setq (parameters index args-used) 
+          (multiple-value-setq (parameters index args-used)
             (%get-params control-string index arguments arg-index))
           (incf arg-index args-used)
 
@@ -88,20 +88,20 @@
               (error "Invalid format directive: ~A" control-string))
           (setq char (char control-string index))
           (incf index)
-          (setf dispatch-func 
+          (setf dispatch-func
                 (%get-format-dispatch-func char))
           (if (null dispatch-func)
-              (error "Invalid format directive : character ~S in control string ~S" 
+              (error "Invalid format directive : character ~S in control string ~S"
                      char control-string))
           (setq control (list control-string index))
-          (setq arg-index 
-                (apply dispatch-func 
-                       dest 
-                       arguments arg-index 
-                       atsign-modifier colon-modifier 
+          (setq arg-index
+                (apply dispatch-func
+                       dest
+                       arguments arg-index
+                       atsign-modifier colon-modifier
                        control
                        parameters))
-          (setq index (cadr control))) 		
+          (setq index (cadr control)))
 
         ;; just output the character
         (progn
@@ -131,23 +131,23 @@
 					(setq int (elt arguments arg-index))
 					(incf arg-index)
 					(incf args-used)
-					(incf index)) 
+					(incf index))
 				(if (eql (char control-string index) #\#)
 					(progn
 						(setq int (- (length arguments) arg-index))
 						(incf index))
-					(multiple-value-setq (int index) 
+					(multiple-value-setq (int index)
 						(parse-integer control-string :start index
 							:junk-allowed t)))))
 		(setq c (char control-string index))
-		(if int 
+		(if int
 			(push int params)
-			(if (char= c #\,) 
+			(if (char= c #\,)
 				(push nil params)))
 		(if (char= c #\,) (incf index) (return)))
 	(values (nreverse params) index args-used))
 
-(defun %format-integer (stream int radix atsign-modifier colon-modifier 
+(defun %format-integer (stream int radix atsign-modifier colon-modifier
 				mincol padchar commachar)
 
 		;; initialize defaults
@@ -168,7 +168,7 @@
 
 			(setq s (with-output-to-string (x) (princ int x)))
 			(incf length (length s))
-			(if colon-modifier 
+			(if colon-modifier
 				(incf length (truncate (1- (length s)) 3)))
 			(if (< length mincol)
 				(dotimes (i (- mincol length))
@@ -183,7 +183,7 @@
 						   (digit-pos (mod digits-left 3)))
 						(if (and (zerop digit-pos) (plusp digits-left))
 							(write-char commachar stream))))
-				(princ s stream))))  
+				(princ s stream))))
 
 (defconstant *format-cardinals*
 	#( "zero" "one" "two" "three" "four" "five" "six" "seven" "eight" "nine" "ten"
@@ -192,42 +192,42 @@
 
 (defun %format-cardinal-number (int stream)
 		(if (zerop int) (return-from %format-cardinal-number (princ "zero" stream)))
-		(if (minusp int) 
+		(if (minusp int)
 			(progn (princ "negative " stream) (setq int (- int))))
 		(cond
 			((< int 20)
-			 (princ (nth int '("zero" "one" "two" "three" "four" "five" 
+			 (princ (nth int '("zero" "one" "two" "three" "four" "five"
 					"six" "seven" "eight" "nine" "ten" "eleven" "twelve" "thirteen"
-					"fourteen" "fifteen" "sixteen" "seventeen" "eighteen" "nineteen")) 
+					"fourteen" "fifteen" "sixteen" "seventeen" "eighteen" "nineteen"))
 				stream))
 			((< int 100)
 			 (princ (nth (- (truncate int 10) 2) '("twenty" "thirty" "forty"
 							"fifty" "sixty" "seventy" "eighty" "ninety")) stream)
-			 (if (plusp (mod int 10)) 
-				(progn 
+			 (if (plusp (mod int 10))
+				(progn
 					(write-char #\- stream)
 					(%format-cardinal-number (mod int 10) stream))))
 			((< int 1000)
 			 (%format-cardinal-number (truncate int 100) stream)
 			 (princ " hundred" stream)
 			 (if (plusp (mod int 100))
-				(progn	
-					(write-char #\Space stream)		 
+				(progn
+					(write-char #\Space stream)
 					(%format-cardinal-number (mod int 100) stream))))
 			((< int 1000000)
 			 (%format-cardinal-number (truncate int 1000) stream)
 			 (princ " thousand" stream)
 			 (if (plusp (mod int 1000))
-				(progn	
-					(write-char #\Space stream)		 
+				(progn
+					(write-char #\Space stream)
 					(%format-cardinal-number (mod int 1000) stream))))
 #|
 			((< int 1000000000)
 			 (%format-cardinal-number (truncate int 1000000) stream)
 			 (princ " million" stream)
 			 (if (plusp (mod int 1000000))
-				(progn	
-					(write-char #\Space stream)		 
+				(progn
+					(write-char #\Space stream)
 					(%format-cardinal-number (mod int 1000000) stream))))
 |#
 			(t (princ "billions"))))
@@ -240,7 +240,7 @@
 
 (defun %format-old-roman-numeral (int stream)
 	(princ "Sorry" stream))
-		
+
 ;;; Format dispatch functions take a stream, argument list,
 ;;; @-modifier and :-modifier arguments, followed by any passed
 ;;; parameters. Any passed parameters which are nil should be
@@ -259,12 +259,12 @@
 	(let ((index (char-code (char-upcase char))))
 		(elt *format-functions* index)))
 
-(%set-format-dispatch-func #\A 
+(%set-format-dispatch-func #\A
 	#'(lambda (stream args index atsign-modifier colon-modifier control
-				&optional mincol colinc 
+				&optional mincol colinc
 						minpad padchar)
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~AA format directive" #\~))
 
 		;; initialize defaults
@@ -279,7 +279,7 @@
 				(setq arg "()"))
 			(if atsign-modifier
 				;; needto output to string to insert padding in front
-				(let ((s (with-output-to-string (x) (princ arg x))) 
+				(let ((s (with-output-to-string (x) (princ arg x)))
 					  length)
 					(dotimes (i minpad) (write-char padchar stream))
 					(setq length (length s))
@@ -301,12 +301,12 @@
 						(incf length colinc)))))
 			(1+ index)))
 
-(%set-format-dispatch-func #\S 
+(%set-format-dispatch-func #\S
 	#'(lambda (stream args index atsign-modifier colon-modifier control
-				&optional mincol colinc 
+				&optional mincol colinc
 						minpad padchar)
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~AS format directive" #\~))
 
 		;; initialize defaults
@@ -321,7 +321,7 @@
 				(setq arg "()"))
 			(if atsign-modifier
 				;; need to output to string to insert padding in front
-				(let ((s (with-output-to-string (x) (prin1 arg x))) 
+				(let ((s (with-output-to-string (x) (prin1 arg x)))
 					  length)
 					(dotimes (i minpad) (write-char padchar stream))
 					(setq length (length s))
@@ -343,91 +343,91 @@
 						(incf length colinc)))))
 			(1+ index)))
 
-(%set-format-dispatch-func #\D 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\D
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional mincol padchar commachar)
         (block nil
     		(let ((save-args args))
     			(setq args (nthcdr index args))
-    			(if (null args) 
+    			(if (null args)
     				(error "Not enough args for ~~D format directive"))
-    	
+
     			;; if not an integer use ~A output
     			(if (not (integerp (car args)))
     				(let ((*print-base* 10))
     					(return (funcall (%get-format-dispatch-func #\A)
     							stream save-args index atsign-modifier
     							colon-modifier control mincol 1 padchar commachar))))
-    	
+
     			(%format-integer stream (car args) 10 atsign-modifier colon-modifier
     					mincol padchar commachar)
     			(1+ index)))))
 
-(%set-format-dispatch-func #\B 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\B
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional mincol padchar commachar)
         (block nil
     		(setq args (nthcdr index args))
-    		(if (null args) 
+    		(if (null args)
     			(error "Not enough args for ~AB format directive" #\~))
-    
+
     		;; if not an integer use ~A output
     		(if (not (integerp (car args)))
     			(let ((*print-base* 2))
     				(return (apply (%get-format-dispatch-func #\A)
     						stream args atsign-modifier
     						colon-modifier mincol nil nil padchar))))
-    
+
     		(%format-integer stream (car args) 2 atsign-modifier colon-modifier
     				mincol padchar commachar)
     		(1+ index))))
 
-(%set-format-dispatch-func #\O 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\O
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional mincol padchar commachar)
         (block nil
     		(setq args (nthcdr index args))
-    		(if (null args) 
+    		(if (null args)
     			(error "Not enough args for ~AO format directive" #\~))
-    
+
     		;; if not an integer use ~A output
     		(if (not (integerp (car args)))
     			(let ((*print-base* 8))
     				(return (apply (%get-format-dispatch-func #\A)
     						stream args atsign-modifier
     						colon-modifier mincol nil nil padchar))))
-    
+
     		(%format-integer stream (car args) 8 atsign-modifier colon-modifier
     				mincol padchar commachar)
     		(1+ index))))
 
-(%set-format-dispatch-func #\X 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\X
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional mincol padchar commachar)
         (block nil
     		(setq args (nthcdr index args))
-    		(if (null args) 
+    		(if (null args)
     			(error "Not enough args for ~AX format directive" #\~))
-    
+
     		;; if not an integer use ~A output
     		(if (not (integerp (car args)))
     			(let ((*print-base* 16))
     				(return (apply (%get-format-dispatch-func #\A)
     						stream args atsign-modifier
     						colon-modifier mincol nil nil padchar))))
-    
+
     		(%format-integer stream (car args) 16 atsign-modifier colon-modifier
     				mincol padchar commachar)
     		(1+ index))))
 
-(%set-format-dispatch-func #\R 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\R
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional radix mincol padchar commachar)
         (block nil
     		(setq args (nthcdr index args))
-    		(if (null args) 
+    		(if (null args)
     			(error "Not enough args for ~AR format directive" #\~))
-    		
+
     		(if radix
     			;; if not an integer use ~A output
     			(progn
@@ -446,23 +446,23 @@
     									args atsign-modifier
     									colon-modifier mincol nil nil padchar)))
     				(cond
-    					((and atsign-modifier colon-modifier) 
+    					((and atsign-modifier colon-modifier)
     				 	 (%format-old-roman-numeral (car args) stream))
     					(atsign-modifier (%format-roman-numeral (car args) stream))
     					(colon-modifier (%format-ordinal-number (car args) stream))
     					(t (%format-cardinal-number (car args) stream)))))
     		(1+ index))))
 
-(%set-format-dispatch-func #\~ 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\~
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional num)
 		(unless num (setq num 1))
 		(dotimes (i num)
 			(write-char #\~ stream))
 		index))
 
-(%set-format-dispatch-func #\% 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\%
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional num)
 		(unless num (setq num 1))
 		(dotimes (i num)
@@ -471,7 +471,7 @@
 
 (%set-format-dispatch-func #\P
 	#'(lambda (stream args index atsign-modifier colon-modifier control)
-		(when colon-modifier 
+		(when colon-modifier
 			(decf index)
 			(if (< index 0)
 				(error "No preceding argument for :P modifer to format string")))
@@ -481,28 +481,28 @@
 				(write-string "ies" stream)
 				(write-char #\s stream))
 			(if atsign-modifier
-				(write-string "y" stream)))			
+				(write-string "y" stream)))
 		(1+ index)))
 
-(%set-format-dispatch-func #\Newline 
+(%set-format-dispatch-func #\Newline
 	#'(lambda (stream args index atsign-modifier colon-modifier control )
 		index))
 
 ;;; redefined later for proper floating point handling
-(%set-format-dispatch-func #\F 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\F
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional width digits scale overflow-char padchar)
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~F format directive"))
 
 		;; initialize defaults
 		(unless width (setq width -1))
 		(unless digits (setq digits 1))
 		(unless scale (setq scale 0))
-		(setq overflow-char 
-			(if overflow-char 
-				(if (integerp overflow-char) (int-char overflow-char) overflow-char) 
+		(setq overflow-char
+			(if overflow-char
+				(if (integerp overflow-char) (int-char overflow-char) overflow-char)
 				#\Space))
 		(setq padchar (if padchar (if (integerp padchar) (int-char padchar) padchar) #\Space))
 
@@ -511,12 +511,12 @@
 		(1+ index)))
 
 ;;; redefined later for proper floating point handling
-(%set-format-dispatch-func #\G 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\G
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional width digits exp-digits scale overflow-char padchar
 					exponent-char)
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~G format directive"))
 
 		;; initialize defaults
@@ -524,12 +524,12 @@
 		(unless digits (setq digits 1))
 		(unless exp-digits (setq exp-digits 2))
 		(unless scale (setq scale 0))
-		(setq overflow-char 
-			(if overflow-char 
+		(setq overflow-char
+			(if overflow-char
 				(if (integerp overflow-char) (int-char overflow-char) overflow-char) #\Space))
 		(setq padchar (if padchar (if (integerp padchar) (int-char padchar) padchar) #\Space))
-		(setq exponent-char 
-			(if exponent-char 
+		(setq exponent-char
+			(if exponent-char
 				(if (integerp exponent-char) (int-char exponent-char) exponent-char) #\E))
 
 		(print-float (car args) stream :general width digits
@@ -537,12 +537,12 @@
 		(1+ index)))
 
 ;;; redefined later for proper floating point handling
-(%set-format-dispatch-func #\E 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\E
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional width digits exp-digits scale overflow-char padchar
 					exponent-char)
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~E format directive"))
 
 		;; initialize defaults
@@ -550,20 +550,20 @@
 		(unless digits (setq digits 1))
 		(unless exp-digits (setq exp-digits 2))
 		(unless scale (setq scale 0))
-		(setq overflow-char 
-			(if overflow-char 
+		(setq overflow-char
+			(if overflow-char
 				(if (integerp overflow-char) (int-char overflow-char) overflow-char) #\Space))
 		(setq padchar (if padchar (if (integerp padchar) (int-char padchar) padchar) #\Space))
-		(setq exponent-char 
-			(if exponent-char 
+		(setq exponent-char
+			(if exponent-char
 				(if (integerp exponent-char) (int-char exponent-char) exponent-char) #\E))
 
 		(print-float (car args) stream :exponential width digits
 				scale padchar atsign-modifier)
 		(1+ index)))
 
-(%set-format-dispatch-func #\? 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\?
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional width digits scale overflow-char padchar)
 		(setq args (nthcdr index args))
 		(if (or (null args) (null (cdr args)))
@@ -591,25 +591,25 @@
 					(setf c (char string i)))
 				(cond ((char= c #\{)(incf nesting))
 					  ((char= c #\})(decf nesting)(if (zerop nesting)(return tilda-pos))))))))
-					
-(%set-format-dispatch-func #\{ 
+
+(%set-format-dispatch-func #\{
 	#'(lambda (stream args index atsign-modifier colon-modifier control)
         (block nil
     		(setq args (nthcdr index args))
-    		(unless args 
+    		(unless args
     			(error "Not enough args for ~~{ format directive"))
     		(unless (or (listp (car args)) atsign-modifier)
     			(error "Invalid format argument--should be a list"))
-    	
+
     		(let ((end-brace-index (find-matching-right-brace (car control) (cadr control)))
     			  string)
     			(if end-brace-index
     				(setq string (subseq (car control) (cadr control) end-brace-index))
     				(error "Missing ~~} following ~~{ in format string"))
     			(setf (cadr control) (+ 2 end-brace-index))
-    			(cond 
+    			(cond
     				((and colon-modifier atsign-modifier)
-    					(return 
+    					(return
     						(do ((arg-index 0))
     							((>= arg-index (length args)) (+ index arg-index))
     							(%format-list stream string (nth arg-index args))
@@ -620,18 +620,18 @@
     							((>= arg-index (length (car args))) (1+ index))
     							(%format-list stream string (nth arg-index (car args)))
     							(incf arg-index))))
-    				(atsign-modifier 					
-    					(return 
+    				(atsign-modifier
+    					(return
     						(do ((arg-index 0))
     							((>= arg-index (length args)) (+ index arg-index))
-    							(incf arg-index 
+    							(incf arg-index
     								(%format-list stream string (nthcdr arg-index args))))))
-    				(t 
+    				(t
     					(catch '%format-up-and-out
     						(do ((arg-index 0))
     							((>= arg-index (length (car args))) (1+ index))
-    							(incf arg-index 
-    								(%format-list stream string 
+    							(incf arg-index
+    								(%format-list stream string
     									(nthcdr arg-index (car args))))))
     					(1+ index)))))))
 
@@ -639,7 +639,7 @@
 (defun paren-dispatch-func (stream args index atsign-modifier colon-modifier control)
      (block nil
        (setq args (nthcdr index args)) ;; skip unnecessary arguments
-    
+
        ;; collect the characters up until a closing parentheses
        (let ((close-paren-index (search "~)" (car control) :start2 (cadr control)))
              string
@@ -650,7 +650,7 @@
          (setf (cadr control) (+ 2 close-paren-index))
          (setf index (catch '%format-up-and-out (%format-list string-stream string args)))
          (setq string (get-output-stream-string string-stream))
-         (cond 
+         (cond
            ((and colon-modifier atsign-modifier)
             (progn
               (setq string (string-upcase string))
@@ -662,18 +662,18 @@
               (write-string string stream)
               (return index)))
            ;; Done. need to fix this to only capitalize the first word
-           (atsign-modifier 					
+           (atsign-modifier
             (progn
               (setq string (string-upcase (string-downcase string) :end 1))
               (write-string string stream)
               (return index)))
-           (t 
+           (t
             (progn
               (setq string (string-downcase string))
               (write-string string stream)
               (return index)))))))
 
-(%set-format-dispatch-func #\( 
+(%set-format-dispatch-func #\(
  'paren-dispatch-func)
 
 ;; locates either ~; or ~:;
@@ -706,29 +706,29 @@
             (incf index)
             (if (= index length) (return-from find-format-directive nil)))
         (incf index)    ;; skip tilda character
-    
+
         ;; scan past parameters
         (do* ((ch (char control-string index) (char control-string index)))
             ((not (or (digit-char-p ch)(char= ch #\,))))
             (incf index)
             (if (= index length) (return-from find-format-directive nil)))
-        
+
         ;; scan past modifiers
         (do* ((ch (char control-string index) (char control-string index)))
             ((not (or (char= ch #\:)(char= ch #\@))))
             (incf index)
             (if (= index length) (return-from find-format-directive nil)))
-        
-        (if (= index length) nil index)))     
+
+        (if (= index length) nil index)))
 
 ;;; Using the string between the ~[ and ~] or ~< and ~>, return a list of the
 ;; control strings separated by ~;
 ;;;
 (defun %expr-list (string)
     (let ((position 0)
-          (size (length string)) 
-          (substrs '()) 
-          (start 0) 
+          (size (length string))
+          (substrs '())
+          (start 0)
           (nesting-stack '())
           (colon-modifier-active nil))
         (do ()
@@ -794,8 +794,8 @@
 ;;;
 
 (defun find-matching-greater-than (string position)
-    (let ((size (length string)) 
-          (substrs '()) 
+    (let ((size (length string))
+          (substrs '())
           (nesting-stack '()))
         (do ()
             ((= position size))
@@ -819,12 +819,12 @@
                      (do ((ch (char string position)(char string position)))
                          ((char= ch #\~) (return-from find-matching-greater-than position))
                          (decf position))))))))
-						
+
 ;; conditional expressions
 ;; Note: despite some work, these expressions still do not nest correctly.
 ;; The inner ~[~] semicolons will be used as separators for the outer
 ;; braces. -RGC 10/1/99
-(%set-format-dispatch-func #\[ 
+(%set-format-dispatch-func #\[
 	#'(lambda (stream args index atsign-modifier colon-modifier control &optional (num nil))
 	;	(setq args (nthcdr index args));; skip unnecessary arguments
 		(if (and (< (- (length args) index) 1) (null num))
@@ -841,9 +841,9 @@
 			(setf (cadr control) (+ 2 close-brace-index))
 			(setf conditional-exprs (%expr-list string))
 			(setf selector (or num (nth index args)))
-			(unless (or num atsign-modifier) 
+			(unless (or num atsign-modifier)
                 (incf index))
-			(cond 
+			(cond
 				((and colon-modifier atsign-modifier)
 					(error "~:@[ not allowed in format control string"))
 				(atsign-modifier
@@ -853,14 +853,14 @@
 							(setq string (get-output-stream-string string-stream))
 							(write-string string stream))
 						(incf index)))
-				(colon-modifier 					
+				(colon-modifier
 					(let ((ctstring (format-choose-selection-from-list conditional-exprs
 									(if selector 1 0))))
                        ; (format t "ctstring=~S, args=~A~%" ctstring args)(force-output)
 						(incf index (%format-list string-stream ctstring args index))
 						(setq string (get-output-stream-string string-stream))
 						(write-string string stream)))
-				(t 
+				(t
 					(let ((ctstring (format-choose-selection-from-list conditional-exprs selector)))
 						(incf index (%format-list string-stream ctstring args index))
 						(setq string (get-output-stream-string string-stream))
@@ -876,41 +876,41 @@
 
 ;; need to override warning here for FRESH-LINE not defined yet
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* nil)
-(%set-format-dispatch-func #\& 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\&
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional num)
 		(unless num (setq num 1))
 		(if (>= num 1)
-			(progn 
+			(progn
 				(fresh-line stream)
 				(dotimes (i (1- num))
 					(terpri stream))))
 		index))
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* t)
 
-(%set-format-dispatch-func #\| 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\|
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional num)
 		(unless num (setq num 1))
 		(dotimes (i num)
 			(write-char (int-char 12) stream))
 		index))
 
-(%set-format-dispatch-func #\Newline 
+(%set-format-dispatch-func #\Newline
 	#'(lambda (stream args index atsign-modifier colon-modifier control)
 		;; if atsign, process the newline
 		(if atsign-modifier
 			(terpri stream))
 		;; skip whitespace
 		(unless colon-modifier
-			(do ((c (when (< (cadr control) (length (car control))) (char (car control) (cadr control))) 
+			(do ((c (when (< (cadr control) (length (car control))) (char (car control) (cadr control)))
 				(when (< (cadr control) (length (car control))) (char (car control) (cadr control)))))
 				((not (and c (or (char= c #\Space) (char= c #\Tab)))))
 				(incf (cadr control))))
 		index))
 
-(%set-format-dispatch-func #\T 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\T
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional colnum colinc)
 		(unless colnum (setq colnum 1))
 		(unless colinc (setq colinc 1))
@@ -929,27 +929,27 @@
 							(write-char #\Space stream))))))
 		index))
 
-(%set-format-dispatch-func #\C 
+(%set-format-dispatch-func #\C
 	#'(lambda (stream args index atsign-modifier colon-modifier control)
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~C format directive"))
 		(cond ((and atsign-modifier colon-modifier)
 			   (let ((char-name (char-name (car args))))
-					(if char-name 
-						(write-string char-name stream) 
+					(if char-name
+						(write-string char-name stream)
 						(write-char (car args) stream))))
 			  (colon-modifier
 			   (let ((char-name (char-name (car args))))
-					(if char-name 
-						(write-string char-name stream) 
-						(write-char (car args) stream))))			
+					(if char-name
+						(write-string char-name stream)
+						(write-char (car args) stream))))
 			  (atsign-modifier (write (car args) :stream stream :escape t))
 			  (t (write-char (car args) stream)))
 		(1+ index)))
 
-(%set-format-dispatch-func #\* 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\*
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional num)
         (block nil
     		(unless num (if atsign-modifier (setq num 0) (setq num 1)))
@@ -958,7 +958,7 @@
     		(if colon-modifier (return (- index num)))
     		(return (+ index num)))))
 
-(%set-format-dispatch-func #\W 
+(%set-format-dispatch-func #\W
 	#'(lambda (stream args index atsign-modifier colon-modifier control)
 		(declare (ignore control))
 		(let ((*print-pretty* *print-pretty*)
@@ -1005,15 +1005,15 @@
 					(setq func (caar trace))
 					(unless (symbolp func)
 						(return))
-					(if (not 
+					(if (not
 							(or (eq func 'error)
 								(eq func 'funcall)
 								(char= (char (symbol-name func) 0) #\%)))
 						(return))
 					(setq trace (cdr trace)))
 
-				(format *error-output* 
-					";;; An error occurred in function ~A:~%;;; ~A~%" 
+				(format *error-output*
+					";;; An error occurred in function ~A:~%;;; ~A~%"
 					(caar trace) errmsg)
 				(force-output *error-output*)
 				(throw 'common-lisp::%error nil)))))
@@ -1024,8 +1024,8 @@
 ;;;;
 (defun cerror (continue-format-control datum &rest arguments)
     (declare (ignore continue-format-control))
-    (apply 'error datum arguments))    
-    
+    (apply 'error datum arguments))
+
 ;;;
 ;;;	Common Lisp BREAK function.
 ;;;	This is currently identical to ERROR in its implementation,
@@ -1047,15 +1047,15 @@
 				(setq func (caar trace))
 				(unless (symbolp func)
 					(return))
-				(if (not 
+				(if (not
 						(or (eq func 'break)
 							(eq func 'funcall)
 							(char= (char (symbol-name func) 0) #\%)))
 					(return))
 				(setq trace (cdr trace)))
 
-			(format *error-output* 
-				";;; User break encountered in function ~A:~%;;; ~A~%" 
+			(format *error-output*
+				";;; User break encountered in function ~A:~%;;; ~A~%"
 				(caar trace) errmsg)
 			(force-output *error-output*)
 			(throw 'common-lisp::%error nil))))
@@ -1147,16 +1147,3 @@
                                                     minpad
                                                     padchar)
                                    index))))
-
-
-
-
-
-
-
-
-
-
-
-
-

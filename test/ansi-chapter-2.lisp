@@ -5,37 +5,37 @@
 
 (dotests INVALID-NUMBER-FORMAT
 	(type-of '\256) => symbol
-	(type-of '25\64) => symbol   
-	(type-of '1.0\E6) => symbol   
-	(type-of  '|100|)  => symbol  
-	(type-of ' 3\.14159)  => symbol  
-	(type-of  '|3/4|)  => symbol   
-	(type-of '3\/4) => symbol   
-	(type-of  '5||) => symbol 
-	(type-of  '/) => symbol     
-	(type-of  '/5) => symbol     
-	(type-of  '+) => symbol  
-	(type-of  '1+) => symbol  
-	(type-of  '1-) => symbol    
-	(type-of  'foo+) => symbol  
-	(type-of  'ab.cd) => symbol 
-	(type-of  '_) => symbol  
-	(type-of  '^) => symbol   
+	(type-of '25\64) => symbol
+	(type-of '1.0\E6) => symbol
+	(type-of  '|100|)  => symbol
+	(type-of ' 3\.14159)  => symbol
+	(type-of  '|3/4|)  => symbol
+	(type-of '3\/4) => symbol
+	(type-of  '5||) => symbol
+	(type-of  '/) => symbol
+	(type-of  '/5) => symbol
+	(type-of  '+) => symbol
+	(type-of  '1+) => symbol
+	(type-of  '1-) => symbol
+	(type-of  'foo+) => symbol
+	(type-of  'ab.cd) => symbol
+	(type-of  '_) => symbol
+	(type-of  '^) => symbol
 	(type-of  '^/-) => symbol
 )
 
 (dotests RATIO-FORMAT
 	(every #'rationalp
 	'(
-	2/3                 ;This is in canonical form                  
-	4/6                 ;A non-canonical form for 2/3               
-	-17/23              ;A ratio preceded by a sign                 
-	-30517578125/32768  ;This is (-5/2)^15                          
-	10/5                ;The canonical form for this is 2           
-	#o-101/75           ;Octal notation for -65/61                  
-	#3r120/21           ;Ternary notation for 15/7                  
-	#Xbc/ad             ;Hexadecimal notation for 188/173           
-	#xFADED/FACADE      ;Hexadecimal notation for 1027565/16435934  
+	2/3                 ;This is in canonical form
+	4/6                 ;A non-canonical form for 2/3
+	-17/23              ;A ratio preceded by a sign
+	-30517578125/32768  ;This is (-5/2)^15
+	10/5                ;The canonical form for this is 2
+	#o-101/75           ;Octal notation for -65/61
+	#3r120/21           ;Ternary notation for 15/7
+	#Xbc/ad             ;Hexadecimal notation for 188/173
+	#xFADED/FACADE      ;Hexadecimal notation for 1027565/16435934
 	)) => true
 )
 
@@ -48,7 +48,7 @@
 (dotests SEMICOLON-READ-MACRO
 	 (+ 3 ; three
 	    4)
-	=>  7    
+	=>  7
 )
 
 (dotests BACKQUOTE
@@ -61,7 +61,7 @@
 ;;; In this example, some debugging code is commented out with #|...|#
 ;;; Note that this kind of comment can occur in the middle of a line
 ;;; (because a delimiter marks where the end of the comment occurs)
-;;; where a semicolon comment can only occur at the end of a line 
+;;; where a semicolon comment can only occur at the end of a line
 ;;; (because it comments out the rest of the line).
  (defun add3 (n) #|(format t "~&Adding 3 to ~D." n)|# (+ n 3)) => ADD3
 
@@ -82,7 +82,7 @@
 ;;; In this example, vertical-bar followed by sharpsign needed to appear
 ;;; in a string without any matching sharpsign followed by vertical-bar
 ;;; having preceded this.  To compensate, the programmer has included a
-;;; slash separating the two characters.  In case 2a, the slash is 
+;;; slash separating the two characters.  In case 2a, the slash is
 ;;; unnecessary but harmless, but in case 2b, the slash is critical to
 ;;; allowing the outer #| ... |# pair match.  If the slash were not present,
 ;;; the outer comment would terminate prematurely.
@@ -98,8 +98,8 @@
 
 ;;; In this example, the programmer attacks the mismatch problem in a
 ;;; different way.  The sharpsign vertical bar in the comment is not needed
-;;; for the correct parsing of the program normally (as in case 3a), but 
-;;; becomes important to avoid premature termination of a comment when such 
+;;; for the correct parsing of the program normally (as in case 3a), but
+;;; becomes important to avoid premature termination of a comment when such
 ;;; a program is commented out (as in case 3b).
  (defun mention-fun-fact-3a () ; #|
    (format t "Don't use |# unmatched or you'll get in trouble!"))
@@ -113,6 +113,3 @@
  |#
  (fboundp 'mention-fun-fact-3b) =>  NIL
 )
-	
-	
-	

@@ -196,7 +196,7 @@ CL_NAKED
 LispFunction(Funcall)
 {
 #ifdef _MSC_VER
-	__asm 
+	__asm
 	{
 		push	ebp
 		mov		ebp, esp
@@ -246,10 +246,10 @@ LispFunction(Funcall)
 	t5:
 		cmp 	dl, FunctionType
 		jne		short t6
-		mov		edi, [eax + ((FUNCTION_ENVIRONMENT * 4) - UvectorTag)] 
+		mov		edi, [eax + ((FUNCTION_ENVIRONMENT * 4) - UvectorTag)]
 		mov		eax, [eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
 		lea		eax, [eax + ((COMPILED_CODE_OFFSET * 4) - UvectorTag)]
-		call	eax	
+		call	eax
 		jmp		short t8
 	t6:
 		cmp 	dl, KFunctionType
@@ -352,7 +352,7 @@ CL_NAKED
 LispFunction(Apply)
 {
 #ifdef _MSC_VER
-	__asm 
+	__asm
 	{
 		push	ebp
 		mov		ebp, esp
@@ -415,10 +415,10 @@ LispFunction(Apply)
 	t8:
 		cmp 	dl, FunctionType
 		jne		short t9
-		mov		edi, [eax + ((FUNCTION_ENVIRONMENT * 4) - UvectorTag)] 
+		mov		edi, [eax + ((FUNCTION_ENVIRONMENT * 4) - UvectorTag)]
 		mov		eax, [eax + ((FUNCTION_ADDRESS * 4) - UvectorTag)]
 		lea		eax, [eax + ((COMPILED_CODE_OFFSET * 4) - UvectorTag)]
-		call	eax	
+		call	eax
 		jmp		short t11
 	t9:
 		cmp 	dl, KFunctionType
@@ -2565,7 +2565,7 @@ LispFunction(Print_Float)
 	os->fill(padchar);
 	if (digits >= 0)
 		os->precision((int)digits);
-	os->flags((showPos ? ios::showpos : 0) 
+	os->flags((showPos ? ios::showpos : 0)
 				| (fixed_format ? ios::fixed : 0)
 				| (scientific_format ? ios::scientific : 0));
 	if (width > 0)

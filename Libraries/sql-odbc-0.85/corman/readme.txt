@@ -12,7 +12,7 @@ with PROVIDE. For example, once evaluating SYSTEM-INIT.LISP you can:
 to load the SQL and ODBC packages along with the required patches for
 Corman Lisp. The forms in SYSTEM-INIT.LISP can be placed in the Corman
 Lisp INIT.LISP file, which gets run whenever the Corman Lisp IDE is
-started. 
+started.
 
 The constant *sql-odbc-directory* in SYSTEM-INIT.LISP will need to be
 modified to point to the directory containing the SQL-ODBC root.
@@ -33,6 +33,3 @@ portions of the SQL-ODBC port can be addressed to Chris Double
 Chris Double
 chris@double.nz
 1 September 2000.
-
-
-

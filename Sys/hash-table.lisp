@@ -15,7 +15,7 @@
 (defconstant default-initial-hash-table-size 100)
 
 ;; all hash-table sizes must be prime integers
-(defvar *hash-table-sizes* '(211 307 401 503 613 701 809 907 1009 1201 1301 1511 2003 3001	4001 5003 
+(defvar *hash-table-sizes* '(211 307 401 503 613 701 809 907 1009 1201 1301 1511 2003 3001	4001 5003
 					6007 7001 8009 9001 10007
 					11003 12007 13001 14009 15013 16001 17011 18013 19001 20011 25013
 					30011 35023 40009 50021 60013 70001 80021 90001 100003 150001
@@ -31,7 +31,7 @@
 	nil)
 
 ;; dummy definitions to avoid compiler warning, redefine below
-(defun hash-table-grow (hash-table resize-amount) 
+(defun hash-table-grow (hash-table resize-amount)
 	(declare (ignore resize-amount))
 	hash-table)
 (defun hash-table-test (hash-table) (declare (ignore hash-table)))
@@ -40,13 +40,13 @@
 (defun rehash-equal-hash-table (hash-table) (declare (ignore hash-table)))
 (defun rehash-equalp-hash-table (hash-table) (declare (ignore hash-table)))
 (defun rehash-hash-table (hash-table) (declare (ignore hash-table)))
-    
+
 ;; need to override warning here for HASH-TABLE-COUNT,
 ;; HASH_TABLE-SIZE not defined yet
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* nil)
 (defun print-hash-table (hash-table stream level)
 	(declare (ignore level))
-	(format stream "#<HASHTABLE ~A/~A>" 
+	(format stream "#<HASHTABLE ~A/~A>"
 		(hash-table-count hash-table)
 		(hash-table-size hash-table)))
 (setq *COMPILER-WARN-ON-UNDEFINED-FUNCTION* t)
@@ -77,16 +77,16 @@
         cmp     edx, [ecx + (uvector-offset foreign-heap-ptr-offset)]
         jb      short :done           ;; not in a heap
         symval  ecx, cl::heap_1_end
-        cmp     edx, [ecx + (uvector-offset foreign-heap-ptr-offset)]     
+        cmp     edx, [ecx + (uvector-offset foreign-heap-ptr-offset)]
         jae     short :next2
         mov     eax, (* 8 1)          ;; heap 1
-        jmp     short :done 
+        jmp     short :done
     :next2
         symval  ecx, cl::heap_2_start
         cmp     edx, [ecx + (uvector-offset foreign-heap-ptr-offset)]
         jb      short :done           ;; not in a heap
         symval  ecx, cl::heap_2_end
-        cmp     edx, [ecx + (uvector-offset foreign-heap-ptr-offset)]     
+        cmp     edx, [ecx + (uvector-offset foreign-heap-ptr-offset)]
         jae     short :done
         mov     eax, (* 8 2)          ;; heap 2
     :done
@@ -100,7 +100,7 @@
 (defvar heap_1_gc_id heap_1_gc_id)
 (defvar heap_2_gc_id heap_2_gc_id)
 
-(defstruct (hash-table 
+(defstruct (hash-table
 			(:constructor make-skeleton-hash-table)
 			(:print-function print-hash-table))
 	(rehash-needed nil)		;; must be first field for garbage collector to mark it
@@ -120,12 +120,12 @@
     (gc-2-level 0))
 
 ;; Returns true if the current garbage collection ID is greater than that
-;; stored in the rehash-id field of the hash-table. This will be true if 
+;; stored in the rehash-id field of the hash-table. This will be true if
 ;; a collection has occurred since the hash-table was last accessed.
 (defun hash-table-need-rehash (ht)
     (or (hash-table-rehash-needed ht)
         (let ((gen (hash-table-newest-generation ht)))
-            (cond 
+            (cond
                 ((= gen 0)(< (hash-table-gc-0-level ht) heap_0_gc_id))
                 ((= gen 1)(< (hash-table-gc-1-level ht) heap_1_gc_id))
                 ((= gen 2)(< (hash-table-gc-2-level ht) heap_2_gc_id))
@@ -134,8 +134,8 @@
 ;;;;
 ;;;;	Common Lisp MAKE-HASH-TABLE function
 ;;;;
-(defun make-hash-table (&key (test 'eql) 
-							 (size default-initial-hash-table-size) 
+(defun make-hash-table (&key (test 'eql)
+							 (size default-initial-hash-table-size)
 							 (rehash-size 2.0)	;; double in size when growing
 							 (rehash-threshold 0.5) ;; grow when half full
 							 (synchronized t))
@@ -147,14 +147,14 @@
 	(unless (member test hash-table-test-types)
 		(error "Invalid test type for hash-table: ~A" test))
 	(let ((hash-func nil))
-		(cond 
+		(cond
 			((eq test 'eq) (setq hash-func 'hash-eq-function))
 			((eq test 'eql) (setq hash-func 'hash-eql-function))
 			((eq test 'equal) (setq hash-func 'hash-equal-function))
 			((eq test 'equalp) (setq hash-func 'hash-equalp-function)))
 
 		(let* ((ht-size (calc-hash-table-size size))
-			   (hash-table (make-skeleton-hash-table 
+			   (hash-table (make-skeleton-hash-table
 							:size ht-size
 							:rehash-size rehash-size
 							:rehash-threshold rehash-threshold
@@ -170,7 +170,7 @@
 		(elt table index)))
 
 ;;
-;; If the key is a cons, then the actual key is the car, and 
+;; If the key is a cons, then the actual key is the car, and
 ;; the cdr is an integer representation of the address (in case
 ;; the hash table is using it as a hash id)
 ;;
@@ -212,13 +212,13 @@
 					(setq resize-amount (truncate (* (- resize-amount 1.0) table-size))))
                 (if (<= resize-amount 0)
                     (setf resize-amount table-size))
-				(hash-table-grow hash-table resize-amount)		
+				(hash-table-grow hash-table resize-amount)
 				(setq table-size (hash-table-size hash-table))
 				(setq count (hash-table-count hash-table))))
-        
+
         ;; track newest heap generation used as a key
         (update-newest-heap-key hash-table key)
-                
+
    		(setq index (hash-table-key-index hash-table key))
 		(setq list (hash-table-entry-list hash-table index))
 
@@ -234,20 +234,20 @@
 		(if (null list)
 			(progn
 				(incf (hash-table-count hash-table))
-				(hash-table-entry-list-push 
-                    hash-table 
-                    index 
+				(hash-table-entry-list-push
+                    hash-table
+                    index
                     ;; if a heap object push a cons with the car=key, cdr=address
                     (if (or (consp key) (uvectorp key)) (cons key (cl::%uvector-address key)) key)
                     value))
-			(setf (car (cdr list)) value)) 
+			(setf (car (cdr list)) value))
 		value))
 
-;;; Use a different rehash method depending on what type of 
+;;; Use a different rehash method depending on what type of
 ;;; test function the hash-table uses.
 (defun rehash-hash-table (hash-table)
 	;(format t "Rehashing hash-table~%")
-    
+
     (let ((test (hash-table-test hash-table)))
         (cond ((eq test 'eq)(rehash-eq-hash-table hash-table))
               ((eq test 'eql)(rehash-eql-hash-table hash-table))
@@ -255,7 +255,7 @@
               ((eq test 'equalp)(rehash-equalp-hash-table hash-table)))
         (setf (uref hash-table 2) nil)
         (setf (hash-table-rehash-id hash-table)(get-gc-id))
-        
+
         ;; set all ids to current gc level (0 is always the most recent)
         (setf (hash-table-gc-0-level hash-table) heap_0_gc_id)
         (setf (hash-table-gc-1-level hash-table) heap_0_gc_id)
@@ -272,11 +272,11 @@
          ;(format t "rehashing key ~A, value ~A~%" key value)       ;; debugging
          (hash-table-add-entry hash-table key value)))
 
-;; If the key is a heap object (which we identify as a cons cell in 
+;; If the key is a heap object (which we identify as a cons cell in
 ;; the key slot) and the address of the key (car of cons) is not
 ;; the same as the cdr (stored address) then need to rehash.
 (defun needs-rehashing-eq (key)
-    (and (consp key) 
+    (and (consp key)
         (/= (cl::%uvector-address (car key)) (cdr key))))
 
 ;; If the key is a heap object and not a number,
@@ -284,7 +284,7 @@
 ;; the same as the cdr (stored address) then need to rehash.
 (defun needs-rehashing-eql (key)
     (and (consp key)
-        (not (numberp (car key))) 
+        (not (numberp (car key)))
         (/= (cl::%uvector-address (car key)) (cdr key))))
 
 ;; If the key is a heap object and not a number or a string,
@@ -294,7 +294,7 @@
     (and (consp key)
         (let ((k (car key)))
             (and (not (numberp k))
-                 (not (simple-string-p k)) 
+                 (not (simple-string-p k))
                  (/= (cl::%uvector-address k) (cdr key))))))
 
 ;; If the key is a heap object and not a number or a string,
@@ -304,17 +304,17 @@
     (and (consp key)
         (let ((k (car key)))
             (and (not (numberp k))
-                 (not (simple-string-p k)) 
+                 (not (simple-string-p k))
                  (/= (cl::%uvector-address k) (cdr key))))))
 
 (defun do-rehash (hash-table needs-rehash-func)
 	(let* ((table (hash-table-table hash-table))
 	       (size (hash-table-size hash-table))
            (rehash-list '()))
- 
+
         (setf (hash-table-newest-generation hash-table) 3)  ;; this gets recomputed during rehash
         (setf (hash-table-rehash-needed hash-table) nil)
-              
+
         ;; Go through the table. If any bucket contains a key which
         ;; could potentially need rehashing (any heap object) just
         ;; add the whole bucket to the rehash list and remove it from
@@ -326,15 +326,15 @@
                     ((null x))
                     (if (consp key)
                         (update-newest-heap-key hash-table (car key)))
-                    
+
                     ;; when these items get rehashed then they will update the newest key
-                    (when (funcall needs-rehash-func key) 
+                    (when (funcall needs-rehash-func key)
                         ;; For convenience, just rehash the whole bucket (it will usually
-                        ;; only contain one entry anyway, if our hashing algorithm is good).                       
+                        ;; only contain one entry anyway, if our hashing algorithm is good).
                         (setf rehash-list (nconc list rehash-list))
                         (setf (elt table i) nil)
                         (return)))))    ;; return from do*
-        
+
         ;; now rehash all the key-value pairs in the rehash-list
         (rehash-hash-list hash-table rehash-list)
         hash-table))
@@ -352,7 +352,7 @@
 
 (defun rehash-equalp-hash-table (hash-table)
     (do-rehash hash-table 'needs-rehashing-equalp))
-					
+
 ;;;;
 ;;;;	Common Lisp GETHASH function
 ;;;;
@@ -397,14 +397,14 @@
            (hkey (car list)))
         (if (consp hkey)
             (setf hkey (car hkey)))
-        
-        ;; catch most common case quickly, when the entry we are looking for 
+
+        ;; catch most common case quickly, when the entry we are looking for
         ;; is at the beginning of the list (usually it will be the only one)
         (when (funcall test-func key hkey)
             (decf (hash-table-count hash-table))
             (setf (elt (hash-table-table hash-table) index) (cddr list))
             (return-from remhash t))
-        
+
         ;; not found, look through any remaining items
     	(do* ((x list (cddr x))
               (y (cddr list) (cddr y))
@@ -433,7 +433,7 @@
                 (if (consp hkey)
                     (setq hkey (car hkey)))
 				(funcall function hkey value)))))
-		
+
 ;;;;
 ;;;;	Common Lisp WITH-HASH-TABLE-ITERATOR macro
 ;;;;
@@ -451,7 +451,7 @@
 			    (,ht-list-sym nil)
 			    (,ret-sym nil)
 			    (,ret-val nil))
-			(flet 
+			(flet
 				((,func-name ()
 						(do ()
 							((or ,ht-list-sym (= ,index-sym ,ht-size-sym)))
@@ -483,7 +483,7 @@
 ;;;;	Common Lisp SXHASH function
 ;;;;    Modified 7/21/08 to handle symbols correctly.
 ;;;
-(defun sxhash (object) 
+(defun sxhash (object)
     (if (symbolp object)
         (hash-equalp-function (symbol-name object))
         (hash-equalp-function object)))
@@ -494,7 +494,7 @@
 	       (current-size (hash-table-size hash-table))
 		   (new-size (calc-hash-table-size (+ current-size resize-amount))))
 		(unless new-size (error "Could not grow the hash-table: ~A" hash-table))
-		(setf (hash-table-table hash-table) 
+		(setf (hash-table-table hash-table)
 				(make-array new-size :initial-element nil))
 		(setf (hash-table-size hash-table) new-size)
 		(setf (hash-table-count hash-table) 0)
@@ -532,7 +532,7 @@
         shl     edx, 5
         xor     eax, edx
         shl     edx, 5
-        xor     eax, edx 
+        xor     eax, edx
         shl     edx, 5
         xor     eax, edx
         shl     edx, 5
@@ -544,7 +544,7 @@
     })
 
 (defun hash-eql-function (obj)
-	(cond 
+	(cond
 		((double-float-p obj)(hash-uvector obj))
 		((single-float-p obj)(hash-uvector obj))
 		((bignump obj) (hash-uvector obj))
@@ -557,7 +557,7 @@
 (defun hash-bit-vector (obj) (declare (ignore obj)) nil)
 
 (defun hash-equal-function (obj)
-	(cond 
+	(cond
 		((consp obj)(hash-list obj))
 		((stringp obj) (hash-string obj))
 		((bit-vector-p obj) (hash-bit-vector obj))
@@ -666,7 +666,7 @@
 	(let ((len (uvector-num-slots obj))
 		  (hash-val 0))
 		(dotimes (i len)
-			(setq hash-val 
+			(setq hash-val
 				(logxor (hash-cell obj i) (hash-obj-id hash-val))))
 		hash-val))
 
@@ -742,4 +742,3 @@
 (setf (symbol-plist '*documentation-registry*) nil)
 
 ;;; done DOCUMENTATION patching
-

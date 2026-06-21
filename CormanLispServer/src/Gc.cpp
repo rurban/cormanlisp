@@ -26,7 +26,7 @@
 //					10/31/16 Artem Boldarev
 //							      Look for image in the installation directory (as last resort). Useful for loading
 //"CormanLisp.img". 					11/22/16  Artem Boldarev 							  getImageLoadsCount()
-//function.
+// function.
 //
 #include "Stdafx.h"
 #include <wtypes.h>
@@ -674,7 +674,7 @@ __declspec(naked) void EnterGCCriticalSection()
 		mov		ecx, 0
 		call	Memory_Report
 	t11000:
-        
+
 		push	eax		;; just to get esp - 4
         mov		[esi + eax*2 + (STACK_MARKERS_Index * 4)], esp
         lea		edi, [esi + eax*2 + ((STACK_MARKERS_Index + 1) * 4)]
@@ -684,7 +684,7 @@ __declspec(naked) void EnterGCCriticalSection()
         add		eax, 4
         mov		[esi + (STACK_MARKER_INDEX_Index * 4)], eax
         cld		;; end-atomic
-		
+
 		push	4	;; push argument length (bytes)
         lea		eax, dword ptr GCCriticalSection.m_sect
         push	eax
@@ -696,8 +696,8 @@ __declspec(naked) void EnterGCCriticalSection()
         mov		edx, [esi + (STACK_MARKER_INDEX_Index * 4)]
         sub		edx, 4
         mov		[esi + (STACK_MARKER_INDEX_Index * 4)], edx
-        push    0  
-   		pop		dword ptr [esi + edx*2 + (STACK_MARKERS_Index * 4)]   ;; clear stack marker   			
+        push    0
+   		pop		dword ptr [esi + edx*2 + (STACK_MARKERS_Index * 4)]   ;; clear stack marker
 		push	0
         pop		dword ptr [esi + edx*2 + ((STACK_MARKERS_Index + 1) * 4)]
         cld		;; end-atomic
@@ -740,8 +740,8 @@ __declspec(naked) void LeaveGCCriticalSection()
         mov		edx, [esi + (STACK_MARKER_INDEX_Index * 4)]
         sub		edx, 4
         mov		[esi + (STACK_MARKER_INDEX_Index * 4)], edx
-        push    0  
-   		pop		dword ptr [esi + edx*2 + (STACK_MARKERS_Index * 4)]   ;; clear stack marker   			
+        push    0
+   		pop		dword ptr [esi + edx*2 + (STACK_MARKERS_Index * 4)]   ;; clear stack marker
 		push	0
         pop		dword ptr [esi + edx*2 + ((STACK_MARKERS_Index + 1) * 4)]
         cld		;; end-atomic

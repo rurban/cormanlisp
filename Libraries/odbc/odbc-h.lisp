@@ -30,7 +30,7 @@
 
 // /* environment specific definitions */
 // #ifndef EXPORT
-// #define EXPORT   
+// #define EXPORT
 // #endif
 
 // #ifdef WIN32
@@ -107,7 +107,7 @@ typedef signed short            SSHORT;
 typedef unsigned long           ULONG;
 typedef unsigned short          USHORT;
 typedef double                  SDOUBLE;
-typedef double            	LDOUBLE; 
+typedef double            	LDOUBLE;
 typedef float                   SFLOAT;
 
 typedef void*              		PTR;
@@ -176,9 +176,9 @@ typedef TIMESTAMP_STRUCT	SQL_TIMESTAMP_STRUCT;
  * these values are from SQL-92
  */
 
-// Hmm, cannot handle enums in the C parser now, have to redefine this 
+// Hmm, cannot handle enums in the C parser now, have to redefine this
 // #if (ODBCVER >= 0x0300)
-// typedef enum 
+// typedef enum
 // {
 // 	SQL_IS_YEAR						= 1,
 // 	SQL_IS_MONTH					= 2,
@@ -256,9 +256,9 @@ typedef struct tagSQL_INTERVAL_STRUCT
 // #if (ODBCVER >= 0x0300)
 // #if (_MSC_VER >= 900)
 // #define ODBCINT64	__int64
-// #endif  
+// #endif
 
-/* If using other compilers, define ODBCINT64 to the 
+/* If using other compilers, define ODBCINT64 to the
 	approriate 64 bit integer type */
 // #ifdef ODBCINT64
 // typedef ODBCINT64	SQLBIGINT;
@@ -534,8 +534,8 @@ typedef SQLCHAR         SQLTCHAR;
 #define SQL_UNBIND          2
 #define SQL_RESET_PARAMS    3
 
-/* Codes used for FetchOrientation in SQLFetchScroll(), 
-   and in SQLDataSources() 
+/* Codes used for FetchOrientation in SQLFetchScroll(),
+   and in SQLDataSources()
 */
 #define SQL_FETCH_NEXT      1
 #define SQL_FETCH_FIRST     2
@@ -758,16 +758,16 @@ typedef SQLCHAR         SQLTCHAR;
 #define SQL_AT_ADD_CONSTRAINT               	0x00000008L
 
 /* The following bitmasks are ODBC extensions and defined in sqlext.h
-*#define	SQL_AT_COLUMN_SINGLE					0x00000020L	
+*#define	SQL_AT_COLUMN_SINGLE					0x00000020L
 *#define	SQL_AT_ADD_COLUMN_DEFAULT				0x00000040L
 *#define	SQL_AT_ADD_COLUMN_COLLATION				0x00000080L
 *#define	SQL_AT_SET_COLUMN_DEFAULT				0x00000100L
 *#define	SQL_AT_DROP_COLUMN_DEFAULT				0x00000200L
 *#define	SQL_AT_DROP_COLUMN_CASCADE				0x00000400L
 *#define	SQL_AT_DROP_COLUMN_RESTRICT				0x00000800L
-*#define SQL_AT_ADD_TABLE_CONSTRAINT				0x00001000L		
-*#define SQL_AT_DROP_TABLE_CONSTRAINT_CASCADE		0x00002000L		
-*#define SQL_AT_DROP_TABLE_CONSTRAINT_RESTRICT		0x00004000L		
+*#define SQL_AT_ADD_TABLE_CONSTRAINT				0x00001000L
+*#define SQL_AT_DROP_TABLE_CONSTRAINT_CASCADE		0x00002000L
+*#define SQL_AT_DROP_TABLE_CONSTRAINT_RESTRICT		0x00004000L
 *#define SQL_AT_CONSTRAINT_NAME_DEFINITION			0x00008000L
 *#define SQL_AT_CONSTRAINT_INITIALLY_DEFERRED		0x00010000L
 *#define SQL_AT_CONSTRAINT_INITIALLY_IMMEDIATE		0x00020000L
@@ -863,9 +863,9 @@ SQLRETURN  SQL_API SQLAllocHandle(SQLSMALLINT HandleType,
 SQLRETURN  SQL_API SQLAllocStmt(SQLHDBC ConnectionHandle,
            SQLHSTMT *StatementHandle);
 
-SQLRETURN  SQL_API SQLBindCol(SQLHSTMT StatementHandle, 
-		   SQLUSMALLINT ColumnNumber, SQLSMALLINT TargetType, 
-		   SQLPOINTER TargetValue, SQLINTEGER BufferLength, 
+SQLRETURN  SQL_API SQLBindCol(SQLHSTMT StatementHandle,
+		   SQLUSMALLINT ColumnNumber, SQLSMALLINT TargetType,
+		   SQLPOINTER TargetValue, SQLINTEGER BufferLength,
 	   	   SQLINTEGER *StrLen_or_Ind);
 
 // #if (ODBCVER >= 0x0300)
@@ -980,8 +980,8 @@ SQLRETURN  SQL_API SQLGetDescField(SQLHDESC DescriptorHandle,
 SQLRETURN  SQL_API SQLGetDescRec(SQLHDESC DescriptorHandle,
            SQLSMALLINT RecNumber, SQLCHAR *Name,
            SQLSMALLINT BufferLength, SQLSMALLINT *StringLength,
-           SQLSMALLINT *Type, SQLSMALLINT *SubType, 
-           SQLINTEGER *Length, SQLSMALLINT *Precision, 
+           SQLSMALLINT *Type, SQLSMALLINT *SubType,
+           SQLINTEGER *Length, SQLSMALLINT *Precision,
            SQLSMALLINT *Scale, SQLSMALLINT *Nullable);
 
 SQLRETURN  SQL_API SQLGetDiagField(SQLSMALLINT HandleType, SQLHANDLE Handle,
@@ -1030,7 +1030,7 @@ SQLRETURN  SQL_API SQLPrepare(SQLHSTMT StatementHandle,
 SQLRETURN  SQL_API SQLPutData(SQLHSTMT StatementHandle,
            SQLPOINTER Data, SQLINTEGER StrLen_or_Ind);
 
-SQLRETURN  SQL_API SQLRowCount(SQLHSTMT StatementHandle, 
+SQLRETURN  SQL_API SQLRowCount(SQLHSTMT StatementHandle,
 	   SQLINTEGER *RowCount);
 
 // #if (ODBCVER >= 0x0300)

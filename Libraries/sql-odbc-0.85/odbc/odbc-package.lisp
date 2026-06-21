@@ -5,7 +5,7 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
@@ -14,12 +14,12 @@
 (defpackage "ODBC"
   (:use "SQL" "COMMON-LISP" #+mcl "CCL" "FFC" #+cormanlisp "WIN32")
   (:import-from "SQL"
-                "DB-DISCONNECT" "DB-COMMIT" "DB-ROLLBACK" 
+                "DB-DISCONNECT" "DB-COMMIT" "DB-ROLLBACK"
                 "DB-OPEN-QUERY" "DB-CLOSE-QUERY" "DB-CANCEL-QUERY"
-                "DB-QUERY" "DB-FETCH-QUERY-RESULTS" 
+                "DB-QUERY" "DB-FETCH-QUERY-RESULTS"
                 "DB-MAP-QUERY" "DB-MAP-BIND-QUERY"
                 "DB-EXECUTE-COMMAND" "DB-EXECUTE-PARAMETERIZED"
-                "DB-PREPARE-STATEMENT" 
+                "DB-PREPARE-STATEMENT"
                 ;"DB-QUERY-PARAMETERIZED"
                 "DB-QUERY-OBJECT"
                 "DB-DESCRIBE-COLUMNS"
@@ -41,7 +41,7 @@
                 #-cormanlisp "STREAM-PEEK-CHAR"
                 #-cormanlisp "STREAM-READ-SEQUENCE"
                 #-cormanlisp "STREAM-WRITE-SEQUENCE"
-                
+
                 "BUFFER" "BUFFER-SIZE" "BUFFER-POSITION"
 
                 "%DB-EXECUTE" ; "%PREPARE-QUERY-VARS"

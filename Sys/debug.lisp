@@ -9,26 +9,26 @@
 ;;;;
 
 (defpackage "DEBUG"
-;	(:import 
+;	(:import
 ;		pl::peek-byte
 ;		pl::peek-dword)
-	(:export 
-		"FIND-SOURCE" 
-		"DUMP-BYTES" 
+	(:export
+		"FIND-SOURCE"
+		"DUMP-BYTES"
 		"DUMP-DWORDS"
 		"PEEK-BYTE"
 		"PEEK-DWORD"
 		"DUMP-ERROR-STACK"
-		"DISASSEMBLE-BYTES" 
-		"CONS-ADDRESS" 
+		"DISASSEMBLE-BYTES"
+		"CONS-ADDRESS"
 		"UVECTOR-ADDRESS"
-		"*DUMP-BYTES-DEFAULT-LENGTH*" 
-		"*DUMP-BYTES-DEFAULT-WIDTH*" 
-		"*DUMP-DWORDS-DEFAULT-LENGTH*" 
+		"*DUMP-BYTES-DEFAULT-LENGTH*"
+		"*DUMP-BYTES-DEFAULT-WIDTH*"
+		"*DUMP-DWORDS-DEFAULT-LENGTH*"
 		"*DUMP-DWORDS-DEFAULT-WIDTH*"
 		"ENVIRONMENT-VARIABLE"
 		"CAPTURE-ENVIRONMENT"
-		"FRAME-BINDINGS" 
+		"FRAME-BINDINGS"
 	)
 	(:nicknames "DB"))
 
@@ -74,25 +74,25 @@
 (untrace %dummy)
 
 (defun find-source (func)
-    ;; if there is a code generator defined, this will have priority so find 
+    ;; if there is a code generator defined, this will have priority so find
     ;; that one first
     (if (and (symbolp func) (x86::code-generator-function func))
         (setf func (x86::code-generator-function func)))
 	(if (symbolp func)
 		(setq func (symbol-function func)))
-    
+
     ;; handle traced functions
     (if (and (functionp func) (eql (cl::function-compiled-code func) *traced-function-code*))
         (setf func (car (uref (cl::function-environment func) 2))))
-    
+
 	(let* ((file (function-source-file func))
 		   (line (function-source-line func)))
-		(unless file 
+		(unless file
 			(format *terminal-io* "No source file information available.")
 			(return-from find-source nil))
         (when (pathnamep file) (setq file (namestring file)))
    		(if (is-relative-path file)
-			(setq file (concatenate 'string ccl:*cormanlisp-directory* "\\" file)))	  
+			(setq file (concatenate 'string ccl:*cormanlisp-directory* "\\" file)))
 		(ed file)
 		(ide::set-selection file line 0 line 200)
 		t))
@@ -107,7 +107,7 @@
 
 (defun is-bad-dword-ptr (addr)
 	(win:IsBadReadPtr (ct:int-to-foreign-ptr addr) 4))
-					
+
 (defun dump-n-bytes (addr num stream &optional (added 0))
 	(let ((char-dump-indent (+ 12 (* num 3))))
 		(incf char-dump-indent (* added 3))
@@ -149,7 +149,7 @@
 		push	eax
 		mov		ecx, 2
 		callf	error
-	:t2	
+	:t2
 		sub		eax, uvector-tag
 		push	eax
 		callp	cl::%create-unsigned-lisp-integer
@@ -176,7 +176,7 @@
 		push	eax
 		mov		ecx, 2
 		callf	error
-	:t2	
+	:t2
 		sub		eax, cons-tag
 		push	eax
 		callp	cl::%create-unsigned-lisp-integer
@@ -197,12 +197,12 @@
 
 (defun cl::invalid-object-string (object)
 	(format nil "Invalid object: #x~X" (ccl::lisp-object-bits object)))
-	
+
 (defconstant *dump-bytes-default-length* 64)
 (defconstant *dump-bytes-default-width* 8)
-(defun dump-bytes (obj 
+(defun dump-bytes (obj
 		&key (length nil)			;; length in bytes
-			(stream *standard-output*) 
+			(stream *standard-output*)
 			(width *dump-bytes-default-width*))
 	(let (addr)
 		(cond ((integerp obj)
@@ -228,13 +228,13 @@
 				(dump-n-bytes addr width stream)
 				(incf addr width))
 			(if (> remainder 0)
-				(dump-n-bytes addr remainder stream (- width remainder)))))) 
+				(dump-n-bytes addr remainder stream (- width remainder))))))
 
 (defconstant *dump-dwords-default-length* 32)
 (defconstant *dump-dwords-default-width* 1)
-(defun dump-dwords (obj 
+(defun dump-dwords (obj
 		&key (length nil)
-			(stream *standard-output*) 
+			(stream *standard-output*)
 			(width *dump-dwords-default-width*))
 
 	(let (addr)
@@ -263,7 +263,7 @@
 				(dump-n-dwords addr width stream)
 				(incf addr (* width 4)))
 			(if (> remainder 0)
-				(dump-n-dwords addr remainder stream))))) 
+				(dump-n-dwords addr remainder stream)))))
 
 (defun dump-error-stack (&optional (stream *standard-output*))
 	(dolist (x cl::*error-trace*)
@@ -271,7 +271,7 @@
 
 ;;;
 ;;;	Corman Lisp DISASSEMBLE-BYTES function
-;;;		
+;;;
 (defun disassemble-bytes (addr num-bytes &optional (stream *standard-output*))
 	(format stream ";Disassembling from address #x~x:~%" addr)
 	(do* ((offset 0)
@@ -284,7 +284,7 @@
 		(format stream ";#x~x:~4t~A~%" offset instruction)
 		(if (= instruction-bytes 0)
 			(incf instruction-bytes))	;; if RET, returns 0 as a flag
-		(incf offset instruction-bytes)))	
+		(incf offset instruction-bytes)))
 
 (defstruct environment-variable name value register offset indirect-flag)
 (defun make-environment (env)
@@ -324,7 +324,7 @@
           ephemeral-2-used)
 
      	(cl::gc 3)				;; flush all ephemeral heaps
-        
+
         (multiple-value-bind (percent total used)
             (cl::heap-used 0)
             (declare (ignore percent))
@@ -333,7 +333,7 @@
             (cl::heap-used 1)
             (declare (ignore percent))
             (setq ephemeral-2-size total ephemeral-2-used used))
-                
+
     	(format t "~30TUsed~45TAvailable~60TTotal~%")
     	(format t "~30T----~45T---------~60T-----~%")
     	(let ((control "~A:~30T~D~45T~D~60T~D~%"))
@@ -425,7 +425,7 @@
 				(if info (return-from function-debug-info info))))
 		nil))
 
-(defun frame-var-offset (x) 
+(defun frame-var-offset (x)
 	(setf x (logand x #xffffff))
 	(if (/= (logand x #x800000) 0)
 		(decf x #x1000000))
@@ -440,12 +440,12 @@
 		(if (= (frame-var-base (svref info i)) 1)
 			(return t))))
 
-(defun offset-foreign-ptr (p offset) 
+(defun offset-foreign-ptr (p offset)
 	(ct:int-to-foreign-ptr (+ (ct:cpointer-value p) offset)))
 
 (defvar *save-compiled-func* nil)
 
-(defun function-name (func) 
+(defun function-name (func)
 	(if (functionp func)
 		(or (nth-value 2 (function-lambda-expression func)) func)))
 
@@ -460,7 +460,7 @@
 		pop		ebp
 		ret
 	})
-	
+
 (defun prepare-frame-debug-info (func addr)
 	(if func
 		(let* ((info (function-debug-info func)))
@@ -469,15 +469,15 @@
 				   (arg-num (ct:cref (:unsigned-long *) addr -2)))
 				(setf (svref info 0) addr)
 				(setf (svref info 1)
-					(if (frame-uses-ebx info) 
-						(offset-foreign-ptr addr (+ (* arg-num 4) 4)) 
+					(if (frame-uses-ebx info)
+						(offset-foreign-ptr addr (+ (* arg-num 4) 4))
 						0))
 				(setf (svref info 2) heap-env)
 				(setf (svref info 3) 0))
 			info)))
 
 (defun get-current-frame-info ()
-	(prepare-frame-debug-info 
+	(prepare-frame-debug-info
 		(get-frame-function *debug-level*)
 		(get-frame-address *debug-level*)))
 
@@ -522,7 +522,7 @@
 			((win:memory-access-violation-error
 				(lambda (condition)
 					(declare (ignore condition))
-					(return-from debug-format (format nil "Invalid object: #x~X" bits)))))	
+					(return-from debug-format (format nil "Invalid object: #x~X" bits)))))
 			(cond ((= tag-bits 0) (format nil "~S" obj))	;; format fixnum
 				  ((= tag-bits 1)
 				   (if (= (logand bits 255) 1)
@@ -532,7 +532,7 @@
 				  ((= tag-bits 5)(debug-format-uvector obj bits))	;; format uvector
 				  ((or (= tag-bits 3)(= tag-bits 7))
 				   (format nil "~S" obj))					;; format short-float
-				  (t (format nil "Invalid object: #x~X" bits))))))		
+				  (t (format nil "Invalid object: #x~X" bits))))))
 
 ;; Returns the object, watching for illegal bit patterns.
 ;; An illegal object is converted to a string, using debug-format,
@@ -544,7 +544,7 @@
 			((win:memory-access-violation-error
 				(lambda (condition)
 					(declare (ignore condition))
-					(return-from debug-filter (format nil "Invalid object: #x~X" bits)))))	
+					(return-from debug-filter (format nil "Invalid object: #x~X" bits)))))
 			(cond ((= tag-bits 0) obj)
 				  ((= tag-bits 1)
 				   (if (= (logand bits 255) 1)
@@ -553,8 +553,8 @@
 				  ((= tag-bits 4)(debug-filter-cons obj bits))
 				  ((= tag-bits 5)(debug-filter-uvector obj bits))
 				  ((or (= tag-bits 3)(= tag-bits 7)) obj)
-				  (t (format nil "Invalid object: #x~X" bits))))))		
-								
+				  (t (format nil "Invalid object: #x~X" bits))))))
+
 (defun display-frame (func addr)
 	(unless (functionp func)
 		(format *debug-io* ";;; No debugging information is available for this function.~%")
@@ -596,14 +596,14 @@
 	(do* ((i 2 (+ i 1))
 		  (func (get-frame-function i)(get-frame-function i)))
 		 (nil)
-		(if (or (= i *debug-max-levels*) 
-				(and func 
+		(if (or (= i *debug-max-levels*)
+				(and func
 					(or (eq func cl::*top-level*)
 						(eq (execution-address func) (execution-address cl::*top-level*)))))
 			(return i))))
 
 (defun debug-min-level () 2)
-	
+
 (defun get-backtrace ()
 	(do* ((i *debug-level* (+ i 1))
 		  (func (get-frame-function i)(get-frame-function i))
@@ -616,7 +616,7 @@
 (defun print-backtrace ()
 	(let ((bt (get-backtrace)))
 		(dolist (func bt)
-			(if (functionp func)				
+			(if (functionp func)
 				(let ((name (function-name func))
 					  (file (function-source-file func))
 					  (line (function-source-line func)))
@@ -624,11 +624,11 @@
 					(if file (format *debug-io* "~40T(File ~A, line ~A)" file line))
 					(format *debug-io* "~%"))
 				#|(format *debug-io* ";;; No function information~%")|#))))
-	
+
 (defun set-current-frame-env ()
-	(setf *current-frame* 
-		(capture-frame 
-			(get-frame-function *debug-level*) 
+	(setf *current-frame*
+		(capture-frame
+			(get-frame-function *debug-level*)
 			(get-frame-address *debug-level*))))
 
 (defun show-frame ()
@@ -640,7 +640,7 @@
 (defun next-frame ()
 	(let ((next-level (next-debug-level)))
 		(if next-level
-			(progn 
+			(progn
 				(setf *debug-level* next-level)
 				(set-current-frame-env)
 				(show-frame))
@@ -677,23 +677,23 @@
 (defun bottom-frame ()
 	(setf *debug-level* *debug-max-level*)
 	(set-current-frame-env)
-	(show-frame))			
+	(show-frame))
 
-(defun show-lambda () 
-	(pprint 
-		(function-lambda-expression 
-			(get-frame-function *debug-level*)) 
+(defun show-lambda ()
+	(pprint
+		(function-lambda-expression
+			(get-frame-function *debug-level*))
 		*debug-io*)
 	(terpri *debug-io*))
-	
+
 (defun debugger-message ()
 	(when (typep cl::*debug-condition* 'error)
-		(format *debug-io* 
-				";;; An error of type ~A was detected in function ~A:~%;;; Error: ~A~%" 
+		(format *debug-io*
+				";;; An error of type ~A was detected in function ~A:~%;;; Error: ~A~%"
             (class-name (class-of cl::*debug-condition*))
-		    cl::*error-function* 
+		    cl::*error-function*
             cl::*debug-condition*))
-	(format *debug-io* 
+	(format *debug-io*
 		";;; Entering Corman Lisp debug loop. ~%;;; Use :C followed by an option to exit. Type :HELP for help.~%"))
 
 (defun show-restart-options ()
@@ -707,7 +707,7 @@
 						(funcall report-fn *debug-io*)
 						(terpri *debug-io*)
 						(incf index)))))))
-						
+
 (defun debugger-continue ()
 	(when (= (length cl::*restart-registry*) 0)
 		(format *debug-io* "No restarts available.~%")
@@ -715,14 +715,14 @@
 	(let ((option (read *debug-io*)))
 		(do ()
 			((and (fixnump option)(> option 0)(<= option (length cl::*restart-registry*))))
-			(format *debug-io* "Enter an integer restart option from 1 to ~A~%" 
+			(format *debug-io* "Enter an integer restart option from 1 to ~A~%"
 				(length cl::*restart-registry*))
-			(setf option (read *debug-io*))) 
+			(setf option (read *debug-io*)))
 		(let* ((restart (elt cl::*restart-registry* (- option 1)))
 				   (interactive (cl::restart-interactive-function restart))
 				   (args (if interactive (multiple-value-list (funcall interactive)))))
 				(apply (cl::restart-function restart) args))))
-										
+
 (defun debugger-help ()
 	(format *debug-io* "~%;;; Corman Lisp Debug Loop commands:~%")
 	(format *debug-io* ";;; :C   (or :CONTINUE) integer       Exits the debug loop and invokes the specified restart option~%")
@@ -736,7 +736,7 @@
 	(format *debug-io* ";;; :>   (or :BOTTOM)                 Go up the bottom of the stack~%")
 	(format *debug-io* ";;; :G   (or :GO) function            Go up the specified frame~%")
 	(format *debug-io* ";;; :L   (or :LAMBDA)                 Display the lambda expression for the current function~%"))
-		
+
 ;;;
 ;;; Returns t if the passed expression was a debugger command and was handled.
 ;;;	Returns nil if not, and the debugger will then process the expression
@@ -747,13 +747,13 @@
 		  ((member expr '(:c :cont :continue))	(debugger-continue))
 		  ((member expr '(:r :restarts)) 		(show-restart-options))
 		  ((member expr '(:help :?))			(debugger-help))
-		  ((member expr '(:b :backtrace))		(print-backtrace))	
-		  ((member expr '(:n :next))			(next-frame))	
-		  ((member expr '(:p :previous))		(previous-frame))	
-		  ((member expr '(:< :top))				(top-frame))	
-		  ((member expr '(:> :bottom))			(bottom-frame))	
-		  ((member expr '(:g :go))				(go-frame))	
-		  ((member expr '(:l :lambda))			(show-lambda))	
+		  ((member expr '(:b :backtrace))		(print-backtrace))
+		  ((member expr '(:n :next))			(next-frame))
+		  ((member expr '(:p :previous))		(previous-frame))
+		  ((member expr '(:< :top))				(top-frame))
+		  ((member expr '(:> :bottom))			(bottom-frame))
+		  ((member expr '(:g :go))				(go-frame))
+		  ((member expr '(:l :lambda))			(show-lambda))
 		  (t 									(return-from process-debug-command nil)))
 	t)
 
@@ -770,10 +770,10 @@
 		ret
 	})
 
-(defun frame-bindings () 
+(defun frame-bindings ()
 	"Returns the variable bindings in the current debug frame."
 	*current-frame*)
-	
+
 (defun cl::debugger ()
 	;; throw away any pending input in *debug-io*
 	(clear-input *debug-io*)
@@ -782,13 +782,13 @@
 		   (*debug-max-level* (debug-max-level))
 		   (*debug-min-level* (debug-min-level))
 		   (*current-frame*	(set-current-frame-env))
-           (*read-suppress* nil))       ;; in case this was true 	
+           (*read-suppress* nil))       ;; in case this was true
 		(debugger-message)
 		(show-restart-options)
 		(force-output *debug-io*)
-		(do (expr 
-			 result 
-			 (normal-exit nil) 
+		(do (expr
+			 result
+			 (normal-exit nil)
 			 sys-exception
 			 (cl::*read-level* 0 0))
 			(nil)
@@ -797,16 +797,16 @@
 					(catch :system-exception
 						(progn
 							(setq normal-exit nil)
-							(write *debug-prompt* :stream *debug-io* :escape nil) 
+							(write *debug-prompt* :stream *debug-io* :escape nil)
 							(setq expr (read *debug-io* nil 'Eof nil))
 							(setq - expr)
 							(unless (process-debug-command expr)
-								(setq result 
+								(setq result
 									(multiple-value-list
-										(let ((cl::*compiler-environment* (get-current-frame-info))) 
+										(let ((cl::*compiler-environment* (get-current-frame-info)))
 											(eval expr))))
 								(cl::update-toplevel-globals expr result)
-								(if (null result) 
+								(if (null result)
 									(force-output *debug-io*)
 									(dolist (i result)
 										(write i :stream *debug-io*)
@@ -819,7 +819,7 @@
 						(force-output *debug-io*)
 						(if (eq sys-exception :exception-stack-overflow)
 							(cl::protect-stack))))))))
-								
+
 (defun get-frame-function-name (n)
 	(let ((func (get-frame-function n)))
 		(if (functionp func)
@@ -892,7 +892,7 @@
 		  ((eq (cadr type) '*)(print-foreign-subform ptr (car type)))
 		  ((integerp (cadr type))(print-foreign-array ptr type))
 		  (t (error "Invalid foreign type: ~S" type))))
-	
+
 (defun print-foreign (ptr type)
 	(unless (valid-c-type-definition type)
 		(error "Unknown foreign type: ~S" type))

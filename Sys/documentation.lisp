@@ -39,7 +39,7 @@ Method Signature Extensions:
 
 ;;; list
 (defmethod documentation ((x list) doc-type)
-    (and (eq 'setf (car x)) (eq 2 (ignore-errors (length x))) (symbolp (cadr x)) (documentation (setf-function-symbol x) doc-type))) 
+    (and (eq 'setf (car x)) (eq 2 (ignore-errors (length x))) (symbolp (cadr x)) (documentation (setf-function-symbol x) doc-type)))
 
 (defmethod (setf documentation) (new-value (x list) doc-type)
     (and (eq 'setf (car x)) (eq 2 (ignore-errors (length x))) (symbolp (cadr x))

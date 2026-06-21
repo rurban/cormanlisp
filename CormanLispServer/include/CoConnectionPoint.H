@@ -16,7 +16,7 @@
 class CoConnectionPoint : public IConnectionPoint
 {
 	IUnknown** m_rgpUnk;
-	
+
 	IUnknown* m_pUnkContainer;
 	UINT m_cConnections;
 	UINT m_nArraySize;

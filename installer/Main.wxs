@@ -176,8 +176,8 @@ Using 'dark.exe' *.msi decompiler seems to be the most efficient way to learn ab
     <?endif?>
 
     <!-- Save and restore INSTALLDIR -->
-    
-    <!-- 
+
+    <!--
          Save the command line value INSTALLDIR and restore it later in the sequence or
          it will be overwritten by the value saved to the registry during an upgrade.
          http://robmensching.com/blog/posts/2010/5/2/the-wix-toolsets-remember-property-pattern/
@@ -229,4 +229,3 @@ Using 'dark.exe' *.msi decompiler seems to be the most efficient way to learn ab
     </Feature>
   </Product>
 </Wix>
-

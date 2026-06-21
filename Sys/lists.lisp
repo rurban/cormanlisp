@@ -25,7 +25,7 @@
 ;;;
 ;;;	Common Lisp INTERSECTION function.
 ;;;
-(defun intersection (list-1 list-2 
+(defun intersection (list-1 list-2
 				&key (key nil)
 					(test #'eql)
 					(test-not nil))
@@ -42,7 +42,7 @@
 ;;;
 ;;;	Common Lisp UNION function.
 ;;;
-(defun union (list-1 list-2 
+(defun union (list-1 list-2
 				&key (key nil)
 					(test #'eql)
 					(test-not nil))
@@ -65,17 +65,17 @@
 		(error "Invalid list: ~S" list-1))  ;; list-2 checked by MEMBER
 	(if test-not
 		(setq test #'(lambda (x y) (not (funcall test-not x y)))))
-	(every 
+	(every
 		#'(lambda (x)
-			(apply #'member (if key (funcall key x) x) list-2 
+			(apply #'member (if key (funcall key x) x) list-2
 				`(,@(if key (list :key key))
-				  ,@(if test (list :test test))))) 
+				  ,@(if test (list :test test)))))
 		list-1))
 
 ;;;
 ;;;	Common Lisp SET-DIFFERENCE function.
 ;;;
-(defun set-difference (list-1 list-2 
+(defun set-difference (list-1 list-2
 				&key (key nil)
 					(test #'eql)
 					(test-not nil))
@@ -95,7 +95,7 @@
 (defmacro pushnew (val form &rest rest)
 	(if (and (consp form) (some #'consp form))
 		(let ((retval (%once-only-forms form)))
-			`(let ,(car retval) 
+			`(let ,(car retval)
 				(setf ,(cdr retval) (adjoin ,val ,(cdr retval) ,@rest))))
 		`(setf ,form (adjoin ,val ,form ,@rest))))
 
@@ -243,8 +243,8 @@
 				(when (array-has-fill-pointer-p sequence)
 					(setq fill-pointer (fill-pointer sequence))
 					(if (>= index fill-pointer)
-						(error "Index out of range: ~A" index)))) 
-			(cond 
+						(error "Index out of range: ~A" index))))
+			(cond
 				((eq type uvector-simple-vector-tag)
 				 (if (>= index (uref vec 1))(error "Index out of range: ~A" index))
 				 (x86::%svref vec index))
@@ -259,13 +259,13 @@
 				 (x86::%svbyte vec index))
 				((eq type uvector-simple-double-float-vector-tag)
 				 (if (>= index (uref vec 1))(error "Index out of range: ~A" index))
-				 (x86::%svdouble vec index))				
+				 (x86::%svdouble vec index))
 				((eq type uvector-simple-single-float-vector-tag)
 				 (if (>= index (uref vec 1))(error "Index out of range: ~A" index))
-				 (x86::%svsingle vec index))				                
+				 (x86::%svsingle vec index))
 				((eq type uvector-simple-short-vector-tag)
 				 (if (>= index (uref vec 1))(error "Index out of range: ~A" index))
-				 (x86::%svshort vec index))				                
+				 (x86::%svshort vec index))
                 (t (error "Not a sequence: ~A" sequence))))
 		;; check for a list
 		(let ((n index))
@@ -294,8 +294,8 @@
 				(when (array-has-fill-pointer-p sequence)
 					(setq fill-pointer (fill-pointer sequence))
 					(if (>= index fill-pointer)
-						(error "Index out of range: ~A" index)))) 
-			(cond 
+						(error "Index out of range: ~A" index))))
+			(cond
 				((eq type uvector-simple-vector-tag)
 				 (if (>= index (uref vec 1))(error "Index out of range: ~A" index))
 				 (setf (x86::%svref vec index) value))
@@ -318,7 +318,7 @@
 					(if (realp value)
 							(setf value (float value 0d0))
 							(error "Not a double-float: ~A" value)))
-				 (setf (x86::%svdouble vec index) value))				
+				 (setf (x86::%svdouble vec index) value))
                 ((eq type uvector-simple-single-float-vector-tag)
 				 (if (>= index (uref vec 1))(error "Index out of range: ~A" index))
 				 (unless (single-float-p value)
@@ -356,7 +356,7 @@
 				(setq vec (uref array adjustable-array-vector-offset))
 				(setq type (uvector-type-bits vec))
 				(incf index (uref array adjustable-array-displaced-offset)))
-			(cond 
+			(cond
 				((eq type uvector-simple-vector-tag)
 				 (if (>= index (uref vec 1))(error "Index out of range: ~A" index))
 				 (x86::%svref vec index))
@@ -394,7 +394,7 @@
 				(setq vec (uref array adjustable-array-vector-offset))
 				(setq type (uvector-type-bits vec))
 				(incf index (uref array adjustable-array-displaced-offset)))
-			(cond 
+			(cond
 				((eq type uvector-simple-vector-tag)
 				 (if (>= index (uref vec 1))(error "Index out of range: ~A" index))
 				 (setf (x86::%svref vec index) value))
@@ -436,9 +436,9 @@
 ;;;
 (defun assoc-if (predicate alist &key key)
 	(dolist (a alist)
-		(if (and (consp a) 
-				 (funcall predicate 
-					(if key (funcall key (car a)) (car a)))) 
+		(if (and (consp a)
+				 (funcall predicate
+					(if key (funcall key (car a)) (car a))))
 			(return a))))
 
 ;;;
@@ -446,10 +446,10 @@
 ;;;
 (defun assoc-if-not (predicate alist &key key)
 	(dolist (a alist)
-		(if (and (consp a) 
-				 (not 
-					(funcall predicate 
-					(if key (funcall key (car a)) (car a))))) 
+		(if (and (consp a)
+				 (not
+					(funcall predicate
+					(if key (funcall key (car a)) (car a)))))
 			(return a))))
 
 ;;;
@@ -460,8 +460,8 @@
 		(let ((save-test test))
 			(setq test #'(lambda (x y) (not (funcall save-test x y))))))
 	(dolist (a alist)
-		(if (and (consp a) 
-				 (funcall test item 
+		(if (and (consp a)
+				 (funcall test item
 					(if key (funcall key (cdr a)) (cdr a))))
 			(return a))))
 
@@ -470,9 +470,9 @@
 ;;;
 (defun rassoc-if (predicate alist &key key)
 	(dolist (a alist)
-		(if (and (consp a) 
-				 (funcall predicate 
-					(if key (funcall key (cdr a)) (cdr a)))) 
+		(if (and (consp a)
+				 (funcall predicate
+					(if key (funcall key (cdr a)) (cdr a))))
 			(return a))))
 
 ;;;
@@ -480,10 +480,10 @@
 ;;;
 (defun rassoc-if-not (predicate alist &key key)
 	(dolist (a alist)
-		(if (and (consp a) 
-				 (not 
-					(funcall predicate 
-					(if key (funcall key (cdr a)) (cdr a))))) 
+		(if (and (consp a)
+				 (not
+					(funcall predicate
+					(if key (funcall key (cdr a)) (cdr a)))))
 			(return a))))
 
 ;;;
@@ -492,7 +492,7 @@
 (defun tree-equal (tree-1 tree-2 &key (test #'eql) test-not)
 	(if test-not
 		(setf test (complement test-not)))
-	
+
 	(cond ((and (atom tree-1) (atom tree-2)
 				(funcall test tree-1 tree-2))
 			t)
@@ -500,7 +500,7 @@
 				(tree-equal (car tree-1) (car tree-2) :test test)
 				(tree-equal (cdr tree-1) (cdr tree-2) :test test))
 			t)
-		  (t nil)))	 
+		  (t nil)))
 
 ;;;
 ;;; Common Lisp REVAPPEND function.
@@ -519,7 +519,7 @@
 		(dolist (x alist)
 			(push (if (consp x) (cons (car x)(cdr x)) x) result))
 		(nreverse result)))
-			
+
 ;;;
 ;;; Common Lisp NINTERSECTION function.
 ;;;
@@ -552,7 +552,7 @@
 ;;; Redefined here to ensure we use the (SET ELT) function defined in this file.
 ;;;
 (defun vector-push-extend (new-element vector &optional extension)
-	(unless (array-has-fill-pointer-p vector) 
+	(unless (array-has-fill-pointer-p vector)
 		(error "Vector does not have a fill pointer: ~A" vector))
 	(let ((pos (fill-pointer vector)))
 		(if (>= pos (array-dimension vector 0))
@@ -566,7 +566,7 @@
 ;;; Redefined here to ensure we use the (SET ELT) function defined in this file.
 ;;;
 (defun vector-push (new-element vector)
-	(unless (array-has-fill-pointer-p vector) 
+	(unless (array-has-fill-pointer-p vector)
 		(error "Vector does not have a fill pointer: ~A" vector))
 	(let ((pos (fill-pointer vector)))
 		(if (>= pos (array-dimension vector 0))
@@ -574,4 +574,3 @@
 		(setf (fill-pointer vector) (+ pos 1))
 		(setf (elt vector pos) new-element)
 		pos))
-

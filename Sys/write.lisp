@@ -35,7 +35,7 @@
 (defvar *printer-eq-forms-index* 0)					;; not exported
 (defvar *current-print-level* 0)					;; not exported
 
-(defun output-pretty-list (obj &optional stream need-to-indent) 
+(defun output-pretty-list (obj &optional stream need-to-indent)
 		(error "Pretty printer not loaded"))
 (defun write-lisp-object (obj))	;; redefined below--avoid warning
 (defun format (stream string &rest args) (error "Format not implemented yet")) ;; defined later
@@ -54,7 +54,7 @@
 (defun search-for-circularities (object)
 	;; This currently checks arrays (of general type), lists, and structures
     ;;
-	(unless 
+	(unless
         (or (consp object)
             (structurep object)
             (typep object '(array t)))
@@ -67,10 +67,10 @@
 		  		   (search-for-circularities (cdr object)))
                   ((structurep object)
                    (dotimes (i (uvector-num-slots object))
-                        (search-for-circularities (uref object (+ i 1)))))                  
+                        (search-for-circularities (uref object (+ i 1)))))
 		  		  (t (let ((size (apply '* (array-dimensions object))))
 						(dotimes (i size)
-						(search-for-circularities (row-major-aref object i)))))))))	
+						(search-for-circularities (row-major-aref object i)))))))))
 
 ;; returns t if the object was output, nil otherwise
 (defun output-circular-object (object)
@@ -89,7 +89,7 @@
 			(write-lisp-object (car n))
 			(%output-char #\# *standard-output*)
 			(return-from output-circular-object t))
-		nil)) 
+		nil))
 
 (defun write-char (char &optional (output-stream *standard-output*))
 	(if (null output-stream)
@@ -98,7 +98,7 @@
 		(setq output-stream *standard-output*))
 	(%output-char char output-stream))
 
-(defun write-string (string &optional (output-stream *standard-output*) 
+(defun write-string (string &optional (output-stream *standard-output*)
 			&key (start 0) end)
 	(if (null output-stream)
 		(setq output-stream *standard-output*))
@@ -130,7 +130,7 @@
 		  (base *print-base*))
 
 		(if *print-radix*
-			(cond 
+			(cond
 				((= base 2) (%output-chars "#b" os 0 2))
 				((= base 8) (%output-chars "#o" os 0 2))
 				((= base 16) (%output-chars "#x" os 0 2))
@@ -165,7 +165,7 @@
 		  (base *print-base*))
 
 		(if *print-radix*
-			(cond 
+			(cond
 				((= base 2) (%output-chars "#b" os 0 2))
 				((= base 8) (%output-chars "#o" os 0 2))
 				((= base 16) (%output-chars "#x" os 0 2))
@@ -175,7 +175,7 @@
 						(write-integer base)
 						(%output-char #\r os))
 					(setq print-trailing-point t)))))
-		
+
 		;; see how many digits to print at once
 		(let ((clump-size 4)
 			  (factor 1))
@@ -188,7 +188,7 @@
 
 			(if (= n 0)
 				(push #\0 digits))
-			(do* (digit 
+			(do* (digit
 			      clump)
 				 ((<= n 0))
 				 (setq clump (mod n factor))
@@ -213,9 +213,9 @@
 		  (*print-base* 16))
 		  (write-integer high)
 		  (write-integer low)))
-#|		
+#|
 (defun write-bignum (object)
-	(let ((*print-escape* nil)) 
+	(let ((*print-escape* nil))
 		(write-string-object "#< BIGNUM: #x")
 		(let ((*print-base* 16)
 			  (bignum-length (* 4 (truncate (uref object 1) 2))))
@@ -237,7 +237,7 @@
 	(multiple-value-bind (sym status)
 		(package-find-symbol package string)
 		(if status
-			(cond 
+			(cond
 				((eq status 'internal)(values sym :internal))
 				((eq status 'external)(values sym :external))
 			    (t (values sym :inherited)))
@@ -254,23 +254,23 @@
 ;(defconstant *upper-case-a-code* (char-int #\A))
 ;(defconstant *upper-case-z-code* (char-int #\Z))
 
-;(defun alpha-char-p (char) 
-;	(or 
+;(defun alpha-char-p (char)
+;	(or
 ;		(and (>= (char-int char) *lower-case-a-code*)
 ;			 (<= (char-int char) *lower-case-z-code*))
 ;		(and (>= (char-int char) *upper-case-a-code*)
 ;			 (<= (char-int char) *upper-case-z-code*))))
 
-;(defun lower-case-p (char) 
+;(defun lower-case-p (char)
 ;	(and (>= (char-int char) *lower-case-a-code*)
 ;		 (<= (char-int char) *lower-case-z-code*)))
 
-;(defun upper-case-p (char) 
+;(defun upper-case-p (char)
 ;	(and (>= (char-int char) *upper-case-a-code*)
 ;		 (<= (char-int char) *upper-case-z-code*)))
 ;; faa20001128a -	End change.
 
-(defun special-char-p (char) 
+(defun special-char-p (char)
 	(if (member char '(#\| #\# #\( #\) #\\ #\: #\;)) t nil))
 
 (defun write-symbol (object)
@@ -282,7 +282,7 @@
 		   (symbol-name (symbol-name object))
 		   (os *standard-output*)
 		   (escape *print-escape*))
-	
+
 		;; if the symbol is in the keyword package, output a colon first
 		(if (null package)
 			(if *print-gensym*
@@ -291,12 +291,12 @@
 					(push #\: pack)))
 			(if (eq package (find-package :keyword))
 				(push #\: pack)
-				(multiple-value-bind (symbol status) 
+				(multiple-value-bind (symbol status)
 					(find-symbol symbol-name *package*)
 					;; If we can't find a symbol of this name in the current package
 					;; or the symbol we found isn't the same one we want to print,
 					;; then we need to print the package prefix.  JPM.  09/27/01
-					(if (or (null status) (not (eq symbol object))) 					
+					(if (or (null status) (not (eq symbol object)))
 						(let ((package-name	(package-name package))
 							  (need-bars nil))
 							(dotimes (i (length package-name))
@@ -308,7 +308,7 @@
 								(progn
 									(setq pack (append '(#\|) pack '(#\|)))
 									(setq pack-escape t)))
-							(if (external-symbol-p object package) 
+							(if (external-symbol-p object package)
 								(push #\: pack)
 								(progn (push #\: pack) (push #\: pack))))))))
 
@@ -326,28 +326,28 @@
 		(setq name-chars (nreverse name-chars))
 		(setq pack (nreverse pack))
 
-		(cond 
+		(cond
 			((eq *print-case* :downcase)
 			 (if escape (dolist (i pack) (%output-char (if pack-escape i (char-downcase i)) os)))
 			 (dolist (i name-chars) (%output-char (if name-escape i (char-downcase i)) os)))
 			((eq *print-case* :capitalize)
 			 (let ((first-time t))
-				(if escape 
-					(dolist (i pack) 
-						(if first-time 
+				(if escape
+					(dolist (i pack)
+						(if first-time
 							(setq first-time nil)
 							(setq i (char-downcase i)))
 						(%output-char i os)))
 				(setq first-time t)
-				(dolist (i name-chars) 
-					(if first-time 
+				(dolist (i name-chars)
+					(if first-time
 						(setq first-time nil)
 						(setq i (char-downcase i)))
 					(%output-char i os))))
 			(t
 			 (if escape (dolist (i pack) (%output-char i os)))
 			 (dolist (i name-chars) (%output-char i os))))))
-			 
+
 (defun write-string-object (object)
 	(let ((os *standard-output*)
 		  (length (length object)))
@@ -364,7 +364,7 @@
 				(%output-char (elt object i) os)))))
 
 (defconstant left-paren #\( ;; )
-	) 
+	)
 (defconstant right-paren  ;; (
 	#\))
 
@@ -386,7 +386,7 @@
 				(%output-char #\' os)
 				(write-lisp-object (cadr object))
 				(return-from write-list)))
-        
+
         ;; check for (function x) forms and output as #'x
 		(if (and (eq (car object) 'function) (consp (cdr object)))
 			(progn
@@ -394,9 +394,9 @@
 				(%output-char #\' os)
 				(write-lisp-object (cadr object))
 				(return-from write-list)))
-		
-		(incf *current-print-level*)	;; increment the print level		
-	
+
+		(incf *current-print-level*)	;; increment the print level
+
 		(%output-char left-paren os)
 		(block print-loop
 			(setq list object)
@@ -412,7 +412,7 @@
 						(%output-chars "..." os 0 3)
 						(%output-char right-paren os)
 						(decf *current-print-level*)
-						(return-from write-list)))	;; decrement the print level		
+						(return-from write-list)))	;; decrement the print level
 				(write-lisp-object (car list))
 				(setq list (cdr list))))
 
@@ -420,8 +420,8 @@
 			(progn
 				(%output-chars " . " os 0 3)
 				(write-lisp-object list)))
-		(%output-char right-paren os) 
-		(decf *current-print-level*)))	;; decrement the print level		
+		(%output-char right-paren os)
+		(decf *current-print-level*)))	;; decrement the print level
 
 ;;(defun write-float (object)
 ;;	(write (%float-to-string object) :escape nil))
@@ -430,11 +430,11 @@
 (defconstant float-decimal-constant (expt 10 max-float-decimal-digits))
 
 (defun choose-exp (float)
-	(cond 
+	(cond
 		((single-float-p float)(if (eq *read-default-float-format* 'single-float) #\e #\f))
 		((double-float-p float)(if (eq *read-default-float-format* 'double-float) #\e #\d))
 		((short-float-p float)(if (eq *read-default-float-format* 'short-float) #\e #\s))))
-	
+
 (defun write-decimal-float (float os exp-flag)
 	(let ((f (round (* float float-decimal-constant))))
 		(multiple-value-bind (int fraction)
@@ -474,8 +474,8 @@
 					(setf magnitude (* magnitude 10.0d0)))))
 		(write-decimal-float (* float (expt 10.0d0 (- exp))) os nil)
 		(%output-char (choose-exp float) os)
-		(write-integer exp)))	
-		
+		(write-integer exp)))
+
 (defun write-float (float)
 	(let ((os *standard-output*)
 		  (magnitude (if (minusp float) (- float) float))
@@ -517,7 +517,7 @@
 		(write-integer (denominator object))))
 
 (defun write-function (object)
-	(let ((*print-escape* nil)) 
+	(let ((*print-escape* nil))
 		(write-string-object "#< COMPILED-FUNCTION: #x")
 		(let ((*print-base* 16))
 			(write-integer (execution-address object)))
@@ -540,14 +540,14 @@
 
 (defun write-struct (object)
 	(let* ((template (uref object 1))
-		   (print-function 
-			(if (vectorp template) 
+		   (print-function
+			(if (vectorp template)
 				(get (elt template 0) :struct-print))))
 		(if print-function
 			(funcall print-function object *standard-output* (+ *current-print-level* 1))
 			(let* ((save-print-escape *print-escape*)
 				   (*print-escape* nil)
-				   (keyword-package (find-package "KEYWORD"))	   
+				   (keyword-package (find-package "KEYWORD"))
 				   num-slots)
 				(if (symbolp template)
 				;; need to construct a template on the fly
@@ -571,9 +571,9 @@
 				(dotimes (i num-slots)
 					(write-string-object " ")
 					(let ((*print-escape* t))
-						(write-lisp-object 
+						(write-lisp-object
 							(intern (symbol-name
-									(elt template (+ struct-template-slot1-offset (* i struct-template-slot-size)))) 
+									(elt template (+ struct-template-slot1-offset (* i struct-template-slot-size))))
 									keyword-package)))
 					(write-string-object " ")
 					(let ((*print-escape* save-print-escape))
@@ -586,8 +586,8 @@
 		(write-string-object "#< CLOS instance: #x")
 		(let ((*print-base* 16))
 			(write-integer (%uvector-address object)))
-		(write-string-object " >")))	
-	
+		(write-string-object " >")))
+
 (defun write-clos-instance (object)
 	(print-object object *standard-output*))
 
@@ -681,13 +681,13 @@
 						(terpri)
 						(%output-char (int-char 32) os)))
 
-				(if (and (not *print-readably*) 
-						*print-length* 
+				(if (and (not *print-readably*)
+						*print-length*
 						(>= *print-length* 0)
 						(>= i *print-length*))
 					(progn
 						(rplaca index (+ (car index) (- elements i)))
-						(%output-chars "..." os 0 3)	
+						(%output-chars "..." os 0 3)
 						(return))
 					(write-lisp-object (row-major-aref array (car index))))
 				(rplaca index (+ (car index) 1))
@@ -733,9 +733,9 @@
 	(if (and *print-circle* (or (consp object)(uvectorp object)))
 		(if (output-circular-object object)
 			(return-from write-builtin-object object)))
-	
+
 	(cond
-		((uninitialized-object-p object) (write "#< Uninitialized >" :escape nil)) 
+		((uninitialized-object-p object) (write "#< Uninitialized >" :escape nil))
 		((consp object)			(write-list object))
 		((fixnump object)		(write-integer object))
 		((bignump object)		(write-bignum object))
@@ -771,13 +771,13 @@
 ;;;
 (defun write-lisp-object (object)
     (write-builtin-object object))
-    
+
 (defun invalid-object-p (object) nil)		;; redefined later
 (defun invalid-object-string (object) "invalid object") ;; redefined later
 (defun broadcast-stream-p (stream) nil)     ;; redefined later
 (defun broadcast-stream-streams (stream) nil) ;; redefined later
 
-(defun write (object 
+(defun write (object
 	&key (stream		*standard-output*)
 		 (escape		*print-escape*)
 		 (radix			*print-radix*)
@@ -814,7 +814,7 @@
                 :lines lines
                 :pprint-dispatch pprint-dispatch))
         (progn
-       
+
     		(if (invalid-object-p object)
     			(write (invalid-object-string object) :stream stream))
 
@@ -836,11 +836,11 @@
         		   (*print-lines*			lines)
         		   (*print-pprint-dispatch* pprint-dispatch)
         		   (*current-print-level* 0))
-        
+
         		(if (and *print-circle* (= *current-print-level* 0))
         			(let ((*printer-eq-forms* (make-hash-table))
         				  (*printer-eq-forms-index* 0))
-        				(search-for-circularities object)	
+        				(search-for-circularities object)
         				(write-lisp-object object))
         			(write-lisp-object object)))
         	object)))
@@ -873,12 +873,9 @@
 	(values))
 
 ;; redefined later
-(defun format (stream string &rest args) 
+(defun format (stream string &rest args)
 	(write string :stream stream))
 
 ;; redefined later
 (defun warn (string &rest args)
-	(format *error-output* ";;; Warning: ~A~%" (apply 'format nil string args))) 
-
-
-
+	(format *error-output* ";;; Warning: ~A~%" (apply 'format nil string args)))

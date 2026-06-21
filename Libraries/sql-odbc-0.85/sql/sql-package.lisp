@@ -5,13 +5,13 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 
-;;; "This software is based on the design of the ODBC interface provided by 
-;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows 
+;;; "This software is based on the design of the ODBC interface provided by
+;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows
 ;;;  Operating System products. This implementation is not the property of
 ;;;  Harlequin and they have no responsibility for its content or accuracy."
 
-;; Documentation and the license agreement can be found in file 
-;; "sql-odbc-documentation.lisp" 
+;; Documentation and the license agreement can be found in file
+;; "sql-odbc-documentation.lisp"
 
 (in-package :common-lisp-user)
 
@@ -38,7 +38,7 @@
            "*CONNECT-IF-EXISTS*" "*CONNECTED-DATABASES*"
            "*ACTIVE-TRANSACTIONS*" "*COMMIT-NESTED-TRANSACTIONS-P*"
            "+NULL+" "*NULL*"
-           "DATABASE" "QUERY" 
+           "DATABASE" "QUERY"
            "WITH-DATABASE"
            "INITIALIZE-DATABASE-TYPE"
            "DB-CONNECT" ;; Hmm. Why export this one?
@@ -52,7 +52,7 @@
            "WITH-PREPARED-STATEMENT" "BIND-EXECUTE"
            "BIND-EXECUTE-QUERY" "FETCH-QUERY-RESULTS"
            "SELECT" "SELECT-UNION" "INSERT"
-           "INSERT-RECORDS" "UPDATE-RECORDS" "DELETE-RECORDS" 
+           "INSERT-RECORDS" "UPDATE-RECORDS" "DELETE-RECORDS"
            "CREATE-TABLE" "DROP-TABLE" "CREATE-INDEX" "DROP-INDEX"
            "CREATE-VIEW" "DROP-VIEW" "CREATE-USER" "EXECUTE"
            "LIKE" "NOT-LIKE" "IN" "NOT-IN" "NOT-NULL" "BETWEEN" "<>"
@@ -66,4 +66,3 @@
            "BIND-EXECUTE-WITH-STREAM"
            "DATA-SOURCES"
            ))
-

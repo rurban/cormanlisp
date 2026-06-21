@@ -6,8 +6,8 @@
 ;;;;	File:		structures.lisp
 ;;;;	Contents:	Corman Lisp Structure facility.
 ;;;;
-;;;;    History:    09/07/07 RGC  Integrated Matthias Hölzl's fixes for SUBTYPEP, OPEN, 
-;;;;                              and BOA constructors. 
+;;;;    History:    09/07/07 RGC  Integrated Matthias Hölzl's fixes for SUBTYPEP, OPEN,
+;;;;                              and BOA constructors.
 ;;;;
 
 (provide :structures)
@@ -77,29 +77,29 @@
 			(setf (uref copy (+ i 2)) (uref s (+ i 2))))
 		copy))
 
-(defun struct-type (s) 
+(defun struct-type (s)
 	(let ((template (uref s 1)))
 		(if (vectorp template) (elt template struct-template-name-offset))))
 
 (defun struct-type-p (s name)
-	(and (structurep s) 
+	(and (structurep s)
 		(let ((template (uref s 1)))
-			(or (eq name (if (vectorp template) 
-						(uref template (+ 2 struct-template-name-offset)))) 
+			(or (eq name (if (vectorp template)
+						(uref template (+ 2 struct-template-name-offset))))
 				(and (vectorp template)
 					(if (member name (struct-template-base template)) t))))))
 
 (defun check-struct-type (s name)
-	(unless (struct-type-p s name) 
+	(unless (struct-type-p s name)
 		(error "The object ~A is not a ~A structure" s name)))
 
 (defun initial-value-expression (struct-template slot-name)
 	(let* ((num-slots (elt struct-template struct-template-num-slots-offset))
-		   (ret 
+		   (ret
 				(dotimes (i num-slots nil)
 					(if (eq (struct-template-slot-name struct-template i) slot-name)
 				 		(return (struct-template-slot-default struct-template i))))))
-		(if (functionp ret) 
+		(if (functionp ret)
 			`(funcall ,ret)
 			ret)))
 
@@ -122,7 +122,7 @@
 							(push x new-lambda-list)))
 					(if (consp x)
 						(if (or (eq state '&optional)(eq state '&key)(eq state '&aux))
-							(let ((init 
+							(let ((init
 										(if (consp (cdr x))
 											(cadr x)
 											(initial-value-expression struct-template (car x))))
@@ -132,10 +132,10 @@
 							(error "Invalid lambda-list ~A for BOA constructor" lambda-list))
 						(error "Invalid lambda-list ~A for BOA constructor" lambda-list)))))
 		(values (nreverse result) (nreverse new-lambda-list))))
-		
+
 ;; only support optional and required arguments for now
-(defmacro create-boa-constructor (func-name lambda-list struct-template struct-template-sym 
-			struct-name struct-type named) 
+(defmacro create-boa-constructor (func-name lambda-list struct-template struct-template-sym
+			struct-name struct-type named)
 	(let ((struct-sym (gensym))
 		  (slot-initializers nil)
 		  (type-checks nil)
@@ -145,10 +145,10 @@
 		  (name-form nil)
 		  (num-slots (elt struct-template struct-template-num-slots-offset))
 		  (initial-offset (elt struct-template struct-template-initial-offset-offset)))
-		
-		(multiple-value-setq (parsed-args new-lambda-list) 
+
+		(multiple-value-setq (parsed-args new-lambda-list)
 			(parse-boa-lambda-list lambda-list struct-template))
-		
+
 		;; create type-check forms
 		(dotimes (index num-slots)
 			(let* ((slot-name (struct-template-slot-name struct-template index))
@@ -159,7 +159,7 @@
 						(push `(check-type ,slot-name
 							,(struct-template-slot-type struct-template index))
 							type-checks)))))
-				
+
 
 		;; create slot initializer forms
 		(do* ((index 0 (+ index 1))
@@ -170,44 +170,44 @@
 			(setf slot-name (struct-template-slot-name struct-template index))
 			(setf default-initializer (struct-template-slot-default struct-template index))
 			(setq param (car (member slot-name parsed-args :key #'second)))
-			(if (functionp default-initializer) 
+			(if (functionp default-initializer)
 				(setq default-initializer `(funcall ,default-initializer)))
-			(cond 
+			(cond
 				((eq struct-type 'list)
 				 (case (car param)
-					(&required (push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param)) 
+					(&required (push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param))
 								slot-initializers))
-					(&optional (push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param)) 
+					(&optional (push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param))
 								slot-initializers))
-					(&rest 		(push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param)) 
+					(&rest 		(push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param))
 								slot-initializers))
-					(&key 		(push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param)) 
+					(&key 		(push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param))
 								slot-initializers))
-					(&aux 		(push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param)) 
+					(&aux 		(push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,(second param))
 								slot-initializers))
 					((nil) 		(push `(setf (nth ,(+ index (if named 1 0) initial-offset) ,struct-sym) ,default-initializer)
 							slot-initializers)))
 			 	 (setf allocate-form `(make-list ,(+ num-slots (if named 1 0) initial-offset)))
-			 	 (setf name-form (if named `((setf (elt ,struct-sym ,initial-offset) ',struct-name))))) 
+			 	 (setf name-form (if named `((setf (elt ,struct-sym ,initial-offset) ',struct-name)))))
 				((or (eq struct-type 'vector)(and (consp struct-type) (eq (car struct-type) 'vector)))
 				 (case (car param)
-					(&required 	(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset)) 
+					(&required 	(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset))
 									,(second param)) slot-initializers))
-					(&optional 	(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset)) 
+					(&optional 	(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset))
 									,(second param)) slot-initializers))
-					(&rest 		(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset)) 
+					(&rest 		(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset))
 									,(second param)) slot-initializers))
-					(&key 		(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset)) 
+					(&key 		(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset))
 									,(second param)) slot-initializers))
-					(&aux 		(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset)) 
+					(&aux 		(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset))
 									,(second param)) slot-initializers))
 					((nil) 		(push `(setf (elt ,struct-sym ,(+ index (if named 1 0) initial-offset)) ,default-initializer)
 							slot-initializers)))
-			 	 (setf allocate-form 
-					`(make-array 
+			 	 (setf allocate-form
+					`(make-array
 						,(+ num-slots (if named 1 0) initial-offset)
 						:element-type ',(if (and (consp struct-type)(cadr struct-type)) (cadr struct-type) t)))
-			 	 (setf name-form (if named `((setf (elt ,struct-sym ,initial-offset) ',struct-name))))) 
+			 	 (setf name-form (if named `((setf (elt ,struct-sym ,initial-offset) ',struct-name)))))
 				((null struct-type)
 			 	 (case (car param)
 					(&required 	(push `(setf (uref ,struct-sym ,(+ index 2)) ,(second param)) slot-initializers))
@@ -217,7 +217,7 @@
 					(&aux 		(push `(setf (uref ,struct-sym ,(+ index 2)) ,(second param)) slot-initializers))
 					((nil) 		(push `(setf (uref ,struct-sym ,(+ index 2)) ,default-initializer) slot-initializers)))
 			 	 (setf allocate-form `(alloc-uvector ,(+ num-slots 1) uvector-structure-tag))
-			 	 (setf name-form `((setf (uref ,struct-sym 1) ,struct-template-sym)))))) 
+			 	 (setf name-form `((setf (uref ,struct-sym 1) ,struct-template-sym))))))
 
 		`(defun ,func-name ,new-lambda-list
 			(let* ((,struct-sym ,allocate-form))
@@ -245,7 +245,7 @@
 				(setq default-initializer `(funcall ,default-initializer)))
 			(push `(,slot-name ,default-initializer) lambda-list))
 		(setq lambda-list (cons '&key (nreverse lambda-list)))
-		
+
 		;; create type-check forms
 		(dotimes (i num-slots)
 			(unless (or (omit-type-checks)
@@ -254,9 +254,9 @@
 					,(struct-template-slot-type struct-template i))
 					type-checks)))
 
-		
+
 		;; create slot initializer forms and allocation form
-		(cond 
+		(cond
 			((eq struct-type 'list)
 			 (dotimes (i num-slots)
 					(push
@@ -264,27 +264,27 @@
 							,(struct-template-slot-name struct-template i))
 						slot-initializers))
 			 (setf allocate-form `(make-list ,(+ num-slots (if named 1 0) initial-offset)))
-			 (setf name-form (if named `((setf (elt ,struct-sym ,initial-offset) ',struct-name))))) 
+			 (setf name-form (if named `((setf (elt ,struct-sym ,initial-offset) ',struct-name)))))
 			((or (eq struct-type 'vector)(and (consp struct-type) (eq (car struct-type) 'vector)))
 			 (dotimes (i num-slots)
-					(push 
-						`(setf (elt ,struct-sym ,(+ i (if named 1 0) initial-offset)) 
+					(push
+						`(setf (elt ,struct-sym ,(+ i (if named 1 0) initial-offset))
 							,(struct-template-slot-name struct-template i))
 						slot-initializers))
-			 (setf allocate-form 
-					`(make-array 
+			 (setf allocate-form
+					`(make-array
 						,(+ num-slots (if named 1 0) initial-offset)
 						:element-type ',(if (and (consp struct-type)(cadr struct-type)) (cadr struct-type) t)))
-			 (setf name-form (if named `((setf (elt ,struct-sym ,initial-offset) ',struct-name))))) 
+			 (setf name-form (if named `((setf (elt ,struct-sym ,initial-offset) ',struct-name)))))
 			((null struct-type)
 			 (dotimes (i num-slots)
 					(push `(setf (uref ,struct-sym ,(+ i 2))
 							,(struct-template-slot-name struct-template i))
 						slot-initializers))
 			 (setf allocate-form `(alloc-uvector ,(+ num-slots 1) uvector-structure-tag))
-			 (setf name-form `((setf (uref ,struct-sym 1) ,struct-template-sym)))) 
+			 (setf name-form `((setf (uref ,struct-sym 1) ,struct-template-sym))))
 			(t (error "Invalid :type for DEFSTRUCT structure type: ~S" struct-type)))
-		 
+
 		`(defun ,func-name ,lambda-list
 			(let* ((,struct-sym ,allocate-form))
 				,@(nreverse type-checks)
@@ -313,14 +313,14 @@
 		(push '(arg) expr)
 		(push accessor-name expr)
 		(push 'defun expr)
-        
-        ;; if the slot is an included slot, do not create an accessor if a 
+
+        ;; if the slot is an included slot, do not create an accessor if a
         ;; function by that name already exists.
-        ;; Although this is not 100% what the Hyperspec says, it is as close as 
+        ;; Although this is not 100% what the Hyperspec says, it is as close as
         ;; we can get for now because we are not keeping track of which accessors
         ;; are associated with a structure.
         (if included (setf expr `(unless (fboundp ',accessor-name) ,expr)))
-        
+
 		expr))
 
 (defun build-mutator (structure-name structure-type named-p initial-offset
@@ -345,20 +345,20 @@
 		(push '(val arg) expr)
 		(push function-designator expr)
 		(push 'defun expr)
-        
-        ;; if the slot is an included slot, do not create an accessor if a 
+
+        ;; if the slot is an included slot, do not create an accessor if a
         ;; function by that name already exists.
-        ;; Although this is not 100% what the Hyperspec says, it is as close as 
+        ;; Although this is not 100% what the Hyperspec says, it is as close as
         ;; we can get for now because we are not keeping track of which accessors
         ;; are associated with a structure.
         (if included (setf expr `(unless (fboundp ',function-designator) ,expr)))
-        
+
    		expr))
 
 (defmacro defstruct (name-and-options &rest doc-and-slots)
-	(let (	name 
-			options 
-			doc-string 
+	(let (	name
+			options
+			doc-string
 			slot-descriptors
 			(slot-count 0)
 			struct-template-info
@@ -379,8 +379,8 @@
 			(included-options nil)
 			struct-template
 			(struct-template-sym (gensym))
-            (num-included-slots 0)) 
-			
+            (num-included-slots 0))
+
 		(if (symbolp name-and-options)
 			(setq name name-and-options)
 			(progn
@@ -388,7 +388,7 @@
 					(error "Invalid syntax for defstruct name: ~A" name-and-options))
 				(setq name (car name-and-options))
 				(setq options (cdr name-and-options))))
-		
+
 		;(format t "Parsing structure: ~A~%" name)
 
 		(setq conc-name (concatenate 'string (symbol-name name) "-"))
@@ -399,15 +399,15 @@
 				((keywordp opt)(if (eq opt ':named) (setf named t)))
 				((and (listp opt) (keywordp (car opt)))
 				 (case (car opt)
-					(:conc-name 
+					(:conc-name
 						(if (cdr opt)
-							(setq conc-name 
-									(if (cadr opt) 
+							(setq conc-name
+									(if (cadr opt)
 										(symbol-name (cadr opt))
 										""))
                                 (setq conc-name "")))
-					(:constructor 
-						(if (cdr opt) 
+					(:constructor
+						(if (cdr opt)
 							(if (cddr opt)
 								(push (list (cadr opt) (caddr opt)) boa-constructor-info)
 								(setq constructor-name (cadr opt)))))
@@ -418,7 +418,7 @@
 					(:type (setf struct-type (cadr opt)))
 					(:initial-offset (setf initial-offset (cadr opt)))
 					(otherwise (error "Unknown defstruct option: ~A~%" (car opt)))))
-				(t (error "Invalid defstruct option: ~A~%" opt))))	
+				(t (error "Invalid defstruct option: ~A~%" opt))))
 
 		(if (and (null struct-type) (/= initial-offset 0))
 			(error "If :INITIAL-OFFSET is specified in DEFSTRUCT, then :TYPE must also be specified."))
@@ -428,13 +428,13 @@
 				(setq doc-string (car doc-and-slots))
 				(setq slot-descriptors (cdr doc-and-slots)))
 			(setq slot-descriptors doc-and-slots))
-		
-		;; add the doc string with structure attribute	
+
+		;; add the doc string with structure attribute
 		(if doc-string
-			(push 
-				`(setf (documentation ',name 'structure) ,doc-string) 
+			(push
+				`(setf (documentation ',name 'structure) ,doc-string)
 				expressions))
-		
+
 		;; if :include specified, add those slots now
 		(if base
 			(let* ((included-struct-template (get base ':struct-template)))
@@ -448,13 +448,13 @@
 						   (type (struct-template-slot-type included-struct-template i))
 						   (ro-p (struct-template-slot-ro-p included-struct-template i))
 						   (inline-p (struct-template-slot-inline-p included-struct-template i))
-						   (override (member name included-options 
+						   (override (member name included-options
 									:key #'(lambda (obj) (if (symbolp obj) obj (car obj))))))
 						(if override
-							(setf default 
+							(setf default
 								(if (and (consp (car override))(consp (cdar override)))
 									(cadar override))))
-						(push name struct-template-info) 
+						(push name struct-template-info)
 						(push default struct-template-info)
 						(push type struct-template-info)
 						(push ro-p struct-template-info)
@@ -466,7 +466,7 @@
 			;(format t "slot: ~A~%" opt)
 			(incf slot-count)
 			(cond
-				((symbolp opt)  
+				((symbolp opt)
 					(push opt struct-template-info)
 					(push nil struct-template-info)
 					(push t struct-template-info)
@@ -484,7 +484,7 @@
 						  (inline nil))
 						(if (not (symbolp sym))
 							(error "Invalid slot descriptor: ~A~%" sym))
-						(if (or (not (constantp slot-initializer)) 
+						(if (or (not (constantp slot-initializer))
 								(functionp slot-initializer))
 							(setq slot-initializer (compile-form slot-initializer)))
 						(do ((o options (cddr o)))
@@ -507,31 +507,31 @@
 			(apply #'define-struct-template name (unless struct-type (intern-structure-class name base doc-string)) struct-type
 					base-list initial-offset slot-count (reverse struct-template-info)))
 
-		;; install template		
+		;; install template
 		(push
 			`(setf (get ',name :struct-template) ,struct-template-sym)
 			struct-template-expressions)
 
-		;; install print function		
+		;; install print function
 		(when print-function
 			(if (and (consp print-function) (eq (car print-function) 'lambda))
 				(setq print-function `(function ,print-function))
 				(setq print-function `(quote ,print-function)))
 			(push
-				`(setf (get ',name :struct-print) 
+				`(setf (get ',name :struct-print)
 					,print-function)
 				expressions))
-			
+
 		;; install constructor function
 		(setq constructor-name
-			(if constructor-name 
+			(if constructor-name
 				(intern (symbol-name constructor-name))
-				(if boa-constructor-info			
+				(if boa-constructor-info
 					(make-symbol (concatenate 'string "MAKE-" (symbol-name name))) ;; invisible
 					(intern (concatenate 'string "MAKE-" (symbol-name name))))))
-			
+
 		(push
-			`(create-keyword-constructor 
+			`(create-keyword-constructor
 				,constructor-name
 				,struct-template
 				,struct-template-sym
@@ -542,13 +542,13 @@
 
 		(push
 			`(setf (get ',name ':struct-constructor) ',constructor-name)
-				expressions) 
-		
+				expressions)
+
 		;; install BOA constructor
 		(dolist (boa-info boa-constructor-info)
 			(push
-				`(create-boa-constructor 
-					,(car boa-info) 
+				`(create-boa-constructor
+					,(car boa-info)
 					,(cadr boa-info)
 					,struct-template
 					,struct-template-sym
@@ -556,26 +556,26 @@
 					,struct-type
 					,named)
 				struct-template-expressions))
-			
-		;; install copier function			
+
+		;; install copier function
 		(setq copier-name
-			(if copier-name 
+			(if copier-name
 				(intern (symbol-name copier-name))
 				(intern (concatenate 'string "COPY-" (symbol-name name)))))
-			
+
 		(push
 			`(defun ,copier-name (arg) (clone-struct arg))
 			expressions)
-		
-		;; install predicate function			
+
+		;; install predicate function
 		(setq predicate-name
-			(if predicate-name 
+			(if predicate-name
 				(intern (symbol-name predicate-name))
 				(intern (concatenate 'string (symbol-name name) "-P"))))
-			
+
 		(push
             (cond ((and named struct-type)
-                   `(defun ,predicate-name (arg) 
+                   `(defun ,predicate-name (arg)
                         (and (typep arg ',struct-type)
                             (eq (elt arg 0) ',name))))
                   (struct-type `(fmakunbound ',predicate-name))   ;; don't define a predicate
@@ -588,14 +588,14 @@
 				(declare (ignore specifier))
 				(struct-type-p x ',name))
 			expressions)
-		
+
 		;; install accessor functions
         (do* ((num-slots (struct-template-num-slots struct-template))
               (i 0 (+ i 1)))  ;; skip over any included slots--they already have accessors
             ((= i num-slots))
-			(setq accessor-name 
-				(intern 
-					(concatenate 'string conc-name 
+			(setq accessor-name
+				(intern
+					(concatenate 'string conc-name
 						(symbol-name (struct-template-slot-name struct-template i)))))
 			(if (struct-template-slot-inline-p struct-template i)
 				(push `(proclaim '(inline ,accessor-name)) expressions))
@@ -604,20 +604,20 @@
 				expressions)
 			(when (not (struct-template-slot-ro-p struct-template i))
 				(if (struct-template-slot-inline-p struct-template i)
-					(push 
-						`(proclaim '(inline ,(setf-function-symbol (list 'setf accessor-name)))) 
+					(push
+						`(proclaim '(inline ,(setf-function-symbol (list 'setf accessor-name))))
 						expressions))
 				(push (build-mutator name struct-type named initial-offset
 						accessor-name i (struct-template-slot-type struct-template i) (< i num-included-slots))
 					expressions)))
 
-		(push `',name expressions)	
+		(push `',name expressions)
 		`(progn
 			(let* ((,struct-template-sym
                                                             (apply 'define-struct-template ',name
                             ,(unless struct-type `(intern-structure-class ',name ',base ,doc-string))
-                            ',struct-type 
-						',base-list ,initial-offset ,slot-count ',(reverse struct-template-info)))) 
+                            ',struct-type
+						',base-list ,initial-offset ,slot-count ',(reverse struct-template-info))))
 				,@(reverse struct-template-expressions))
 			,@(nreverse expressions))))
 
@@ -629,7 +629,3 @@
         (dotimes (i (uvector-num-slots structure))
             (setf (uref new (+ i 1)) (uref structure (+ i 1))))
         new))
-
-
-                
-                

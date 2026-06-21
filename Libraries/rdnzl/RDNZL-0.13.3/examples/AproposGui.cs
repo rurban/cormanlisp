@@ -45,7 +45,7 @@ namespace AproposGUI {
     public System.Windows.Forms.Label title;
 
     private System.ComponentModel.Container components = null;
-    
+
     public AproposControl() {
       InitializeComponent();
     }

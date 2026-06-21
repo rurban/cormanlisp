@@ -22,11 +22,11 @@ ULONG Release();
 #! (:export t)
 interface IDispatch : IUnknown
 {
-    HRESULT GetTypeInfoCount(UINT *pctinfo);     
+    HRESULT GetTypeInfoCount(UINT *pctinfo);
     HRESULT GetTypeInfo(UINT iTInfo, LCID lcid, ITypeInfo **ppTInfo);
-    HRESULT GetIDsOfNames(REFIID riid, LPOLESTR *rgszNames, UINT cNames, 
+    HRESULT GetIDsOfNames(REFIID riid, LPOLESTR *rgszNames, UINT cNames,
         LCID lcid, DISPID *rgDispId);
-    HRESULT Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags, 
+    HRESULT Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
         DISPPARAMS *pDispParams,
         VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
 };
@@ -109,24 +109,24 @@ interface ITypeInfo : IUnknown
 	HRESULT GetContainingTypeLib(ITypeLib** ppTLib, UINT* pIndex);
 	void 	ReleaseTypeAttr(TYPEATTR* pTypeAttr);
 	void 	ReleaseFuncDesc(FUNCDESC* pFuncDesc);
-	void 	ReleaseVarDesc(VARDESC* pVarDesc);   
+	void 	ReleaseVarDesc(VARDESC* pVarDesc);
 };
 !#
 
 #! (:export t)
 interface ITypeLib : IUnknown
 {
-	UINT GetTypeInfoCount();     
+	UINT GetTypeInfoCount();
     HRESULT GetTypeInfo(UINT index, ITypeInfo** ppTInfo);
     HRESULT GetTypeInfoType(UINT index, TYPEKIND* pTKind);
     HRESULT GetTypeInfoOfGuid(REFGUID guid, ITypeInfo** ppTinfo);
 	HRESULT GetLibAttr(TLIBATTR** ppTLibAttr);
 	HRESULT GetTypeComp(ITypeComp** ppTComp);
 	HRESULT GetDocumentation(INT index, BSTR* pBstrName, BSTR* pBstrDocString,
-				DWORD* pdwHelpContext, BSTR* pBstrHelpFile);   
-	HRESULT IsName(LPOLESTR szNameBuf, ULONG lHashVal, BOOL* pfName);      
+				DWORD* pdwHelpContext, BSTR* pBstrHelpFile);
+	HRESULT IsName(LPOLESTR szNameBuf, ULONG lHashVal, BOOL* pfName);
 	HRESULT FindName(LPOLESTR szNameBuf, ULONG lHashVal, ITypeInfo** ppTInfo,
-				MEMBERID* rgMemId, USHORT* pcFound);   
+				MEMBERID* rgMemId, USHORT* pcFound);
 	void 	ReleaseLibAttr(TLIBATTR* pTLibAttr);
 };
 !#
@@ -153,7 +153,7 @@ interface ITypeLib : IUnknown
 	(load-type-lib "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL"))
 (iunknown-release type-lib)
 
-(with-com-interface (type-lib 
+(with-com-interface (type-lib
 		(load-type-lib "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL"))
 	(format t "Type library: ~S, count = ~D~%" type-lib
 		(ITypeLib-GetTypeInfoCount type-lib)))

@@ -2,7 +2,7 @@
 ;;;;	Copyright (c) Corman Technologies Inc.
 ;;;;	See LICENSE.txt for license information.
 ;;;;	-------------------------------
-;;;;	
+;;;;
 ;;;;	File:		dribble.lisp
 ;;;;	Contents:	Corman Lisp dribble function.
 ;;;;	History:	10/8/98  RGC  Created.
@@ -44,10 +44,8 @@
 		(close *dribble-file*))
 	(if (null pathname)
 		(setf *dribble-file* nil)
-		(setf *dribble-file* 
-			(open pathname 
+		(setf *dribble-file*
+			(open pathname
 				:direction :output
 				:if-exists :append
 				:if-does-not-exist :create))))
-
-				

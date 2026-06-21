@@ -13,7 +13,7 @@
 (setf (gethash "SYS" *logical-pathname-hosts*) t)
 (defun logical-host-p (host) (values (gethash host *logical-pathname-hosts*)))
 
-(defun parse-logical-pathname-namestring (string start end junk-allowed host)  
+(defun parse-logical-pathname-namestring (string start end junk-allowed host)
 	(declare (ignore host junk-allowed))
 	(setq string (subseq string start end))
 	(let ((name nil)
@@ -37,7 +37,7 @@
                                     (if chars (setq host (concatenate 'string (nreverse chars))))
                                     (setq chars '()))
                         (otherwise  (push c chars))))
-   				(:directory 
+   				(:directory
 					(case c
 						(#\; 	    (if (and (null directories)(null chars))
                                         (setq relative t)
@@ -46,12 +46,12 @@
                                             (setq chars nil))))
                         (#\.        (setq name (concatenate 'string (nreverse chars)) chars '() state :type))
 						(otherwise	(push c chars))))
-				(:type 
+				(:type
 					(case c
 						(#\. 	    (setq type (concatenate 'string (nreverse chars)) chars '() state :version))
 						(otherwise	(push c chars))))
 				(:version  (push c chars))))
-        
+
         ;; handle the final chars
         (if chars
             (case state
@@ -59,19 +59,18 @@
                 (:type (setq type (concatenate 'string (nreverse chars))))
                 (:directory (setq name (concatenate 'string (nreverse chars))))
                 (:host (error "No host marker was found"))))
-        
+
         (when (null name)
             (setq name (car directories))
             (setq directories (cdr directories)))
-        
+
         (setq directories (nreverse directories))
-        
+
 		(if (consp directories)
-            (if relative 
+            (if relative
                 (push ':relative directories)
                 (push ':absolute directories)))
 
         ;(if (and type (null name) (not found-dot)) (setq name type type nil))
 		(make-pathname :host host :directory directories
 			:name name :type type :version version :logical t)))
-    

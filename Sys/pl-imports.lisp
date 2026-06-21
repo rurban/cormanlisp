@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	File:		pl-imports.lisp
-;;;;	Contents:	Corman Lisp package symbols imported 
+;;;;	Contents:	Corman Lisp package symbols imported
 ;;;;				from other packages.
 ;;;;	History:	3/13/97  RGC  Created.
 ;;;;
@@ -12,7 +12,7 @@
 (in-package :cormanlisp)
 
 (let ((syms '(
-	cl::uref 
+	cl::uref
 	cl::uref-set
 	cl::save-image
 	cl::load-image
@@ -22,7 +22,7 @@
 	cl::uvectorp
 	cl::alloc-uvector
 	cl::lisp-object-id
-	cl::execution-address 
+	cl::execution-address
 	cl::load-dll
 	cl::unload-dll
 	cl::get-dll-proc-address
@@ -38,11 +38,11 @@
 	cl::foreign-heap-ptr-offset
 	cl::array-type-offset
 	cl::sequencep
-	cl::structurep 
-	cl::%symbol-get-flags 
+	cl::structurep
+	cl::%symbol-get-flags
 	cl::%symbol-set-flags
 	cl::function-environment
-	cl::int-char 
+	cl::int-char
 	cl::array-dim1-offset
 	cl::stack-trace
 	cl::address-find-function
@@ -94,7 +94,7 @@
 	cl::top-level
 	cl::display-url
 	cl::short-integer
-	cl::compress-file	
+	cl::compress-file
 	cl::uncompress-file
     cl::memory-report
     cl::lisp-shutdown

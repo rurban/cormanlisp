@@ -4187,7 +4187,7 @@ void LispVarsDialogBar::OnPaint()
 	SetFont(font, TRUE);
 	SelectObject(hdc, *font);
     this->GetClientRect(&rect);
-    DrawText(ps.hdc, lispVarsBuf, -1, &rect, 
+    DrawText(ps.hdc, lispVarsBuf, -1, &rect,
         DT_LEFT|DT_END_ELLIPSIS|DT_VCENTER|DT_SINGLELINE);
     EndPaint(&ps);
 #endif

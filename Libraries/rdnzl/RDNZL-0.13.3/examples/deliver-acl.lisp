@@ -34,7 +34,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require :res))
 
-(defparameter *rdnzl-directory* 
+(defparameter *rdnzl-directory*
               ;; assume this file is in examples/ subdirectory
               (merge-pathnames #p".."
                                (make-pathname :name nil
@@ -64,7 +64,7 @@
                            (rdnzl:init-rdnzl)
                            (rdnzl-user::run-apropos-form)
                            (exit)))
-  
+
   (win:set-default-command-line-arguments #p"examples/apropos/apropos.exe"
                                           ;; suppress console
                                           '("+c")))

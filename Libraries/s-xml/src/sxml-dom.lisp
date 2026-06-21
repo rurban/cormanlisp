@@ -50,7 +50,7 @@
 	       (setf attributes (rest (second dom))
 		     children (rest (rest dom)))
 	     (setf children (rest dom)))
-           (let ((*namespaces* (extend-namespaces (loop :for (name value) :in attributes 
+           (let ((*namespaces* (extend-namespaces (loop :for (name value) :in attributes
                                                         :collect (cons name value))
                                                   *namespaces*)))
              (write-char #\< stream)

@@ -5,21 +5,21 @@
 ;;;;
 ;;;;	File:		synchronized.lisp
 ;;;;	Contents:	A number of library functions are redefined here
-;;;;                to add 
+;;;;                to add
 ;;;;	History:	4/24/02 RGC  Created.
 ;;;;
 (in-package :cl)
 
 ;;; ensure all packages have synchronization objects
-(register-load-image-restore-func 
-	#'(lambda () 
+(register-load-image-restore-func
+	#'(lambda ()
 		(dolist (p (list-all-packages))
 			(unless (package-sync p)
 				(setf (uref p package-sync-offset) (cl::allocate-critical-section))))))
 
 ;;; remove all critical sections from packages when the image is saved
-(register-save-image-cleanup-func 
-	#'(lambda () 
+(register-save-image-cleanup-func
+	#'(lambda ()
 		(dolist (p (list-all-packages))
 			(when (package-sync p)
 				(cl::deallocate-critical-section (package-sync p))
@@ -36,10 +36,8 @@
 	(multiple-value-bind (sym status)
 		(package-find-symbol package string)
 		(if status
-			(cond 
+			(cond
 				((eq status 'internal)(values sym :internal))
 				((eq status 'external)(values sym :external))
 			    (t (values sym :inherited)))
 			(values nil nil))))
-
-

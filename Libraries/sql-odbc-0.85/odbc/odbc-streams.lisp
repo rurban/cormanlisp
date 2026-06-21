@@ -31,7 +31,7 @@
     (let* ((column (or column (1- (column-count query))))
            (stream-class (or stream-class
                             (case (aref column-c-types column)
-                              (#.$SQL_CHAR 
+                              (#.$SQL_CHAR
                                (if (eq direction :output)
                                  'odbc-string-output-stream
                                  'odbc-string-input-stream))
@@ -43,7 +43,7 @@
 
 (defmethod initialize-instance :after ((stream odbc-stream) &key column &allow-other-keys)
   (with-slots (query data-ptr c-type sql-type out-len-ptr out-len chunk-length precision)
-              stream 
+              stream
     (with-slots (hstmt column-count column-c-types column-sql-types
                        column-data-ptrs column-out-len-ptrs column-precisions)
                 query
@@ -56,7 +56,7 @@
             precision (aref column-precisions column)))))
 
 (defmethod open-sql-stream ((stream odbc-string-stream))
-  (with-slots (buffer buffer-position) stream 
+  (with-slots (buffer buffer-position) stream
     (setf buffer nil buffer-position 0)))
 
 (defun odbc-get-next-chunk (query column c-type data-ptr buffer-size out-len-ptr precision)
@@ -65,10 +65,10 @@
       (let ((chunk (%get-cstring data-ptr)))
         (values chunk (length chunk)))
       (let ((res (%sql-get-data hstmt column c-type data-ptr (1+ buffer-size) out-len-ptr))
-            (out-len (%get-long out-len-ptr)))  
+            (out-len (%get-long out-len-ptr)))
         (if (= res $SQL_NO_DATA_FOUND)
             :eof
-          (case out-len 
+          (case out-len
             (#.$SQL_NULL_DATA :eof)
             (#.$SQL_NO_TOTAL (error "$SQL_NO_TOTAL not yet implemented."))
             (otherwise (let ((chunk (%get-cstring data-ptr)))
@@ -96,13 +96,13 @@
                (setf buffer :eof)))))))
 
 (defmethod stream-peek-char ((stream odbc-string-input-stream))
-  (with-slots (buffer buffer-size buffer-length buffer-position 
+  (with-slots (buffer buffer-size buffer-length buffer-position
                       query column data-ptr c-type sql-type precision out-len-ptr out-len)
               stream
     (when (null buffer)
       (multiple-value-setq (buffer buffer-length)
         (odbc-get-next-chunk query column c-type data-ptr buffer-size
-                                        out-len-ptr precision))) 
+                                        out-len-ptr precision)))
     (if (eq buffer :eof)
       :eof
       (aref buffer buffer-position))))
@@ -114,7 +114,7 @@
 ;; here is room for improvement!
 (defun odbc-read-into-string (query string start end column c-type
                                         data-ptr out-len-ptr precision)
-  "Returns position of first unchanged char in string and in the case that 
+  "Returns position of first unchanged char in string and in the case that
 precision < +max-precision+ the rest string, else nil (if there is more to fetch) or :eof.
 It is thus safe to assume that everything is fetched if buffer-length < buffer-size."
   (with-slots (hstmt) query
@@ -130,20 +130,20 @@ It is thus safe to assume that everything is fetched if buffer-length < buffer-s
               do
               (let* ((fetch-size (min +max-precision+ (- end start)))
                      (res (%sql-get-data hstmt column c-type data-ptr (1+ fetch-size) out-len-ptr))
-                     (out-len (%get-long out-len-ptr))) 
+                     (out-len (%get-long out-len-ptr)))
                 (if (= res $SQL_NO_DATA_FOUND)
                     (setf eof :eof)
                   (case out-len
                     (#.$SQL_NULL_DATA (setf eof :eof))
                     (#.$SQL_NO_TOTAL (error "$SQL_NO_TOTAL not yet implemented."))
-                    (otherwise 
+                    (otherwise
                      (format t "~%res: ~d" res)
-                     (setf start (ffc::%cstring-into-string 
+                     (setf start (ffc::%cstring-into-string
                                   data-ptr string start (min +max-precision+ out-len (- end start))))))))
               until (or eof (= end start)))
         (values start eof)))))
 
-(defmethod stream-read-sequence ((stream odbc-string-input-stream) sequence 
+(defmethod stream-read-sequence ((stream odbc-string-input-stream) sequence
                                      #+:allegro &optional start end)
   (unless start (setf start 0))
   (let ((len (length sequence)))
@@ -154,7 +154,7 @@ It is thus safe to assume that everything is fetched if buffer-length < buffer-s
     (cond ((null buffer)
            ;; we can read directly into the string
            (multiple-value-bind (offset rest-string)
-                                (odbc-read-into-string 
+                                (odbc-read-into-string
                                  query sequence start end column
                                  c-type data-ptr out-len-ptr precision)
              (setf buffer rest-string
@@ -180,15 +180,15 @@ It is thus safe to assume that everything is fetched if buffer-length < buffer-s
                    ((< (print buffer-length) buffer-size)
                     (setf buffer :eof)
                     end1)
-                   (t 
+                   (t
                     ;; ... then fetch and read into the string
-                    (multiple-value-bind 
+                    (multiple-value-bind
                       (offset rest-string)
                       (odbc-read-into-string query sequence start end column
                                              c-type data-ptr out-len-ptr precision)
                       (setf buffer rest-string
                             buffer-length (length rest-string)
-                            buffer-position 0) 
+                            buffer-position 0)
                       offset))))))))
 
 ;; This is prelimiary. We should buffer if sequence is too short.

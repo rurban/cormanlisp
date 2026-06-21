@@ -34,7 +34,7 @@
 						(cl::universal-time-to-file-time time)
 						(cl::universal-time-to-file-time time))))
 			(when read-only
-				(ccl::set-file-attributes path attrs)))))		
+				(ccl::set-file-attributes path attrs)))))
 
 (defun timespec-to-universal-time (timespec)
 	(let (year month day hour minute second
@@ -51,11 +51,11 @@
 			(setf minute (parse-integer (subseq timespec 10 12))))
 		(if (>= len 14)
 			(setf second (parse-integer (subseq timespec 12 14))))
-		(encode-universal-time (or second 0) (or minute 0) 
+		(encode-universal-time (or second 0) (or minute 0)
 			(or hour 0) (or day 1) (or month 1) year)))
-		
-		
-(defun display-usage-info () 
+
+
+(defun display-usage-info ()
 	(format t "Usage: touch [-t time] file1 file2 ...~%")
 	(format t "~10t-t~20tSet a specific time, specified as YYYYMMDDHHMMSS~%")
 	(format t "~10t-recurse~20tDescend subdirectories when expanding wildcards~%")
@@ -70,8 +70,8 @@
 		(let ((ch (char arg 0)))
 			(if (or (char= ch #\/) (char= ch #\-))
 				(let ((switch (subseq arg 1)))
-					(cond ((equalp switch "t")		
-						   (setf *specified-time* 
+					(cond ((equalp switch "t")
+						   (setf *specified-time*
 								(timespec-to-universal-time (second a)))
 						   (setf a (cdr a)))
 						  ((equalp switch "?")		(setf *display-usage-info* t))
@@ -95,12 +95,12 @@
 					(dolist (x expanded)
 						(push x new-files)))
 				(push file new-files)))))
-		
+
 (defun main ()
 	(format t "Touch by Roger Corman      Copyright (c) 2001-2003 Corman Technologies~%")
 	(let ((args (ccl:get-command-line-args)))
-		(setf args 
-			(expand-wildcards 
+		(setf args
+			(expand-wildcards
 				(process-command-line-args args)))
 		(if (or (null args) *display-usage-info*)
 			(display-usage-info)
@@ -108,5 +108,3 @@
 				(touch x *specified-time*)))
 		(force-output)
 		(win:exitprocess 0)))
-
-		

@@ -212,7 +212,7 @@ DEFINE-RDNZL-CALL) in OTHER-ARGS."
                                               method-info
                                               nil
                                               args)))))
-             (t 
+             (t
               (let ((method-info (find-instance-method dotnet-name arg-type-names)))
                 (unless method-info
                   (error "Instance method ~A(~{~A~^, ~}) for .NET type ~A not found"
@@ -242,7 +242,7 @@ DEFINE-RDNZL-CALL) in OTHER-ARGS."
                                                 property-info
                                                 nil
                                                 args))))))
-             (t 
+             (t
               (let ((property-info (find-instance-property dotnet-name arg-type-names)))
                 (unless property-info
                   (error "Instance property ~A(~{~A~^, ~}) for .NET type ~A not found"
@@ -297,5 +297,5 @@ DEFINE-RDNZL-CALL) in OTHER-ARGS."
                                                           nil
                                                           field-info
                                                           object)))))))))))
-                
+
 (disable-rdnzl-syntax)

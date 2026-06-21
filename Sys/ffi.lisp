@@ -9,14 +9,14 @@
 ;;;;
 
 (defpackage "C-TYPES"
-	(:export 
-		"DEFUN-DLL" 
-		"DEFUN-COM-METHOD" 
+	(:export
+		"DEFUN-DLL"
+		"DEFUN-COM-METHOD"
 		"DEFUN-THISCALL"
         "DEFUN-POINTER"
         "DEFUN-KERNEL"
-		"DEFCSTRUCT" 
-		"DEFCTYPE" 
+		"DEFCSTRUCT"
+		"DEFCTYPE"
 		"CREATE-FOREIGN-PTR"
 		"SIZEOF"
 		"OFFSETOF"
@@ -84,9 +84,9 @@
 	lisp-sym
 	foreign-address
 	jump-table-address)
-		
-(defstruct dll-record 
-	name 
+
+(defstruct dll-record
+	name
 	handle
 	(function-records nil))
 
@@ -121,13 +121,13 @@
 		 (ecase definition
 			(:void							0)
 			((:char :unsigned-char)			1)
-			((:short :unsigned-short 
+			((:short :unsigned-short
 			  :short-bool :wide-char)		2)
-			((:long :unsigned-long 
-			  :single-float :long-bool 
+			((:long :unsigned-long
+			  :single-float :long-bool
 			  :handle)						4)
 			((:double-float	:int64 :uint64)  8)))
-		((not (listp definition)) 
+		((not (listp definition))
 		 (error "Invalid C Type descriptor: ~S" definition))
 		((eq (car definition) ':struct)
 		 (determine-c-struct-size definition))
@@ -141,25 +141,25 @@
 (defconstant simple-c-types
 	'(:void :char :unsigned-char
 	  :short :unsigned-short
-	  :long :unsigned-long 
+	  :long :unsigned-long
 	  :short-bool :long-bool
 	  :single-float :double-float
-	  :handle :wide-char :int64 :uint64)) 
- 
+	  :handle :wide-char :int64 :uint64))
+
 (defun valid-c-type-definition (definition)
 	(cond
 		((symbolp definition)
 		 (let ((typedef (ctype-lookup-alias definition)))
-			(if typedef 
+			(if typedef
 				t
 		 		(if (member definition simple-c-types)
 					t))))
-		((not (listp definition)) nil) 
+		((not (listp definition)) nil)
 		((eq (car definition) ':struct)
 		 (valid-c-struct-definition definition))
 		((eq (cadr definition) '*)
 		 (valid-c-type-definition (car definition)))
-		((or (fixnump (cadr definition)) 
+		((or (fixnump (cadr definition))
 		 	 (and (constantp (cadr definition)) (fixnump (symbol-value (cadr definition)))))
 		 (valid-c-type-definition (car definition)))
 		(t nil)))
@@ -169,7 +169,7 @@
 	(do ((p (cdr definition)(cddr p)))
 		((null p) t)
 		(unless (valid-c-type-definition (cadr p)) (return nil))))
-	
+
 (defun determine-c-struct-size (definition)
 	(do ((size 0)
 		 (p (cdr definition)(cddr p)))
@@ -178,7 +178,7 @@
 
 (defun cstruct-definition-equal-p (def1 def2)
 	(equal def1 def2))
-		
+
 (defasm set-foreign-func-address (func cptr)
 	{
 		push	ebp
@@ -191,7 +191,7 @@
 		pop		ebp
 		ret
 	})
-		
+
 (defun foreign-ptr-to-function (cptr)
 	(let ((func (alloc-uvector cl::function-size cl::uvector-kfunction-tag)))
  		(setf (uref func cl::function-environment-offset) nil)
@@ -223,11 +223,11 @@
 	(let ((dll-handle (get-dll-handle dll-name)))
 		(if dll-handle
 			(let ((addr (get-dll-proc-address dll-function-name dll-handle)))
-				(if addr 
+				(if addr
 					(return-from get-dll-function-address addr)
 					(error "Could not find function ~S in library ~S" dll-function-name dll-name)))
 			(error "Could not open library ~S" dll-name))))
-	
+
 ;;;
 ;;; INSTALL-DLL-FUNCTION dll-name dll-function-name lisp-symbol
 ;;;
@@ -238,7 +238,7 @@
 	(let* ((func-address (get-dll-function-address dll-name dll-function-name))
 		   (dll-rec (get-dll-record dll-name))
 		   (jump-address (cl::allocate-foreign-jump-table-entry func-address))
-		   (func-rec (make-foreign-function-record 
+		   (func-rec (make-foreign-function-record
 						:dll-name dll-name
 						:foreign-name dll-function-name
 						:lisp-sym lisp-symbol
@@ -246,7 +246,7 @@
 						:jump-table-address jump-address)))
 		(setf (symbol-function lisp-symbol) (foreign-ptr-to-function jump-address))
 		(push func-rec (dll-record-function-records dll-rec))
-		lisp-symbol)) 
+		lisp-symbol))
 
 ;;;
 ;;;	GENERATE-DYNAMIC-FUNCTION
@@ -270,7 +270,7 @@
 
 		;; push lisp stack context--enter lisp mode
             foreign-call-lisp
-                
+
 			push	ecx
 			push	ct::dll_name
 			push	ct::dll_function_name
@@ -282,7 +282,7 @@
 
 		;; pop lisp stack context--back to foreign code
             lisp-return-to-foreign
-        
+
 			pop		edi
 			mov		eax, ct::lisp_symbol
 			mov		eax, [eax + (uvector-offset cl::symbol-jump-table-offset)]
@@ -352,7 +352,7 @@
 	#'dynamic-func-instance)
 |#
 (defun install-dynamic-foreign-function (dll-name dll-function-name lisp-symbol)
-	(setf (symbol-function lisp-symbol) 
+	(setf (symbol-function lisp-symbol)
 		(generate-dynamic-function dll-name dll-function-name lisp-symbol))
 	lisp-symbol)
 
@@ -370,7 +370,7 @@
                     (:uint64 8)
     				(otherwise 4))))))
 
-(defstruct foreign-call-params-info 
+(defstruct foreign-call-params-info
     push-forms
     local-vars
     lambda-list
@@ -383,20 +383,20 @@
           (num-cells (- frame-cells))
           (lambda-list '())
           (pointer-p nil))
-        
+
         ;; special case for defun-pointer--skip past the pointer
-        (when func-ptr 
+        (when func-ptr
             ;; start with foreign func ptr
             (push `(x86::compile-foreign-arg ,func-ptr (:void *) ,num-cells) push-forms)
             (incf num-cells 1)
             (setf pointer-p t))
-        
+
         (dolist (i param-list)
 			(let ((var (first i))
 				  (ctype (second i)))
 				(setq ctype (ctypeexpand-all ctype))
 				(if (stringp var)
-					(setf var 
+					(setf var
 						(if (equalp var "")
 							(gensym)
 							(intern (string-upcase var)))))
@@ -410,7 +410,7 @@
                 (if (member ctype '(:double-float :int64 :uint64))
                     (incf num-cells 2)
                     (incf num-cells 1))))
-        (make-foreign-call-params-info 
+        (make-foreign-call-params-info
             :push-forms push-forms
             :local-vars local-vars
             :lambda-list lambda-list
@@ -425,9 +425,9 @@
     					,@(foreign-call-params-info-push-forms info)
                         ,@call-setup-form
     					(x86::push-foreign-stack-context)
-                        (x86::push-foreign-args-length 
+                        (x86::push-foreign-args-length
                             ,(if (foreign-call-params-info-pointer-p info) (- num-cells 1) num-cells))
-                                ;; if called by DEFUN-POINTER, the args length is one fewer because pointer is 
+                                ;; if called by DEFUN-POINTER, the args length is one fewer because pointer is
                                 ;; popped as part of function call
                         (x86::copy-foreign-args ,(foreign-call-params-info-frame-cells info))
        					,call-form
@@ -437,16 +437,16 @@
        					(x86::pop-foreign-stack-context)
        					(x86::restore-lisp-registers)
     					(x86::wrap-foreign-return-value ,return-type)))))
-    
+
 (defmacro defun-dll (name param-list
-		&key (return-type :long) 
+		&key (return-type :long)
 			library-name
 			entry-name
 			(linkage-type :c))
 	(unless entry-name (setq entry-name (symbol-name name)))
 	(unless library-name
 		(error "You must specify a DLL name in the declaration of ~A" name))
-	
+
 	(setq return-type (ctypeexpand-all return-type))
 	(let* ((arg-type-list (mapcar #'cadr param-list))
 		   (stack-cleanup-forms nil)
@@ -462,13 +462,13 @@
 
 		`(progn
 			(install-dynamic-foreign-function ,library-name ,entry-name ',lisp-symbol)
-            ,(foreign-defun-stub name info stack-cleanup-forms return-type 
+            ,(foreign-defun-stub name info stack-cleanup-forms return-type
                 `(x86::call-foreign-proc ,lisp-symbol)))))
 
-(defmacro defun-com-method 
-	(name 
-	 param-list 
-	 vtable-index 
+(defmacro defun-com-method
+	(name
+	 param-list
+	 vtable-index
 	 &key (return-type :unsigned-long))
 
 	(setq return-type (ctypeexpand-all return-type))
@@ -477,23 +477,23 @@
            (info (generate-call-params-info param-list frame-cells)))
 
 		`(progn
-            ,(foreign-defun-stub name info nil return-type 
+            ,(foreign-defun-stub name info nil return-type
                 `(x86::call-com-method ,vtable-index)
                 `((x86::compile-com-method-address ,vtable-index))))))
 
 ;;;
 ;;; Like DEFUN-DLL, but passes first argument in ECX. Used for interfacing
-;;; to C++, functions which are defined with thiscall (any non-static 
+;;; to C++, functions which are defined with thiscall (any non-static
 ;;; member-function which does not take a variable number of arguments).
 ;;;
-(defmacro defun-thiscall (name param-list 
-		&key (return-type :long) 
+(defmacro defun-thiscall (name param-list
+		&key (return-type :long)
 			library-name
 			entry-name)
 	(unless entry-name (setq entry-name (symbol-name name)))
 	(unless library-name
 		(error "You must specify a DLL name in the declaration of ~A" name))
-	
+
 	(setq return-type (ctypeexpand-all return-type))
 	(let* ((arg-type-list (mapcar #'cadr param-list))
 		   (lisp-symbol (create-foreign-function-name entry-name))
@@ -505,7 +505,7 @@
 
 		`(progn
 			(install-dynamic-foreign-function ,library-name ,entry-name ',lisp-symbol)
-            ,(foreign-defun-stub name info nil return-type               	
+            ,(foreign-defun-stub name info nil return-type
                 `(progn
                     {{
 						pop	ecx		;; move first argument into ECX register
@@ -526,13 +526,13 @@ Example:
 
 (ct::defun-pointer strlen-ptr ((str (:char *))) :return-type :long :linkage-type :c)
 (strlen-ptr proc "corman lisp")
-   
+
 |#
 
-(defmacro defun-pointer (name param-list 
-		&key (return-type :long) 
+(defmacro defun-pointer (name param-list
+		&key (return-type :long)
 			(linkage-type :c))
-	
+
 	(setq return-type (ctypeexpand-all return-type))
 	(let* ((arg-type-list (mapcar #'cadr param-list))
 		   (stack-cleanup-forms nil)
@@ -546,9 +546,9 @@ Example:
         ;; add function pointer on as first arg (this means adding it to the end as it will get reversed)
         (setf (foreign-call-params-info-lambda-list info)
             (append (foreign-call-params-info-lambda-list info) (list func-ptr)))
-        
+
 		`(progn
-            ,(foreign-defun-stub name info stack-cleanup-forms return-type 
+            ,(foreign-defun-stub name info stack-cleanup-forms return-type
                 `(x86::call-foreign-pointer)))))
 
 ;;;
@@ -559,11 +559,11 @@ Example:
 ;;; function. These will typically be in the common-lisp package, internal, with
 ;;; names beginning with '%'.
 ;;;
-(defmacro defun-kernel (name param-list 
-		&key (return-type :long) 
+(defmacro defun-kernel (name param-list
+		&key (return-type :long)
 			kernel-name  ;; a symbol
 			(linkage-type :c))
-	
+
 	(setq return-type (ctypeexpand-all return-type))
 	(let* ((arg-type-list (mapcar #'cadr param-list))
 		   (stack-cleanup-forms nil)
@@ -574,7 +574,7 @@ Example:
 			(setq stack-cleanup-forms `((x86::popargs ,arg-type-list))))
 
 		`(progn
-            ,(foreign-defun-stub name info stack-cleanup-forms return-type 
+            ,(foreign-defun-stub name info stack-cleanup-forms return-type
                 `(x86::call-foreign-proc ,kernel-name)))))
 
 (defun uvector-offset (index) (- (* 4 index) x86::uvector-tag))
@@ -604,12 +604,12 @@ Example:
 		mov		[ebp - 4], eax					; save length in [ebp - 4]
 		mov		ecx, eax
 		add		ecx, 8							;ecx = string-length + 1
-		push	ecx	
+		push	ecx
 		mov		ecx, 1
 		callf	allocate-c-heap					;eax = c-string handle
 		add		esp, 4
 		push	eax
-		mov		edi, [eax + (uvector-offset foreign-heap-ptr-offset)] 
+		mov		edi, [eax + (uvector-offset foreign-heap-ptr-offset)]
 									;edi = actual c-string
 		mov		edx, [ebp + ARGS_OFFSET]		; edx = string
 		mov		eax, [edx + (uvector-offset 0)]
@@ -626,21 +626,21 @@ Example:
 		xor		eax, eax
 		jmp		:t1
 	:loop
-		mov		ax, [edx + ebx*2 + (uvector-offset 2)]		;; unicode mod	
-;;		mov		eax, [edx + ebx*4 + (uvector-offset 2)]		
+		mov		ax, [edx + ebx*2 + (uvector-offset 2)]		;; unicode mod
+;;		mov		eax, [edx + ebx*4 + (uvector-offset 2)]
 		mov		[edi + ebx], al								;; unicode mod
 ;;		mov		[edi + ebx*4], eax
 		inc		ebx
 	:t1
 		dec		ecx
 		jge		:loop
-		
+
 		;; null terminate the c string
 		mov		ecx, [ebp - 4]		; get string length
 		shr		ecx, 3
 		xor		eax, eax
 		mov		[edi + ecx], al
-		
+
 		pop		eax					; eax = c-string handle
 		mov		ecx, 1
 		pop		edi
@@ -676,16 +676,16 @@ Example:
 		mov		ebp, esp
 		push	ebx
 		push	edi
-		push	32	
+		push	32
 		mov		ecx, 1
 		callf	allocate-c-heap		;eax = c-string handle
 		add		esp, 4
 		push	eax
-		mov		edi, [eax + (uvector-offset foreign-heap-ptr-offset)] 
+		mov		edi, [eax + (uvector-offset foreign-heap-ptr-offset)]
 									;edi = pointer to c-long address
 		mov		edx, [ebp + ARGS_OFFSET]		;edx = integer
 		mov		[edi], edx
-		
+
 		pop		eax					; eax = c-string handle
 		mov		ecx, 1
 		pop		edi
@@ -777,9 +777,9 @@ Example:
     (unless (cl::foreign-heap-p x)
         (cl::signal-type-error x 'cl::foreign-heap))
     (uref x cl::foreign-heap-length-offset))
-            
+
 (defun unlink-dll-function (dll-func-rec)
-	(install-dynamic-foreign-function 
+	(install-dynamic-foreign-function
 		(foreign-function-record-dll-name dll-func-rec)
 		(foreign-function-record-foreign-name dll-func-rec)
 		(foreign-function-record-lisp-sym dll-func-rec)))
@@ -790,14 +790,14 @@ Example:
 			(unlink-dll-function r))
 		(unload-dll (dll-record-handle dll-rec))
 		(setq *dlls-loaded* (remove dll-rec *dlls-loaded*))))
- 
+
 (defun unlink-all-dll-functions ()
 	(dolist (rec *dlls-loaded*)
 		(unlink-dll rec))
 	(cl::clear-foreign-jump-table))
 
 (cl::register-save-image-cleanup-func #'unlink-all-dll-functions)
- 
+
 (let ((ctype-table (make-hash-table)))
 	(defun ctype-install-alias (name ctype)
 		(setf (gethash name ctype-table) ctype))
@@ -811,7 +811,7 @@ Example:
 				(error "Invalid C type specifier: ~S" ',ctype))
 			(let ((,sym (ctypeexpand-all ',ctype)))
 				(unless ,sym (error "Invalid C type: ~S" ',ctype))
-				(ctype-install-alias ',name ,sym)) 
+				(ctype-install-alias ',name ,sym))
 			',name)))
 
 (defun ctypeexpand (x)
@@ -829,8 +829,8 @@ Example:
 		(do ((p (cdr x)(cddr p)))
 			((null p) x)
 			(setf (cadr p) (ctypeexpand-all (cadr p))))
-		(if (or (eq (cadr x) '*) 
-				(fixnump (cadr x)) 
+		(if (or (eq (cadr x) '*)
+				(fixnump (cadr x))
 				(and (constantp (cadr x)) (fixnump (symbol-value (cadr x)))))
 			(setf (car x) (ctypeexpand-all (car x)))
 			(error "Invalid C type specifier: ~S" x)))
@@ -852,7 +852,7 @@ Example:
 
 ;;;
 ;;;		cstruct-slot-info
-;;;		Returns 3 values: 
+;;;		Returns 3 values:
 ;;;			offset into c-struct
 ;;;			size in bytes of result
 ;;;			how to interpret the result (:integer,
@@ -878,7 +878,7 @@ Example:
 	(and (consp descriptor) (eq (car descriptor) ':struct)))
 
 (defun carray-definition-p (descriptor)
-	(and (consp descriptor) 
+	(and (consp descriptor)
 		(or (fixnump (cadr descriptor))
 			(and (constantp (cadr descriptor))
 				 (fixnump (symbol-value (cadr descriptor)))))))
@@ -906,26 +906,26 @@ Example:
 	(if (eq access '*)
 		(setq access 0))
 	(let ((size (determine-c-type-size (car ctype))))
-		`(%cref 
-			,object 
+		`(%cref
+			,object
 			(* ,access ,size)
-			,size 
+			,size
 			,(determine-coerce-type (car ctype))
-			 ,value-object 
+			 ,value-object
 			 ,value-type)))
 
 (defun array-set-cref-expand (value ctype object access)
 	(if (eq access '*)
 		(setq access 0))
 	(let ((size (determine-c-type-size (car ctype))))
-		`(%set-cref 
-			,object 
+		`(%set-cref
+			,object
 			(* ,access ,size)
-			,size 
+			,size
 			,(determine-coerce-type (car ctype))
 			 ,value)))
-	
-(defmacro cref (ctype object access 
+
+(defmacro cref (ctype object access
 				&optional value-object value-type alt-value-object)
 	(declare (ignore alt-value-object))
 	(setq ctype (ctypeexpand-all ctype))
@@ -976,24 +976,24 @@ Example:
         mov     edx, [ebp + (+ ARGS_OFFSET 4)]
         shr     edx, 3
         mov		[eax + (uvector-offset cl::bignum-first-cell-offset)], edx
-        mov     edx, [ebp + (+ ARGS_OFFSET 0)]  
-        shl     edx, 13      
+        mov     edx, [ebp + (+ ARGS_OFFSET 0)]
+        shl     edx, 13
         or		[eax + (uvector-offset cl::bignum-first-cell-offset)], edx
         mov     ecx, 1
         pop     ebp
         ret
     })
- 
+
 (defasm %create-negative-bignum (low-16 high-16)
     {
         push    ebp
-        mov     ebp, esp    
+        mov     ebp, esp
         push    8       ;; tagged fixnum 1
         mov     ecx, 1
         callp   cl::alloc-bignum
         add     esp, 4
         mov     edx, [ebp + (+ ARGS_OFFSET 4)]
-    begin-atomic      
+    begin-atomic
         shr     edx, 3
         mov     ecx, [ebp + (+ ARGS_OFFSET 0)]
         shl     ecx, 13
@@ -1007,9 +1007,9 @@ Example:
         mov     ecx, 1
         pop     ebp
         ret
-    })    
-    
-            
+    })
+
+
 (defcodegen ct::%cref (form dest)
 	(let ((obj (second form))
 		  (position (third form))
@@ -1036,15 +1036,15 @@ Example:
 				mov 	edx, [edx + (uvector-offset foreign-heap-ptr-offset)]
 			})
 		(x86::offset-stack 4)
-		;; at this point ecx is the tagged offset (in bytes) and 
+		;; at this point ecx is the tagged offset (in bytes) and
         ;; edx is the untagged pointer into a foreign heap. EDX is not tagged but
         ;; this should not matter, as it should not be a pointer into the lisp heap.
         ;;
-	
+
 		(ecase coerce
 			(:integer
 				(case bytes
-					(1 
+					(1
 					 (parse-assembler
 						{
                             xor     eax, eax
@@ -1110,7 +1110,7 @@ Example:
 
 			(:unsigned-integer
 				(case bytes
-					(1 
+					(1
 					 (parse-assembler
 						{
                             xor     eax, eax
@@ -1159,7 +1159,7 @@ Example:
                             add     esp, 8
 					    :next
    	 					}))))
-				
+
 			(:pointer
 				(parse-assembler
 					{
@@ -1168,7 +1168,7 @@ Example:
                         xor     ecx, ecx
  						callp	ct:create-foreign-ptr
                         pop     edx
-                        pop     ecx                                           
+                        pop     ecx
                     begin-atomic
                         sar     ecx, 3
 						mov		edx, [edx + ecx]
@@ -1220,7 +1220,7 @@ Example:
                         shl     eax, 8
                         inc     eax
 	 				}))
-            
+
 			(:reference
 				(parse-assembler
 					{
@@ -1229,15 +1229,15 @@ Example:
                         xor     ecx, ecx
  						callp	ct:create-foreign-ptr
                         pop     edx
-                        pop     ecx 
+                        pop     ecx
                     begin-atomic
-                        shr     ecx, 3                                          
+                        shr     ecx, 3
    						lea		edx, [edx + ecx]
 						mov		[eax + (uvector-offset cl::foreign-heap-ptr-offset)], edx
                         xor     ecx, ecx
                     end-atomic
 	 				})))
-		
+
 		(if (eq dest :dest-stack)
 			(progn
 				(parse-assembler
@@ -1280,11 +1280,11 @@ Example:
 				push	eax			;; save value
 			})
 		(x86::offset-stack 4)
-		
+
 		(ecase coerce
 			(:integer
 				(case bytes
-					(1 
+					(1
 					 (parse-assembler
 						{
 							push	edx
@@ -1313,7 +1313,7 @@ Example:
 
 			(:unsigned-integer
 				(case bytes
-					(1 
+					(1
 					 (parse-assembler
 						{
 							push	edx
@@ -1339,7 +1339,7 @@ Example:
 							mov 	[edx], ax
                             mov     [edx + 2], cx
 	 					}))))
-			
+
 			(:single-float
 				(parse-assembler
 					{
@@ -1363,7 +1363,7 @@ Example:
 						pop		edx
 						fstp.single	[edx]
    	 				}))
-			
+
 			(:double-float
 				(parse-assembler
 					{
@@ -1387,7 +1387,7 @@ Example:
 						fld     [eax + (uvector-offset cl::double-float-offset)]
 						fstp	[edx]
 	 				}))
-			
+
             (:wide-char
 				(parse-assembler
 					{
@@ -1403,14 +1403,14 @@ Example:
                         shr     eax, 16
                         mov     [edx], ax
                     }))
-                                                   	
+
 			(:pointer
 				(parse-assembler
 					{
 						mov		eax, [eax + (uvector-offset cl::foreign-heap-ptr-offset)]
 						mov		[edx], eax
 	 				})))
-		
+
 		(unless (eq dest :dest-stack)
 			(progn
 				(parse-assembler
@@ -1446,7 +1446,7 @@ Example:
     :type-error
         push    edx
         callp   ct::foreign-type-error
-              
+
     :next1
 	begin-atomic
 		mov		eax, [edx + (uvector-offset cl::foreign-heap-ptr-offset)]  ;; untagged pointer in eax
@@ -1482,7 +1482,7 @@ Example:
 		callp 	_wrong-number-of-args-error
 	:t1
 		mov		edx, [ebp + ARGS_OFFSET]		;; edx = cpointer
-    
+
         ;; check type
 		mov		eax, edx
 		and		eax, 7
@@ -1496,7 +1496,7 @@ Example:
     :type-error
         push    edx
         callp   ct::foreign-type-error
-              
+
     :next1
 		mov		eax, [ebp + (+ ARGS_OFFSET 4)]	;; eax = number
 		test	eax, 7
@@ -1523,11 +1523,11 @@ Example:
 		mov		ecx, 2
 		callf	error
 	:t4
-		mov		ecx, 1				
+		mov		ecx, 1
 		pop		ebp
 		ret
 	})
-		
+
 (cl::register-setf-function 'cpointer-value '|SETF CPOINTER-VALUE|)
 
 (defun cpointer= (cp1 cp2)
@@ -1545,7 +1545,7 @@ Example:
 ;;;	CormanLisp INT-TO-FOREIGN-PTR function.
 ;;;
 (defun int-to-foreign-ptr (i)
-	(if (< i 0) 
+	(if (< i 0)
 		(setf i (+ i #x100000000)))
 	(let ((p (create-foreign-ptr)))
 		(setf (cpointer-value p) i)
@@ -1560,9 +1560,9 @@ Example:
 (defun valid-callback-arg-type (ctype)
 	(setq ctype (ctypeexpand-all ctype))
 	(if (member ctype simple-c-types)
-		t 
+		t
 	  	(and (consp ctype)
-			  (consp (cdr ctype)) 
+			  (consp (cdr ctype))
 			 (valid-callback-arg-type (first ctype))
 			 (or (integerp (second ctype))(eq (second ctype) '*)))))
 
@@ -1573,7 +1573,7 @@ Example:
 	nil)
 
 ;;;
-;;; Redefine Common Lisp MULTIPLE-VALUE-BIND macro to 
+;;; Redefine Common Lisp MULTIPLE-VALUE-BIND macro to
 ;;; make the VALUE-FORM be evaluated in the correct lexical context.
 ;;; From JP Massar.
 ;;;
@@ -1585,15 +1585,15 @@ Example:
             (if (and (consp (car f)) (eq (caar f) 'declare))
                 (push (car f) declarations)
                 (progn (setq forms f) (return))))
-        
+
         (let* ((gensyms (mapcar #'(lambda (x) (gensym (symbol-name x))) vars))
                (bindings (mapcar #'list vars gensyms)))
             `(let ,gensyms
                 (multiple-value-setq ,gensyms ,value-form)
                 (let ,bindings
-                    ,@(nreverse declarations) 
+                    ,@(nreverse declarations)
                     ,@forms)))))
-	
+
 (defmacro define-callback-func (name arg-list body &key (linkage :c) (create-heap-handler nil))
 	(declare (ignore create-heap-handler))
 	(let* ((syms nil)
@@ -1605,19 +1605,19 @@ Example:
    		   (num-args (length arg-list))
 		   (sym-t1 (gensym)))
 		(dolist (x arg-list)
-			(unless (and (listp x) 
-					 	  (= (length x) 2) 
+			(unless (and (listp x)
+					 	  (= (length x) 2)
 						  (valid-callback-arg-type (second x)))
 				(error "Invalid argument specification in DEFUN-CALLBACK form: ~A" x))
 			(push (first x) syms))
 		(setq syms (nreverse syms))
-		(setq internal-name (intern 
+		(setq internal-name (intern
 			(concatenate 'string "%" (symbol-name name) "-internal")))
         (multiple-value-bind (doc decls body bad-decls)
             (cl::parse-doc-decls-body body)
             (declare (ignore doc))
             (when bad-decls (error "Declarations found in body of callback"))
-            (setq lisp-func 
+            (setq lisp-func
 				  `(defun ,internal-name ,syms
 					 (let ()
 					   (cl::%safecall #'(lambda ()
@@ -1650,7 +1650,7 @@ Example:
 ;						((eq arg-type :handle)
 ;						 (push `(x86::push-long-handle-lisp-arg ,param-offset) arg-conversion-forms))
 						((eq arg-type :single-float)
-						 (push `(x86::push-single-float-lisp-arg ,param-offset) arg-conversion-forms))						 
+						 (push `(x86::push-single-float-lisp-arg ,param-offset) arg-conversion-forms))
 						((eq arg-type :double-float)
 						 (push `(x86::push-double-float-lisp-arg ,param-offset) arg-conversion-forms)
 						 (incf param-offset 4))
@@ -1663,7 +1663,7 @@ Example:
    						(t
 						 (push `(x86::push-pointer-lisp-arg ,param-offset) arg-conversion-forms))))
 				(incf param-offset 4))
-			(setq foreign-func 
+			(setq foreign-func
 				`(defun ,name ,syms
                     ,@(when docstring (list docstring))
    					(declare (optimize (speed 3)(safety 0)))	; disable arg checking
@@ -1677,10 +1677,10 @@ Example:
 					(x86::mov-ecx-num ,num-args)
 					(x86::call-lisp-proc ,internal-name)
 					(x86::pop-lisp-args ,num-args)
-					(x86::return-lisp-val-as-c) 
+					(x86::return-lisp-val-as-c)
 					(x86::unlink-heap-handler)
 					;,@(if create-heap-handler
-					;	`((x86::unlink-heap-handler)))					
+					;	`((x86::unlink-heap-handler)))
 					(x86::pop-lisp-stack-context)
                     (x86::copy-foreign-return-val-to-eax)
 					(x86::restore-c-registers)
@@ -1688,14 +1688,14 @@ Example:
 						`((x86::return-from-pascal ,num-args)))))
 			`(let ((,sym-t1 (cl::create-callback-thunk ',name)))
 					 (setf (get ',name 'ct::callback-thunk) ,sym-t1)
-					 (ensure-func-table-entry ,internal-name)	;; make sure there is a jump entry 
+					 (ensure-func-table-entry ,internal-name)	;; make sure there is a jump entry
 					 ,lisp-func				;; define lisp function
 					 ,foreign-func))))		;; define foreign function
 
 (defvar *collect-exported-functions* nil)	;; used by COMPILE-FILE and COMPILE-DLL
-(defvar *callback-registry* 
-    (make-hash-table 
-        :test #'equal 
+(defvar *callback-registry*
+    (make-hash-table
+        :test #'equal
         :synchronized t)) ;; maps strings to callback symbols
 
 (defmacro defun-callback (name arg-list &rest body)
@@ -1717,7 +1717,7 @@ Example:
 			(setf prototype (first body))
 			(setf body (cdr body)))
 		(when (consp name)
-			;; map export string name to symbol			
+			;; map export string name to symbol
 			(setf (gethash (cadr name) *callback-registry*) (car name))
 			(setf sym (car name)))
 		`(eval-when (:execute :load-toplevel :compile-toplevel)
@@ -1750,7 +1750,7 @@ Example:
 			call	[eax + (uvector-offset function-code-buffer-offset)]
 		})
 	t)
-				
+
 (defcodegen restore-c-registers (form dest)
 	(declare (ignore form dest))
 	(parse-assembler
@@ -1797,11 +1797,11 @@ Example:
             cmp     eax, 0
             jl      short :neg-integer
             mov     ecx, -1
-            callp   x86::%get-foreign-unsigned-long 
+            callp   x86::%get-foreign-unsigned-long
             jmp     :exit
         :neg-integer
             mov     ecx, -1
-            callp   x86::%get-foreign-long 
+            callp   x86::%get-foreign-long
             jmp     :exit
 		:t2
             cmp     al, 1
@@ -1815,14 +1815,14 @@ Example:
             mov     cl, [eax + (uvector-offset 1)]
             and     cl, 8               ;; negative bignum?
             jnz     short :neg-bignum
-            mov     ecx, -1            
-            callp   x86::%get-foreign-unsigned-long 
+            mov     ecx, -1
+            callp   x86::%get-foreign-unsigned-long
             jmp     short :exit
         :neg-bignum
             mov     ecx, -1
-            callp   x86::%get-foreign-long 
-            jmp     short :exit                
-            
+            callp   x86::%get-foreign-long
+            jmp     short :exit
+
         :t7
 			cmp 	cl, uvector-foreign-tag
 			jne		short :t4
@@ -1832,7 +1832,7 @@ Example:
             xor     eax, eax
         end-atomic
 			jmp		short :exit
-		:t4 
+		:t4
 			cmp 	cl, uvector-foreign-heap-tag
 			jne		short :t5
         begin-atomic
@@ -1874,7 +1874,7 @@ Example:
             mov    eax, [esi + (- (* foreign-cells-qv-tos 4) 4)]
         })
     t)
-            
+
 (defcodegen push-signed-char-lisp-arg (form dest)
 	(declare (ignore dest))
 	(let ((offset (+ ARGS_OFFSET (second form))))
@@ -1970,11 +1970,11 @@ Example:
                 xor     edx, 8
                 mov     [eax + (uvector-offset 1)], edx
                 jmp     short :done
-            :next1      
+            :next1
                 mov     [eax + (uvector-offset 2)], edx
             :done
             end-atomic
-                        
+
             push	eax
         	}))
 	t)
@@ -2047,7 +2047,7 @@ Example:
 			{
 				mov		ecx, 0
 				callf	cl::alloc-single-float
-				fld.single [ebp + offset]		
+				fld.single [ebp + offset]
                 fstp.single [eax + (uvector-offset cl::single-float-offset)]
 				push	eax
 			}))
@@ -2059,9 +2059,9 @@ Example:
 		(parse-assembler
 			{
 				mov		ecx, 0
-				callf	cl::alloc-double-float				
-				fld     [ebp + offset]		
-				fstp    [eax + (uvector-offset cl::double-float-offset)]   
+				callf	cl::alloc-double-float
+				fld     [ebp + offset]
+				fstp    [eax + (uvector-offset cl::double-float-offset)]
 				push	eax
 			}))
 	t)
@@ -2075,7 +2075,7 @@ Example:
 				callf	ct::create-foreign-ptr
             begin-atomic
 				mov		ecx, [ebp + offset]
-				mov		[eax + (uvector-offset cl::foreign-heap-ptr-offset)], ecx 
+				mov		[eax + (uvector-offset cl::foreign-heap-ptr-offset)], ecx
                 xor     ecx, ecx
             end-atomic
 				push	eax
@@ -2099,10 +2099,10 @@ Example:
 	(when (stringp callback-func-sym)
 		(setf callback-func-sym (gethash callback-func-sym ct::*callback-registry*)))
 	(if (null callback-func-sym)
-		(return-from ct::get-callback-procinst nil))	
+		(return-from ct::get-callback-procinst nil))
 	(get callback-func-sym 'ct::callback-thunk))
 
-;; This function gets accessed via the COM interface from 
+;; This function gets accessed via the COM interface from
 ;; foreign threads.
 (defun cl::get-callback (name)
 	(ct::get-callback-procinst name))
@@ -2114,8 +2114,8 @@ Example:
 	{
 		push	ebp
 		mov		ebp, esp
-		cmp     ecx, 1          
-		jz      short :t1                
+		cmp     ecx, 1
+		jz      short :t1
 		callp 	_wrong-number-of-args-error
 	:t1
 		mov		eax, [ebp + ARGS_OFFSET]	;eax = p
@@ -2144,7 +2144,7 @@ Example:
 
 (defun ct::foreign-stack-p (x)
 	(and (uvectorp x)(eq (cl::uvector-type-bits x) uvector-foreign-stack-tag)))
-	
+
 (defasm ct::%memcmp (cp1 cp2 count)
 	{
 		push	ebp
@@ -2194,13 +2194,13 @@ Example:
 		ret
 	})
 
-(in-package :ct)			
+(in-package :ct)
 (defun ct:memcmp (buf1 buf2 count)
 	(unless (ct:cpointerp buf1)
 		(error "Not a foreign pointer: ~A" buf1))
 	(unless (ct:cpointerp buf2)
 		(error "Not a foreign pointer: ~A" buf2))
-	(unless (fixnump count)	
+	(unless (fixnump count)
 		(error "Third argument to memcmp must be a fixnum, got ~A" count))
 	(%memcmp (uref buf1 1)(uref buf2 1) count))
 
@@ -2214,9 +2214,9 @@ Example:
 (defun free (cptr) (cl::deallocate-c-heap cptr))
 
 (defun unicode-to-lisp-string (buf)
-	(let ((x (make-array 0 
-				:element-type 'character 
-				:fill-pointer t 
+	(let ((x (make-array 0
+				:element-type 'character
+				:fill-pointer t
 				:adjustable t)))
 		(do* ((index 0 (+ index 1))
 			  (c (ct:cref (:wide-char *) buf index)
@@ -2265,7 +2265,7 @@ Example:
 	(dotimes (i length)
 		(setf (aref lisp-buf i) (ct:cref (:unsigned-char *) cbuf i)))
 	lisp-buf)
-    
+
 (defmacro with-c-struct ((var expr structure-type) &body body)
 	(declare (ignore var))
 	(let ((struct-def (ct::ctypeexpand-all structure-type)))
@@ -2280,8 +2280,8 @@ Example:
 							(incf j)))))
 			(unless (every #'symbolp fields)
 				(error "Invalid structure definition, names are not all symbols: ~A" fields))
-			
-			`(symbol-macrolet 
+
+			`(symbol-macrolet
 				,(mapcar #'(lambda (sym) `(,sym (ct:cref ,structure-type ,expr ,sym))) fields)
 				,@body))))
 
@@ -2291,7 +2291,7 @@ Example:
 
 ;;;
 ;;; Output the contents of a C structure.
-;;; The structure and the optional stream are evaluated, but the C structure name is not. 
+;;; The structure and the optional stream are evaluated, but the C structure name is not.
 ;;; Example: (dump-c-struct s WNDCLASSEX)
 ;;;
 (defmacro dump-c-struct (struct type &optional (stream t))
@@ -2397,4 +2397,3 @@ Example:
 (in-package :cl)
 
 (setq cl::*compiler-warn-on-undefined-function* t)
-    

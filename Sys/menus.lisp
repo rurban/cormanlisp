@@ -10,8 +10,8 @@
 
 (in-package :win32)
 (export '(
-        create-menu-item 
-        remove-menu-item 
+        create-menu-item
+        remove-menu-item
         create-dynamic-menu-item
         get-main-menu
         remove-all-menu-items
@@ -104,11 +104,11 @@
      (hbrBack       HBRUSH)
      (dwContextHelpID  DWORD)
      (dwMenuData    (ULONG *))
-    ))      
+    ))
 (defwintype LPMENUINFO (MENUINFO *))
 (defwintype LPCMENUINFO (MENUINFO *))
 
-;; MENUINFO dwStyle flags           
+;; MENUINFO dwStyle flags
 (defwinconstant MNS_NOCHECK         #x80000000)
 (defwinconstant MNS_MODELESS        #x40000000)
 (defwinconstant MNS_DRAGDROP        #x20000000)
@@ -142,21 +142,21 @@
    :entry-name "CreatePopupMenu"
    :linkage-type :pascal)
 
-;; BOOL GetMenuItemInfo(HMENU hMenu, UINT uItem, BOOL fByPosition, LPMENUITEMINFO lpmii); 
+;; BOOL GetMenuItemInfo(HMENU hMenu, UINT uItem, BOOL fByPosition, LPMENUITEMINFO lpmii);
 (defwinapi GetMenuItemInfo (
 					(hMenu HMENU)
 					(uItem UINT)
-					(fByPosition BOOL) 
+					(fByPosition BOOL)
 					(lpmii LPMENUITEMINFO))
    :return-type BOOL
    :library-name "user32.dll"
    :entry-name "GetMenuItemInfoA"
    :linkage-type :pascal)
- 
+
 ;; BOOL AppendMenu(HMENU hMenu, UINT uFlags, INT uIDNewItem, LPCTSTR lpNewItem);
 (defwinapi AppendMenu ((hMenu HMENU)
 					      (uFlags UINT)
-						  (uIDNewItem INT) 
+						  (uIDNewItem INT)
 						  (lpNewItem LPCTSTR))
    :return-type BOOL
    :library-name "user32.dll"
@@ -167,7 +167,7 @@
 (defwinapi InsertMenu ((hMenu HMENU)
 							(uPosition UINT)
 							(uFlags UINT)
-						  	(uIDNewItem INT) 
+						  	(uIDNewItem INT)
 						  	(lpNewItem LPCTSTR))
    :return-type BOOL
    :library-name "user32.dll"
@@ -181,11 +181,11 @@
    :library-name "user32.dll"
    :entry-name "DrawMenuBar"
    :linkage-type :pascal)
- 
-;; int GetMenuString(HMENU hMenu, UINT uIDItem, LPTSTR lpString, int nMaxCount, UINT uFlag); 
+
+;; int GetMenuString(HMENU hMenu, UINT uIDItem, LPTSTR lpString, int nMaxCount, UINT uFlag);
 (defwinapi GetMenuString ((hMenu HMENU)
 					      (uIDItem UINT)
-						  (lpString LPTSTR) 
+						  (lpString LPTSTR)
 						  (nMaxCount int)
 						  (uFlag UINT))
    :return-type int
@@ -252,9 +252,9 @@
 	(let* ((main-wnd (cl::get-application-main-window))
 		   (main-menu (GetMenu main-wnd))
 		   (new-menu (CreateMenu)))
-		(AppendMenu main-menu 
-			(logior MF_ENABLED MF_STRING MF_POPUP) 
-			(cl::foreign-ptr-to-int new-menu) 
+		(AppendMenu main-menu
+			(logior MF_ENABLED MF_STRING MF_POPUP)
+			(cl::foreign-ptr-to-int new-menu)
 			(create-c-string name))
 		(DrawMenuBar main-wnd)
 		new-menu))
@@ -288,7 +288,7 @@
         (setf (ct:cref win:MENUINFO menuInfo dwStyle)
                     (logior (ct:cref win:MENUINFO menuInfo dwStyle) win:MNS_NOTIFYBYPOS))
         (SetMenuInfo hmenu menuinfo)))
-    
+
 (defvar menu-string-list nil)
 
 (defun find-named-menu (menu name)
@@ -305,76 +305,76 @@
 (defparameter *last-dynamic-menu* nil)
 
 (defun append-menu-item-impl (menu id item-name command-func message checked enabled break separator)
-	(AppendMenu menu 
-		(logior 
+	(AppendMenu menu
+		(logior
             (if enabled MF_ENABLED MF_DISABLED)
             (if separator MF_SEPARATOR MF_STRING) ;; must be either string xor separator
             (if checked MF_CHECKED MF_UNCHECKED)
-            (if break MF_MENUBARBREAK 0)) 
-		id 
+            (if break MF_MENUBARBREAK 0))
+		id
 		(create-c-string item-name))
 	(setf (gethash id *menu-mappings*) (list command-func message))
 	t)
-    
-(defun append-menu-item (menu item-name command-func 
-        &key message 
-             checked 
+
+(defun append-menu-item (menu item-name command-func
+        &key message
+             checked
             (enabled t)
             break
             separator)
-    (append-menu-item-impl menu 
-        (incf *id-lisp-menu-item*) 
+    (append-menu-item-impl menu
+        (incf *id-lisp-menu-item*)
         item-name command-func message checked enabled break separator))
 
-(defun append-dynamic-menu-item (menu item-name command-func 
-        &key message 
-            checked 
+(defun append-dynamic-menu-item (menu item-name command-func
+        &key message
+            checked
             (enabled t)
             break
             separator)
-    (append-menu-item-impl menu 
-        (incf *id-lisp-dynamic-menu-item*) 
+    (append-menu-item-impl menu
+        (incf *id-lisp-dynamic-menu-item*)
         item-name command-func message checked enabled break separator))
 
 (defun insert-menu-item-impl (menu position id item-name command-func message checked enabled break separator)
-	(InsertMenu menu 
+	(InsertMenu menu
 		position
-		(logior 
-            (if enabled MF_ENABLED MF_DISABLED) 
+		(logior
+            (if enabled MF_ENABLED MF_DISABLED)
             (if separator MF_SEPARATOR MF_STRING) ;; must be either string xor separator
             (if checked MF_CHECKED MF_UNCHECKED)
-            (if break MF_MENUBREAK 0)) 
-		id 
+            (if break MF_MENUBREAK 0))
+		id
 		(create-c-string item-name))
 	(setf (gethash id *menu-mappings*) (list command-func message))
 	t)
 
-(defun insert-menu-item (menu position item-name command-func 
-        &key message 
-        checked 
+(defun insert-menu-item (menu position item-name command-func
+        &key message
+        checked
         (enabled t)
         break
         separator)
-    (insert-menu-item-impl menu position 
-        (incf *id-lisp-menu-item*) 
+    (insert-menu-item-impl menu position
+        (incf *id-lisp-menu-item*)
         item-name command-func message checked enabled break separator))
 
-(defun insert-dynamic-menu-item (menu position item-name command-func 
-        &key message 
-            checked 
-            (enabled t) 
+(defun insert-dynamic-menu-item (menu position item-name command-func
+        &key message
+            checked
+            (enabled t)
             break
             separator)
-    (insert-menu-item-impl menu position 
-        (incf *id-lisp-dynamic-menu-item*) 
+    (insert-menu-item-impl menu position
+        (incf *id-lisp-dynamic-menu-item*)
         item-name command-func message checked enabled break separator))
-        
+
 ;; returns the new menu
 (defun insert-sub-menu-impl (menu position item-name init-func uninit-func)
     (let ((new-menu (create-notify-by-command-menu)))
-        (InsertMenu 
-			menu 
-			position 
+        (InsertMenu
+			menu
+			position
 			(logior MF_ENABLED MF_STRING MF_BYPOSITION MF_POPUP)
 			(cl::foreign-ptr-to-int new-menu)
 			(create-c-string item-name))
@@ -393,8 +393,8 @@
 ;; returns the new menu
 (defun append-sub-menu-impl (menu item-name init-func uninit-func)
     (let ((new-menu (create-notify-by-command-menu)))
-        (AppendMenu 
-			menu 
+        (AppendMenu
+			menu
 			(logior MF_ENABLED MF_STRING MF_BYPOSITION MF_POPUP)
 			(cl::foreign-ptr-to-int new-menu)
 			(create-c-string item-name))
@@ -409,7 +409,7 @@
 ;; returns the new menu
 (defun append-dynamic-sub-menu (menu item-name &optional init-func uninit-func)
     (append-sub-menu-impl menu item-name init-func uninit-func))
-        
+
 ;;;
 ;;; Remove an item from a menu, given the menu handle and position
 ;;;
@@ -420,11 +420,11 @@
             (if (stringp parent)
                 (setf parent (find-named-menu (win:get-main-menu) parent))))
         (setf id (GetMenuItemID parent position))
-        
+
         ;; if the returned id = -1 then it is a submenu
         (if (= id -1)
             (setf id (GetSubMenu parent position)))
-        
+
         (win:RemoveMenu parent position win:MF_BYPOSITION)
         (remhash id *menu-mappings*)
         (if (foreignp id)   ;; if it was a submenu
@@ -438,7 +438,7 @@
     (let* ((count (win:GetMenuItemCount hmenu)))
         (loop for i from (- count 1) downto 0 do
             (win:remove-menu-item hmenu i))))
-      
+
 (defun ccl::execute-user-command (id)
     (let ((func (gethash id *menu-mappings*)))
         (if (consp func)
@@ -451,8 +451,8 @@
         (if (consp func)
             (setf func (first func)))
         (if (or (functionp func) (and func (symbolp func)))
-            (ignore-errors (funcall func hmenu))))) 
-                
+            (ignore-errors (funcall func hmenu)))))
+
 (defun execute-menu-popup-uninit (hmenu)
     (let ((func (gethash hmenu *menu-mappings*)))
         (when (consp func)
@@ -468,7 +468,7 @@
                 (ignore-errors (funcall func id))
                 (if (stringp func)
                     func)))))
-                    
+
 (defun get-menu-item-name (menu index)
 	(let* ((size-info (ct:sizeof 'MENUITEMINFO))
 		   (info (ct:malloc size-info))
@@ -477,7 +477,7 @@
 		(setf (cref MENUITEMINFO info cbSize) size-info)
 		(setf (cref MENUITEMINFO info fMask) MIIM_TYPE)
 		(setf (cref MENUITEMINFO info dwTypeData) buf)
-		
+
 		(setq ret (GetMenuItemInfo menu index 1 info))
 		(if (eq ret nil) nil (ct::c-string-to-lisp-string buf))))
 
@@ -489,7 +489,7 @@
 			(result nil))
 		(dotimes (i count)
 			(let (name submenu)
-				(if (> (GetMenuString menu i buf 
+				(if (> (GetMenuString menu i buf
 						*max-menu-name-length* MF_BYPOSITION) 0)
 					(setq name (ct:c-string-to-lisp-string buf))
 					(setq name nil))
@@ -506,7 +506,7 @@
 
 #|
 (setq my-menu (create-user-menu "Roger"))
-(append-menu-item my-menu "Corman" 
+(append-menu-item my-menu "Corman"
 	#'(lambda (x) (format t "This is the Corman command!~%")))
 |#
 
@@ -523,7 +523,7 @@
 			(buf (ct:malloc (+ *max-menu-name-length* 1)))
 			(result nil))
 		(dotimes (i count)
-			(let* (menu-name 
+			(let* (menu-name
 					(submenu (GetSubMenu menu i)))
 				(when (and (item-is-submenu submenu)
 							(> (GetMenuString menu i buf *max-menu-name-length* MF_BYPOSITION) 0))
@@ -560,7 +560,7 @@
 (defun remember-last-dynamic-menu (hmenu)
     (setf *last-dynamic-menu* hmenu))
 
-	
+
 ;;	Ex:		(create-menu-item '(:menu "foo") nil 3)
 ;;			Inserts a new menu foo into the main menu bar at position 3.
 ;;
@@ -589,22 +589,22 @@
                             func))
                   (popup-uninit-func
                         (if dynamic 'remember-last-dynamic-menu nil)))
-                
+
                 (if (null parent)
                     (setf parent (get-main-menu) need-redraw t)
                     (if (stringp parent)
                         (setf parent (find-named-menu (get-main-menu) parent))))
                 (setf new-menu
-                    (funcall add-func 
-    					parent 
-    					position 
+                    (funcall add-func
+    					parent
+    					position
     					(create-c-string name)
                         popup-init-func
                         popup-uninit-func))
                 (if need-redraw
                     (win:DrawMenuBar (cl::get-application-main-window)))
                 new-menu)
-                
+
 			(if (eq key :command)
 				(let* ((name (second option))
 				       (func (third option))
@@ -614,8 +614,8 @@
 					(funcall add-func
 						(if (stringp parent)
                             (find-named-menu main-menu parent)
-                            parent) 
-						position 
+                            parent)
+						position
 						name
 						func
                         :message message
@@ -630,8 +630,3 @@
 
 (defun create-dynamic-menu-item (option parent position &key message checked (enabled t) break separator)
     (create-menu-item-impl option parent position message checked enabled t break separator))
-
-    
-       
-        
-    

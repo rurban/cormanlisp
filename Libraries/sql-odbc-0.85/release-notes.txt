@@ -49,12 +49,12 @@ Release notes for 0.8:
 
 6. Prepared and parameterized select statements.
 
-7. A generic command syntax for SQL constructs not covered elsewhere. 
+7. A generic command syntax for SQL constructs not covered elsewhere.
 
 8. Misc. enhancements:
    - More info on available databases and drivers for Macintosh and Linux
    - DO-QUERY handles &REST variables.
-   - Some SQL commands and operators added. 
+   - Some SQL commands and operators added.
    - Outside of [...], symbols beginning with ? are read with the standard readtable.
 
 Problems:

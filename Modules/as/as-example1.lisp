@@ -1,7 +1,7 @@
 ;;;; AllegroServe Example for Corman Lisp - Version 1.0
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,33 +20,33 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 03/03/2000 - 1.0 
+;;;; 03/03/2000 - 1.0
 ;;;;              Initial release.
 ;;;;
 (require 'allegroserve)
 
 (defpackage "AS-EXAMPLE1"
-  (:use 
-		"COMMON-LISP" 
-		"EXCL" 
-		"NET.HTML.GENERATOR" 
+  (:use
+		"COMMON-LISP"
+		"EXCL"
+		"NET.HTML.GENERATOR"
 		"NET.ASERVE"))
 
 (in-package :as-example1)
 
-(setq *wserver* 
+(setq *wserver*
 	(make-instance 'wserver :enable-chunking nil :enable-keep-alive nil))
 
-(publish 
+(publish
 	:path "/"
 	:content-type "text/html"
 	:function
@@ -69,9 +69,9 @@
 							(:p "This page has been accessed "
 								(:princ-safe (incf count))
 								" times."))))))))
-							
-	
-(publish 
+
+
+(publish
 	:path "/gc"
 	:content-type "text/html"
 	:function
@@ -88,9 +88,9 @@
 							(:h1 "Room")
 							(:pre
 								(:princ-safe room-output)))))))))
-	
+
 (defun start-server (&key (port 80))
-	(mp:process-run-function "as-example1" 
+	(mp:process-run-function "as-example1"
 		#'(lambda ()
 			(start :server *wserver* :port port :chunking nil))))
 
@@ -110,8 +110,8 @@
 (use-package :net.aserve.client)
 
 (setq cookies (make-instance 'cookie-jar))
-(do-http-request "http://www.double.nz/cl/index.htm" 
+(do-http-request "http://www.double.nz/cl/index.htm"
 	:cookies cookies
 	:protocol :http/1.0)
 (net.aserve.client::cookie-jar-items cookies)
-|#	
+|#

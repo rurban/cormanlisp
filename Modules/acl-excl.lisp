@@ -1,7 +1,7 @@
 ;;;; ACL excl wrapper library for Corman Lisp - Version 1.1
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,26 +20,26 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
 ;;;; =====
 ;;;; A simple implementation of some of the EXCL package from Allegro
 ;;;; Common Lisp. Intended to be used for porting various ACL packages,
-;;;; like AllegroServe. 
+;;;; like AllegroServe.
 ;;;;
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 20/09/2000 - 1.0 
+;;;; 20/09/2000 - 1.0
 ;;;;              Initial release.
 ;;;;              Many of the implementations are stubbed out and
 ;;;;              need to be completed. Includes the IF* macro
-;;;;              placed in the public domain by John Foderaro. 
+;;;;              placed in the public domain by John Foderaro.
 ;;;;              See: http://www.franz.com/~jkf/ifstar.txt
 ;;;;
 ;;;; 06/03/2001 - 1.1
@@ -55,7 +55,7 @@
 
 (defpackage :excl
 	(:use :common-lisp :nregex)
-	(:export 
+	(:export
 		"IF*"
 		"*INITIAL-TERMINAL-IO*"
 		"*CL-DEFAULT-SPECIAL-BINDINGS*"
@@ -153,7 +153,7 @@
 
 (defmacro errorset (&body form)
 	`(let* ((ok nil)
-			(results 
+			(results
 				(ignore-errors
 					(prog1
 						(multiple-value-list

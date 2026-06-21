@@ -1,19 +1,19 @@
 ;-*-syntax:COMMON-LISP;Package:(XP :use "COMMON-LISP" :colon-mode :external)-*-
-(make-package "XP")      
+(make-package "XP")
 (in-package "XP" :use '("LISP"))
 
 ;This is the November, 26 1991 version of
 ;Richard C. Waters' XP pretty printer.
 
 ;;;;
-;;;; History:    
-;;;;           20 Jun 2003  RGC Some modifications have been made to 
+;;;; History:
+;;;;           20 Jun 2003  RGC Some modifications have been made to
 ;;;;                            integrate this into Corman Lisp.
 ;;;;                            Added handling of doc string in DEFSTRUCT.
 ;;;;           04 Dec 2003  RGC Added support for :readably option to WRITE function.
 ;;;;
-;;;;           31 Mar 2008  RGC Added initialization of *STANDARD-PPRINT-DISPATCH* after re-definition 
-;;;;                            of COPY-PPRINT-DISPATCH.         
+;;;;           31 Mar 2008  RGC Added initialization of *STANDARD-PPRINT-DISPATCH* after re-definition
+;;;;                            of COPY-PPRINT-DISPATCH.
 
 ;The standard version of this program is available by anonymous FTP
 ;from MERL.COM in the files /pub/xp/xp*.  If you have gotten the file
@@ -46,7 +46,7 @@
 ;The functions in this file are documented in Chapter 27 of Common Lisp:
 ;the Language Second Edition, Guy L. Steele Jr, Digital press, 1990,
 ;and in even greater detail in
-;  MIT/AIM-1102a, July 1989.  
+;  MIT/AIM-1102a, July 1989.
 ;This report can be obtained by writing to
 
 ;              Publications
@@ -66,7 +66,7 @@
 ;run these tests after the first time you compile this file on a new system.
 
 ;The companion file "XPDOC.TXT" contains brief documentation.
-
+
 (provide "XP")
 
 (shadow '(write print prin1 princ pprint format write-to-string princ-to-string
@@ -97,7 +97,7 @@
 (export '(formatter copy-pprint-dispatch pprint-dispatch
 	  set-pprint-dispatch pprint-fill pprint-linear pprint-tabular
 	  pprint-logical-block pprint-pop pprint-exit-if-list-exhausted
-	  pprint-newline pprint-indent pprint-tab 
+	  pprint-newline pprint-indent pprint-tab
 	  *print-pprint-dispatch* *print-right-margin* *default-right-margin*
 	  *print-miser-width* *print-lines*
 	  *last-abbreviated-printing*))
@@ -139,7 +139,7 @@
 (defvar *abbreviation-happened* nil
   "t if current thing being printed has been abbreviated.")
 (defvar *result* nil "used to pass back a value")
-
+
 ;default (bad) definitions for the non-portable functions
 
 #-(or :lucid :franz-inc :cmu)(eval-when (eval load compile)
@@ -184,7 +184,7 @@
 (defun structure-type-p (x) (and (symbolp x) (get x 'structure-printer)))
 (defun output-width     (&optional (s *standard-output*)) (declare (ignore s)) nil)
 (defun output-position  (&optional (s *standard-output*)) (excl::charpos s)) )
-
+
 
 ; Joachim Laubsch <laubsch%hpljl@hplabs.hp.com> is the contact at HP Labs.
 ; He reports that HP COMMON LISP II Development Environment Rev A.02.15 11/10/88
@@ -206,7 +206,7 @@
 				       :START2 START2
 				       :END2 (+ START2 copy-length)
 				       ()))
-	
+
       )))
 
 (defun install (&key (package *package*) (macro nil) (shadow T) (remove nil))
@@ -248,7 +248,7 @@
 (defun free-circularity-hash-table (table)
   (clrhash table)
   (pushnew table *free-circularity-hash-tables*))
-
+
 ;                       ---- DISPATCHING ----
 
 (lisp+defstruct (pprint-dispatch (:conc-name nil) (:copier nil))
@@ -257,7 +257,7 @@
   (others nil :type list))
 
 ;The list and the hash-tables contain entries of the
-;following form.  When stored in the hash tables, the test entry is 
+;following form.  When stored in the hash tables, the test entry is
 ;the number of entries in the OTHERS list that have a higher priority.
 
 (lisp+defstruct (entry (:conc-name nil))
@@ -283,7 +283,7 @@
       :conses-with-cars new-conses-with-cars
       :structures new-structures
       :others (copy-list (others table)))))
-
+
 (defun set-pprint-dispatch (type-specifier function
 			    &optional (priority 0) (table *print-pprint-dispatch*))
   (when (or (not (numberp priority)) (complexp priority))
@@ -339,7 +339,7 @@
   (if (consp x)
       (if (consp y) (> (car x) (car y)) nil)
       (if (consp y) T (> x y))))
-
+
 
 (defun adjust-counts (table priority delta)
   (maphash #'(lambda (key value)
@@ -354,7 +354,7 @@
 	   (structures table)))
 
 (defun pprint-dispatch (object &optional (table *print-pprint-dispatch*))
-  (when (null table) (setq table *IPD*))  
+  (when (null table) (setq table *IPD*))
   (let ((fn (get-printer object table)))
     (values (or fn #'non-pretty-print) (not (null fn)))))
 
@@ -384,14 +384,14 @@
 	 'cons-with-car)
 	((and (symbolp spec) (structure-type-p spec)) 'structure-type)
 	(T 'other)))
-
+
 (defvar *preds-for-specs*
   '((T always-true) (cons consp) (simple-atom simple-atom-p) (other otherp)
     (null null) (symbol symbolp) (atom atom) (cons consp)
     (list listp) (number numberp) (integer integerp)
     (rational rationalp) (float floatp) (complex complexp)
     (character characterp) (string stringp) (bit-vector bit-vector-p)
-    (vector vectorp) (simple-vector simple-vector-p) 
+    (vector vectorp) (simple-vector simple-vector-p)
     (simple-string simple-string-p) (simple-bit-vector simple-bit-vector-p)
     (array arrayp) (package packagep) (function functionp)
     (compiled-function compiled-function-p) (common commonp)))
@@ -418,7 +418,7 @@
 	((eq (car spec) 'satisfies)
 	 `(funcall (function ,(cadr spec)) x))
 	(T `(typep x ',(copy-tree spec)))))
-
+
 ;               ---- XP STRUCTURES, AND THE INTERNAL ALGORITHM ----
 
 (eval-when (eval load compile) ;not used at run time.
@@ -435,7 +435,7 @@
   (defvar queue-min-size #.(* 75. queue-entry-size))
   (defvar buffer-min-size 256.)
   (defvar prefix-min-size 256.)
-  (defvar suffix-min-size 256.)) 
+  (defvar suffix-min-size 256.))
 
 (lisp+defstruct (xp-structure (:conc-name nil) (:print-function describe-xp))
   (BASE-STREAM nil) ;;The stream io eventually goes to.
@@ -447,8 +447,8 @@
   DEPTH-IN-BLOCKS
    ;;Number of logical blocks at QRIGHT that are started but not ended.
   (BLOCK-STACK (make-array #.block-stack-min-size)) BLOCK-STACK-PTR
-   ;;This stack is pushed and popped in accordance with the way blocks are 
-   ;;nested at the moment they are entered into the queue.  It contains the 
+   ;;This stack is pushed and popped in accordance with the way blocks are
+   ;;nested at the moment they are entered into the queue.  It contains the
    ;;following block specific value.
    ;;SECTION-START total position where the section (see AIM-1102)
    ;;that is rightmost in the queue started.
@@ -461,7 +461,7 @@
    ;;first character in the buffer (non-zero only if a partial line
    ;;has been output).  BUFFER-OFFSET is used in computing total lengths.
    ;;It is changed to reflect all shifting and insertion of prefixes so that
-   ;;total length computes things as they would be if they were 
+   ;;total length computes things as they would be if they were
    ;;all on one line.  Positions are kept three different ways
    ;; Buffer position (eg BUFFER-PTR)
    ;; Line position (eg (+ BUFFER-PTR CHARPOS)).  Indentations are stored in this form.
@@ -488,7 +488,7 @@
   (PREFIX (make-array #.buffer-min-size :element-type 'character))
    ;;this stores the prefix that should be used at the start of the line
   (PREFIX-STACK (make-array #.prefix-stack-min-size)) PREFIX-STACK-PTR
-   ;;This stack is pushed and popped in accordance with the way blocks 
+   ;;This stack is pushed and popped in accordance with the way blocks
    ;;are nested at the moment things are taken off the queue and printed.
    ;;It contains the following block specific values.
    ;;PREFIX-PTR current length of PREFIX.
@@ -500,7 +500,7 @@
    ;;this stores the suffixes that have to be printed to close of the current
    ;;open blocks.  For convenient in popping, the whole suffix
    ;;is stored in reverse order.
- 
+
 
 (defmacro LP<-BP (xp &optional (ptr nil))
   (if (null ptr) (setq ptr `(buffer-ptr ,xp)))
@@ -512,7 +512,7 @@
 (defmacro BP<-TP (xp ptr)
   `(- ,ptr (buffer-offset ,xp)))
 ;This does not tell you the line position you were at when the TP
-;was set, unless there have been no newlines or indentation output 
+;was set, unless there have been no newlines or indentation output
 ;between ptr and the current output point.
 (defmacro LP<-TP (xp ptr)
   `(LP<-BP ,xp (BP<-TP ,xp ,ptr)))
@@ -558,7 +558,7 @@
   `(aref (prefix-stack ,xp) (+ (prefix-stack-ptr ,xp) 3)))
 (defmacro section-start-line (xp)
   `(aref (prefix-stack ,xp) (+ (prefix-stack-ptr ,xp) 4)))
-
+
 (defun push-prefix-stack (xp)
   (let ((old-prefix 0) (old-suffix 0) (old-non-blank 0))
     (when (not (minusp (prefix-stack-ptr xp)))
@@ -603,10 +603,10 @@
   (setf (Qarg xp (Qright xp)) arg))
 
 (defmacro Qnext (index) `(+ ,index #.queue-entry-size))
-
+
 (defvar *describe-xp-streams-fully* nil "Set to T to see more info.")
 
-(defun describe-xp (xp s depth) 
+(defun describe-xp (xp s depth)
     (declare (ignore depth))
   (lisp+format s "#<XP stream ")
   (if (not (base-stream xp))
@@ -662,7 +662,7 @@
 	  (pop-prefix-stack xp)))))
     (lisp+princ ">" s)
     (values))
-
+
 ;This maintains a list of XP structures.  We save them
 ;so that we don't have to create new ones all of the time.
 ;We have separate objects so that many can be in use at once.
@@ -704,7 +704,7 @@
   (setf (Qright xp) #.(- queue-entry-size))
   (setf (prefix-stack-ptr xp) #.(- prefix-stack-entry-size))
   xp)
-
+
 ;The char-mode stuff is a bit tricky.
 ;one can be in one of the following modes:
 ;NIL no changes to characters output.
@@ -763,7 +763,7 @@
 	  (when (null next-newline) (return nil))
 	  (pprint-newline+ :unconditional xp)
 	  (setq start (1+ sub-end)))))
-
+
 ;note this checks (> BUFFER-PTR LINEL) instead of (> (LP<-BP) LINEL)
 ;this is important so that when things are longer than a line they
 ;end up getting printed in chunks of size LINEL.
@@ -774,7 +774,7 @@
   (let ((new-buffer-end (1+ (buffer-ptr xp))))
     (check-size xp buffer new-buffer-end)
     (if (char-mode xp) (setq char (handle-char-mode xp char)))
-    (setf (char (buffer xp) (buffer-ptr xp)) char)    
+    (setf (char (buffer xp) (buffer-ptr xp)) char)
     (setf (buffer-ptr xp) new-buffer-end)))
 
 (defun force-some-output (xp)
@@ -789,7 +789,7 @@
 
 ;never forces output; therefore safe to call from within output-line.
 
-(defun write-string+++ (string xp start end) 
+(defun write-string+++ (string xp start end)
   (let ((new-buffer-end (+ (buffer-ptr xp) (- end start))))
     (check-size xp buffer new-buffer-end)
     (do ((buffer (buffer xp))
@@ -829,7 +829,7 @@
 
 ;note following is smallest number >= x that is a multiple of colinc
 ;  (* colinc (floor (+ x (1- colinc)) colinc))
-
+
 (defun pprint-newline+ (kind xp)
   (enqueue xp :newline kind)
   (do ((ptr (Qleft xp) (Qnext ptr)))    ;find sections we are ending
@@ -872,7 +872,7 @@
 
 (defun pprint-indent+ (kind n xp)
   (enqueue xp :ind kind n))
-
+
 ; The next function scans the queue looking for things it can do.
 ;it keeps outputting things until the queue is empty, or it finds
 ;a place where it cannot make a decision yet.
@@ -931,12 +931,12 @@
 	       (:fill (or (misering? xp)
 			  (> (line-no xp) (section-start-line xp))
 			  (maybe-too-large xp (Qleft xp))))
-	       (T T)) ;(:linear :unconditional :mandatory) 
+	       (T T)) ;(:linear :unconditional :mandatory)
 	 (output-line xp (Qleft xp))
 	 (setup-for-next-line xp (Qleft xp)))
        (setf (Qleft xp) (Qnext (Qleft xp))))))
   (when flush-out? (flush xp)))
-
+
 ;this can only be called last!
 
 (defun flush (xp)
@@ -1014,7 +1014,7 @@
     (let ((c (char string i)))
       (setf (char string i) (char string j))
       (setf (char string j) c))))
-
+
 ;		   ---- BASIC INTERFACE FUNCTIONS ----
 
 ;The internal functions in this file, and the (formatter "...") expansions
@@ -1065,7 +1065,7 @@
 	(xp-print fn (decode-stream-arg stream) args)
 	(if *circularity-hash-table*
 	    (free-circularity-hash-table *circularity-hash-table*))
-	(when *abbreviation-happened* 
+	(when *abbreviation-happened*
 	  (setq *last-abbreviated-printing*
 		(eval
 		  `(function
@@ -1083,7 +1083,7 @@
     (setq *abbreviation-happened* nil)
     (setq *parents* nil)
     (setq *result* (do-xp-printing fn stream args))))
-
+
 (defun decode-stream-arg (stream)
   (cond ((eq stream T) *terminal-io*)
 	((null stream) *standard-output*)
@@ -1139,8 +1139,8 @@
 			 (- *print-level* *current-level*))
 	      :pretty nil
 	      :stream s))
-
-;It is vital that this function be called EXACTLY once for each occurrence of 
+
+;It is vital that this function be called EXACTLY once for each occurrence of
 ;  each thing in something being printed.
 ;Returns nil if printing should just continue on.
 ;  Either it is not a duplicate, or we are in the first pass and do not know.
@@ -1165,7 +1165,7 @@
   (unless (or (numberp object)
 	      (characterp object)
 	      (and (symbolp object)	;Reader takes care of sharing.
-		   (or (null *print-gensym*) (symbol-package object)))) 
+		   (or (null *print-gensym*) (symbol-package object))))
     (let ((id (gethash object *circularity-hash-table*)))
       (if *locating-circularities*
 	  (cond ((null id)	;never seen before
@@ -1196,7 +1196,7 @@
 		   (print-fixnum xp (- id))
 		   (write-char++ #\# xp)
 		   :subsequent))))))
-
+
 ;This prints a few very common, simple atoms very fast.
 ;Pragmatically, this turns out to be an enormous savings over going to the
 ;standard printer all the time.  There would be diminishing returns from making
@@ -1255,7 +1255,7 @@
 			  (and (alpha-char-p c) (upper-case-p c))
 			  (find c "*+<>-")))
 		 (return nil)))))))
-
+
 
 (defun print (object &optional (stream *standard-output*))
   (setq stream (decode-stream-arg stream))
@@ -1297,7 +1297,7 @@
   (with-output-to-string (stream)
     (let ((*print-escape* nil))
       (basic-write object stream))))
-
+
 ;Any format string that is converted to a function is always printed
 ;via an XP stream (See formatter).
 
@@ -1337,7 +1337,7 @@
 (defun write-char (char &optional (stream *standard-output*))
   (setq stream (decode-stream-arg stream))
   (if (xp-structure-p stream)
-      (write-char+ char stream) 
+      (write-char+ char stream)
       (lisp+write-char char stream))
   char)
 
@@ -1357,7 +1357,7 @@
 	     (pprint-newline+ :unconditional stream))
       (lisp+write-line string stream :start start :end end))
   string)
-
+
 (defun terpri (&optional (stream *standard-output*))
   (setq stream (decode-stream-arg stream))
   (if (xp-structure-p stream)
@@ -1406,7 +1406,7 @@
       (setq stream (base-stream stream))))
   (lisp+clear-output stream)
   nil)
-
+
 ;note we are assuming that if a structure is defined using xp::defstruct,
 ;then its print-function (if any) will be defined using xp::print etc.
 
@@ -1434,12 +1434,12 @@
 				   ((null (cadr conc-name-spec)) "")
 				   (T (string (cadr conc-name-spec)))))
 		  (slots (mapcar #'(lambda (x) (if (consp x) (car x) x)) body)))
-          
+
           ;; Handle doc string before slot definitions--just skip it.
           ;; It is still being passed to the standard DEFSTRUCT macro.  -RGC
           (if (stringp (first slots))
                (setq slots (cdr slots)))
-                    
+
 	     `(eval-when (eval load compile)
 		(lisp+defstruct ,name ,@ body)
 		(defun ,xp-print-fn (xp obj)
@@ -1460,7 +1460,7 @@
 (defun safe-assoc (item list)
   (do ((l list (cdr l))) ((not (consp l)) nil)
     (if (and (consp (car l)) (eq (caar l) item)) (return (car l)))))
-
+
 ;           ---- FUNCTIONAL INTERFACE TO DYNAMIC FORMATTING ----
 
 ;The internal functions in this file, and the (formatter "...") expansions
@@ -1511,7 +1511,7 @@
 			`(if (null ,',args) (return-from logical-block nil))))
 	     ,@ body)
 	   (end-block ,var ,suffix))))))
-
+
 (defun pprint-newline (kind &optional (stream *standard-output*))
   (setq stream (decode-stream-arg stream))
   (when (not (member kind '(:linear :miser :fill :mandatory)))
@@ -1535,7 +1535,7 @@
   (when (xp-structure-p stream)
     (pprint-tab+ kind colnum colinc stream))
   nil)
-
+
 ;                        ---- COMPILED FORMAT ----
 
 ;Note that compiled format strings always print through xp streams even if
@@ -1561,7 +1561,7 @@
        (defun ,name ,args ,@ body)
        (setf (gethash (char-upcase ,char) *fn-table*) (function ,name))
        (setf (gethash (char-downcase ,char) *fn-table*) (function ,name)))))
-
+
 ;Definitions of the forms used in the code created by PARSE.
 ;Note these functions assume the stream is in the var XP and is an xp stream,
 
@@ -1607,7 +1607,7 @@
 
 (defun make-binding (var value body)
   `((let ((,var ,value)) ,@ body)))
-
+
 (defun num-args () `(length ,(args)))
 
 (defun get-arg ()
@@ -1670,7 +1670,7 @@
 	  (push `(pprint-newline+ :unconditional xp) result)
 	  (setq start (1+ sub-end)))
     (if (null (cdr result)) (car result) (cons 'progn (nreverse result)))))
-
+
 ;This is available for putting on #".
 
 (proclaim '(special *default-package*))
@@ -1714,7 +1714,7 @@
 (defun maybe-compile-format-string (string force-fn?)
   (if (not (or force-fn? (fancy-directives-p string))) string
       (eval `(formatter ,string))))
-
+
 ;COMPILE-FORMAT gets called to turn a bit of format control string into code.
 
 (defvar *testing-errors* nil "Used only when testing XP")
@@ -1776,7 +1776,7 @@
 	  (when (eql (aref *string* k) close) (decf count)
 	    (when (minusp count) (setq j k) (return nil))))))
     (values c i j)))
-
+
 ;breaks things up at ~; directives.
 
 (defun chunk-up (start end)
@@ -1791,7 +1791,7 @@
 (defun fancy-directives-p (*string*)
   (let (i (j 0) (end (length *string*)) c)
     (loop
-      (multiple-value-setq (i j) (next-directive1 j end))	
+      (multiple-value-setq (i j) (next-directive1 j end))
       (when (not i) (return nil))
       (setq c (aref *string* j))
       (when (or (find c "_Ii/Ww") (and (find c ">Tt") (colonp j)))
@@ -1803,7 +1803,7 @@
       (setq i (position-not-in "+-0123456789," (1+ i)))
       (setq c (aref *string* i))
       (cond ((or (char= c #\V) (char= c #\v)) (incf n))
-	    ((char= c #\#) 
+	    ((char= c #\#)
 	     (when err
 	       (err 21 "# not allowed in ~~<...~~> by (formatter \"...\")" start))
 	     (return nil))
@@ -1836,7 +1836,7 @@
       (push (funcall fn (1+ i) j) result)
       (setq start j)
       (go L))))
-
+
 ;This gets called with start pointing to the character after the ~ that
 ;starts a command.  Defaults, is a list of default values for the
 ;parameters.  Max is the maximum number of parameters allowed.  Nocolon,
@@ -1896,7 +1896,7 @@
   (or (eql (aref *string* (1- j)) #\@)
       (and (eql (aref *string* (1- j)) #\:)
 	   (eql (aref *string* (- j 2)) #\@))))
-
+
 (def-format-handler #\/ (start end)
   (multiple-value-bind (colon atsign params) (parse-params start nil :max nil)
     (let* ((whole-name-start (1+ (params-end start)))
@@ -1929,7 +1929,7 @@
   (if (not (= end (1+ start))) (simple-directive start end)
       `(let ((*print-escape* T))
 	 (write+ ,(get-arg) XP))))
-
+
 ;The basic Format directives "DBOXRCFEG$".  The key thing about all of
 ;these directives is that they just get a single arg and print a chunk of
 ;stuff.  Further they are complex enough that I just call the standard
@@ -1966,7 +1966,7 @@
 (defun using-format (xp string &rest args)
   (let ((result (apply #'lisp+format nil string args)))
     (write-string+ result xp 0 (length result))))
-
+
 ;Format directives that get open coded "P%&~|T*?^"
 
 (def-format-handler #\P (start end) (declare (ignore end))
@@ -1983,7 +1983,7 @@
   (multiple-newlines start :fresh))
 
 (defun multiple-newlines (start kind)
-  (multiple-value-bind (colon atsign params) 
+  (multiple-value-bind (colon atsign params)
       (parse-params start '(1) :nocolon T :noatsign T)
       (declare (ignore colon atsign))
     (if (eql (car params) 1) `(pprint-newline+ ,kind xp)
@@ -2016,7 +2016,7 @@
     `(pprint-tab+ ,(if colon (if atsign :section-relative :section)
 		             (if atsign :line-relative :line))
 		  ,(pop params) ,(pop params) xp)))
-
+
 (def-format-handler #\* (start end) (declare (ignore end))
   (if (atsignp (params-end start))
       (multiple-value-bind (colon atsign params)
@@ -2081,7 +2081,7 @@
   (cond (a3 (and (<= a1 a2) (<= a2 a3)))
 	(a2 (= a1 a2))
 	(t (= 0 a1))))
-
+
 ;delimited pairs of format directives. "(){}[]<>;"
 
 (def-format-handler #\[ (start end)
@@ -2131,7 +2131,7 @@
   (err 18 "Unmatched closing directive" (1- end)))
 (def-format-handler #\} (start end) (declare (ignore start))
   (err 19 "Unmatched closing directive" (1- end)))
-
+
 (def-format-handler #\{ (start end)
   (multiple-value-bind (colon atsign params)
       (parse-params start '(-1) :max 1)
@@ -2181,7 +2181,7 @@
   (let ((n 0) c i j)
     (incf n (num-args-in-args start T))
     (multiple-value-setq (j i) (next-directive1 start end))
-    (loop 
+    (loop
       (multiple-value-setq (c i j) (next-directive j end))
       (when (null c) (return n))
       (cond ((eql c #\;)
@@ -2197,7 +2197,7 @@
 	     (incf n 2))
 	    ((find c "AaSsDdBbOoXxRrCcFfEeGg$Pp")
 	     (incf n (1+ (num-args-in-args (1+ i) T))))))))
-
+
 ;The pretty-printing directives. "_IW<:>"
 
 (def-format-handler #\_ (start end) (declare (ignore end))
@@ -2252,7 +2252,7 @@
 			     (*outer-end* 'logical-block))
 			 (compile-format (car chunks)
 					 (directive-start (cadr chunks)))))))))))))
-
+
 (defun check-block-abbreviation (xp args circle-check?)
   (cond ((not (listp args)) (write+ args xp) T)
 	((and *print-level* (> *current-level* *print-level*))
@@ -2290,7 +2290,7 @@
 	(if (null white) (return (nreverse result)))))))
 
  ;; RGC ) ;end of eval when for all (formatter "...") stuff.
-
+
 ;                ---- PRETTY PRINTING FORMATS ----
 
 (defun pretty-array (xp array)
@@ -2333,7 +2333,7 @@
 			   (write-char++ #\space xp)
 			   (pprint-newline+ (if (= slice bottom) :fill :linear) xp)))))))
       (pretty-slice 0))))
-
+
 ;Must use pprint-logical-block (no +) in the following three, because they are
 ;exported functions.
 
@@ -2379,7 +2379,7 @@
   (if (> (length (symbol-name (car list))) 12)
       (funcall (formatter "~:<~1I~@{~W~^ ~_~}~:>") xp list)
       (funcall (formatter "~:<~W~^ ~:I~@_~@{~W~^ ~_~}~:>") xp list)))
-
+
 (defun bind-list (xp list &rest args)
     (declare (ignore args))
   (if (do ((i 50 (1- i))
@@ -2430,12 +2430,12 @@
 (defun function-call-p (x)
   (and (consp x) (symbolp (car x)) (fboundp (car x))))
 
-
+
 ;THE FOLLOWING STUFF SETS UP THE DEFAULT *PRINT-PPRINT-DISPATCH*
- 
+
 ;This is an attempt to specify a correct format for every form in the CL book
-;that does not just get printed out like an ordinary function call 
-;(i.e., most special forms and many macros).  This of course does not 
+;that does not just get printed out like an ordinary function call
+;(i.e., most special forms and many macros).  This of course does not
 ;cover anything new you define.
 
 (defun let-print (xp obj)
@@ -2451,7 +2451,7 @@
   (print-fancy-fn-call xp list '(3 1)))
 
 (defun do-print (xp obj)
-  (funcall 
+  (funcall
  (formatter "~:<~W~^ ~:I~@_~/xp:bind-list/~^ ~_~:/xp:pprint-linear/ ~1I~^~@{ ~_~W~^~}~:>")
            xp obj))
 
@@ -2491,11 +2491,11 @@
 
 (defun up-print (xp list)
   (print-fancy-fn-call xp list '(0 3 1 1)))
-
+
 ;here is some simple stuff for printing LOOP
 
 ;The challange here is that we have to effectively parse the clauses of the
-;loop in order to know how to print things.  Also you want to do this in a 
+;loop in order to know how to print things.  Also you want to do this in a
 ;purely incremental way so that all of the abbreviation things work, and
 ;you wont blow up on circular lists or the like.  (More aesthic output could
 ;be produced by really parsing the clauses into nested lists before printing them.)
@@ -2504,7 +2504,7 @@
 ;clauses that explains how to print them.  Note that it does not bare much
 ;resemblence to the right parsing grammar, however, it produces half decent
 ;output.  The way to make the output better is to make the grammar more
-;detailed.  
+;detailed.
 ;
 ;loop == (LOOP {clause}*)      ;one clause on each line.
 ;clause == block | linear | cond | finally
@@ -2521,7 +2521,7 @@
 ;block-head == FOR | AS | WITH | AND
 ;              | REPEAT | NAMED | WHILE | UNTIL | ALWAYS | NEVER | THEREIS | RETURN
 ;              | COLLECT | COLLECTING | APPEND | APPENDING | NCONC | NCONCING | COUNT
-;              | COUNTING | SUM | SUMMING | MAXIMIZE | MAXIMIZING | MINIMIZE | MINIMIZING 
+;              | COUNTING | SUM | SUMMING | MAXIMIZE | MAXIMIZING | MINIMIZE | MINIMIZING
 ;linear-head == DO | DOING | INITIALLY
 ;var-head == FOR | AS | WITH
 ;cond-head == IF | WHEN | UNLESS
@@ -2544,7 +2544,7 @@
 		 :test #'string=)
 	 :block-head)
 	(T :expr)))
-
+
 (defun pretty-loop (xp loop)
   (if (not (and (consp (cdr loop)) (symbolp (cadr loop)))) ; old-style loop
       (fn-call xp loop)
@@ -2626,10 +2626,10 @@
 	    (loop (print-clause xp)
 		  (write-char #\space xp)
 		  (pprint-newline :linear xp)))))))
-
+
 ;Backquote is a big problem we MUST do all this reconsing of structure in
 ;order to get a list that will trigger the right formatting functions to
-;operate on it.  On the other side of the coin, we must use a non-list structure 
+;operate on it.  On the other side of the coin, we must use a non-list structure
 ;for the little backquote printing markers to ensure that they will always
 ;print out the way we want no matter what the code printers say.
 ;  Note that since it is sometimes possible to write the same
@@ -2669,7 +2669,7 @@
     (declare (simple-string code))
     (write-string++ code xp 0 (length code))
     (write+ (bq-struct-data obj) xp)))
-
+
 ;Convert the backquote form to a list resembling what the user typed in,
 ;with calls to printers for ",", ",@", etc.
 
@@ -2713,7 +2713,7 @@
 	 (cadar loc))
 	(t (list (make-bq-struct :code (cond (copy-p ",@") (T ",."))
 				 :data (car loc))))))
-
+
 (setq *IPD* (make-pprint-dispatch))
 
 (set-pprint-dispatch+ '(satisfies function-call-p) #'fn-call '(-5) *IPD*)
@@ -2754,45 +2754,45 @@
 
 
 (set-pprint-dispatch+ '(cons (member defstruct)) #'block-like '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member block)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member case)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member catch)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member ccase)) #'block-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member block)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member case)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member catch)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member ccase)) #'block-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member compiler-let)) #'let-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member cond)) #'cond-print '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member ctypecase)) #'block-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member ctypecase)) #'block-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member defconstant)) #'defun-like '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member define-setf-method)) #'defun-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member defmacro)) #'defun-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member define-setf-method)) #'defun-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member defmacro)) #'defun-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member define-modify-macro)) #'dmm-print '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member defparameter)) #'defun-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member defparameter)) #'defun-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member defsetf)) #'defsetf-print '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member define-setf-method)) #'defun-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member lisp:defstruct)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member deftype)) #'defun-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member defun)) #'defun-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member defvar)) #'defun-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member define-setf-method)) #'defun-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member lisp:defstruct)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member deftype)) #'defun-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member defun)) #'defun-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member defvar)) #'defun-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member do)) #'do-print '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member do*)) #'do-print '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member do-all-symbols)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member do-external-symbols)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member do-symbols)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member dolist)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member dotimes)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member ecase)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member etypecase)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member eval-when)) #'block-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member do*)) #'do-print '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member do-all-symbols)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member do-external-symbols)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member do-symbols)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member dolist)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member dotimes)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member ecase)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member etypecase)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member eval-when)) #'block-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member flet)) #'flet-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member function)) #'function-print '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member labels)) #'flet-print '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member lambda)) #'block-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member labels)) #'flet-print '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member lambda)) #'block-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member let)) #'let-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member let*)) #'let-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member locally)) #'block-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member loop)) #'pretty-loop '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member macrolet)) #'flet-print '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member macrolet)) #'flet-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member multiple-value-bind)) #'mvb-print '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member multiple-value-setq)) #'block-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member multiple-value-setq)) #'block-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member prog)) #'prog-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member prog*)) #'prog-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member progv)) #'defun-like '(0) *IPD*)
@@ -2803,16 +2803,16 @@
 (set-pprint-dispatch+ '(cons (member setf)) #'setq-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member setq)) #'setq-print '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member tagbody)) #'tagbody-print '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member throw)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member typecase)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member unless)) #'block-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member throw)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member typecase)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member unless)) #'block-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member unwind-protect)) #'up-print '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member when)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member with-input-from-string)) #'block-like '(0) *IPD*) 
+(set-pprint-dispatch+ '(cons (member when)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member with-input-from-string)) #'block-like '(0) *IPD*)
 (set-pprint-dispatch+ '(cons (member with-open-file)) #'block-like '(0) *IPD*)
-(set-pprint-dispatch+ '(cons (member with-open-stream)) #'block-like '(0) *IPD*) 
-(set-pprint-dispatch+ '(cons (member with-output-to-string)) #'block-like '(0) *IPD*) 
-
+(set-pprint-dispatch+ '(cons (member with-open-stream)) #'block-like '(0) *IPD*)
+(set-pprint-dispatch+ '(cons (member with-output-to-string)) #'block-like '(0) *IPD*)
+
 (defun pprint-dispatch-print (xp table)
   (let ((stuff (copy-list (others table))))
     (maphash #'(lambda (key val) (declare (ignore key))
@@ -2832,7 +2832,7 @@
 
 (setf (get 'pprint-dispatch 'structure-printer) #'pprint-dispatch-print)
 
-(set-pprint-dispatch+ 'pprint-dispatch #'pprint-dispatch-print '(0) *IPD*) 
+(set-pprint-dispatch+ 'pprint-dispatch #'pprint-dispatch-print '(0) *IPD*)
 
 ;so only happens first time is loaded.
 (when (eq *print-pprint-dispatch* T)
@@ -2896,4 +2896,3 @@
 (setf cl::*undefined-functions* nil)
 (setf cl::*compiler-warn-on-assumed-special* t)
 (setf cl::*standard-pprint-dispatch* (copy-pprint-dispatch nil)))
-

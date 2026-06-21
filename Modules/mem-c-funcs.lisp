@@ -53,13 +53,13 @@
 		pop		ebp
 		ret
 	})
-			
+
 (defun ct:memcpy (dest src count)
 	(unless (ct:cpointerp dest)
 		(error "Not a foreign pointer: ~A" dest))
 	(unless (ct:cpointerp src)
 		(error "Not a foreign pointer: ~A" src))
-	(unless (fixnump count)	
+	(unless (fixnump count)
 		(error "Third argument to memcpy must be a fixnum, got ~A" count))
 	(%memcpy (uref dest 1)(uref src 1) count)
 	dest)
@@ -94,13 +94,13 @@
 		pop		ebp
 		ret
 	})
-			
+
 (defun ct:memset (dest c count)
 	(unless (ct:cpointerp dest)
 		(error "Not a foreign pointer: ~A" dest))
 	(unless (fixnump c)
 		(error "Not a fixnum: ~A" c))
-	(unless (fixnump count)	
+	(unless (fixnump count)
 		(error "Third argument to memcpy must be a fixnum, got ~A" count))
 	(%memset (uref dest 1) c count)
 	dest)

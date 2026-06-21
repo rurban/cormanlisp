@@ -22,7 +22,7 @@
 (defun output-pretty-lambda (s stream)
 	(let* ((first (first s))
 		   (vars (second s))
-		   (exprs (cddr s))) 
+		   (exprs (cddr s)))
 		(write first :stream stream)
 		(write-char #\Space stream)
 		(if (consp vars)
@@ -85,7 +85,7 @@
 	(do* ((p s (cdr p))
           (count 0 (+ count 1)))
         ((not (consp p)))
-        (if (> count 0)	
+        (if (> count 0)
 			(write-char #\Space stream))
 		(if (consp (car p))
 			(output-pretty-list (car p) stream nil)
@@ -111,12 +111,12 @@
 			(write (cdr end) :stream stream))))
 
 ;;;
-;;;	print-length	
+;;;	print-length
 ;;;	Returns the number of chars required to print the
 ;;;	passed expression.
 ;;;
 (defun print-length (s)
-	(length 
+	(length
 		(with-output-to-string (stream)
 			(write s :stream stream :pretty nil))))
 
@@ -124,7 +124,7 @@
 ;;; indent
 ;;; Outputs the specified number of spaces.
 ;;;
-(defun indent (stream) 
+(defun indent (stream)
 	(dotimes (i *indent-count*)
 		(write-char #\Space stream)))
 
@@ -137,7 +137,7 @@
 		(when need-to-indent
 			(write #\Newline :stream stream :escape nil)
 			(indent stream))
-			
+
 		;; check for (quote x) forms and output as 'x
 		(if (and (eq first 'quote) (consp (cdr s)) (null (cddr s)))
 			(let ((quoted-form (cadr s)))
@@ -174,7 +174,7 @@
                   (output-pretty-list quoted-form stream nil)
                   (write quoted-form :stream stream))
               (return-from output-pretty-list s)))
-        
+
         ;; check for (cl::%comma-atsign x) forms and output as ,@x
 		(if (and (eq first 'cl::%comma-atsign) (consp (cdr s)) (null (cddr s)))
 			(let ((quoted-form (cadr s)))
@@ -184,11 +184,11 @@
 					(output-pretty-list quoted-form stream nil)
 					(write quoted-form :stream stream))
 				(return-from output-pretty-list s)))
-                        
-		(incf cl::*current-print-level*)		
+
+		(incf cl::*current-print-level*)
 		(write-char #\( stream)
-        
-		(cond ((and (eq first 'lambda) (consp (cdr s))) 
+
+		(cond ((and (eq first 'lambda) (consp (cdr s)))
 					(output-pretty-lambda s stream))
 			  ((and (member first '(defun defmacro defgeneric defclass)) (consp (cdr s)) (consp (cddr s)))
 					(output-pretty-defining-form s stream))
@@ -205,5 +205,3 @@
 		s))
 
 (setq *compiler-warn-on-undefined-function* t)
-
-

@@ -87,7 +87,7 @@ typedef TYPEATTR* LPTYPEATTR;
 
 #! (:export t)
 
-typedef struct tagDEC 
+typedef struct tagDEC
 {
     USHORT wReserved;
     BYTE scale;
@@ -227,24 +227,24 @@ interface ITypeInfo : IUnknown
 	HRESULT GetContainingTypeLib(ITypeLib** ppTLib, UINT* pIndex);
 	void 	ReleaseTypeAttr(TYPEATTR* pTypeAttr);
 	void 	ReleaseFuncDesc(FUNCDESC* pFuncDesc);
-	void 	ReleaseVarDesc(VARDESC* pVarDesc);   
+	void 	ReleaseVarDesc(VARDESC* pVarDesc);
 };
 !#
 
 #! (:export t)
 interface ITypeLib : IUnknown
 {
-	UINT GetTypeInfoCount();     
+	UINT GetTypeInfoCount();
     HRESULT GetTypeInfo(UINT index, ITypeInfo** ppTInfo);
     HRESULT GetTypeInfoType(UINT index, TYPEKIND* pTKind);
     HRESULT GetTypeInfoOfGuid(REFGUID guid, ITypeInfo** ppTinfo);
 	HRESULT GetLibAttr(TLIBATTR** ppTLibAttr);
 	HRESULT GetTypeComp(ITypeComp** ppTComp);
 	HRESULT GetDocumentation(INT index, BSTR* pBstrName, BSTR* pBstrDocString,
-				DWORD* pdwHelpContext, BSTR* pBstrHelpFile);   
-	HRESULT IsName(LPOLESTR szNameBuf, ULONG lHashVal, BOOL* pfName);      
+				DWORD* pdwHelpContext, BSTR* pBstrHelpFile);
+	HRESULT IsName(LPOLESTR szNameBuf, ULONG lHashVal, BOOL* pfName);
 	HRESULT FindName(LPOLESTR szNameBuf, ULONG lHashVal, ITypeInfo** ppTInfo,
-				MEMBERID* rgMemId, USHORT* pcFound);   
+				MEMBERID* rgMemId, USHORT* pcFound);
 	void 	ReleaseLibAttr(TLIBATTR* pTLibAttr);
 };
 !#
@@ -266,14 +266,14 @@ interface ITypeLib : IUnknown
 			(progn ,@forms)
 			(IUnknown-Release ,var))))
 
-(defstruct type-lib 
-	name 
-	interface 
+(defstruct type-lib
+	name
+	interface
 	element-count
 	help-string
 	elements)
 
-(defstruct type-lib-element-info 
+(defstruct type-lib-element-info
 	name
 	interface
 	kind
@@ -306,7 +306,7 @@ interface ITypeLib : IUnknown
 		  help-string
 		  element-count
 		  (elements nil))
-		(unless interface 
+		(unless interface
 			(error "Could not load type library from file ~A" path))
 		(with-fresh-foreign-block (a '(BSTR *))
 			(with-fresh-foreign-block (b '(BSTR *))
@@ -314,29 +314,29 @@ interface ITypeLib : IUnknown
 					(if (/= ret s_ok)
 						(error "Error getting type-lib information. Error code = ~D" ret))
 					(unless (ct:cpointer-null (ct:cref (BSTR *) a 0))
-						(setf name 
+						(setf name
 							(bstr-to-lisp-string (ct:cref (BSTR *) a 0)))
 						(SysFreeString a))
 					(unless (ct:cpointer-null (ct:cref (BSTR *) b 0))
-						(setf help-string 
+						(setf help-string
 							(bstr-to-lisp-string (ct:cref (BSTR *) b 0)))
 						(SysFreeString b))
 					(setf element-count (ITypeLib-GetTypeInfoCount interface))
 					(dotimes (i element-count)
-						(let (element-name 
-							  element-helpstring 
-							  element-kind 
+						(let (element-name
+							  element-helpstring
+							  element-kind
 							  element-interface)
 							(setf ret (ITypeLib-GetDocumentation interface i a b null null))
 							(if (/= ret s_ok)
 								(error "Error getting type-lib element information.~
 									 Error code = ~D" ret))
 							(unless (ct:cpointer-null (ct:cref (BSTR *) a 0))
-								(setf element-name 
+								(setf element-name
 									(bstr-to-lisp-string (ct:cref (BSTR *) a 0)))
 								(SysFreeString a))
 							(unless (ct:cpointer-null (ct:cref (BSTR *) b 0))
-								(setf element-helpstring 
+								(setf element-helpstring
 									(bstr-to-lisp-string (ct:cref (BSTR *) b 0)))
 								(SysFreeString b))
 							(setf ret (ITypeLib-GetTypeInfo interface i a))
@@ -356,13 +356,13 @@ interface ITypeLib : IUnknown
 									:help-string element-helpstring
 									:kind-name (elt tkind-name element-kind))
 								elements)))
-															
+
 					(make-type-lib :interface interface
 						:name name
 						:element-count element-count
 						:help-string help-string
-						:elements (nreverse elements)))))))	
- 
+						:elements (nreverse elements)))))))
+
 (defun com-type-info (interface)
 	(let* ((type-attr)
 		   ret)
@@ -395,18 +395,18 @@ interface ITypeLib : IUnknown
 							:kind-name (elt tkind-name typekind))))
 				(ITypeInfo-ReleaseTypeAttr interface a)))
 		type-attr))
-							
+
 #|
 ;;; test stuff
 (setf type-lib
 	(com-type-lib "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL"))
-(setf info 
-	(com-type-info 
-		(type-lib-element-info-interface 
+(setf info
+	(com-type-info
+		(type-lib-element-info-interface
 			(first (type-lib-elements type-lib)))))
 (IUnknown-Release (type-lib-interface type-lib))
 
-(with-com-interface (type-lib 
+(with-com-interface (type-lib
 		(load-type-lib "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL"))
 	(format t "Type library: ~S, count = ~D~%" type-lib
 		(GetTypeInfoCount-ITypeLib type-lib)))

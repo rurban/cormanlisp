@@ -29,7 +29,7 @@ from distutils.errors import DistutilsSetupError
 from shutil import ignore_patterns
 
 def get_sources():
-    """Returns a list of C source files that should be compiled to 
+    """Returns a list of C source files that should be compiled to
     create the libdistorm3 library.
     """
 
@@ -46,14 +46,14 @@ class custom_build(build):
 class custom_build_clib(build_clib):
     """Customized build_clib command
 
-    This custom_build_clib will create dynamically linked libraries rather 
-    than statically linked libraries.  In addition, it places the compiled 
-    libraries alongside the python packages, to facilitate the use of ctypes. 
+    This custom_build_clib will create dynamically linked libraries rather
+    than statically linked libraries.  In addition, it places the compiled
+    libraries alongside the python packages, to facilitate the use of ctypes.
     """
 
     def finalize_options (self):
-        # We want build-clib to default to build-lib as defined by the 
-        # "build" command.  This is so the compiled library will be put 
+        # We want build-clib to default to build-lib as defined by the
+        # "build" command.  This is so the compiled library will be put
         # in the right place along side the python code.
         self.set_undefined_options('build',
                                    ('build_lib', 'build_clib'),
@@ -101,7 +101,7 @@ class custom_build_clib(build_clib):
 
             log.info("building '%s' library", lib_name)
 
-            # First, compile the source code to object files in the 
+            # First, compile the source code to object files in the
             # library directory.
             macros = build_info.get('macros')
             include_dirs = build_info.get('include_dirs')
@@ -112,7 +112,7 @@ class custom_build_clib(build_clib):
                 extra_postargs=build_info.get('extra_compile_args', []),
                 debug=self.debug)
 
-            # Then link the object files and put the result in the 
+            # Then link the object files and put the result in the
             # package build directory.
             package = build_info.get('package', '')
             self.compiler.link_shared_lib(
@@ -125,7 +125,7 @@ class custom_build_clib(build_clib):
 class custom_clean(clean):
     """Customized clean command
 
-    Customized clean command removes .pyc files from the project, 
+    Customized clean command removes .pyc files from the project,
     as well as build and dist directories."""
     def run(self):
         log.info('running custom_clean')
@@ -164,10 +164,10 @@ def main():
     cwd = os.path.dirname(__file__)
     if cwd:
         os.chdir(cwd)
-    
+
     # Get the target platform
     system  = platform.system().lower()
-    
+
     # Setup the extension module
     # Setup the library
     ext_modules = None
@@ -190,8 +190,8 @@ def main():
             package='distorm3',
             sources=get_sources,
             include_dirs=['src', 'include'],
-            extra_compile_args=['-arch', 'i386', '-arch', 'x86_64', '-O2', 
-                                '-Wall', '-fPIC', '-DSUPPORT_64BIT_OFFSET', 
+            extra_compile_args=['-arch', 'i386', '-arch', 'x86_64', '-O2',
+                                '-Wall', '-fPIC', '-DSUPPORT_64BIT_OFFSET',
                                 '-DDISTORM_DYNAMIC']))]
     elif 'cygwin' in system:
         libraries = [(
@@ -199,8 +199,8 @@ def main():
             package='distorm3',
             sources=get_sources,
             include_dirs=['src', 'include'],
-            extra_compile_args=['-fPIC', '-O2', '-Wall', 
-                                '-DSUPPORT_64BIT_OFFSET', 
+            extra_compile_args=['-fPIC', '-O2', '-Wall',
+                                '-DSUPPORT_64BIT_OFFSET',
                                 '-DDISTORM_STATIC']))]
     else:
         libraries = [(
@@ -208,10 +208,10 @@ def main():
             package='distorm3',
             sources=get_sources,
             include_dirs=['src', 'include'],
-            extra_compile_args=['-fPIC', '-O2', '-Wall', 
-                                '-DSUPPORT_64BIT_OFFSET', 
+            extra_compile_args=['-fPIC', '-O2', '-Wall',
+                                '-DSUPPORT_64BIT_OFFSET',
                                 '-DDISTORM_STATIC']))]
-    
+
     options = {
 
     # Setup instructions
@@ -221,7 +221,7 @@ def main():
     'package_dir'       : { '' : 'python' },
     'cmdclass'          : { 'build' : custom_build,
                             'build_clib' : custom_build_clib,
-                            'clean' : custom_clean, 
+                            'clean' : custom_clean,
                             'sdist' : custom_sdist },
     'libraries'         : libraries,
 

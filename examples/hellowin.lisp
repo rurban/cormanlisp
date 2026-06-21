@@ -8,7 +8,7 @@
 ;;;;				Programming Windows 95
 ;;;;
 ;;;;				It may be saved as an application:
-;;;;					
+;;;;
 ;;;;				example:
 ;;;;					(load "examples/hellowin.lisp")
 ;;;;					(save-application "hellowin" #'win::hellowin)
@@ -33,7 +33,7 @@
 	(let ((hdc NULL))
 		 (cond
 			((= iMsg WM_CREATE)
-				(PlaySound (create-c-string "hellowin.wav") 
+				(PlaySound (create-c-string "hellowin.wav")
 					NULL (logior SND_FILENAME SND_ASYNC))
 				(return-from WndProc 0))
 			((= iMsg WM_PAINT)
@@ -51,7 +51,7 @@
 
 (defun WinMain (instance hPrevInstance szCmdLine iCmdShow)
 	(declare (ignore hPrevInstance szCmdLine))
-	(let ((*app-window* *app-window*)	;; rebind for per-thread copy 
+	(let ((*app-window* *app-window*)	;; rebind for per-thread copy
 		  (msg (ct:malloc (sizeof 'MSG)))
 		  (wndclass (ct:malloc (sizeof 'WNDCLASSEX)))
 		  (*ps* (ct:malloc (sizeof 'PAINTSTRUCT)))
@@ -72,7 +72,7 @@
 				lpszClassName	(ct:create-c-string szAppName)
 				hIconSm			(LoadIcon NULL IDI_APPLICATION)))
 		(RegisterClassEx wndclass)
-		(setq *app-window* 
+		(setq *app-window*
 			(CreateWindowEx 0
 				(ct:create-c-string szAppName)				;; window class name
 				(ct:create-c-string "The Hello Program") 	;; window caption
@@ -101,8 +101,6 @@
 (defun hellowin ()
 	(restart-case
 		(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart 'error))))
-			(WinMain (cl::get-application-instance) 
+			(WinMain (cl::get-application-instance)
 				null (ct:create-c-string "") SW_SHOW))
 		(error () (return-from hellowin))))
-
-

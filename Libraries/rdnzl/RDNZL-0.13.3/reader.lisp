@@ -167,7 +167,7 @@ PROPERTY, or FIELD) from container.lisp."
                        (concatenate 'string prepend token)
                        token)
                      function-name))))))
-  
+
 
 (defun rdnzl-list-reader (stream char)
   (declare (ignore char))
@@ -234,7 +234,7 @@ function object."
                   `(lambda (object &rest args)
                      (apply #',function-name
                             object ,member-name args))))))))
-  
+
 (defun %enable-rdnzl-syntax ()
   "Internal function used to enable reader syntax and store current
 readtable on stack."
@@ -249,7 +249,7 @@ readtable on stack."
   (values))
 
 (defun %disable-rdnzl-syntax ()
-  "Internal function used to restore previous readtable." 
+  "Internal function used to restore previous readtable."
   (if *previous-readtables*
     (setq *readtable* (pop *previous-readtables*))
     (setq *readtable* (copy-readtable nil)))

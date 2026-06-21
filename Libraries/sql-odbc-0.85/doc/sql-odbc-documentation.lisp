@@ -12,14 +12,14 @@
 ;;;      o No fees or compensation are charged for use, copies, or
 ;;; 	   access to this software. You may charge a nominal
 ;;; 	   distribution fee for the physical act of transferring a
-;;; 	   copy, but you may not charge for the program itself. 
+;;; 	   copy, but you may not charge for the program itself.
 ;;;      o You are allowed to use this software as part of a commercial
-;;;        software package, provided that its functionality significantly 
-;;;        exceeds the functionality of this software, and that the use of 
+;;;        software package, provided that its functionality significantly
+;;;        exceeds the functionality of this software, and that the use of
 ;;;        this software is explicitly mentioned in your documentation.
 ;;;
-;;; This software is made available AS IS, and no warranty is made about 
-;;; the software or its performance. 
+;;; This software is made available AS IS, and no warranty is made about
+;;; the software or its performance.
 
 ;;
 ;; Bug reports and suggestions are highly welcome.
@@ -53,7 +53,7 @@ The code has been tested in MCL 4.2 with Oracle 8.0 (running on Windows NT) and 
 
 Availability of the ODBC drivers for the different platforms:
 
-Macintosh: 
+Macintosh:
 
 From Snap's site you can download the ³Visigenic ODBC for Macintosh Software Development Kit, Release 2.1.2², which contains the needed ODBC libraries and driver manager, plus the ODBC API spec. Snap's PrimeBase comes with an ODBC driver which works together with Visigenic's libraries.
 
@@ -85,15 +85,15 @@ The top classes are database and query.
 
 There are two levels of functions:
 
-- Exported functions to query and manipulate the database that by default use the *default-database* or *default-query*, and 
-- generic functions that interface with the database (ODBC etc.) API. 
+- Exported functions to query and manipulate the database that by default use the *default-database* or *default-query*, and
+- generic functions that interface with the database (ODBC etc.) API.
 The latter are used to implement the former and they begin with db-; methods for them are to be written in the API package(s).
 
 The exported classes, functions and variables are:
 
 database
 [type]
-Class used to store connection information. 
+Class used to store connection information.
 Several database objects can coexist, and are listed in *connected-databases*. The API packages (ODBC, DTF, or others) should subclass this class. There is a *default-database*, so you don't have always to mention the database you want to work with.
 
 query
@@ -202,7 +202,7 @@ Executes a query and maps a function over the result rows. Arguments:
 do-query ((&rest args) query-exp &key (database '*default-database*))  &rest body
 [macro]
 Executes a query; for each result row, the body is executed, while the column values are bound to symbols accessible in the body. Arguments:
- ARGS : A list of symbols to bind the result columns to. May contain a &rest  argument. 
+ ARGS : A list of symbols to bind the result columns to. May contain a &rest  argument.
 The last argument may be a stream argument of the form (:stream <var>); then, the symbol <var> is bound to a SQL-STREAM for input which is opened before execution  of the body and closed afterwards.
  QUERY-EXP : A select expression.
  BODY : body to execute for each row.
@@ -211,7 +211,7 @@ The last argument may be a stream argument of the form (:stream <var>); then, th
 
 prepare-statement sql-expression  &key database parameter-columns parameter-table
 [function]
-Prepares a statement for repeated execution and returns a query object. Use $ instead of SQL ? as parameter marker. 
+Prepares a statement for repeated execution and returns a query object. Use $ instead of SQL ? as parameter marker.
 Arguments:
  SQL-EXPRESSION : SQL statement to be prepared (Works for now for insert and select).
  PARAMETER-COLUMNS : A list of the parameter columns; only necessary if not all  are parameterized and if sql-expression is a string. (Otherwise it is possible to deduce their types and names from the sql-expression.)
@@ -219,7 +219,7 @@ Arguments:
 
 with-prepared-statement (query sql-expression &key (database '*default-database*))  &body body
 [macro]
-Prepares a (parameterized) statement (insert and select works by now) for repeated  execution. A new query object is created and bound to the symbol QUERY. 
+Prepares a (parameterized) statement (insert and select works by now) for repeated  execution. A new query object is created and bound to the symbol QUERY.
 The function BIND-EXECUTE, to be used inside this macro, binds values to the parameters and executes the query.
 
 bind-execute query  &rest parameters
@@ -243,7 +243,7 @@ Prepared version of MAP-QUERY. Executes a query and maps a function over the res
 do-bind-query ((&rest args) query &rest parameters)  &rest body
 [macro]
 Prepared version of DO-QUERY. Executes a prepared query; for each result row, the body is executed, while  the column values are bound to symbols accessible in the body. Arguments:
- ARGS : A list of symbols to bind the result columns to. May contain a &rest argument. 
+ ARGS : A list of symbols to bind the result columns to. May contain a &rest argument.
 The last argument may be a stream argument of the form (:stream <var>); then, the symbol <var> is bound to a SQL-STREAM for input which is opened before execution  of the body and closed afterwards.
  QUERY : A prepared query object
  PARAMETERS : Parameters to bind for execution.
@@ -279,7 +279,7 @@ Arguments:
  TABLE : table expression
  DESCRIPTION : A list of row descriptions and foreign key statements.
 A row description is a list with structure (row-name row-type &optional key).
-ROW-NAME is a symbol whose symbol-name is the row name, and 
+ROW-NAME is a symbol whose symbol-name is the row name, and
 ROW-TYPE is a symbol designating the type of the row or a list of row type and precision.
 KEY is :NOT-NULL or :PRIMARY-KEY (which implies NOT NULL).
 A foreign key statment is a list of the form (:foreign-key row-identifier-or-list :references foreign-table-identifier foreign-row-identifier-or-list).
@@ -325,7 +325,7 @@ The format binary data is output in. May be one of :bit-vector, :unsigned-byte-v
 
 3. The SQL syntax
 
-The SQL expression syntax is an extension of the CL syntax for writing SQL commands. It is implemented through reader macros for [, ] and ?. 
+The SQL expression syntax is an extension of the CL syntax for writing SQL commands. It is implemented through reader macros for [, ] and ?.
 
 To make editing expressions in the SQL syntax more convenient, I have tried to make [ and ] behave like ( and ) in the editors of the respective Lisp environments. This was very easy for LW, in MCL I had to change some functions of the Fred implementation. For the new integrated editor of ACL/Windows 5.0, this seems to be still more difficult, and I have no plans to look into this further. (I got no hints whatsoever from the support people, but luckily they provide the source code.)
 The code for the Emacs lisp mode is easy to change: simply comment out the following two lines in <acl5>/eli/fi-modes.el:
@@ -338,7 +338,7 @@ and recompile.
 The SQL expression syntax has been tested mainly with Oracle, but since every database vendor implements his own extensions to and deviations from the SQL standard, not all SQL constructs for other RDBMSs are available, nor will the available ones work with every database.
 To remedy this, the functions that implement the SQL string generation are methods that dispatch on the database type, this makes it possible to implement those syntax extensions.
 
-Further on, there is a flexible generic command syntax (see below) which lets you write (almost) arbitrary SQL commands. 
+Further on, there is a flexible generic command syntax (see below) which lets you write (almost) arbitrary SQL commands.
 
 As a last resort, you can always use raw SQL strings.
 
@@ -352,7 +352,7 @@ They are symbols in brackets. Database identifiers may contain (Lisp-style) hyph
 An extension for (Oracle?) remote tables:
 [foo bar @ remote-database] => "FOO.BAR@REMOTE_DATABASE"
 
-SQL operators, too, are coded in this way, f.ex. 
+SQL operators, too, are coded in this way, f.ex.
 
 [count [*]] => "count(*)"
 [and [= [a] 1] [= [b] 2] [= [c] 3]] => "((a = 1) and (b = 2) and (c = 3))"
@@ -399,7 +399,7 @@ Quoted bracket expressions are treated in the same way (as long as they don't co
 
 Variables in bracket expressions are symbols beginning with a question mark. Using this special syntax makes it unneccessary to quote symbols that are not to be evaluated. Variables can be used in any place of a bracket expression:
 
-(let ((p '+) (makk [mokk]) (mikk 'mekk) (mukk 'makk) (op 'count) (nop 'max)) 
+(let ((p '+) (makk [mokk]) (mikk 'mekk) (mukk 'makk) (op 'count) (nop 'max))
   [?p [?op ?makk] [?nop [?mikk ?mukk]]])
 => "(count(MOKK) + max(MEKK.MAKK))"
 
@@ -426,5 +426,5 @@ The functions apply and funcall are defined for SQL operators:
 
 => "(A and B)"
 
-The generic command syntax invoked by the function EXECUTE which executes a DDL statement whose argument list may contain keywords, SQL bracket expressions, strings, numbers, symbols and lists. Keywords are translated to SQL keywords where a hyphen is translated by Space. Arguments of other types are treated in the usual way: bracket expressions are expanded, strings are translated to SQL-conformant strings. 
-Lists are treated in two different ways: if the nesting degree is even (like a list on toplevel), the list is translated as comma-separated enumeration of its elements, if the nesting degree is odd, the elements are not separated by comma. [This needs further 
+The generic command syntax invoked by the function EXECUTE which executes a DDL statement whose argument list may contain keywords, SQL bracket expressions, strings, numbers, symbols and lists. Keywords are translated to SQL keywords where a hyphen is translated by Space. Arguments of other types are treated in the usual way: bracket expressions are expanded, strings are translated to SQL-conformant strings.
+Lists are treated in two different ways: if the nesting degree is even (like a list on toplevel), the list is translated as comma-separated enumeration of its elements, if the nesting degree is odd, the elements are not separated by comma. [This needs further

@@ -20,7 +20,7 @@
 ;;(defctype float  :single-float)
 
 (in-package "COMMON-LISP")
- 
+
 ;;;
 ;;;	Common Lisp LOG function
 ;;;
@@ -78,7 +78,7 @@
 ;;;	Common Lisp LOG function.
 ;;;
 (defun log (number &optional base)
-	(if base 
+	(if base
 		(if (zerop base)
 			0
 			(/ (log number) (log base)))
@@ -89,7 +89,7 @@
 ;;;
 ;;;	Common Lisp ATAN function.
 ;;; arctan x = -i log  ((1+ix) sqrt(1/(1+x^2)) )
-;;; 
+;;;
 (defun atan (x &optional y)
 	(if y
 		(c-atan2 (float x 0d0)(float y 0d0))
@@ -136,7 +136,7 @@
 		(let ((retval (%once-only-forms place))
 			  (sym (gensym)))
 			`(let ,(car retval)
-				(let ((,sym ,new-byte)) 
+				(let ((,sym ,new-byte))
 					(setf ,(cdr retval) (dpb ,sym ,bytespec ,(cdr retval)))
 					,sym)))
 		(let ((sym (gensym)))
@@ -164,13 +164,13 @@
 				  ((= ibase 0) (abs rbase))
 				  ((> rbase ibase)
 				   (* rbase (sqrt (+ 1 (c-pow (/ ibase rbase) 2d0)))))
-				  (t 
+				  (t
 				   (* ibase (sqrt (+ 1 (c-pow (/ rbase ibase) 2d0)))))))
 		(let* ((rlog (c-log abs))
 			   (ilog (c-atan2 ibase rbase))
 			   (rphase (c-exp (- (* rlog rpower) (* ilog ipower))))
 			   (iphase (+ (* rlog ipower) (* ilog rpower))))
-			(complex (* rphase (cos iphase)) 
+			(complex (* rphase (cos iphase))
 				     (* rphase (sin iphase))))))
 
 ;;;;
@@ -183,7 +183,7 @@
 		(error 'type-error :datum power :expected-type 'number))
 	(if (and (integerp power)
 			(or (rationalp base)
-				(and (complexp base) 
+				(and (complexp base)
 					(rationalp (realpart base))
 					(rationalp (imagpart base)))))
 		;; calculate exact result
@@ -201,9 +201,9 @@
 					(setf result (* result base)))
 				(setf power (ash power -1))
 				(setf base (* base base))))
-		
+
 		;; approximate result
-		(if (or (complexp base) 
+		(if (or (complexp base)
 				(complexp power)
 				(and (< base 0) (not (integerp power))))
 			(complex-expt base power)
@@ -250,7 +250,7 @@
 		mov		eax, [ebp + ARGS_OFFSET]		;; eax = num
    		mov		eax, [eax + (uvector-offset cl::bignum-num-cells-offset)]
 		cmp		edx, eax
-		jge		short :false 
+		jge		short :false
 		shr		edx, 2							;; edx = word offset (untagged) * 4
 		and		ecx, #xff
 		shr		ecx, 3							;; ecx = index (untagged)
@@ -259,7 +259,7 @@
 		begin-atomic
 		mov		eax, [eax + edx + (uvector-offset cl::bignum-first-cell-offset)]
 		shl		ebx, cl							;; ebx = bit mask
-		and		eax, ebx		
+		and		eax, ebx
 		jne		short :true
 	:false
 		mov		eax, [esi]
@@ -271,7 +271,7 @@
 		mov		ecx, 1
 		pop		ebp
 		ret
-    
+
 	})
 
 (defun logbitp (index integer)
@@ -316,7 +316,7 @@
 					(mod-bignums number divisor)
 					(- (mod-bignums number (- divisor)) (- divisor)))
 				(if (>= divisor 0)
-					(let ((result  (mod-bignums (- number) divisor)))      
+					(let ((result  (mod-bignums (- number) divisor)))
 						(if (eq result 0) 0 (- divisor result)))
 					(- (mod-bignums (- number) (- divisor)))))
 			(if (>= number 0)
@@ -324,7 +324,7 @@
 					(mod-fixnums number divisor)
 					(- (mod-fixnums number (- divisor)) (- divisor)))
 				(if (>= divisor 0)
-					(let ((result  (mod-fixnums (- number) divisor)))      
+					(let ((result  (mod-fixnums (- number) divisor)))
 						(if (eq result 0) 0 (- divisor result)))
 					(- (mod-fixnums (- number) (- divisor))))))
 		(multiple-value-bind (value remainder)
@@ -346,12 +346,12 @@
 			(setf default-format 'single-float))
         (setf precision default-format)
 		(unless (listp chars) (error "Expected a list of characters"))
-				
+
 		;; skip +/- if present
 		(when (or (char= (car c) #\+) (char= (car c) #\-))
 			(setf c (cdr c))
             (incf index))
-		
+
 		;; check mantissa
 		(do ((char (car c)(car c)))
 			((null c))
@@ -359,14 +359,14 @@
 				(incf digits)
 				(if (char= char #\.)
 					(if (> (incf decimal) 1)
-						(return-from %chars-to-float nil))	;; more than one decimal point!			
+						(return-from %chars-to-float nil))	;; more than one decimal point!
 					(return)))
 			(setf c (cdr c))
             (incf index))
-		
+
 		(if (= digits 0)
 			(return-from %chars-to-float nil))
-		
+
 		;; get exponent
 		(if c
 			(let ((char (char-upcase (car c))))
@@ -383,12 +383,12 @@
    						(setf exponent-index index)
 						(setf c (cdr c))
                         (incf index)
-						
+
 						;; allow +/- on exponent
 						(when (or (char= (car c) #\+) (char= (car c) #\-))
 							(setf c (cdr c))
                             (incf index))
-					
+
 						;; check exponent digits
 						(do ((char (car c)(car c)))
 							((or (null c)(not (digit-char-p char))))
@@ -398,10 +398,10 @@
                             (incf index))
 						(if (= exp-digits 0)
 							(return-from %chars-to-float nil))))))
-		
+
 		(unless (null c)
 			(return-from %chars-to-float nil))	;; extra chars at end
-		
+
         (let ((str (concatenate 'string chars)))
             (if exponent-index
                 (setf (elt str exponent-index) #\E))
@@ -469,8 +469,8 @@
 		(/ (sin x) (cos x))))
 
 (in-package :sys)
-(export '(D- DD- D+ DD+ D* DD* D/ DD/ 
-        DSIN DDSIN DCOS DDCOS DSQRT DDSQRT 
+(export '(D- DD- D+ DD+ D* DD* D/ DD/
+        DSIN DDSIN DCOS DDCOS DSQRT DDSQRT
         DV- DV+ DV* DV/ DVSIN DVCOS DVSQRT
         DV= DV/= DV< DV<= DV> DV>= DV-COPY))
 
@@ -681,10 +681,10 @@
         mov     ecx, [ebp + (+ (* 2 4) ARGS_OFFSET)]  ;; ecx = y-index
         fsub    [eax + ecx + (uvector-offset 2)]
         mov     eax, [ebp + (+ (* 1 4) ARGS_OFFSET)]  ;; eax = result
-        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index 
+        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index
         fstp    [eax + ecx + (uvector-offset 2)]
         mov     ecx, 1
-        mov     eax, [esi]          ;; return NIL, since we don't return a useful value           
+        mov     eax, [esi]          ;; return NIL, since we don't return a useful value
         mov     esp, ebp
         pop     ebp
         ret
@@ -701,10 +701,10 @@
         mov     ecx, [ebp + (+ (* 2 4) ARGS_OFFSET)]  ;; ecx = y-index
         fadd    [eax + ecx + (uvector-offset 2)]
         mov     eax, [ebp + (+ (* 1 4) ARGS_OFFSET)]  ;; eax = result
-        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index 
+        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index
         fstp    [eax + ecx + (uvector-offset 2)]
         mov     ecx, 1
-        mov     eax, [esi]          ;; return NIL, since we don't return a useful value           
+        mov     eax, [esi]          ;; return NIL, since we don't return a useful value
         mov     esp, ebp
         pop     ebp
         ret
@@ -721,10 +721,10 @@
         mov     ecx, [ebp + (+ (* 2 4) ARGS_OFFSET)]  ;; ecx = y-index
         fmul    [eax + ecx + (uvector-offset 2)]
         mov     eax, [ebp + (+ (* 1 4) ARGS_OFFSET)]  ;; eax = result
-        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index 
+        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index
         fstp    [eax + ecx + (uvector-offset 2)]
         mov     ecx, 1
-        mov     eax, [esi]          ;; return NIL, since we don't return a useful value           
+        mov     eax, [esi]          ;; return NIL, since we don't return a useful value
         mov     esp, ebp
         pop     ebp
         ret
@@ -741,10 +741,10 @@
         mov     ecx, [ebp + (+ (* 2 4) ARGS_OFFSET)]  ;; ecx = y-index
         fdiv    [eax + ecx + (uvector-offset 2)]
         mov     eax, [ebp + (+ (* 1 4) ARGS_OFFSET)]  ;; eax = result
-        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index 
+        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index
         fstp    [eax + ecx + (uvector-offset 2)]
         mov     ecx, 1
-        mov     eax, [esi]          ;; return NIL, since we don't return a useful value           
+        mov     eax, [esi]          ;; return NIL, since we don't return a useful value
         mov     esp, ebp
         pop     ebp
         ret
@@ -759,10 +759,10 @@
         fld     [eax + ecx + (uvector-offset 2)]
         fsin
         mov     eax, [ebp + (+ (* 1 4) ARGS_OFFSET)]  ;; eax = result
-        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index 
+        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index
         fstp    [eax + ecx + (uvector-offset 2)]
         mov     ecx, 1
-        mov     eax, [esi]          ;; return NIL, since we don't return a useful value           
+        mov     eax, [esi]          ;; return NIL, since we don't return a useful value
         mov     esp, ebp
         pop     ebp
         ret
@@ -777,10 +777,10 @@
         fld     [eax + ecx + (uvector-offset 2)]
         fcos
         mov     eax, [ebp + (+ (* 1 4) ARGS_OFFSET)]  ;; eax = result
-        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index 
+        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index
         fstp    [eax + ecx + (uvector-offset 2)]
         mov     ecx, 1
-        mov     eax, [esi]          ;; return NIL, since we don't return a useful value           
+        mov     eax, [esi]          ;; return NIL, since we don't return a useful value
         mov     esp, ebp
         pop     ebp
         ret
@@ -795,10 +795,10 @@
         fld     [eax + ecx + (uvector-offset 2)]
         fsqrt
         mov     eax, [ebp + (+ (* 1 4) ARGS_OFFSET)]  ;; eax = result
-        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index 
+        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index
         fstp    [eax + ecx + (uvector-offset 2)]
         mov     ecx, 1
-        mov     eax, [esi]          ;; return NIL, since we don't return a useful value           
+        mov     eax, [esi]          ;; return NIL, since we don't return a useful value
         mov     esp, ebp
         pop     ebp
         ret
@@ -821,13 +821,13 @@
         mov     eax, [esi]                          ;; eax = NIL
         jmp     short :done
     :equal
-        mov     eax, [esi + 4]                      ;; eax = T 
+        mov     eax, [esi + 4]                      ;; eax = T
     :done
         mov     ecx, 1
         mov     esp, ebp
         pop     ebp
         ret
-    })   
+    })
 
 (x86:defasm sys::dv/= (x x-index y y-index)
 	{
@@ -846,7 +846,7 @@
         mov     eax, [esi + 4]                        ;; eax = T
         jmp     short :done
     :equal
-        mov     eax, [esi]                            ;; eax = NIL 
+        mov     eax, [esi]                            ;; eax = NIL
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -872,13 +872,13 @@
         test    eax, #x0100
         jne     short :less
     :greater
-        mov     eax, [esi]                            ;; eax = NIL 
+        mov     eax, [esi]                            ;; eax = NIL
         jmp     short :done
     :less
         mov     eax, [esi + 4]                        ;; eax = T
         jmp     short :done
     :equal
-        mov     eax, [esi]                            ;; eax = NIL 
+        mov     eax, [esi]                            ;; eax = NIL
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -904,13 +904,13 @@
         test    eax, #x0100
         jne     short :less
     :greater
-        mov     eax, [esi + 4]                        ;; eax = T 
+        mov     eax, [esi + 4]                        ;; eax = T
         jmp     short :done
     :less
         mov     eax, [esi]                            ;; eax = NIL
         jmp     short :done
     :equal
-        mov     eax, [esi]                            ;; eax = NIL 
+        mov     eax, [esi]                            ;; eax = NIL
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -936,13 +936,13 @@
         test    eax, #x0100
         jne     short :less
     :greater
-        mov     eax, [esi]                            ;; eax = NIL 
+        mov     eax, [esi]                            ;; eax = NIL
         jmp     short :done
     :less
         mov     eax, [esi + 4]                        ;; eax = T
         jmp     short :done
     :equal
-        mov     eax, [esi + 4]                        ;; eax = T 
+        mov     eax, [esi + 4]                        ;; eax = T
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -968,13 +968,13 @@
         test    eax, #x0100
         jne     short :less
     :greater
-        mov     eax, [esi + 4]                        ;; eax = T 
+        mov     eax, [esi + 4]                        ;; eax = T
         jmp     short :done
     :less
         mov     eax, [esi]                            ;; eax = NIL
         jmp     short :done
     :equal
-        mov     eax, [esi + 4]                        ;; eax = T 
+        mov     eax, [esi + 4]                        ;; eax = T
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -990,10 +990,10 @@
         mov     ecx, [ebp + (+ (* 2 4) ARGS_OFFSET)]  ;; ecx = x-index
         fld     [eax + ecx + (uvector-offset 2)]
         mov     eax, [ebp + (+ (* 1 4) ARGS_OFFSET)]  ;; eax = result
-        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index 
+        mov     ecx, [ebp + (+ (* 0 4) ARGS_OFFSET)]  ;; ecx = result-index
         fstp    [eax + ecx + (uvector-offset 2)]
         mov     ecx, 1
-        mov     eax, [esi]          ;; return NIL, since we don't return a useful value           
+        mov     eax, [esi]          ;; return NIL, since we don't return a useful value
         mov     esp, ebp
         pop     ebp
         ret
@@ -1002,26 +1002,26 @@
 (x86::defcodegen sys:dv- (form dest) ;; (x x-index y y-index result result-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fsub    [eax + ecx + (uvector-offset 2)] ; subtract y
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (seventh form) :dest-stack t)
-    (cl::compile-sub-form (sixth form) :dest-eax-operand t)  
-    (x86::parse-assembler 
-        { 
+    (cl::compile-sub-form (sixth form) :dest-eax-operand t)
+    (x86::parse-assembler
+        {
             pop     ecx
-            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result  
+            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result
             mov     eax, [esi]
         })
     (x86::offset-stack 4)
@@ -1043,26 +1043,26 @@
 (x86::defcodegen sys:dv+ (form dest) ;; (x x-index y y-index result result-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fadd    [eax + ecx + (uvector-offset 2)] ; add y
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (seventh form) :dest-stack t)
-    (cl::compile-sub-form (sixth form) :dest-eax-operand t)  
-    (x86::parse-assembler 
-        { 
+    (cl::compile-sub-form (sixth form) :dest-eax-operand t)
+    (x86::parse-assembler
+        {
             pop     ecx
-            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result  
+            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result
             mov     eax, [esi]
         })
     (x86::offset-stack 4)
@@ -1084,26 +1084,26 @@
 (x86::defcodegen sys:dv* (form dest) ;; (x x-index y y-index result result-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fmul    [eax + ecx + (uvector-offset 2)] ; mul y
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (seventh form) :dest-stack t)
-    (cl::compile-sub-form (sixth form) :dest-eax-operand t)  
-    (x86::parse-assembler 
-        { 
+    (cl::compile-sub-form (sixth form) :dest-eax-operand t)
+    (x86::parse-assembler
+        {
             pop     ecx
-            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result  
+            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result
             mov     eax, [esi]
         })
     (x86::offset-stack 4)
@@ -1125,26 +1125,26 @@
 (x86::defcodegen sys:dv/ (form dest) ;; (x x-index y y-index result result-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fdiv    [eax + ecx + (uvector-offset 2)] ; div y
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (seventh form) :dest-stack t)
-    (cl::compile-sub-form (sixth form) :dest-eax-operand t)  
-    (x86::parse-assembler 
-        { 
+    (cl::compile-sub-form (sixth form) :dest-eax-operand t)
+    (x86::parse-assembler
+        {
             pop     ecx
-            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result  
+            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result
             mov     eax, [esi]
         })
     (x86::offset-stack 4)
@@ -1166,22 +1166,22 @@
 (x86::defcodegen sys:dvsin (form dest) ;; (x x-index result result-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             fsin
         })
     (cl::compile-sub-form (seventh form) :dest-stack t)
-    (cl::compile-sub-form (sixth form) :dest-eax-operand t)  
-    (x86::parse-assembler 
-        { 
+    (cl::compile-sub-form (sixth form) :dest-eax-operand t)
+    (x86::parse-assembler
+        {
             pop     ecx
-            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result  
+            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result
             mov     eax, [esi]
         })
     (x86::offset-stack 4)
@@ -1203,22 +1203,22 @@
 (x86::defcodegen sys:dvcos (form dest) ;; (x x-index result result-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             fcos
         })
     (cl::compile-sub-form (seventh form) :dest-stack t)
-    (cl::compile-sub-form (sixth form) :dest-eax-operand t)  
-    (x86::parse-assembler 
-        { 
+    (cl::compile-sub-form (sixth form) :dest-eax-operand t)
+    (x86::parse-assembler
+        {
             pop     ecx
-            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result  
+            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result
             mov     eax, [esi]
         })
     (x86::offset-stack 4)
@@ -1240,22 +1240,22 @@
 (x86::defcodegen sys:dvsqrt (form dest) ;; (x x-index result result-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             fsqrt
         })
     (cl::compile-sub-form (seventh form) :dest-stack t)
-    (cl::compile-sub-form (sixth form) :dest-eax-operand t)  
-    (x86::parse-assembler 
-        { 
+    (cl::compile-sub-form (sixth form) :dest-eax-operand t)
+    (x86::parse-assembler
+        {
             pop     ecx
-            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result  
+            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result
             mov     eax, [esi]
         })
     (x86::offset-stack 4)
@@ -1277,16 +1277,16 @@
 (x86::defcodegen sys:dv< (form dest) ;; (x x-index y y-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fcomp   [eax + ecx + (uvector-offset 2)]      ;; comp(x,y)
             xor     eax, eax
@@ -1297,13 +1297,13 @@
             test    eax, #x0100
             jne     short :less
         :greater
-            mov     eax, [esi]                            ;; eax = NIL 
+            mov     eax, [esi]                            ;; eax = NIL
             jmp     short :done
         :less
             mov     eax, [esi + 4]                        ;; eax = T
             jmp     short :done
         :equal
-            mov     eax, [esi]                            ;; eax = NIL 
+            mov     eax, [esi]                            ;; eax = NIL
         :done
         })
     (x86::offset-stack 4)
@@ -1325,16 +1325,16 @@
 (x86::defcodegen sys:dv> (form dest) ;; (x x-index y y-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fcomp   [eax + ecx + (uvector-offset 2)]      ;; comp(x,y)
             xor     eax, eax
@@ -1345,13 +1345,13 @@
             test    eax, #x0100
             jne     short :less
         :greater
-            mov     eax, [esi + 4]                        ;; eax = T 
+            mov     eax, [esi + 4]                        ;; eax = T
             jmp     short :done
         :less
             mov     eax, [esi]                            ;; eax = NIL
             jmp     short :done
         :equal
-            mov     eax, [esi]                            ;; eax = NIL 
+            mov     eax, [esi]                            ;; eax = NIL
         :done
         })
     (x86::offset-stack 4)
@@ -1373,16 +1373,16 @@
 (x86::defcodegen sys:dv<= (form dest) ;; (x x-index y y-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fcomp   [eax + ecx + (uvector-offset 2)]      ;; comp(x,y)
             xor     eax, eax
@@ -1393,13 +1393,13 @@
             test    eax, #x0100
             jne     short :less
         :greater
-            mov     eax, [esi]                            ;; eax = NIL 
+            mov     eax, [esi]                            ;; eax = NIL
             jmp     short :done
         :less
             mov     eax, [esi + 4]                        ;; eax = T
             jmp     short :done
         :equal
-            mov     eax, [esi + 4]                        ;; eax = T 
+            mov     eax, [esi + 4]                        ;; eax = T
         :done
         })
     (x86::offset-stack 4)
@@ -1421,16 +1421,16 @@
 (x86::defcodegen sys:dv>= (form dest) ;; (x x-index y y-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fcomp   [eax + ecx + (uvector-offset 2)]      ;; comp(x,y)
             xor     eax, eax
@@ -1441,13 +1441,13 @@
             test    eax, #x0100
             jne     short :less
         :greater
-            mov     eax, [esi + 4]                        ;; eax = T 
+            mov     eax, [esi + 4]                        ;; eax = T
             jmp     short :done
         :less
             mov     eax, [esi]                            ;; eax = NIL
             jmp     short :done
         :equal
-            mov     eax, [esi + 4]                        ;; eax = T 
+            mov     eax, [esi + 4]                        ;; eax = T
         :done
         })
     (x86::offset-stack 4)
@@ -1469,16 +1469,16 @@
 (x86::defcodegen sys:dv= (form dest) ;; (x x-index y y-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fcomp   [eax + ecx + (uvector-offset 2)]      ;; comp(x,y)
             xor     eax, eax
@@ -1488,8 +1488,8 @@
             mov     eax, [esi]                          ;; eax = NIL
             jmp     short :done
         :equal
-            mov     eax, [esi + 4]                      ;; eax = T 
-        :done        
+            mov     eax, [esi + 4]                      ;; eax = T
+        :done
         })
     (x86::offset-stack 4)
     (if (eq dest :dest-stack)
@@ -1510,16 +1510,16 @@
 (x86::defcodegen sys:dv/= (form dest) ;; (x x-index y y-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
     (cl::compile-sub-form (fourth form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
             fcomp   [eax + ecx + (uvector-offset 2)]    ;; comp(x,y)
             xor     eax, eax
@@ -1529,8 +1529,8 @@
             mov     eax, [esi + 4]                      ;; eax = T
             jmp     short :done
         :equal
-            mov     eax, [esi]                          ;; eax = NIL 
-        :done        
+            mov     eax, [esi]                          ;; eax = NIL
+        :done
         })
     (x86::offset-stack 4)
     (if (eq dest :dest-stack)
@@ -1551,18 +1551,18 @@
 (x86::defcodegen sys:dv-copy (form dest) ;; (x x-index result result-index)
     (cl::compile-sub-form (third form) :dest-stack t)
     (cl::compile-sub-form (second form) :dest-eax-operand t)
-    (x86::parse-assembler 
-        { 
+    (x86::parse-assembler
+        {
             pop     ecx
-            fld     [eax + ecx + (uvector-offset 2)] ; load x  
+            fld     [eax + ecx + (uvector-offset 2)] ; load x
         })
     (x86::offset-stack 4)
     (cl::compile-sub-form (fifth form) :dest-stack t)
-    (cl::compile-sub-form (fourth form) :dest-eax-operand t)  
-    (x86::parse-assembler 
-        { 
+    (cl::compile-sub-form (fourth form) :dest-eax-operand t)
+    (x86::parse-assembler
+        {
             pop     ecx
-            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result  
+            fstp    [eax + ecx + (uvector-offset 2)]  ; pop result
             mov     eax, [esi]
         })
     (x86::offset-stack 4)
@@ -1580,4 +1580,3 @@
     				mov		ecx, 1
     			})))
     t)
-

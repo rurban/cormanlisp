@@ -7,7 +7,7 @@
 ;;;	Contents:	File searching utility function.
 ;;;	History:		5/22/01  RGC  Created.
 ;;;
-	
+
 (in-package :ccl)
 (provide "FIND-IN-FILES")
 (export 'find-in-files)
@@ -34,7 +34,7 @@
 		a))
 
 (defmacro upcase (c) `(svref upcase-int ,c))
-(defmacro compare-no-case (c1 c2) 
+(defmacro compare-no-case (c1 c2)
 	`(or (= ,c1 ,c2) (= ,c1 (svref upcase-int ,c2)(= ,c1 (svref downcase-int ,c2)))))
 
 ;;; search-string is the string we are scanning, and find-string is
@@ -51,17 +51,17 @@
 			((>= i (length find-string)))
 			(if ignore-case
 				(do ()
-					((or (< j 0) 
+					((or (< j 0)
 						(char= (char-upcase (char find-string i))
 							   (char-upcase (char find-string j)))))
 					(setf j (svref next j)))
 				(do ()
-					((or (< j 0) 
+					((or (< j 0)
 						(char= (char find-string i)
 							   (char find-string j))))
 					(setf j (svref next j))))
 			(setf (svref next i) j))
-		
+
 		;; start the search
 		(do ((i  0 (+ i 1))
 			 (j  0 (+ j 1)))
@@ -70,12 +70,12 @@
 				(if (= j (length find-string))(- i j) nil))
 			(if ignore-case
 				(do ()
-					((or (< j 0) 
+					((or (< j 0)
 						(char= (char-upcase (char search-string i))
 							   (char-upcase (char find-string j)))))
 					(setf j (svref next j)))
 				(do ()
-					((or (< j 0) 
+					((or (< j 0)
 						(char= (char search-string i)
 							   (char find-string j))))
 					(setf j (svref next j)))))))
@@ -86,8 +86,8 @@
 ;;;    file position
 ;;;    line number
 ;;;    start of line position
-;;;			
-(defun kmpsearch-foreign (find-string search-string start end 
+;;;
+(defun kmpsearch-foreign (find-string search-string start end
 		&key (ignore-case t) (curr-line-number 0))
 	(declare (optimize (speed 3)(safety 0)))
 	(let ((next (make-array (length find-string)))
@@ -95,7 +95,7 @@
 		;; convert chars to bytes
 		(dotimes (i (length find-string))
 			(setf (aref find i) (char-int (char find-string i))))
-		
+
 		;; initialize the 'next' table
 		(setf (svref next 0) -1)
 		(do ((i  0 (+ i 1))
@@ -103,17 +103,17 @@
 			((>= i (length find-string)))
 			(if ignore-case
 				(do ()
-					((or (< j 0) 
+					((or (< j 0)
 						(char= (char-upcase (char find-string i))
 							   (char-upcase (char find-string j)))))
 					(setf j (svref next j)))
 				(do ()
-					((or (< j 0) 
+					((or (< j 0)
 						(char= (char find-string i)
 							   (char find-string j))))
 					(setf j (svref next j))))
 			(setf (svref next i) j))
-		
+
 		;; start the search
 		(do* ((i  0 (the fixnum (+ i 1)))
 			  (j  0 (the fixnum (+ j 1)))
@@ -123,7 +123,7 @@
 			  (s (+ i start)(the fixnum (+ i start))))
 			((or (>= j string-length)(>= i length))
 				(if (= j string-length)
-					(values (+ (- i j) start) curr-line-number curr-line-pos) 
+					(values (+ (- i j) start) curr-line-number curr-line-pos)
 					nil))
 			(declare (fixnum i j s length string-length curr-line-pos))
 			(when (= (the fixnum (ct:cref (:unsigned-char *) search-string s)) ascii-newline)
@@ -156,7 +156,7 @@
 
 (defstruct (search-file-reference
 		(:print-function print-search-file-reference))
-	pathname 
+	pathname
 	position
 	line-text
 	line-number
@@ -164,11 +164,11 @@
 
 (defun print-search-file-reference (obj stream level)
 	(declare (ignore level))
-	(format stream "File ~A, Line ~A: ~A~%" 
+	(format stream "File ~A, Line ~A: ~A~%"
 		(string-upcase (namestring (search-file-reference-pathname obj)))
 		(+ (search-file-reference-line-number obj) 1)
-		(search-file-reference-line-text obj)))	
-	
+		(search-file-reference-line-text obj)))
+
 ;;;
 ;;;	Returns:
 ;;;    The line contents that contained the beginning of the string
@@ -177,7 +177,7 @@
 ;;;    The file position of the beginning of the line
 ;;;    -or- returns NIL if not found.
 ;;;
-				 
+
 (defun search-file (path string &key (ignore-case t))
 	(multiple-value-bind (addr length)
 		(ccl:map-file path)
@@ -192,7 +192,7 @@
 					(nil)
 					(let ((ref (make-search-file-reference :pathname (pathname path))))
 						(multiple-value-setq (result line-number start-of-line-position)
-							(kmpsearch-foreign string addr start end 
+							(kmpsearch-foreign string addr start end
 								:ignore-case ignore-case
 								:curr-line-number line-number))
 						(if result
@@ -204,12 +204,12 @@
 						(setf (search-file-reference-line-number ref) line-number)
 						(setf (search-file-reference-line-position ref) start-of-line-position)
 						(push ref refs))))
-			(if addr (ccl:unmap-file addr))))) 
-				 				
+			(if addr (ccl:unmap-file addr)))))
+
 (defun display-results (file-refs &optional (stream *standard-output*))
 	(dolist (x file-refs)
 		(format stream "~A" x)
-		(force-output stream)))	
+		(force-output stream)))
 
 (defun flatten (list)
 	(let ((new-list '()))
@@ -223,5 +223,3 @@
 	(dolist (x (flatten (directory path :recurse t)))
 		(ccl:editor-set-message (format nil "Searching file: ~A" (namestring x)))
 		(display-results (search-file x string :ignore-case ignore-case))))
-
-

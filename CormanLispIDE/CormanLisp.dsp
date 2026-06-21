@@ -7,19 +7,19 @@
 CFG=CormanLisp - Win32 Release
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "CormanLisp.mak".
-!MESSAGE 
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "CormanLisp.mak" CFG="CormanLisp - Win32 Release"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "CormanLisp - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "CormanLisp - Win32 Debug" (based on "Win32 (x86) Application")
-!MESSAGE 
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -84,7 +84,7 @@ LINK32=link.exe
 # ADD LINK32 ..\CormanLispServer\bin\CormanLispServer.lib ole32.lib /nologo /subsystem:windows /incremental:no /pdb:"..\CormanLisp.pdb" /debug /machine:I386 /out:"..\CormanLisp.exe"
 # SUBTRACT LINK32 /pdb:none /nodefaultlib
 
-!ENDIF 
+!ENDIF
 
 # Begin Target
 

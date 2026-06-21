@@ -5,19 +5,19 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
 ;; In this file the platform specific code is isolated.
-;; The code in this file consists mostly of wrapper functions and macros 
+;; The code in this file consists mostly of wrapper functions and macros
 ;; around the platform-dependent foreign function interface.
 
 ;; This file contains Corman Lisp (Version 1.4) specific code
 
 (defpackage "FFC"
   (:use "COMMON-LISP" "WIN32")
-  (:export "*FOREIGN-MODULE*" "DEFINE-FOREIGN-FUNCTION" 
+  (:export "*FOREIGN-MODULE*" "DEFINE-FOREIGN-FUNCTION"
     "MAKE-RECORD"
     "%WITH-TEMPORARY-ALLOCATION" "%WITH-SQL-POINTER" "%GET-CSTRING"
     "%CSTRING-INTO-STRING"
@@ -36,7 +36,7 @@
     "%PUT-WORD"
     "%PUT-SHORT"
     "%PUT-LONG"
-    "%NEW-CSTRING" 
+    "%NEW-CSTRING"
     "%NULL-PTR"
     "%PTR-EQL"
     "SHORT-TO-SIGNED-SHORT" ; #+allegro
@@ -90,14 +90,14 @@
 (defmacro %with-temporary-allocation (bindings &body body)
   (let ((simple-types ())
         (strings ())
-        (free-strings ())) 
+        (free-strings ()))
     (dolist (binding bindings)
       (case (cadr binding)
-        (:string 
+        (:string
           (push (list (car binding)
                   (list 'allocate-dynamic-string (caddr binding))) strings)
           (push (list 'free (car binding)) free-strings))
-        (:ptr (push (list (car binding) 
+        (:ptr (push (list (car binding)
 							(list '%new-ptr ':ptr)) simple-types))
         (otherwise (push (list (car binding)
 							(list '%new-ptr (cadr binding))) simple-types))))
@@ -117,7 +117,7 @@
   null)
 
 (defmacro %ptr-eql (ptr1 ptr2)
-  `(cpointer= ,ptr1 ,ptr2)) 
+  `(cpointer= ,ptr1 ,ptr2))
 
 (defun %get-ptr (ptr)
 	(int-to-foreign-ptr (ct:cref (:unsigned-long *) ptr 0)))
@@ -128,7 +128,7 @@
 (defun %get-long (ptr)
   (cref (:long *) ptr 0))
 
-(defmacro %put-long (ptr long) 
+(defmacro %put-long (ptr long)
   `(setf (cref (:long *) ,ptr 0) ,long))
 
 (defun %get-signed-word (ptr)
@@ -137,7 +137,7 @@
 (defun %get-word (ptr)
   (cref (:unsigned-short *) ptr 0))
 
-(defmacro %put-word (ptr word) 
+(defmacro %put-word (ptr word)
   `(setf (cref (:short *) ,ptr 0) ,word))
 
 (defun %get-unsigned-long (ptr)
@@ -153,7 +153,7 @@
   `(cref (:double-float *) ,ptr 0))
 
 (defmacro %get-cstring (ptr &optional (start 0))
-  `(c-string-to-lisp-string (int-to-foreign-ptr 
+  `(c-string-to-lisp-string (int-to-foreign-ptr
 			(+ (foreign-ptr-to-int ,ptr) ,start))))
 
 (defmacro %put-str (ptr string &optional max-length)
@@ -198,7 +198,7 @@
                (setf (cref (:unsigned-char *) ptr i) byte)))
            byte-count))
         (t (error "not yet implemented"))))
- 
+
 (defmacro make-record (type)
   `(malloc (sizeof (canonical-to-corman-type ',type))))
 
@@ -231,11 +231,10 @@
 (defmacro define-foreign-function (c-name args result-type &key documentation module)
   (declare (ignore documentation))
   (let ((name (intern (string-upcase c-name))))
-	`(defwinapi 
+	`(defwinapi
     	,name
        	,args
 		:entry-name ,c-name
     	:return-type ,(if (eq result-type :signed-short) :short result-type)
 		:library-name (or ,module "odbc32.dll")
 		:linkage-type :pascal)))
-

@@ -22,8 +22,8 @@
 ;;;;                9/19/03  RGC  Added COMPILE-FILE-PATHNAME implementation.
 ;;;;                8/21/06  RGC  Integrated Espen Wiborg's slime patches: literal packages
 ;;;;                              can be handled in FASL code.
-;;;;                6/27/08  RGC  Enhanced LOAD to allow the extension to be unspecified. 
-;;;;                              In this case it assume ".lisp" unless there is a newer 
+;;;;                6/27/08  RGC  Enhanced LOAD to allow the extension to be unspecified.
+;;;;                              In this case it assume ".lisp" unless there is a newer
 ;;;;                              file with the extension ".fasl".
 ;;;;                11/11/16  Artem Boldarev
 ;;;;                              Both COMPILE-FILE and LOAD support ".lisp", ".lsp" and ".cl" extensions.
@@ -37,21 +37,21 @@
 ;;; 2.  Bound *readtable* as per hyperspec.
 ;;; 3.  Made default for VERBOSE, PRINT, IF-DOES-NOT-EXIST and EXTERNAL-FORMAT
 ;;;     conform to hyperspec.
-;;; 4.  Made code signal return NIL if file does not exist and 
+;;; 4.  Made code signal return NIL if file does not exist and
 ;;;     IF-DOES-NOT-EXIST is NIL, as per hyperspec.
-;;; 5.  Make code print out a ';; Loading ...' message if VERBOSE is true, 
+;;; 5.  Make code print out a ';; Loading ...' message if VERBOSE is true,
 ;;;     as per hyperspec.
-;;; 6.  Made code print out evaluated forms using PRINT argument, not 
+;;; 6.  Made code print out evaluated forms using PRINT argument, not
 ;;;     *LOAD-VERBOSE*, as per hyperspec recommendation.
 ;;; 7.  Created the auxiliary function process-top-level-form-for-load,
 ;;;     to actually deal with each form LOAD reads.
-;;; 8.  Made process-top-level-form-for-load apply EVAL to each form of 
-;;;     a PROGN, instead of just calling EVAL on the PROGN form.   
+;;; 8.  Made process-top-level-form-for-load apply EVAL to each form of
+;;;     a PROGN, instead of just calling EVAL on the PROGN form.
 ;;;    (See compile-file-patch.lisp for example of problem)
 ;;; 9.  Made process-top-level-form-for-load macroexpand macros, instead of
 ;;;     just calling EVAL on the macro.
 
-;;; Problems:  
+;;; Problems:
 ;;; -- Doesn't deal with LOCALLY, MACROLET, or SYMBOL-MACROLET
 ;;; as per Hyperspec Section 3.2.3.1 Processing of Top Level Forms.
 ;;; -- OPEN doesn't work correctly; it doesn't handle :if-does-not-exist nil,
@@ -102,7 +102,7 @@
 (defconstant fasl-file-extension "fasl")
 (defconstant dll-file-extension  "dll" )
 
-(defun get-next-byte () 
+(defun get-next-byte ()
 	(let ((i *fasl-file-read-index*))
 		(if (>= i *fasl-file-read-length*)
 			(return-from get-next-byte *fasl-eof-value*))
@@ -110,13 +110,13 @@
 			(setf *fasl-file-read-index* (+ i 1))
 			result)))
 
-(defun peek-next-byte () 
+(defun peek-next-byte ()
 	(let ((i *fasl-file-read-index*))
 		(if (>= i *fasl-file-read-length*)
 			(return-from peek-next-byte *fasl-eof-value*))
 		(ct:cref (:unsigned-char *) *fasl-file-read-address* i)))
 
-(defun get-next-dword () 
+(defun get-next-dword ()
 	(let ((i *fasl-file-read-index*))
 		(if (>= i *fasl-file-read-length*)
 			(return-from get-next-dword *fasl-eof-value*))
@@ -182,7 +182,7 @@
 		pop		ebp
 		ret
 	})
-		
+
 (defun heap-object-p (obj) (or (uvectorp obj)(consp obj)))
 
 (defconstant max-tagged-cells -1)
@@ -222,7 +222,7 @@
 (defun num-tagged-cells (uvec)
 	(let ((length (svref num-tagged-cells-table (ccl:uvector-type-tag uvec))))
 		(if (= length max-tagged-cells) (ccl:uvector-length uvec) length)))
-			
+
 (defun write-binary-cell (cell)
 	(let ((n (lisp-object-id cell)))
 		(put-byte (logand n #xff))
@@ -247,7 +247,7 @@
 		(if (fixnump value)
 			(create-tagged-cell-from-fixnum value)
 			(create-tagged-cell-from-bignum value))))
-		
+
 
 (defun write-forward-cell ()
 	(put-byte forward-tag)
@@ -261,20 +261,20 @@
 		;; output the magic header id
 		(dolist (i magic-header-id)
 			(write-byte i os))
-	
+
 		;; output the header length
 		(output-binary-cell fasl-header-size os)
-		
+
 		;; output compression flag- 0 = none, 1 = compressed
 		(output-binary-cell (if *compress-fasl-files* 1 0) os)
-		
+
 		;; output copyright message
 		(dotimes (i (length message))
 			(write-byte (char-int (char message i)) os))
-		
+
 		;; output the remainder of the header
 		(dotimes (i (- fasl-header-size (length magic-header-id) (length message) 8))
-			(write-byte 0 os))))	 
+			(write-byte 0 os))))
 
 #|
 (defun create-new-output-file (path)
@@ -315,8 +315,8 @@
 	(put-byte hashed-tag)
 	(put-byte (logand num #xff))
 	(put-byte (logand (ash num -8) #xff))
-	(put-byte (logand (ash num -16) #xff)))	
-	
+	(put-byte (logand (ash num -16) #xff)))
+
 (defun output-fasl-heap-object (obj)
 	;; see if we have already written this object
 	(let ((v (gethash obj *compiled-objects-hash-table*)))
@@ -333,7 +333,7 @@
 		((cl::CLOS-INSTANCE-P obj)(output-fasl-clos-instance obj))
         ((packagep obj)
          (output-fasl-package obj))
-        (t 
+        (t
       #|    (if *compile-verbose*
                 (unless (or (stringp obj)(cl::compiled-code-p obj)(vectorp obj)(functionp obj))
                     (format t "Writing literal object ~A~%" obj))) |#
@@ -370,9 +370,9 @@
 		(output-fasl-heap-object (car cons)))
 	(if (heap-object-p (cdr cons))
 		(output-fasl-heap-object (cdr cons))))
-	
+
 (defun output-fasl-function (func)
-	(output-fasl-uvector func))	
+	(output-fasl-uvector func))
 
 ;; Returns the address of the mapped file (for calling unmap later).
 (defun open-fasl-file (path)
@@ -390,10 +390,10 @@
 			 *fasl-file-read-length*)
 			(ccl:map-file (namestring path)))
 		(setf ret *fasl-file-read-address*)
-		(when exe-size 
+		(when exe-size
 			(setf *fasl-file-read-length* exe-size)
-			(setf *fasl-file-read-address* 
-				(ct:int-to-foreign-ptr 
+			(setf *fasl-file-read-address*
+				(ct:int-to-foreign-ptr
 					(+ (ct:foreign-ptr-to-int *fasl-file-read-address*) exe-position))))
 		(unless *fasl-file-read-address*
 			(error "Could not open requested file: ~A" path))
@@ -409,14 +409,14 @@
 			(error "Not a valid FASL file: ~A" path))
 		(setf *fasl-compression* (if (= compression 0) nil t))
 		(setf *fasl-file-read-index* value)		;; skip header
-		ret))	  
+		ret))
 
 (defun input-fasl-uvector ()
 	(let* ((b0 (peek-next-byte))
 		   (d0 (get-next-dword))
 		   (len (ash d0 -8))
 		   (embedded-objects nil)
-		   (uvec (alloc-uvector 
+		   (uvec (alloc-uvector
 					(- (* len 2) 1)
 					(logand (ash b0 -3) #x1f)))
 		   (tagged-cells (num-tagged-cells uvec))
@@ -449,7 +449,7 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = cb
 		mov		ecx, [ebp + (+ ARGS_OFFSET 4)]	;; ecx = pos
 		shr		ecx, 3
-		mov		edx, [ebp + ARGS_OFFSET]		;; edx = ref		
+		mov		edx, [ebp + ARGS_OFFSET]		;; edx = ref
 		add		ecx, (- (* 4 cl::compiled-code-code-offset) uvector-tag)
 		mov		[eax + ecx], edx
 		mov		ecx, 1
@@ -464,7 +464,7 @@
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]	;; eax = cb
 		mov		ecx, [ebp + (+ ARGS_OFFSET 4)]	;; ecx = pos
 		shr		ecx, 3
-		mov		edx, [ebp + ARGS_OFFSET]		;; edx = num		
+		mov		edx, [ebp + ARGS_OFFSET]		;; edx = num
 		add		ecx, (- (* 4 cl::compiled-code-code-offset) uvector-tag)
 		shr		edx, 3
 		mov		[eax + ecx], edx
@@ -500,7 +500,7 @@
 		   (num-env-refs (/ (length env-refs) 2))
 		   (num-jump-refs (/ (length jump-refs) 2))
 		   (num-var-refs (/ (length var-refs) 2)))
-                          
+
 		(dotimes (i num-env-refs)
 			(let ((ref (* 4 (ensure-jump-table-entry (elt env-refs (* i 2)))))
 				  (pos (elt env-refs (+ 1 (* i 2)))))
@@ -520,13 +520,13 @@
                   (pos (cadr p)(cadr p)))
                 ((null p))
                 (store-code-reference obj pos (eval expr))))))
-	
+
 (defun input-fasl-heap-object (eof-error-p)
 	(let* ((byte (peek-next-byte))
 		   (tag)
 		   (object nil))
 		(if (eq byte *fasl-eof-value*)
-			(if eof-error-p 
+			(if eof-error-p
 				(error "EOF encountered where a form was expected")
 				(return-from input-fasl-heap-object *fasl-eof-value*)))
 		(setq tag (logand byte 7))
@@ -540,7 +540,7 @@
    				(t (input-fasl-uvector))))
 		(if (compiled-code-p object)
 			(update-code-references object))
-		object))	
+		object))
 
 (defun input-fasl-cons ()
 	(let* ((d0 (get-next-dword))
@@ -552,7 +552,7 @@
 			(setf (car c)(create-tagged-cell-from-integer d0)))
 		(if (eq d1 forward-tag)
 			(setf (cdr c)(input-fasl-heap-object t))
-			(setf (cdr c)(create-tagged-cell-from-integer d1)))		
+			(setf (cdr c)(create-tagged-cell-from-integer d1)))
 		c))
 
 (defun input-fasl-symbol ()
@@ -580,7 +580,7 @@
     (vector-push-extend nil *preloaded-objects-table*)
     (let* ((package-name (input-fasl-heap-object t)))
       (setf (elt *preloaded-objects-table* save-pos) (find-package package-name)))))
-    
+
 (defun file-is-executable (path)
 	(let ((ext (pathname-type path)))
 		(or (string-equal ext "EXE") (string-equal ext "DLL"))))
@@ -617,10 +617,10 @@
 ;;; Common Lisp COMPILE-FILE-PATHNAME function.
 ;;;
 (defun compile-file-pathname (input-file &key output-file &allow-other-keys)
-    (if output-file 
+    (if output-file
         (pathname output-file)
         (merge-pathnames (make-pathname :type cl::fasl-file-extension) (truename input-file))))
-    			
+
 ;;;
 ;;;	Common Lisp COMPILE-FILE function.
 ;;;
@@ -674,7 +674,7 @@
     (when verbose
       (format t "Compiling file ~A~%" input-file)
       (format t "Producing  output file ~A~%" output-file))
-    
+
     (with-open-file (is input-file :direction :input)
       (do ((x
              (progn
@@ -717,11 +717,11 @@
       (format t "~A forms were compiled~%" count))
     (values output-file warnings-p failure-p)))
 
-(defun offset-foreign-ptr (p offset) 
+(defun offset-foreign-ptr (p offset)
 	(ct:int-to-foreign-ptr (+ (ct:cpointer-value p) offset)))
 
-(defun load-fasl-file (input-file &key 
-			(verbose nil) 
+(defun load-fasl-file (input-file &key
+			(verbose nil)
 			(print nil))
 	(let* ((*preloaded-objects-table* (make-array 1000 :fill-pointer 0 :adjustable t))
 		   (*hashed-objects-index* 0)
@@ -740,13 +740,13 @@
 			(progn
 				(when *fasl-compression*
 					(setf *fasl-file-read-address*
-						(cl::uncompress-foreign-bytes 
+						(cl::uncompress-foreign-bytes
 							(offset-foreign-ptr *fasl-file-read-address* *fasl-file-read-index*)))
 					(setf *fasl-file-read-index* 0)
 					(setf *fasl-file-read-length* (uref *fasl-file-read-address* 2)))
 				(do ((ret)
-					 (x 
-						(input-fasl-heap-object nil) 
+					 (x
+						(input-fasl-heap-object nil)
 						(input-fasl-heap-object nil)))
 					((eq x *fasl-eof-value*))
 					(incf count)
@@ -765,19 +765,19 @@
 					(format *error-output* ";;; Warning: the following function(s) are called from forms~%~
 											;;; in file \"~A\" but have not yet been defined:~%" input-file)
 					(dolist (s undefined)
-						(format *error-output* ";;;     ~S~%" s))))) 
+						(format *error-output* ";;;     ~S~%" s)))))
 		(when verbose
 			(format t "~A forms were loaded~%" count))
 		count))
 
 ;;; utility functions
 (defun function-compiled-code (func)
-	(unless (pl::kernel-function-p func) 
+	(unless (pl::kernel-function-p func)
 		(uref func function-code-buffer-offset)))
 
 (defun function-compiled-code-references (func)
 	(let ((compiled-code (function-compiled-code func)))
-		(if compiled-code 
+		(if compiled-code
 			(uref compiled-code cl::compiled-code-references-offset))))
 
 (defun path-is-fasl-file-name (path)
@@ -835,7 +835,7 @@
 
 ;;;;
 ;;;; Common Lisp LOAD function
-;;;; Enhanced LOAD to allow the extension to be unspecified. In this case it 
+;;;; Enhanced LOAD to allow the extension to be unspecified. In this case it
 ;;;; assume ".lisp" unless there is a newer file with the extension ".fasl".
 ;;;;
 (defun load (path &key
@@ -916,17 +916,17 @@
 
 (defun u1 (stream) (read-byte stream))
 (defun u2 (stream) (+ (read-byte stream) (* #x100 (read-byte stream))))
-(defun u4 (stream) 
-		(+  		 (read-byte stream) 
-		(* #x100 	 (read-byte stream)) 
-		(* #x10000   (read-byte stream)) 
+(defun u4 (stream)
+		(+  		 (read-byte stream)
+		(* #x100 	 (read-byte stream))
+		(* #x10000   (read-byte stream))
 		(* #x1000000 (read-byte stream))))
 
 (defun o1 (byte stream) (write-byte byte stream))
-(defun o2 (word stream) 
+(defun o2 (word stream)
 	(write-byte (logand word #xff) stream)
 	(write-byte (logand (ash word -8) #xff) stream))
-(defun o4 (dword stream) 
+(defun o4 (dword stream)
 	(write-byte (logand dword #xff) stream)
 	(write-byte (logand (ash dword -8) #xff) stream)
 	(write-byte (logand (ash dword -16) #xff) stream)
@@ -978,9 +978,9 @@
 	(pe-optional-header stream)
 	(inc-file-position stream (ct:offsetof 'IMAGE_OPTIONAL_HEADER 'DataDirectory)))
 
-(defstruct export-info 
-	name 
-	ordinal 
+(defstruct export-info
+	name
+	ordinal
 	address)
 
 (defstruct section-header
@@ -1036,8 +1036,8 @@
 							:number-of-line-numbers (u2 stream)
 							:characteristics (u4 stream))
 						sections))))))
-										
-		
+
+
 ;;;
 ;;; Returns the export directory information
 (defun exported-directory (stream)
@@ -1048,13 +1048,13 @@
 			  (section nil))
 			(dolist (header section-headers)
 				(when (and (>= rva (section-header-rva header))
-						   (<= (+ rva size) 
+						   (<= (+ rva size)
 							  (+ (section-header-rva header)(section-header-virtual-size header))))
 					(setf section header)
 					(return)))
 			(when section
-				(file-position stream 
-					(+ (- rva (section-header-rva section)) 
+				(file-position stream
+					(+ (- rva (section-header-rva section))
 						(section-header-pointer-to-raw-data section)))
 				(make-export-directory
 					:file-position (file-position stream)
@@ -1101,13 +1101,13 @@
 			(file-position stream addresses)
 			(let ((address-vec (make-array num-funcs)))
 				(dotimes (i num-funcs)
-					(setf (aref address-vec i) (u4 stream)))	
+					(setf (aref address-vec i) (u4 stream)))
 				(dolist (x result)
-					(setf (export-info-address x) 
-						(aref address-vec (- (export-info-ordinal x) 
+					(setf (export-info-address x)
+						(aref address-vec (- (export-info-ordinal x)
 								(export-directory-base dir))))))
 			result)))
-		
+
 (defun finish-exe (os section-name original-length attributes)
 	(unless (and (stringp section-name) (< (length section-name) 8))
 		(error "Invalid section name for executable file"))
@@ -1128,21 +1128,21 @@
 			   (start-of-section-header-pos (+ optional-header-pos (ct:sizeof 'IMAGE_OPTIONAL_HEADER))))
 			(file-position os (+ image-header-pos (ct:offsetof 'IMAGE_FILE_HEADER 'NumberOfSections)))
 			(let* ((num-sections (u2 os))
-				   (new-section-header-pos 
+				   (new-section-header-pos
 					(+ start-of-section-header-pos (* num-sections (ct:sizeof 'IMAGE_SECTION_HEADER)))))
 				;; increment the number of sections
 				(file-position os (+ image-header-pos (ct:offsetof 'IMAGE_FILE_HEADER 'NumberOfSections)))
 				(incf num-sections)
 				(write-byte (mod num-sections #x100) os)
 				(write-byte (ash num-sections -8) os)
-				(file-position os 
+				(file-position os
 					(+ new-section-header-pos (- (ct:sizeof 'IMAGE_SECTION_HEADER))
 						(ct:offsetof 'IMAGE_SECTION_HEADER 'Misc)))
 				(let ((prev-virtual-size (u4 os))
 					  (prev-virtual-address (u4 os))
 					  (header-length (ct:sizeof 'IMAGE_SECTION_HEADER)))
 					(file-position os new-section-header-pos)
-					;; write out the header info for the new section				
+					;; write out the header info for the new section
 					(ct:with-fresh-foreign-block (section-info 'IMAGE_SECTION_HEADER)
 						(dotimes (i header-length)
 							(setf (ct:cref (BYTE *) section-info i) 0))	;; clear all fields to zero
@@ -1156,7 +1156,7 @@
 						(setf (ct:cref IMAGE_SECTION_HEADER section-info Characteristics) attributes)
 						(dotimes (i header-length)
 							(write-byte (ct:cref (BYTE *) section-info i) os))))
-				
+
 				;; update size of image
 				(file-position os (+ optional-header-pos (ct:offsetof 'IMAGE_OPTIONAL_HEADER 'SizeOfImage)))
 				(let ((fsize (u4 os)))	;; original size
@@ -1173,7 +1173,7 @@
 (defwinconstant IMAGE_SCN_MEM_READ	 			#x40000000)
 (defwinconstant IMAGE_SCN_MEM_WRITE 			#x80000000)
 
-(defun write-exe-section (path section-name bytes &optional 
+(defun write-exe-section (path section-name bytes &optional
 				(attributes (logior IMAGE_SCN_CNT_INITIALIZED_DATA IMAGE_SCN_MEM_READ)))
 	(with-open-file (os path :direction :io :element-type 'unsigned-byte)
 		(open-write-exe os)
@@ -1191,7 +1191,7 @@
 		   (sname (make-array IMAGE_SIZEOF_SHORT_NAME :element-type 'byte :initial-element 0)))
 		(dotimes (i (length section-name))
 			(setf (aref sname i)(char-int (char section-name i))))
-		
+
 		(file-position is (+ image-header-pos (ct:offsetof 'IMAGE_FILE_HEADER 'NumberOfSections)))
 		(let* ((num-sections (u2 is)))
 			(block section-search
@@ -1209,7 +1209,7 @@
 					  (section-pos  (u4 is)))
 					(file-position is section-pos)
 					section-size)))))
-					
+
 (defun read-exe-section (path section-name)
 	(with-open-file (is path :direction :input :element-type 'unsigned-byte)
 		(let ((size (open-read-exe is section-name)))
@@ -1229,10 +1229,10 @@
    :linkage-type :c)
 
 (defun w1 (byte) (vector-push-extend byte *export-buffer*))
-(defun w2 (word) 
+(defun w2 (word)
 	(vector-push-extend (logand word #xff) 		 	*export-buffer*)
 	(vector-push-extend (logand (ash word -8) #xff) 	*export-buffer*))
-(defun w4 (dword) 
+(defun w4 (dword)
 	(vector-push-extend (logand dword #xff) 			*export-buffer*)
 	(vector-push-extend (logand (ash dword -8) #xff) 	*export-buffer*)
 	(vector-push-extend (logand (ash dword -16) #xff) 	*export-buffer*)
@@ -1279,7 +1279,7 @@
 		   (new-exports (make-array (+ 1 (length exports))))
 		   (exports-copy nil))
 		(declare (ignore exported-directory))
-		 
+
 		;; collect all the PE data we need from the DLL
 		(with-open-file (is template-file :direction :input :element-type 'unsigned-byte)
 			(setf exported-names (exported-names is))
@@ -1294,11 +1294,11 @@
 		(dotimes (i (length exports))
 			(setf (aref exports-copy i) (exported-symbol-name (car (aref exports i)))))
 		(setf (aref exports-copy (length exports)) "DllMain")
-		(setf exports-copy (sort exports-copy #'string<)) 
+		(setf exports-copy (sort exports-copy #'string<))
 
 		(setf last-section (car (last section-headers)))
-		(setf next-rva 
-			(page-bytes 
+		(setf next-rva
+			(page-bytes
 				(+ (section-header-rva last-section)
 				   (section-header-virtual-size last-section))))
 
@@ -1314,22 +1314,22 @@
 		(w4 (+ address-table-offset next-rva))		; Export Address Table RVA
 		(w4 (+ name-pointer-table-offset next-rva))	; Name Pointer RVA
 		(w4 (+ ordinal-table-offset next-rva))		; Ordinal Table RVA
-		
+
 		;; make sure we are not trying to export too many functions
 		(if (>= (length exports) (length exported-names))
 			(error "The number of functions exported by the DLL cannot be greater than ~A"
 				(- (length exported-names) 1)))
-		
+
 		;; construct the new export list
 		(let ((index 0))
 			(dotimes (i (length exports-copy))
 				(let* ((name (aref exports-copy i))
 					   (is-main (string= name "DllMain")))
 					(setf (aref new-exports i)
-						(make-export-info 
-							:name name 
-							:address 
-								(if is-main 
+						(make-export-info
+							:name name
+							:address
+								(if is-main
 									(export-info-address dll-main)
 									(export-info-address (nth index exported-names)))
 							:ordinal (+ 1 (if is-main (length exports) index))))
@@ -1347,7 +1347,7 @@
 
 		;; sort the export list by name
 		(sort new-exports #'string< :key #'export-info-name)
-		
+
 		;; write export name pointer table
 		(let ((offset (+ export-name-table-offset next-rva (length dll-name) 1)))
 			(dotimes (i (length new-exports))
@@ -1375,12 +1375,12 @@
 ;;      copyright notice
 ;;      name of registered owner (or empty string if unregistered)
 ;;      name of registered organization (or empty string if none)
-;; 
+;;
 ;; These are all null-terminated ascii strings.
 ;;
 (defun write-corman-section (output-file dll-file-name image-file-name)
 	(let ((*export-buffer* (make-array 40 :element-type 'byte :adjustable t :fill-pointer 0)))
-		(multiple-value-bind 
+		(multiple-value-bind
 			(registered days name org)
 			(cl::registration-info)
 			(declare (ignore days))
@@ -1399,7 +1399,7 @@
 			(format os "LIBRARY ~A~%" (pathname-name output-file))
 			(format os "EXPORTS~%")
 			(dotimes (i (length exports))
-				(format os "    ~A~%" 
+				(format os "    ~A~%"
 					(exported-symbol-name (car (aref exports i))))))))
 
 (defun write-h-file (output-file exports &optional verbose)
@@ -1417,7 +1417,7 @@
 			(format os "}~%")
 			(format os "#endif // __cplusplus~%"))))
 
-(defun ccl::compile-dll (input-file 
+(defun ccl::compile-dll (input-file
 		&key (output-file nil)
 			 (verbose *compile-verbose*)
 			 (print *compile-print*)
@@ -1428,15 +1428,15 @@
 	(if (null output-file)
 		(setq output-file
 			(if (string-equal (pathname-type input-file) cl::lisp-file-extension)
-				(make-pathname 
+				(make-pathname
 					:device (pathname-device input-file)
 					:directory (pathname-directory input-file)
 					:name (pathname-name input-file)
 					:type cl::dll-file-extension)
-				(pathname 
+				(pathname
 					(concatenate 'string (namestring input-file) "." cl::dll-file-extension))))
 		(setq output-file (truename output-file)))
-		(let ((template-file (pathname (concatenate 'string *CORMANLISP-DIRECTORY* "dlltemplate.dll"))))		
+		(let ((template-file (pathname (concatenate 'string *CORMANLISP-DIRECTORY* "dlltemplate.dll"))))
 			(unless
 				(win:CopyFile
 					(ct:lisp-string-to-c-string (namestring template-file))
@@ -1444,9 +1444,9 @@
 					nil)
 				(error "Could not create output file ~A" output-file))
 			(let* ((exports (make-array 10 :adjustable t :fill-pointer 0))
-		   		   (dll-name 
-					(concatenate 'string 
-						(pathname-name output-file) "." 
+		   		   (dll-name
+					(concatenate 'string
+						(pathname-name output-file) "."
 						(pathname-type output-file)))
 				   (ct:*collect-exported-functions* exports))
 				(compile-file input-file :output-file output-file :verbose verbose :print print)
@@ -1457,10 +1457,8 @@
 				(when h
 					(write-h-file output-file exports verbose))
 				output-file)))
-	
+
 (export '(write-exe-section read-exe-section open-read-exe))
 (export '(#:compile-dll) 'ccl)
 
 (setq cl::*COMPILER-WARN-ON-UNDEFINED-FUNCTION* t)
-
-

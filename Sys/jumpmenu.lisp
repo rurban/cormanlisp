@@ -35,7 +35,7 @@
 (defun create-jumpmenu-from-buffer (stream offset)
     (let ((jumpmenu '()))
         (do* ((form (jumpmenu-read-token stream)(jumpmenu-read-token stream))
-              (curr-package nil)) 
+              (curr-package nil))
             ((eq ':eof form))
             (if form
                 (progn
@@ -65,22 +65,22 @@
 
 (defun create-jumpmenu-from-window (hwnd start end)
     (let* ((text (get-editor-buffer-contents hwnd))
-           (in (make-string-input-stream 
-                    (subseq text start 
-                        (min end (get-editor-buffer-length hwnd))))))                                               
-        (create-jumpmenu-from-buffer in start)))                     
+           (in (make-string-input-stream
+                    (subseq text start
+                        (min end (get-editor-buffer-length hwnd))))))
+        (create-jumpmenu-from-buffer in start)))
 
 (defparameter *jump-menu-handle* nil)
 
 (defun add-jumpmenu-to-menubar () #| forward declaration |#)
 
 (defun create-jumpmenu-menu ()
-    (win:create-dynamic-menu-item 
+    (win:create-dynamic-menu-item
         (list :menu "&Declarations"
             (lambda (hmenu)
                 (declare (ignore hmenu))
-                (add-jumpmenu-to-menubar))) 
-        nil 
+                (add-jumpmenu-to-menubar)))
+        nil
         4))
 
 (defun format-message (sym-str package)
@@ -91,23 +91,23 @@
     (multiple-value-bind (sym status)
         (find-symbol (string-upcase sym-str) package)
         (if status
-            (format nil "Package: ~A    ~A" (package-name (symbol-package sym)) (win::lookup-lambda-list-impl sym))))) 
-           
-(defun add-jumpmenu-to-menubar ()  
+            (format nil "Package: ~A    ~A" (package-name (symbol-package sym)) (win::lookup-lambda-list-impl sym)))))
+
+(defun add-jumpmenu-to-menubar ()
     (let* ((hwnd (current-edit-window-handle))
            (jumpmenu (sort (create-jumpmenu-from-window hwnd 0 (get-editor-buffer-length hwnd)) 'string-lessp :key 'second))
-           (menu-handle 
+           (menu-handle
                 (or *jump-menu-handle* (create-jumpmenu-menu))))
         (setf *jump-menu-handle* menu-handle)
         (loop for i from 1 to (length jumpmenu) do
             (let ((item (elt jumpmenu (- i 1))))
-                (win:create-dynamic-menu-item 
+                (win:create-dynamic-menu-item
                     (list :command (concatenate 'string (string-capitalize (first item)) " &" (string-capitalize (second item)))
                         (lambda (id)
                             (declare (ignore id))
                             (set-current-selection hwnd (third item) (fourth item))
                             (values)))
-                    menu-handle 
+                    menu-handle
                     i
                     :message (lambda (id)
                         (declare (ignore id))

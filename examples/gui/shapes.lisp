@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	Windows shapes program.
-;;;;    
+;;;;
 ;;;;    To run from lisp, load this file and enter:
 ;;;;
 ;;;;		(th:create-thread #'win::shapes)
@@ -21,9 +21,9 @@
 
 (defun install-refresh-timer (hwnd)
 	(win:SetTimer hwnd *timer-id* *refresh-milliseconds* NULL))
- 
+
 (defun uninstall-refresh-timer (hwnd)
-	(win:KillTimer hwnd *timer-id*)) 
+	(win:KillTimer hwnd *timer-id*))
 
 (defclass <shapes-window> (<main-menu-mixin> <frame>)
 	((rect :accessor shapes-rect :initform (ct:malloc (sizeof 'RECT)))
@@ -33,15 +33,15 @@
     (gui-initialize)
 	(let* ((window (make-instance '<shapes-window>)))
 		(create-menu window '(:menu "File") nil 1)
-		(create-menu window 
-			(list :command "Pause"  (lambda () (setf (paused window) t))) 	  
+		(create-menu window
+			(list :command "Pause"  (lambda () (setf (paused window) t)))
 			"File" 1)
-		(create-menu window 
-			(list :command "Resume" (lambda () (setf (paused window) nil)))   
+		(create-menu window
+			(list :command "Resume" (lambda () (setf (paused window) nil)))
 			"File" 2)
 		(create-window window
 			:caption "Shapes"
-			:style (logior WS_OVERLAPPEDWINDOW WS_MINIMIZEBOX))		
+			:style (logior WS_OVERLAPPEDWINDOW WS_MINIMIZEBOX))
 	    (install-refresh-timer (window-hwnd window))
    		(show-window window SW_SHOW)
 		(update-window window)
@@ -109,4 +109,3 @@
 				(if (> (random 2) 0)
 					(draw-colored-rect left top right bottom r g b hdc rect)
 					(draw-colored-ellipse left top right bottom r g b hdc))))))
-

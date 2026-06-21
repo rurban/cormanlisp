@@ -2,13 +2,13 @@
 ;;;;	File:		loop.lisp
 ;;;;	Contents:	ANSI Common Lisp Loop facility.
 ;;;;	History:	2/17/00  RGC  Incorporated Chris Double's port of MIT Loop
-;;;;							  code into 1.4 release tree. 
+;;;;							  code into 1.4 release tree.
 ;;;;
 ;;;   -*- Mode: LISP; Syntax: Common-lisp; Base: 10; Lowercase:T -*-
 ;;;>
 ;;;> Portions of LOOP are Copyright (c) 1986 by the Massachusetts Institute of Technology.
 ;;;> All Rights Reserved.
-;;;> 
+;;;>
 ;;;> Permission to use, copy, modify and distribute this software and its
 ;;;> documentation for any purpose and without fee is hereby granted,
 ;;;> provided that the M.I.T. copyright notice appear in all copies and that
@@ -20,7 +20,7 @@
 ;;;> copying distribution is by permission of M.I.T.  M.I.T. makes no
 ;;;> representations about the suitability of this software for any purpose.
 ;;;> It is provided "as is" without express or implied warranty.
-;;;> 
+;;;>
 ;;;>      Massachusetts Institute of Technology
 ;;;>      77 Massachusetts Avenue
 ;;;>      Cambridge, Massachusetts  02139
@@ -29,7 +29,7 @@
 ;;;>
 ;;;> Portions of LOOP are Copyright (c) 1989, 1990, 1991, 1992 by Symbolics, Inc.
 ;;;> All Rights Reserved.
-;;;> 
+;;;>
 ;;;> Permission to use, copy, modify and distribute this software and its
 ;;;> documentation for any purpose and without fee is hereby granted,
 ;;;> provided that the Symbolics copyright notice appear in all copies and
@@ -41,7 +41,7 @@
 ;;;> Symbolics.  Symbolics makes no representations about the suitability of
 ;;;> this software for any purpose.  It is provided "as is" without express
 ;;;> or implied warranty.
-;;;> 
+;;;>
 ;;;> Symbolics, CLOE Runtime, and Minima are trademarks, and CLOE, Genera,
 ;;;> and Zetalisp are registered trademarks of Symbolics, Inc.
 ;;;>
@@ -118,7 +118,7 @@
 
 ;;; The design of this LOOP is intended to permit, using mostly the same
 ;;; kernel of code, up to three different "loop" macros:
-;;; 
+;;;
 ;;; (1) The unextended, unextensible ANSI standard LOOP;
 ;;;
 ;;; (2) A clean "superset" extension of the ANSI LOOP which provides
@@ -133,7 +133,7 @@
 ;;;
 ;;; Each of the above three LOOP variations can coexist in the same LISP
 ;;; environment.
-;;; 
+;;;
 
 
 ;;;; Miscellaneous Environment Things
@@ -532,7 +532,7 @@ code to be loaded.
 			   (ht (make-hash-table :size (if (< size 10) 10 size) :test #'eq)))
 		      (dolist (x type-symbols)
 			(if (atom x) (setf (gethash x ht) x) (setf (gethash (car x) ht) (cadr x))))
-		      ht)))) 
+		      ht))))
 
 
 ;;;; Setq Hackery
@@ -728,7 +728,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 ;;;Sometimes we decide we need to fold together parts of the loop, but
 ;;;some part of the generated iteration  code is different for the first
-;;;and remaining iterations.  This variable will be the temporary which 
+;;;and remaining iterations.  This variable will be the temporary which
 ;;;is the flag used in the loop to tell whether we are in the first or
 ;;;remaining iterations.
 (defvar *loop-never-stepped-variable*)
@@ -853,7 +853,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 		   (push `(setq ,(setq flagvar *loop-iteration-flag-variable*) t) else))
 		 (push `(if ,flagvar ,(pify (psimp then)) ,(pify (psimp else)))
 		       main-body))
-	       ;; Everything chronologically before lastdiff until the non-duplicatable form (car bb) 
+	       ;; Everything chronologically before lastdiff until the non-duplicatable form (car bb)
 	       ;; is the same in rbefore and rafter so just copy it into the body
 	       (do () (nil)
 		 (pop rafter)
@@ -908,7 +908,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
     (estimate-code-size-1 x env)))
 
 
-(defun estimate-code-size-1 (x env)  
+(defun estimate-code-size-1 (x env)
   (flet ((list-size (l)
 	   (let ((n 0))
 	     (declare (fixnum n))
@@ -990,7 +990,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 ;;;INTERFACE: Traditional, ANSI, Lucid.
-(defmacro loop-finish () 
+(defmacro loop-finish ()
   "Causes the iteration to terminate \"normally\", the same as implicit
 termination by an iteration driving clause, or by use of WHILE or
 UNTIL -- the epilogue code (if any) will be run, and any implicitly
@@ -1152,7 +1152,7 @@ collected result will be returned as the value of the LOOP."
 		  (when type-spec
 		    (loop-pop-source)
 		    type-spec)))
-	       (t 
+	       (t
 		;;This is our sort-of old syntax.  But this is only valid for when we are destructuring,
 		;; so we will be compulsive (should we really be?) and require that we in fact be
 		;; doing variable destructuring here.  We must translate the old keyword pattern typespec

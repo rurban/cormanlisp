@@ -891,7 +891,7 @@ def DecomposeGenerator(codeOffset, code, dt, features = 0):
     instruction_off = 0
 
     while codeLen > 0:
-        
+
         usedInstructionsCount = c_uint(0)
         codeInfo = _CodeInfo(_OffsetType(codeOffset), _OffsetType(0), cast(p_code, c_char_p), codeLen, dt, features)
         status = internal_decompose(byref(codeInfo), byref(result), MAX_INSTRUCTIONS, byref(usedInstructionsCount))
@@ -914,7 +914,7 @@ def DecomposeGenerator(codeOffset, code, dt, features = 0):
         codeOffset = codeOffset + delta
         p_code     = byref(code_buf, instruction_off)
         codeLen    = codeLen - delta
-        
+
         if (features & DF_STOP_ON_FLOW_CONTROL) != 0:
             break # User passed a stop flag.
 

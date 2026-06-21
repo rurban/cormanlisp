@@ -64,4 +64,3 @@
 		`(let* ((,sym1 ,n)
 			    (,sym2 (nth ,sym1 (multiple-value-list ,form))))
 			,sym2)))
-

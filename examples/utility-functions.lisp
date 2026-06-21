@@ -14,12 +14,12 @@
 	(flet ((whitespace-char? (char)
 			(member char whitespace-chars :test #'char=)))
 		(let ((tokens nil))
-			(do* ((token-start 
-				  	(position-if-not #'whitespace-char? string) 
+			(do* ((token-start
+				  	(position-if-not #'whitespace-char? string)
 					(when token-end
-						(position-if-not #'whitespace-char? string 
+						(position-if-not #'whitespace-char? string
 							:start (1+ token-end))))
-				  (token-end 
+				  (token-end
 					(position-if #'whitespace-char? string :start (or token-start 0))
 				  	(when token-start
 						(position-if #'whitespace-char? string :start token-start))))
@@ -27,7 +27,7 @@
 				(push (subseq string token-start token-end) tokens)))))
 
 (defun string-list (string)
-	(with-input-from-string (s string) 
+	(with-input-from-string (s string)
 		(do* ((eof '(cons 0 0))
 			  (result nil)
 			  (token (read s nil eof)(read s nil eof)))
@@ -58,9 +58,9 @@
 			(close f1)
 			(close f2))))
 
-(defmacro cond-every (&rest clauses)  
+(defmacro cond-every (&rest clauses)
 	(loop for (cond . forms) in clauses
-		collect 
+		collect
 			(if (eql cond 't)
 				`(progn . ,forms)
 				`(when ,cond ,@forms))
@@ -68,7 +68,7 @@
 		finally (return `(progn . ,code))))
 
 ;;; full-fledged version ala position
-;;; BUG FIX: 24-08-1999 (bp): :from-end t caused sub-sequences to be reversed 
+;;; BUG FIX: 24-08-1999 (bp): :from-end t caused sub-sequences to be reversed
 ;;; copyright notice: this function is in the PUBLIC DOMAIN
 
 (defun split-sequence (delimiter seq
@@ -82,45 +82,45 @@
       (key nil key-supplied)
       &aux
       (len (length seq)))
- 
+
 	"Return list of subsequences in SEQ delimited by DELIMITER.
      If an EMPTY-MARKER is supplied, empty subsequences will be
      represented by EMPTY-MARKER, otherwise they will be discarded.
      All other keywords work analogously to POSITION."
- 
+
   	(declare (optimize (speed 3)(safety 0)(space 0)(debug 0)))
- 
+
   	(unless end (setq end len))
- 
+
 	(when from-end
 		(setf seq (reverse seq))
 		(psetf start (- len end)
 			end (- len start)))
- 
-	(loop with other-keys = 
+
+	(loop with other-keys =
 		(nconc (when test-supplied (list :test test))
 			(when test-not-supplied (list :test-not test-not))
 			(when key-supplied (list :key key)))
 		for left = start then (+ right 1)
 		for right =
-			(min 
-				(or (apply #'position delimiter seq :start left other-keys) 
+			(min
+				(or (apply #'position delimiter seq :start left other-keys)
 					len)
 				end)
 		if (< left right)
-			collect 
+			collect
 				(let ((subseq (subseq seq left right)))
 					(if from-end
 						(nreverse subseq)
 						subseq))
-		else 
-		when keep-empty-subseqs 
+		else
+		when keep-empty-subseqs
 		collect empty-marker
 		until (eq right end)))
 
 ;;
 ;; A handy function for prompting for a string--works well in either IDE or console
-;; Outputs the prompt, and then reads the entire line (IDE). If the prompt is at the 
+;; Outputs the prompt, and then reads the entire line (IDE). If the prompt is at the
 ;; beginning of the returned string it is stripped off and the rest returned.
 ;; In the console it works just like a normal (read-line)
 ;;
@@ -150,8 +150,8 @@ examples:
     (format t "single-float: ~A~%" x))
 
 (foreach integer (x '(10 20.3 30 40.5 50))
-    (format t "integer: ~A~%" x))                   
-|# 
+    (format t "integer: ~A~%" x))
+|#
 (defmacro foreach (type (var sequence) &body body)
     (let ((seqsym (gensym))
           (indexsym (gensym)))

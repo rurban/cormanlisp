@@ -8,7 +8,7 @@
 ;;;;				Programming Windows 95
 ;;;;
 ;;;;				It may be saved as an application:
-;;;;					
+;;;;
 ;;;;				example:
 ;;;;					(load "examples/poppad1.lisp")
 ;;;;					(save-application "poppad1" #'poppad1)
@@ -42,14 +42,14 @@
 HWND WINAPI SetFocus(HWND hWnd);
 ATOM WINAPI RegisterClassA(CONST WNDCLASSA* lpWndClass);
 !#
-	
+
 (ct:defun-callback WndProc ((hwnd HWND)(iMsg UINT)(wParam WPARAM)(lParam LPARAM))
-	(let () 
+	(let ()
 		 (cond
 			((= iMsg WM_CREATE)
-				(setf hwndEdit 
+				(setf hwndEdit
 					(win:CreateWindowEx
-						0 
+						0
 						(ct:create-c-string "RICHEDIT20A")
 						null
 						(logior WS_CHILD WS_VISIBLE WS_HSCROLL WS_VSCROLL
@@ -63,17 +63,17 @@ ATOM WINAPI RegisterClassA(CONST WNDCLASSA* lpWndClass);
 						(ct:int-to-foreign-ptr 1)
 						ghinstance
 						NULL))
-				0)		
+				0)
 			((= iMsg WM_SETFOCUS)
 				(SetFocus hwndEdit)
 				0)
 			((= iMsg WM_SIZE)
-				(MoveWindow hwndEdit 0 0 (LOWORD lParam)(HIWORD lParam) t))		
+				(MoveWindow hwndEdit 0 0 (LOWORD lParam)(HIWORD lParam) t))
 			((= iMsg WM_COMMAND)
 				(if (and (= wParam 1)(= (HIWORD lParam) EN_ERRSPACE))
-					(MessageBox hwnd "Edit control out of space." 
+					(MessageBox hwnd "Edit control out of space."
 						szAppName (logior MB_OK MB_ICONSTOP)))
-				0)		
+				0)
 			((= iMsg WM_DESTROY)
 				(PostQuitMessage 0)
 				0)
@@ -100,7 +100,7 @@ ATOM WINAPI RegisterClassA(CONST WNDCLASSA* lpWndClass);
 				lpszClassName	(ct:create-c-string szAppName)
 				hIconSm			(LoadIcon NULL IDI_APPLICATION)))
 		(RegisterClassEx wndclass)
-		(setq *app-window* 
+		(setq *app-window*
 			(CreateWindowEx 0
 				(ct:create-c-string szAppName)				;; window class name
 				(ct:create-c-string szAppName) 				;; window caption
@@ -127,6 +127,6 @@ ATOM WINAPI RegisterClassA(CONST WNDCLASSA* lpWndClass);
 (defun poppad1 ()
 	(restart-case
 		(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart 'error))))
-			(WinMain (cl::get-application-instance) 
+			(WinMain (cl::get-application-instance)
 				null (ct:create-c-string "") SW_SHOW))
 		(error () (return-from poppad1))))

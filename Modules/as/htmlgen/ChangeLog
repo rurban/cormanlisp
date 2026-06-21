@@ -13,7 +13,7 @@
 2000-03-29  John Foderaro  <jkf@tiger.franz.com>
 
 	*  Undo previous change: html-stream must be passed a stream,
-	   you can't pass in t or nil.  
+	   you can't pass in t or nil.
 
 2000-03-20  John Foderaro  <jkf@tiger.franz.com>
 
@@ -31,4 +31,3 @@
 1999-12-03  jkf  <jkf@main.verada.com>
 
 	*  htmlgen.cl  - added :if* operator inside a tag
-

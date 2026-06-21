@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	Windows MDI example program.
-;;;;    
+;;;;
 ;;;;    To run from lisp, load this file and enter:
 ;;;;
 ;;;;		(th:create-thread #'win::mdi-example)
@@ -19,7 +19,7 @@
 ;;;
 ;;; Derived windows for this applications
 ;;;
-(defclass <mdi-example-frame> (<mdi-frame>) 
+(defclass <mdi-example-frame> (<mdi-frame>)
     ((status-bar :accessor status-bar :initform nil)))
 
 (defclass <mdi-example-child> (<mdi-child-window>)
@@ -36,7 +36,7 @@
 (defun create-rich-edit-control (parent-window)
     "Creates a rich edit control on the passed window, and returns it"
     (let ((edit-control (make-instance '<richedit-control>)))
-        (create-window edit-control 
+        (create-window edit-control
             :style (logior WS_CHILD WS_VISIBLE WS_HSCROLL WS_VSCROLL
               WS_BORDER ES_LEFT ES_MULTILINE
               ES_AUTOHSCROLL ES_AUTOVSCROLL)
@@ -76,23 +76,23 @@
 (defmethod create-window ((window <mdi-example-frame>)
 		&key class-name ex-style caption style x y width height parent menu param)
     (declare (ignore class-name ex-style caption style x y width height parent menu param))
-    (call-next-method)   
+    (call-next-method)
     ;; create status bar
     (setf (status-bar window) (create-status-bar window))
     (set-text (status-bar window) "This is the main frame")
     (show-window (status-bar window) SW_SHOW)
     (update-window window))
- 
+
 (defmethod handle-message ((window <mdi-example-frame>) (message <create-message>) wparam lparam)
 	(declare (ignore window message wparam lparam))
     (call-next-method))
- 
+
 (defun mdi-example ()
     (gui-initialize)
 	(let ((window (make-instance '<mdi-example-frame>)))
 		(create-menu window '(:menu "File") nil 1)
-		(create-menu window 
-			(list :command "New" 
+		(create-menu window
+			(list :command "New"
 				(lambda () (create-new-document (mdi-client window))))
 			"File" 1)
 		(create-window window

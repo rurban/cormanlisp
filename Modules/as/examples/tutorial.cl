@@ -2,23 +2,23 @@
 ;;
 ;; turorial.cl
 ;;
-;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA 
+;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA
 ;;
 ;; This code is free software; you can redistribute it and/or
 ;; modify it under the terms of the version 2.1 of
-;; the GNU Lesser General Public License as published by 
-;; the Free Software Foundation; 
+;; the GNU Lesser General Public License as published by
+;; the Free Software Foundation;
 ;;
 ;; This code is distributed in the hope that it will be useful,
 ;; but without any warranty; without even the implied warranty of
 ;; merchantability or fitness for a particular purpose.  See the GNU
 ;; Lesser General Public License for more details.
 ;;
-;; Version 2.1 of the GNU Lesser General Public License is in the file 
+;; Version 2.1 of the GNU Lesser General Public License is in the file
 ;; license-lgpl.txt that was distributed with this file.
 ;; If it is not present, you can access it from
 ;; http://www.gnu.org/copyleft/lesser.txt (until superseded by a newer
-;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
+;; version) or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA  02111-1307  USA
 ;;
 ;;
@@ -31,7 +31,7 @@
 ;;- http://www.franz.com/~jkf/coding_standards.html
 ;;-
 
-(defpackage :tutorial 
+(defpackage :tutorial
   (:use :common-lisp :excl :net.aserve :net.html.generator))
 
 (in-package :tutorial)
@@ -39,21 +39,21 @@
 
 (publish :path "/hello"
 	 :content-type "text/plain"
-	 :function 
+	 :function
 	 #'(lambda (req ent)
 	     (with-http-response (req ent)
 	       (with-http-body (req ent)
 		 (princ "Hello World!" *html-stream*)))))
-		 
+
 (publish :path "/hello2"
 	 :content-type "text/html"
-	 :function 
+	 :function
 	 #'(lambda (req ent)
 	     (with-http-response (req ent)
 	       (with-http-body (req ent)
-		 (html 
+		 (html
 		  (:html (:head (:title "Hello World Test"))
-			 (:body 
+			 (:body
 			  ((:font :color "red") "Hello ")
 			  ((:font :color "blue") "World!"))))))))
 
@@ -69,12 +69,12 @@
 		   (html
 		    (:html
 		     (:head (:title "Hello Counter"))
-		     (:body 
+		     (:body
 		      ((:font :color (nth (random 5)
-					  '("red" "blue" 
+					  '("red" "blue"
 					    "green" "purple" "black")))
-		       "Hello World had been called " 
-		       (:princ (incf count)) 
+		       "Hello World had been called "
+		       (:princ (incf count))
 		       " times")))))))))
 
 
@@ -82,7 +82,7 @@
 	 :content-type "text/html"
 	 :function
 	 #'(lambda (req ent)
-	     (let ((name (cdr (assoc "name" (request-query req) 
+	     (let ((name (cdr (assoc "name" (request-query req)
 				     :test #'equal))))
 	       (with-http-response (req ent)
 		 (with-http-body (req ent)
@@ -116,23 +116,23 @@
 		 (with-http-body (req ent)
 		   (if* text
 		      then ; got the quotation, analyze it
-			   (html 
+			   (html
 			    (:html
 			     (:head (:title "Character Counts")
-				    (:body 
+				    (:body
 				     (:table
 				     (do ((i #.(char-code #\a) (1+ i)))
 					 ((> i #.(char-code #\z)))
 				       (html (:tr
 					      (:td (:princ (code-char i)))
-					      (:td (:princ 
+					      (:td (:princ
 						    (count (code-char i)
 							   text)))))))))))
 		      else ; ask for quotation
 			   (html
 			    (:html
 			     (:head (:title "quote character counter")
-				    (:body 
+				    (:body
 				     ((:form :action "charcount"
 					     :method "POST")
 				      "Enter your favorite quote "
@@ -145,12 +145,3 @@
 				      ((:input :type "submit"
 					       :name "submit"
 					       :value "count it")))))))))))))
-
-				       
-			    
-			   
-	       
-					
-				      
-
-		       

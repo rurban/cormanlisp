@@ -4,11 +4,11 @@
 #	History:	5/13/02  RGC  Created.
 #
 default: ../../dllclient.exe
- 
+
 
 ../../dllclient.exe:	dllclient.cpp
 	echo Building dllclient.exe...
-	if not exist .\bin md .\bin 
+	if not exist .\bin md .\bin
 	nmake /s /c clean
 	cl.exe /nologo /MD /W1 /GX /O2 /c /Zi		\
 		/D "WIN32"								\
@@ -18,7 +18,7 @@ default: ../../dllclient.exe
 		/Fd"bin\\"								\
 		/I./include /I../include				\
 		dllclient.cpp
- 
+
 	link.exe /nologo /debug /nodefaultlib 		\
 		/subsystem:console						\
 		/incremental:no							\
@@ -45,4 +45,3 @@ clean:
 	if exist dllclient.opt del dllclient.opt
 	if exist dllclient.ncb del dllclient.ncb
 	if exist ..\..\dllclient.exe del ..\..\dllclient.exe
-

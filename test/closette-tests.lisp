@@ -154,7 +154,7 @@
 #| A CLOS object
 Printed representation: #<Rectangle 16166710>
 Class: #<Standard-Class rectangle 15253764>
-Structure 
+Structure
     height <- 10
     width <- 20
 |#
@@ -164,7 +164,7 @@ Structure
 #| A CLOS object
 Printed representation: #<Color-Mixin 16166710>
 Class: #<Standard-Class color-mixin 15274440>
-Structure 
+Structure
     cyan <- 0
     magenta <- 0
     yellow <- 0
@@ -214,7 +214,7 @@ Structure
                 when called with arguments ~:S." gf args)
         (apply-methods gf args applicable-methods))))
 
-(better-apply-generic-function 
+(better-apply-generic-function
  (find-generic-function 'make-instance)
  (list 'rectangle))
 
@@ -222,8 +222,8 @@ Structure
 
 (defun subclasses* (class)
   (remove-duplicates
-    (cons class 
-          (mapappend #'subclasses* 
+    (cons class
+          (mapappend #'subclasses*
                      (class-direct-subclasses class)))))
 
 (defun subclasses (class) (remove class (subclasses* class)))
@@ -231,7 +231,7 @@ Structure
 (subclasses (find-class 'rectangle))
 #|(#<Standard-Class COLOR-RECTANGLE>)|#
 
-(defvar my-classes 
+(defvar my-classes
   (mapcar #'class-name
           (subclasses (find-class 'standard-object))))
 
@@ -390,7 +390,7 @@ my-classes
   (if (null set)
       ()
       (append (mapcar #'(lambda (rest)
-                          (list (car set) rest)) 
+                          (list (car set) rest))
                       (cdr set))
               (all-distinct-pairs (cdr set)))))
 
@@ -444,7 +444,7 @@ my-classes
    (SET-BRUSH-COLOR (SLOT-VALUE X 'CYAN)
                     (SLOT-VALUE X 'MAGENTA)
                     (SLOT-VALUE X 'YELLOW))))
-(DEFMETHOD PAINT ((X COLOR-RECTANGLE))    
+(DEFMETHOD PAINT ((X COLOR-RECTANGLE))
   (BLOCK PAINT
     (UNLESS (CLEARP X) (CALL-NEXT-METHOD))))
 |#
@@ -465,12 +465,12 @@ my-classes
                               SLOT-NAMES &REST ALL-KEYS))|#
 
 (defun all-generic-functions ()
-  (remove-duplicates 
+  (remove-duplicates
     (mapappend #'class-direct-generic-functions
                (subclasses* (find-class 't)))))
 
 (defun class-direct-generic-functions (class)
-  (remove-duplicates 
+  (remove-duplicates
      (mapcar #'method-generic-function
              (class-direct-methods class))))
 
@@ -531,7 +531,7 @@ PRINT-OBJECT \ldots)|#
 
 
 (display-effective-method (find-generic-function 'paint)
-                          (list (make-instance 'color-rectangle 
+                          (list (make-instance 'color-rectangle
                                                :clearp nil)))
 #|(progn
  (call-method
@@ -673,7 +673,7 @@ PRINT-OBJECT \ldots)|#
 #|#<Standard-Class COUNTED-CLASS 69547893> |#
 
 #|(slot-value (find-class 'rectangle) 'counter)
-Error: The slot COUNTER is missing from the class 
+Error: The slot COUNTER is missing from the class
 #<Standard-Class STANDARD-CLASS 15501664>.|#
 
 (slot-value (find-class 'counted-rectangle) 'counter)
@@ -716,14 +716,14 @@ Error: The slot COUNTER is missing from the class
   (append (remove-duplicates
             (depth-first-preorder-superclasses* class)
             :from-end nil)
-          (list (find-class 'standard-object) 
+          (list (find-class 'standard-object)
                 (find-class 't))))
 
 (defmethod compute-class-precedence-list ((class flavors-class))
   (append (remove-duplicates
             (depth-first-preorder-superclasses* class)
             :from-end t)
-          (list (find-class 'standard-object) 
+          (list (find-class 'standard-object)
                 (find-class 't))))
 
 (defun depth-first-preorder-superclasses* (class)
@@ -839,9 +839,9 @@ Error: The slot COUNTER is missing from the class
 
 (slot-value cr 'all-attributes)
 #|((level . ((date-set . "12/15/90") (time-set . nil))))|#
-(slot-value (make-instance 'monitored-credit-rating) 
+(slot-value (make-instance 'monitored-credit-rating)
             'all-attributes)
-#| ((level . ((last-checked . nil) (interval . nil) 
+#| ((level . ((last-checked . nil) (interval . nil)
               (date-set .nil ) (time-set .nil))))|#
 
 ;;; encapsulated classes
@@ -903,12 +903,12 @@ Error: The slot COUNTER is missing from the class
 #|100|#
 
 (mumble (make-instance 'c2))
-#|300|# 
+#|300|#
 
 
 ;;; default initargs
 
-(pprint (macroexpand 
+(pprint (macroexpand
 '(defclass frame (rectangle)
      ()
   (:metaclass default-initargs-class)
@@ -923,7 +923,7 @@ Error: The slot COUNTER is missing from the class
                 (list ':width 10))|#
 
 (defclass default-initargs-class (standard-class)
-          ((direct-default-initargs         
+          ((direct-default-initargs
             :initarg :direct-default-initargs
             :initform ()
             :accessor class-direct-default-initargs)))
@@ -961,7 +961,7 @@ Error: The slot COUNTER is missing from the class
 ;;; precomputed default initargs
 
 (defclass default-initargs-class-2 (standard-class)
-     ((direct-default-initargs                   
+     ((direct-default-initargs
         :initarg :direct-default-initargs
         :initform ()
         :accessor class-direct-default-initargs)
@@ -1044,7 +1044,7 @@ Error: The slot COUNTER is missing from the class
                     (cdr option))))))
     (t (call-next-method))))
 
-(pprint (macroexpand 
+(pprint (macroexpand
 '(new-defclass frame-2 (rectangle)
      ()
   (:metaclass default-initargs-class)
@@ -1094,8 +1094,8 @@ Error: The slot COUNTER is missing from the class
     (reverse history-list))
  )
 
-(defclass foo () 
-     ((slot1 :accessor foo-slot1 :initarg :slot1) 
+(defclass foo ()
+     ((slot1 :accessor foo-slot1 :initarg :slot1)
       (slot2 :accessor foo-slot2 :initform 200))
   (:metaclass monitored-class))
 
@@ -1491,7 +1491,7 @@ Error: The slot COUNTER is missing from the class
         (when slot
            (let ((value (cdr (assoc slot-name
                                     (class-allocated-slots super)))))
-             (return-from class-slot-boundp 
+             (return-from class-slot-boundp
                           (eq value secret-unbound-value)))))))
 
 (defun class-slot-makunbound (class slot-name)
@@ -1563,7 +1563,7 @@ Error: The slot COUNTER is missing from the class
 
 ;;; chapter 4
 
-(pprint (macroexpand 
+(pprint (macroexpand
 '(defgeneric paint (x)
   (:generic-function-class specialized-generic-function)
   (:method-class specialized-method))))
@@ -1578,10 +1578,10 @@ Error: The slot COUNTER is missing from the class
 ;;; counter example
 
 
-(defclass counting-gf (standard-generic-function) 
+(defclass counting-gf (standard-generic-function)
   ((call-count :initform 0 :accessor call-count)))
 
-(defclass counting-method (standard-method) 
+(defclass counting-method (standard-method)
   ((call-count :initform 0 :accessor call-count)))
 
 (defmethod compute-discriminating-function ((gf counting-gf))
@@ -1635,7 +1635,7 @@ Error: The slot COUNTER is missing from the class
               (format *trace-output*
                       "Entering generic function ~S~@
                        with arguments ~:S.~%" gf args)
-              (let ((results (multiple-value-list 
+              (let ((results (multiple-value-list
                               (apply normal-dfun args))))
                 (format *trace-output*
                         "Leaving generic function ~S~@
@@ -1661,7 +1661,7 @@ value(s) being returned are: (10)
 
 ;;; trusting gfs
 
-(defclass trusting-gf (standard-generic-function) ()) 
+(defclass trusting-gf (standard-generic-function) ())
 
 (defmethod compute-discriminating-function ((gf trusting-gf))
   (let ((normal-dfun (call-next-method))
@@ -1706,7 +1706,7 @@ value(s) being returned are: (10)
 (mapcar #'(lambda (method)
                 (list (generate-defmethod method)
                       (call-count method)))
-            (generic-function-methods 
+            (generic-function-methods
              (find-generic-function 'flack)))
 #|(((DEFMETHOD ACK :BEFORE ((X STANDARD-OBJECT))) 1)
  ((DEFMETHOD ACK (X)) 2))|#
@@ -1945,8 +1945,3 @@ value(s) being returned are: (10)
 
 
 "done"
-
-
-
-
-

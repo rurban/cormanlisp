@@ -127,7 +127,7 @@ allowed."
                                      :key #'first
                                      :test #'eq)))
           (and no-error-clause (list no-error-clause))))))
-                     
+
 (defun maybe-free-container-pointer (object)
   "This function is to be invoked whenever a CONTAINER structure is
 finalized by the garbage collector."
@@ -485,7 +485,7 @@ work with types loaded in a LoadFrom context."
                                 type
                                 container)
   container)
-  
+
 (defun cast (container type)
   "Changes the type of the DotNetContainer object represented by
 CONTAINER to TYPE \(a string, tree of strings, or a CONTAINER).
@@ -518,7 +518,7 @@ TYPE-NAME."
              (make-type-from-name
               (resolve-type-name type-name))
              "AssemblyQualifiedName")))))
-    
+
 
 (defun build-delegate-type (type-name return-type arg-type-array)
   "Build a subtype of DelegateAdapter \(see C++ code) with the

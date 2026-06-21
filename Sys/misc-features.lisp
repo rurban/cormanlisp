@@ -24,7 +24,7 @@
 	(if (consp feature-list)
 		(ecase (car feature-list)
 			(:and (every #'%features-member (cdr feature-list)))
-			(:or  (some #'%features-member (cdr feature-list)))	
+			(:or  (some #'%features-member (cdr feature-list)))
 			(:not (notany #'%features-member (cdr feature-list))))
 		(error "~A is not a valid feature." feature-list)))
 
@@ -34,12 +34,12 @@
 		(let (feature)
 			(let* ((*package* (find-package :keyword)))
 			   (setf feature (read stream)))
-			(if (and (not *read-suppress*) (%features-member feature))       
+			(if (and (not *read-suppress*) (%features-member feature))
 				(read stream)
     			(let ((*read-suppress* t))
     				(read stream)
                     (values))))))
- 
+
 (set-dispatch-macro-character #\# #\-
 	#'(lambda (stream char int)
 		(declare (ignore char int))
@@ -109,7 +109,7 @@
 ;;;
 ;;;	Corman Lisp WEAK-POINTER-OBJ function.
 ;;;
-(defun weak-pointer-obj (weak-ptr) 
+(defun weak-pointer-obj (weak-ptr)
 	(unless (weak-pointer-p weak-ptr)
 		(error "Not a weak-pointer: ~A" weak-ptr))
 	(uref weak-ptr weak-ptr-offset))
@@ -121,7 +121,7 @@
 	(if (standard-generic-function-p func)
 		(setf func (generic-function-discriminating-function func)))
 	(if (pl::kernel-function-p func)
-		nil 
+		nil
 		(let* ((compiled-code (uref func function-code-buffer-offset))
 			   (properties (uref compiled-code compiled-code-info-offset)))
 			properties)))
@@ -140,15 +140,15 @@
 ;;;
 ;;;	Corman Lisp FUNCTION-REFERENCES function.
 ;;;
-(defun function-references (func) 
+(defun function-references (func)
 	(if (and (symbolp func)(fboundp func))
 		(setq func (symbol-function func)))
 	(check-type func function)
 	(if (standard-generic-function-p func)
 		(setf func (generic-function-discriminating-function func)))
 	(if (pl::kernel-function-p func)
-		nil 
-		(uref (uref func function-code-buffer-offset) 
+		nil
+		(uref (uref func function-code-buffer-offset)
 			compiled-code-references-offset)))
 
 ;;;
@@ -161,7 +161,7 @@
 				(getf info 'function-name))))
 
 ;;; extension--returns only the function name
-(defun ccl::function-name (func) 
+(defun ccl::function-name (func)
 	(let ((info (function-info-list func)))
 		(getf info 'function-name)))
 
@@ -180,9 +180,9 @@
 (defvar *count-heap* 0)
 (defun count-heap-objects (predicate)
 	(setq *count-heap* 0)
-	(cl::process-each-heap-block 
-		#'(lambda (obj) 
-			(if (funcall predicate obj) 
+	(cl::process-each-heap-block
+		#'(lambda (obj)
+			(if (funcall predicate obj)
 				(incf *count-heap*))))
 	*count-heap*)
 
@@ -211,8 +211,8 @@
 						(cl::%push-special-bindings (car s) nil)
 						(makunbound (car s)))
 					(cl::%push-special-bindings (car s) (car v))))
-			(unwind-protect 
-				(progn ,@forms) 
+			(unwind-protect
+				(progn ,@forms)
 				(cl::%pop-special-bindings ,syms-sym)))))
 
 ;;;
@@ -242,7 +242,7 @@
         (unless (integerp x) (incf *gensym-counter*))))
 
 ;; REMOVE-PROPERTY
-;; Returns two values: 
+;; Returns two values:
 ;;		the (possibly) modified list
 ;;		t if the values was found, nil otherwise
 ;;
@@ -253,13 +253,13 @@
 				   (q plist (cddr q)))
 				  ((null p) (values plist nil))
 				(when (eq (car p) property)
-					(setf (cdr (cdr q)) (cddr p)) 
+					(setf (cdr (cdr q)) (cddr p))
 					(return (values plist t)))))))
 
 ;;; Common Lisp REMF function.
 (defmacro REMF (place indicator)
 	(let ((list-sym (gensym))
-		  (flag-sym (gensym)))			
+		  (flag-sym (gensym)))
 		(if (not (consp place))
 			`(multiple-value-bind (,list-sym ,flag-sym)
 				(remove-property ,place ,indicator)
@@ -284,7 +284,7 @@
 
 ;;; Common Lisp REMPROP function.
 (defun REMPROP (symbol indicator)
-	(remf (symbol-plist symbol) indicator))	
+	(remf (symbol-plist symbol) indicator))
 
 ;;;
 ;;; This hash-table is used internally to map the QV offset (as found in
@@ -292,11 +292,11 @@
 ;;; the index. It is only needed for disassembly purposes (annotating
 ;;; the output.
 ;;;
-(defvar *symbol-mapping* nil 
+(defvar *symbol-mapping* nil
 	"Map all jump-table-offsets and var-table-offsets to the symbols")
 
 (defun lookup-qv-offset (index)
-	(when (or (null *symbol-mapping*) 
+	(when (or (null *symbol-mapping*)
             (null (second (multiple-value-list (gethash index *symbol-mapping*)))))  ;; need to refresh?
 		(setf *symbol-mapping* (make-hash-table))
 		(dolist (package (list-all-packages))
@@ -369,12 +369,12 @@
 
 ;;;
 ;;;	Common Lisp DISASSEMBLE function
-;;;	
+;;;
 (defun ccl::function-code-references (x) (declare (ignore x)) nil) ;; redefine below
 
 (defun disassemble (func &optional (max-instructions 1000))
 	(let* ((addr nil)
-		   (src func) 
+		   (src func)
 		   (references nil)
 		   (num-references nil)
 		   (curr-ref 0))
@@ -406,11 +406,11 @@
 					(< curr-ref num-references)
 					(let ((pos (aref references (+ 1 (* curr-ref 2)))))
 						(and (>= pos offset)(< pos (+ offset instruction-bytes)))))
-				(setf instruction 
-					(format nil "~A   ~60T; '~S" instruction 
+				(setf instruction
+					(format nil "~A   ~60T; '~S" instruction
 						(aref references (* curr-ref 2)))
 					curr-ref (+ 1 curr-ref)))
-			
+
 			;; See if any function calls or other operations are being made
 			;; which implicitly reference other things.
 			(setf bytes (make-array instruction-bytes :element-type 'byte))
@@ -422,14 +422,14 @@
 						(if (stringp instruction-ref)
 							(format nil "~A   ~60T; ~A" instruction instruction-ref)
 							(format nil "~A   ~60T; ~S" instruction instruction-ref)))))
-			
+
 			(format t ";#x~5,'0x:~4t~A~%" offset instruction)
 			(incf offset instruction-bytes))))
 
 ;;;
 ;;;	Common Lisp WITH-OPEN-FILE function.
 ;;;
-(defmacro with-open-file ((stream filespec &rest options) 
+(defmacro with-open-file ((stream filespec &rest options)
 				&rest decls-and-forms)
 	`(let ((,stream (open ,filespec ,@options)))
 		(unwind-protect
@@ -456,7 +456,7 @@
 	t)
 
 ;;; Assume two structures as input, return true iff both contain the same
-;;; slot contents (under equalp).	
+;;; slot contents (under equalp).
 (defun equalp-structures (x y)
     (let ((num-slots-x (uvector-num-slots x))
           (num-slots-y (uvector-num-slots y)))
@@ -465,7 +465,7 @@
             (dotimes (i num-slots-x t)
                 (unless (equalp (uref x (+ i 1)) (uref y (+ i 1)))
                     (return-from equalp-structures nil))))))
-    
+
 (defun equalp-hash-tables (x y)
   (and (eql (hash-table-test x) (hash-table-test y))
        (eql (hash-table-count x) (hash-table-count y))
@@ -500,7 +500,7 @@
 			(when (boundp sym)
 				(setf (symbol-value new-sym) (symbol-value sym)))
 			(when (fboundp sym)
-				(setf (symbol-function new-sym) (symbol-function sym)))				
+				(setf (symbol-function new-sym) (symbol-function sym)))
 			(let ((plist (symbol-plist sym)))
 				(when plist (setf (symbol-plist new-sym) plist))))
 		new-sym))
@@ -510,7 +510,7 @@
 (defun nquicksort-vector (v predicate key)
 	(macrolet ((<less> (a b) `(funcall predicate ,a ,b))
 			   (<elt> (v i) `(if key (funcall key (aref ,v ,i)) (aref ,v ,i))))
-		(labels 
+		(labels
 			((qs (l u)
 				(if (>= l u) (return))
 				(let ((temp (<elt> v l))
@@ -576,7 +576,7 @@
 	(let ((cb (function-code-buffer func)))
 		(if cb
 			(setf (uref cb cl::compiled-code-info-offset) val))))
-	
+
 (defun function-lambda-list (func) (getf (function-info-list func) 'cl::lambda-list))
 (defun function-lambda (func) (getf (function-info-list func) 'cl::lambda))
 (defun function-source-file (func) (getf (function-info-list func) 'ccl:*source-file*))
@@ -585,7 +585,7 @@
 (defun (setf function-documentation) (val func)
    (if val (setf (getf (function-info-list func) 'documentation) val) (remf (function-info-list func) 'documentation)) val)
 (defun macro-lambda-list (func) (getf (function-info-list func) 'cl::macro-lambda-list))
-(defun (setf macro-lambda-list) (val func) 
+(defun (setf macro-lambda-list) (val func)
 	(setf (getf (function-info-list func) 'cl::macro-lambda-list)
 		val))
 
@@ -595,7 +595,7 @@
 ;;; If disassembling, or otherwise debugging, we build the vector of
 ;;; references on the fly as requested.
 ;;;
-(defun peek-unsigned-short (address)	
+(defun peek-unsigned-short (address)
 	(+ (* (peek-byte (+ address 1)) 256) (peek-byte address)))
 
 (defun code-buffer-code-address (cb)
@@ -611,7 +611,7 @@
 		(dotimes (i num-refs)
 			(let* ((pos (peek-unsigned-short (+ 2 refs-address (* i 2))))
 				   (obj (peek-lisp-object (incf curr-offset pos))))
-				(setf (aref refs-vec (* i 2)) obj 
+				(setf (aref refs-vec (* i 2)) obj
 					  (aref refs-vec (+ 1 (* i 2))) (- curr-offset code-start-address))))
 		refs-vec))
 
@@ -688,5 +688,3 @@
 	 (cl::resume-other-threads)))
 
 (export 'cl::%with-other-threads-suspended)
-
-

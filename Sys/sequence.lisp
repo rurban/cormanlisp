@@ -33,7 +33,7 @@
       (error "Invalid START = ~S, END = ~S arguments" start end))
     (if (vectorp sequence)
 	(let* ((elements (- end start))
-	       (a (make-array elements 
+	       (a (make-array elements
 			      :element-type (array-element-type sequence))))
 	  (dotimes (i elements)
 	    (setf (elt a i) (elt sequence (+ i start))))
@@ -144,7 +144,7 @@
 				:initial-element (or initial-element 0)))
 		((consp result-type)
 		 (let ((sym (first result-type))
-			   (arg1 (second result-type))) 
+			   (arg1 (second result-type)))
 			(cond
 				((eq sym 'vector)
 				 (let ((type (if (or (not (cdr result-type))(eq arg1 '*)) t arg1))
@@ -237,7 +237,7 @@
 ;;;
 (defun map-into (result-sequence function &rest sequences)
 	(when (null result-sequence) (return-from map-into nil))
-	(let* ((length (min (apply #'min (length result-sequence) 
+	(let* ((length (min (apply #'min (length result-sequence)
 							(mapcar #'length sequences))))
 			(arg-getters (mapcar #'%make-getter-iterator sequences))
 			(result-setter (%make-setter-iterator result-sequence)))
@@ -277,5 +277,3 @@
 	     (dotimes (i (length seq))
 	       (funcall result-setter (elt seq i))))))
     result))
-	
-	

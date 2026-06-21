@@ -14,7 +14,7 @@
 ;;; Adapted for Corman Lisp by Roger Corman  July 10, 2003
 ;;;
 
-(in-package :sys)
+(in-package :sys)
 ;;;; Some variable definitions.
 
 ;;; Variables for amassing the results of parsing a defmacro.  Declarations
@@ -36,7 +36,7 @@
 (defvar *ignorable-vars*)
 
 ;;; RGC -- added this helper function for mod to allow better handling of
-;;; explicitly named keywords  
+;;; explicitly named keywords
 (defun is-quoted-key (sym) (and (consp sym) (cdr sym) (eq (car sym) 'quote)))
 
 ;;; helper functions for SETF expansion functions
@@ -56,12 +56,12 @@
                 (eq keyword (car remaining))
                 (and (is-quoted-key (car remaining))
                     (eq keyword (cadr (car remaining)))))
-      (return (cadr remaining)))))
+      (return (cadr remaining)))))
 ;;; VERIFY-KEYWORDS -- internal
 ;;;
 ;;; Determine if key-list is a valid list of keyword/value pairs.  Do not
 ;;; signal the error directly, 'cause we don't know how it should be signaled.
-;;; 
+;;;
 
 (defun verify-keywords (key-list valid-keys allow-other-keys)
   (do ((already-processed nil)
@@ -75,7 +75,7 @@
 	   (values :unknown-keyword (list unknown-keyword valid-keys))
 	   (values nil nil)))
       (setf key (car remaining))
-        
+
       ;; kludge here--if the passed key is (QUOTE X) replace with X.
       ;; This handles cases where the key name is being quoted.
       (if (and (consp key) (eq (car key) 'quote))
@@ -432,7 +432,7 @@
 
 (defun defmacro-error (problem kind name)
   (cl::signal-program-error "Illegal or ill-formed ~A argument in ~A~@[ ~S~]."
-                        problem kind name))
+                        problem kind name))
 ;;;; Conditions signaled at runtime by the resultant body.
 
 (define-condition defmacro-lambda-list-bind-error (error)
@@ -670,7 +670,7 @@
     `(eval-when (:load-toplevel :compile-toplevel :execute)
         (let ()
             (cl::remove-struct-print ',func)
-            ,set-func-def                            
+            ,set-func-def
             (cl::register-setf-function ',func ',set-func-name (list t))
             (setf (documentation ',func 'setf) ,doc)
             ',func)))
@@ -711,11 +711,11 @@
                       (name (make-symbol (concatenate 'string "(SETF " (symbol-name access-fn) ")"))))
                     (multiple-value-bind
                         (body local-decs doc)
-                        (parse-defmacro 
+                        (parse-defmacro
                             `(,lambda-list ,@store-variables)
                             arglist-var body access-fn 'defsetf
                             :annonymousp t)
-                        (expand-long-defsetf-form 
+                        (expand-long-defsetf-form
                             access-fn
                             name
                             `(defun ,name (,access-form-var ,env-var)
@@ -733,7 +733,7 @@
   the list, returning the modified list.  OBJ is evaluated before PLACE."
 
     (let ((expanded-place (macroexpand place env)))
-        
+
         ;; This special case for place being a symbol isn't strictly needed.
         ;; It's so we can do push (and pushnew) with a kernel.core.
         (if (and (symbolp place) (eq place expanded-place))
@@ -769,7 +769,7 @@
       (error "Invalid START = ~S, END = ~S arguments" start end))
     (if (vectorp sequence)
 	(let* ((elements (- end start))
-	       (a (make-array elements 
+	       (a (make-array elements
 			      :element-type (array-element-type sequence))))
 	  (dotimes (i elements)
 	    (setf (elt a i) (elt sequence (+ i start))))
@@ -783,4 +783,3 @@
 		(setq x (cdr x)))
 	      (nreverse newlist))
 	    (error "Invalid sequence: ~S" sequence)))))
-

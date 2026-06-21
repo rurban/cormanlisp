@@ -2,11 +2,11 @@
 ;;
 ;; macs.cl
 ;;
-;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA 
+;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA
 ;;
 ;; This code is free software; you can redistribute it and/or
 ;; modify it under the terms of the version 2.1 of
-;; the GNU Lesser General Public License as published by 
+;; the GNU Lesser General Public License as published by
 ;; the Free Software Foundation, as clarified by the AllegroServe
 ;; prequel found in license-allegroserve.txt.
 ;;
@@ -15,11 +15,11 @@
 ;; merchantability or fitness for a particular purpose.  See the GNU
 ;; Lesser General Public License for more details.
 ;;
-;; Version 2.1 of the GNU Lesser General Public License is in the file 
+;; Version 2.1 of the GNU Lesser General Public License is in the file
 ;; license-lgpl.txt that was distributed with this file.
 ;; If it is not present, you can access it from
 ;; http://www.gnu.org/copyleft/lesser.txt (until superseded by a newer
-;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
+;; version) or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA  02111-1307  USA
 ;;
 
@@ -90,7 +90,7 @@
   (let ((pos (gensym))
 	(i (gensym))
 	(len (gensym)))
-	   
+
     `(do ((,pos ,start (1+ ,pos))
 	  (,i 0 (1+ ,i))
 	  (,len (length ,str)))
@@ -105,7 +105,7 @@
 	(i (gensym))
 	(len (gensym))
 	(xchar (gensym)))
-	   
+
     `(do ((,pos ,start (1+ ,pos))
 	  (,i 0 (+ 2 ,i))
 	  (,len (length ,str)))
@@ -122,4 +122,3 @@
 
 
 ;;;; response macros
-

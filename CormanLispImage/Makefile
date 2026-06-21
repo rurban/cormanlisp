@@ -14,4 +14,3 @@ clean:
 	if exist ..\CormanLisp.img del ..\CormanLisp.img
 
 rebuild: clean default
-

@@ -7,7 +7,7 @@
 ;;;;	Contents:	Corman Lisp miscellaneous features.
 ;;;;	History:	2/23/01  RGC  Created.
 ;;;;                11/13/02 RGC  Added DEFINE-SYMBOL-MACRO implementation.
-;;;;                12/19/02 RGC  Included JP Massar's redefinition of 
+;;;;                12/19/02 RGC  Included JP Massar's redefinition of
 ;;;;                              MULTIPLE-VALUE-BIND.
 ;;;;                06/05/03 RGC  Fixed #. reader macro to respect *READ-EVAL* state.
 ;;;;                10/05/16 Artem Boldarev
@@ -31,9 +31,9 @@
 			(dotimes (i (length s))
 				(setf c (char s i))
 				(case state
-					(:white 
+					(:white
 						(unless (is-white c)
-							(if (char= c #\") 
+							(if (char= c #\")
 								(setf state :in-quoted-token)
 								(progn
 									(setf state :in-token)
@@ -53,14 +53,14 @@
 							  (t (push c tok))))))
 			(unless (null tok)
 				(push (coerce (nreverse tok) 'string) args))
-			(nreverse args)))) 
+			(nreverse args))))
 
 (defun ccl::get-command-line-args ()
 	"Get the command line as alist of arguments, and remove any double-quotes
 	 on the beginning or end of the strings."
 	(let ((args (parse-command-line (win:get-command-line))))
-		(mapcar 
-			(lambda (x) 
+		(mapcar
+			(lambda (x)
 				(if (char= (char x 0) #\")
 					(setf x (remove #\" x :count 1)))
 				(if (char= (char x (- (length x) 1)) #\")
@@ -77,7 +77,7 @@
 
 (defun vector-pop (vector)
 	(unless (array-has-fill-pointer-p vector)
-		(error 
+		(error
 			(make-condition 'type-error :datum vector
 				:expected-type '(satisfies array-has-fill-pointer-p))))
 	(when (zerop (fill-pointer vector))
@@ -103,15 +103,15 @@
 		  (form (car x) (car x)))
 		((null x) nil)
 		(if (eq form sym)
-			(return-from get-symbol-macro-expansion nil)) 
-		(if (and (consp form)(eq (car form) sym)) 
+			(return-from get-symbol-macro-expansion nil))
+		(if (and (consp form)(eq (car form) sym))
 			(return-from get-symbol-macro-expansion form)))
     (let ((global-expansion (gethash sym *global-symbol-macros*)))
         (if global-expansion (list sym global-expansion))))
 
 ;; Used by FBOUNDP to determine if a function is bound to the stub function
 ;; (in which case it will return NIL).
-(defconstant %undefined-func-code-address 
+(defconstant %undefined-func-code-address
     (cl::function-compiled-code (%undefined-function '#:DUMMY)))
 
 ;;; Redefine FBOUNDP here to consider functions defined with a stub
@@ -122,7 +122,7 @@
 	(unless (symbolp function-specifier)
 		(error "Not a symbol: ~A" function-specifier))
 	(or (let ((func (car (uref function-specifier symbol-function-offset))))
-            (and 
+            (and
                 (not (uninitialized-object-p func))
                 (not (eq (cl::function-compiled-code func) %undefined-func-code-address))))
 		(eq (uref function-specifier symbol-function-type-offset) 'special-operator)))
@@ -132,7 +132,7 @@
 	#'(lambda (stream ch arg)
             (declare (ignore arg ch))
             (unless *read-eval*
-                (error 'program-error 
+                (error 'program-error
                     :format-control "*READ-EVAL* is disabled" :format-arguments '()))
 		(let* ((n (read stream t nil t)))
 			(unless *read-suppress* (eval n)))))
@@ -149,7 +149,7 @@
 (defmacro with-standard-io-syntax (&body body)
   `(let ((*package* (find-package :user))
 	 (*print-array* t)
-	 (*print-base* 10)                                  
+	 (*print-base* 10)
 	 (*print-case* :upcase)
 	 (*print-circle* nil)
 	 (*print-escape* t)
@@ -277,11 +277,11 @@ WINAPI BOOL CopyFileExA(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, LPVOI
         `(let ((,attrs-sym (ensure-writable-file ,path)))
             (unwind-protect
                 (progn ,@forms)
-                (ccl::set-file-attributes ,(namestring path) ,attrs-sym))))) 
-                 
+                (ccl::set-file-attributes ,(namestring path) ,attrs-sym)))))
+
 (in-package :cl)
 (defun signal-reader-error (format &rest args)
-    (error 'reader-error 
+    (error 'reader-error
         :format-control format
 		:format-arguments args))
 

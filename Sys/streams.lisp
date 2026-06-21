@@ -2,7 +2,7 @@
 ;;;;	Copyright (c) Corman Technologies Inc.
 ;;;;	See LICENSE.txt for license information.
 ;;;;	-------------------------------
-;;;;	
+;;;;
 ;;;;	File:		streams.lisp
 ;;;;	Contents:	Corman Lisp 3.0 stream functions.
 ;;;;	History:	3/31/97  RGC  Created.
@@ -19,8 +19,8 @@
 ;;;;                12/19/02 RGC  Fixed a problem with :IF-DOES-NOT-EXIST in OPEN.
 ;;;;                02/16/06 RGC  OPEN: Integrated Karsten Poeck's patch to include :error case as
 ;;;;                              valid argument for :if-exists.
-;;;;                09/07/07 RGC  Integrated Matthias Hölzl's fixes for SUBTYPEP, OPEN, 
-;;;;                              and BOA constructors. 
+;;;;                09/07/07 RGC  Integrated Matthias Hölzl's fixes for SUBTYPEP, OPEN,
+;;;;                              and BOA constructors.
 ;;;;
 
 (in-package :common-lisp)
@@ -159,9 +159,9 @@
     (dolist (x streams)
         (unless (output-stream-p x)
             (signal-type-error x 'output-stream)))
-        
+
 	(let* ((s (alloc-uvector stream-size uvector-stream-tag)))
-        (setf 
+        (setf
             (uref s stream-name-offset) nil
 		    (uref s stream-underflow-func-offset)     nil
             (uref s stream-overflow-func-offset) 	  nil
@@ -192,11 +192,11 @@
 (defun probe-file (file)
 	(let* ((truename (truename (pathname file)))
 		   (ret (win:CreateFile (ct:create-c-string (namestring truename))
-					win:GENERIC_READ 
-					win:FILE_SHARE_READ 
+					win:GENERIC_READ
+					win:FILE_SHARE_READ
 					NULL
-					win:OPEN_EXISTING 
-					win:FILE_ATTRIBUTE_NORMAL 
+					win:OPEN_EXISTING
+					win:FILE_ATTRIBUTE_NORMAL
 					NULL)))
 		(if (ct:cpointer= ret (ct:int-to-foreign-ptr win:INVALID_HANDLE_VALUE))
 			(return-from probe-file nil))
@@ -204,11 +204,11 @@
 		truename))
 
 ;; these are defined later
-(defun rename-file (path1 path2) (declare (ignore path1 path2)) nil) 
+(defun rename-file (path1 path2) (declare (ignore path1 path2)) nil)
 (defun file-position (stream &optional pos) (declare (ignore stream pos)) nil)
 (defun file-length (stream) (declare (ignore stream)) nil)
 
-(defun open (filespec 
+(defun open (filespec
 		&key (direction ':input)
 			 (element-type 'character)
 			 (if-exists ':new-version)
@@ -233,12 +233,12 @@
 		   (append nil))
 		(unless (member direction '(:input :output :io :probe))
 			(error "Invalid :DIRECTION specified in OPEN: ~A" direction))
-		
+
 		(if (eq direction :io)
 			(setf direction :bidirectional))
-         
+
         ;;;KAP 2006-02-16, add :error, should be consistent with case if-exists
-		(unless (member if-exists 
+		(unless (member if-exists
 					'(:error :new-version :rename :rename-and-delete
 						:overwrite :append :supersede nil))
 			(error "Invalid :IF-EXISTS specified in OPEN: ~A" if-exists))
@@ -246,19 +246,19 @@
 		(unless (member if-does-not-exist '(:error :create nil))
 			(error "Invalid :IF-DOES-NOT-EXIST specified in OPEN: ~A" if-does-not-exist))
 
-		(unless (member element-type 
-			'(character integer fixnum signed-byte unsigned-byte 
+		(unless (member element-type
+			'(character integer fixnum signed-byte unsigned-byte
 				(signed-byte 8) (unsigned-byte 8) :default) :test 'equal)
 			(error "Unsupported :ELEMENT-TYPE specified in OPEN: ~A" element-type))
-        
+
         (when (and (null file-exists) (eql if-does-not-exist nil))
             (return-from open nil))
-        		
+
 		;; process if-exists parameter
 		(if (and file-exists
 				(or (eq direction ':bidirectional)(eq direction ':output)))
 			(case if-exists
-				(:error 			(error (make-condition 'FILE-ERROR :pathname pn 
+				(:error 			(error (make-condition 'FILE-ERROR :pathname pn
 											:format-control "File already exists.")))
 				(:new-version nil)	; do nothing--just proceed
 				(:rename 			(rename-file pn (concatenate 'string (namestring pn) ".bak")))
@@ -267,7 +267,7 @@
 				(:append nil 		(setf append t))
 				(:supersede nil)	; do nothing--just proceed
 				((nil) 				(return-from open nil))))
-				
+
 		(let* ((s (alloc-uvector stream-size uvector-stream-tag))
 			   access attributes share-mode create-mode)
 			(setf (uref s stream-name-offset) 			pn
@@ -284,10 +284,10 @@
 				  (uref s stream-interactive-offset) 	nil
 				  (uref s stream-element-type-offset) 	element-type
 				  (uref s stream-associated-streams-offset) nil)
-			
+
 			(if (or (eq direction :input)(eq direction :bidirectional))
-				(let* ((buf 
-						(make-array stream-buffer-size :element-type 
+				(let* ((buf
+						(make-array stream-buffer-size :element-type
 							(if (stream-binary s) 'byte 'character))))
 					(setf (uref s stream-underflow-func-offset) 	'file-underflow-function
 						  (uref s stream-input-buffer-offset) 		buf
@@ -301,8 +301,8 @@
 						  (uref s stream-input-buffer-num-offset) 	0)))
 
 			(if (or (eq direction :output)(eq direction :bidirectional))
-				(let* ((buf 
-							(make-array stream-buffer-size :element-type 
+				(let* ((buf
+							(make-array stream-buffer-size :element-type
 								(if (stream-binary s) 'byte 'character))))
 					(setf (uref s stream-overflow-func-offset) 'file-overflow-function)
 					(setf (uref s stream-output-buffer-offset) buf)
@@ -312,7 +312,7 @@
 					(setf (uref s stream-output-buffer-offset) nil)
 					(setf (uref s stream-output-buffer-length-offset) 0)
 					(setf (uref s stream-output-buffer-pos-offset) 0)))
- 
+
 			;; set access, attributes, share-mode, create-mode
 			(case direction
 				(:input (setq access win:GENERIC_READ)
@@ -322,11 +322,11 @@
 				(:output (setq access win:GENERIC_WRITE)
 						(setq attributes win:FILE_ATTRIBUTE_NORMAL)
 						(setq share-mode win:FILE_SHARE_READ)
-						(setq create-mode 
-							(if (or overwrite append) 
-								win:OPEN_ALWAYS 
+						(setq create-mode
+							(if (or overwrite append)
+								win:OPEN_ALWAYS
 								win:CREATE_ALWAYS)))
-				(:bidirectional 	
+				(:bidirectional
 						(setq access (logior win:GENERIC_READ win:GENERIC_WRITE))
 						(setq attributes win:FILE_ATTRIBUTE_NORMAL)
 						(setq share-mode win:FILE_SHARE_READ)
@@ -335,23 +335,23 @@
 						(setq attributes win:FILE_ATTRIBUTE_NORMAL)
 						(setq share-mode win:FILE_SHARE_READ)
 						(setq create-mode win:OPEN_EXISTING)))
-				
+
 			(setf (uref s stream-handle-offset)
-				(cl::foreign-ptr-to-int 
+				(cl::foreign-ptr-to-int
 					(win:CreateFile (ct:create-c-string (namestring pn))
-						access 
-						share-mode 
+						access
+						share-mode
 						NULL
-						create-mode 
-						attributes 
+						create-mode
+						attributes
 						NULL)))
 			(if (= (uref s stream-handle-offset) win:INVALID_HANDLE_VALUE)
-				(error (make-condition 'FILE-ERROR :pathname pn 
+				(error (make-condition 'FILE-ERROR :pathname pn
 						:format-control "Could not open stream ~A for ~A access."
 						:format-arguments (list filespec direction))))
 			(if append (file-position s (file-length s)))	;; position at end of file
 			s)))
- 
+
 (defun get-next-character (s)
 	(if (= (stream-input-buffer-pos s) (stream-input-buffer-num s))
 		(funcall (stream-underflow-function s) s))
@@ -406,7 +406,7 @@
 ;;;
 ;;;	Common Lisp READ-BYTE function.
 ;;;
-(defun read-byte (stream &optional 
+(defun read-byte (stream &optional
 		(eof-error-p t)
 		(eof-value nil))
 ;	(check-type stream stream)
@@ -417,7 +417,7 @@
 		(funcall (stream-underflow-function stream) stream))
 	(if (= (stream-input-buffer-pos stream)
 		   (stream-input-buffer-num stream))
-		(if eof-error-p 
+		(if eof-error-p
 			(error "End of file encountered in stream ~A" stream)
 			(return-from read-byte eof-value)))
 	(let ((retval (elt (stream-input-buffer stream)
@@ -432,7 +432,7 @@
 		(when (input-stream-p stream)
 			(setf (stream-input-buffer-pos stream) 0)
 			(setf (stream-input-buffer-num stream) 0)))
-    
+
     ;; If it is a console stream, need to try to discard
     ;; any pending input as well.
     (if (eq (stream-subclass stream) 'cl::CONSOLE-STREAM)
@@ -463,7 +463,7 @@
 				      ((eq position ':end)
 				       (win:SetFilePointer (stream-handle stream) 0 NULL win:FILE_END)))))
 			(if (= ret -1)
-				nil 
+				nil
 				(setf (stream-position stream) ret)))
 		(if (string-stream-p stream)
 			(let ((offset (- (uref stream stream-input-buffer-pos-offset)
@@ -474,7 +474,7 @@
 						(setf position (- (uref stream stream-input-buffer-num-offset) offset))))
 			   (let ((offset (- (uref stream stream-input-buffer-pos-offset)
 								(stream-position stream)))) ;; buffer offset into string
-					(if (or (< position 0) 
+					(if (or (< position 0)
 							(>= (+ position offset) (uref stream stream-input-buffer-num-offset)))
 						(error "Invalid stream position specified for string stream"))
 					(setf (uref stream stream-input-buffer-pos-offset)(+ position offset))
@@ -510,7 +510,7 @@
     (declare (ignore stream))
     ;; TO DO: implement this
     ':DEFAULT)
-    
+
 ;;;
 ;;;	Common Lisp WRITE-BYTE function.
 ;;;
@@ -534,16 +534,16 @@
 ;;;
 ;;;	Common Lisp PEEK-CHAR function.
 ;;;
-(defun peek-char (&optional 
-					(peek-type nil) 
-					(s *standard-input*) 
+(defun peek-char (&optional
+					(peek-type nil)
+					(s *standard-input*)
 					(eof-error-p t)
 					(eof-value nil)
 					(recursive-p nil))
 	(declare (ignore recursive-p))
 	;; handle t, nil
 	(if (symbolp s)
-		(if (null s) 
+		(if (null s)
 			(setq s *standard-input*)
 			(if (eq s t)
 				(setq s *terminal-io*))))
@@ -553,7 +553,7 @@
 	(if (= (stream-input-buffer-pos s) (stream-input-buffer-num s))
 		(funcall (stream-underflow-function s) s))
 	(if (= (stream-input-buffer-pos s) (stream-input-buffer-num s))
-		(if eof-error-p 
+		(if eof-error-p
 			(error "End of file encountered in stream ~A" s)
 			(return-from peek-char eof-value)))
 	(let ((ch (elt (stream-input-buffer s) (stream-input-buffer-pos s))))
@@ -566,7 +566,7 @@
                 (if (= (stream-input-buffer-pos s) (stream-input-buffer-num s))
                     (funcall (stream-underflow-function s) s))
 	            (if (= (stream-input-buffer-pos s) (stream-input-buffer-num s))
-                    (if eof-error-p               
+                    (if eof-error-p
                         (error "End of file encountered in stream ~A" s)
 			            (return-from peek-char eof-value)))
 				(setq ch (elt (stream-input-buffer s) (stream-input-buffer-pos s))))
@@ -577,7 +577,7 @@
                     (if (= (stream-input-buffer-pos s) (stream-input-buffer-num s))
                         (funcall (stream-underflow-function s) s))
 	                (if (= (stream-input-buffer-pos s) (stream-input-buffer-num s))
-                        (if eof-error-p               
+                        (if eof-error-p
                             (error "End of file encountered in stream ~A" s)
 			                (return-from peek-char eof-value)))
                     (setq ch (elt (stream-input-buffer s) (stream-input-buffer-pos s))))
@@ -596,7 +596,7 @@
 			(funcall (stream-underflow-function s) s)
 			(if (= (stream-input-buffer-pos s)
 		   			(stream-input-buffer-num s))
-				(if eof-error-p 
+				(if eof-error-p
 					(error "End of file encountered in stream ~A" s)
 					(return-from __read-char eof-value)))))
 	(let ((retval (elt (stream-input-buffer s)
@@ -607,8 +607,8 @@
 			(incf (stream-line-number s)))
 		retval))
 
-(defun read-char (&optional 
-					(s *standard-input*) 
+(defun read-char (&optional
+					(s *standard-input*)
 					(eof-error-p t)
 					(eof-value nil)
 					(recursive-p nil))
@@ -617,7 +617,7 @@
 	(unless (eq s memoized-input-character-stream)
 		;; handle t, nil
 		(if (symbolp s)
-			(if (null s) 
+			(if (null s)
 				(setq s *standard-input*)
 				(if (eq s t)
 					(setq s *terminal-io*))))
@@ -631,21 +631,21 @@
 ;;;
 ;;;	Common Lisp READ-CHAR-NO-HANG function.
 ;;;
-(defun read-char-no-hang (&optional 
-					(s *standard-input*) 
+(defun read-char-no-hang (&optional
+					(s *standard-input*)
 					(eof-error-p t)
 					(eof-value nil)
 					(recursive-p nil))
 	;; handle t, nil
 	(if (symbolp s)
-		(if (null s) 
+		(if (null s)
 			(setq s *standard-input*)
 			(if (eq s t)
 				(setq s *terminal-io*))))
 	;; if not a console stream, just call read-char
 	(unless (eq (stream-subclass s) 'console-stream)
 		(return-from read-char-no-hang (read-char s eof-error-p eof-value recursive-p)))
-	
+
 	(unless (input-stream-p s)
 		(error "Expected a character input stream, got ~A" s))
 	(if (= (stream-input-buffer-pos s)
@@ -668,7 +668,7 @@
 ;;;
 ;;;	Common Lisp TERPRI function.
 ;;;
-(defun terpri (&optional (stream *standard-output*)) 
+(defun terpri (&optional (stream *standard-output*))
 	(write-char #\Newline stream)
 	nil)
 
@@ -678,7 +678,7 @@
 (defun fresh-line (&optional (stream *standard-output*))
 	;; handle t, nil
 	(if (symbolp stream)
-		(if (null stream) 
+		(if (null stream)
 			(setq stream *standard-output*)
 			(if (eq stream t)
 				(setq stream *terminal-io*))))
@@ -697,14 +697,14 @@
         		(progn
         			(write-char #\Newline stream)
         			t)))))
-    
+
 ;;;
 ;;;	Common Lisp UNREAD-CHAR function.
 ;;;
 (defun unread-char (ch &optional (stream *standard-input*))
 	;; handle t, nil
 	(if (symbolp stream)
-		(if (null stream) 
+		(if (null stream)
 			(setq stream *standard-input*)
 			(if (eq stream t)
 				(setq stream *terminal-io*))))
@@ -714,7 +714,7 @@
 		(error "Could not UNREAD character ~S with stream ~A" ch stream))
 	(if (char= ch #\Newline)
 		(decf (stream-line-number stream)))
-		
+
 	(decf (stream-input-buffer-pos stream))
 	(decf (stream-position stream))
 	nil)
@@ -733,17 +733,17 @@
 	(if (eq ch #\Newline)
 		(setf (stream-col-position stream) 0))
 	ch)
-	
+
 (defun write-char (ch &optional (stream *standard-output*))
     (if (broadcast-stream-p stream)
         (dolist (x (broadcast-stream-streams stream))
             (write-char ch x))
-        (progn	
+        (progn
             ;; if the stream is the memoized stream, skip checks
         	(unless (eq stream memoized-output-character-stream)
         		;; handle t, nil
         		(if (symbolp stream)
-        			(if (null stream) 
+        			(if (null stream)
         				(setq stream *standard-output*)
         				(if (eq stream t)
         					(setq stream *terminal-io*))))
@@ -751,19 +751,19 @@
         			(error "Expected a character output stream, got ~A" stream))
         		(setq memoized-output-character-stream stream))
         	(__write-char ch stream))))
-	
+
 ;;;
 ;;;	Common Lisp READ-LINE function.
 ;;;
 (defun read-line (&optional
-					(s *standard-input*) 
+					(s *standard-input*)
 					(eof-error-p t)
 					(eof-value nil)
 					(recursive-p nil))
 	(declare (ignore recursive-p))
 	;; handle t, nil
 	(if (symbolp s)
-		(if (null s) 
+		(if (null s)
 			(setq s *standard-input*)
 			(if (eq s t)
 				(setq s *terminal-io*))))
@@ -773,7 +773,7 @@
 		(setf (fill-pointer str) 0)
 		(do ((ch (read-char s nil nil t)(read-char s nil nil t)))
 			((eql ch #\Newline)
-			 (values 
+			 (values
 				(concatenate 'string str)
 				nil))
 			(if (null ch)		; if end of file
@@ -898,7 +898,7 @@
 
 (defun make-string-input-stream (string &optional (start 0) end)
     (unless end (setf end (length string)))
-	
+
     ;; verify all the arguments are legit
     (check-type string string)
     (check-type start integer)
@@ -935,7 +935,7 @@
 		(setf (uref s stream-input-buffer-num-offset) end)
 		s))
 
-;;; redefine this now to print the file name 
+;;; redefine this now to print the file name
 (defun write-stream (object)
 	(format t "#< ~A ~S ~A ~A >"
 		(stream-subclass object)
@@ -947,12 +947,12 @@
 ;;;
 ;;;	Common Lisp WITH-INPUT-FROM-STRING function.
 ;;;
-(defmacro with-input-from-string 
-	((var string &key (index nil) start end) 
+(defmacro with-input-from-string
+	((var string &key (index nil) start end)
 		. forms)
 	(let ((rv-sym (gensym)))
-		`(let ((,var (make-string-input-stream 
-						,string 
+		`(let ((,var (make-string-input-stream
+						,string
 						,@(if start (list start))
 						,@(if end (list end))))
                 ,rv-sym)
@@ -968,7 +968,7 @@
 (defun clear-input (&optional (s *standard-input*))
 	;; handle t, nil
 	(if (symbolp s)
-		(if (null s) 
+		(if (null s)
 			(setq s *standard-input*)
 			(if (eq s t)
 				(setq s *terminal-io*))))
@@ -978,10 +978,10 @@
 
 ;
 ;	Common Lisp READ-FROM-STRING function.
-;	To do: handle eof-error, eof-value, preserve-whitespace settings	
+;	To do: handle eof-error, eof-value, preserve-whitespace settings
 ;
-(defun read-from-string (string &optional eof-error eof-value 
-			&key (start 0) end preserve-whitespace 
+(defun read-from-string (string &optional eof-error eof-value
+			&key (start 0) end preserve-whitespace
 			&aux string-stream expr position)
 	(declare (ignore preserve-whitespace))
 	(if (not (typep string 'string)) (error "Not a string"))
@@ -991,15 +991,15 @@
 	(setq position (file-position string-stream))
     (if (eq position 'Eof)
         (setq position end))
-	(values expr position))	
+	(values expr position))
 
 ;;;
 ;;;		Common Lisp WRITE-TO-STRING function
 ;;;
 (defun write-to-string (object &rest keys)
-				;;		&key array base case 
-				;;		circle escape gensym length level 
-				;;		lines miser-width pprint-dispatch 
+				;;		&key array base case
+				;;		circle escape gensym length level
+				;;		lines miser-width pprint-dispatch
 				;;		pretty radix readably right-margin)
 	(with-output-to-string (string)
 		(apply 'write object :stream string keys)))
@@ -1042,7 +1042,7 @@
 	(let ((creation-time (ct:malloc (ct:sizeof 'win:FILETIME)))
 		  (last-access-time (ct:malloc (ct:sizeof 'win:FILETIME)))
 		  (last-write-time (ct:malloc (ct:sizeof 'win:FILETIME))))
-		(win:GetFileTime (cl::stream-win-handle stream) 
+		(win:GetFileTime (cl::stream-win-handle stream)
 			creation-time last-access-time last-write-time)
 		(values
 			(+ (ct:cref win:FILETIME creation-time win::dwLowDateTime)
@@ -1061,8 +1061,8 @@
 		(setf (ct:cref win:FILETIME last-access-time win::dwLowDateTime)(low-word last-access))
 		(setf (ct:cref win:FILETIME last-access-time win::dwHighDateTime)(high-word last-access))
 		(setf (ct:cref win:FILETIME last-write-time win::dwLowDateTime)(low-word last-write))
-		(setf (ct:cref win:FILETIME last-write-time win::dwHighDateTime)(high-word last-write))	
-		(win:SetFileTime (cl::stream-win-handle stream) 
+		(setf (ct:cref win:FILETIME last-write-time win::dwHighDateTime)(high-word last-write))
+		(win:SetFileTime (cl::stream-win-handle stream)
 			creation-time last-access-time last-write-time)))
 #|
 (defun file-time-to-system-timex (file-time)
@@ -1071,7 +1071,7 @@
 		(setf (ct:cref win:FILETIME filetime win::dwLowDateTime) (low-word file-time))
 		(setf (ct:cref win:FILETIME filetime win::dwHighDateTime)(high-word file-time))
 		(win:FileTimeToSystemTime filetime systemtime)
-		(values 
+		(values
 			(ct:cref win:SYSTEMTIME systemtime win::wYear)
 			(ct:cref win:SYSTEMTIME systemtime win::wMonth)
 			(ct:cref win:SYSTEMTIME systemtime win::wDayOfWeek)
@@ -1094,7 +1094,7 @@
 				creation
 				(cl::universal-time-to-file-time (get-universal-time))
 				(cl::universal-time-to-file-time (get-universal-time))))))
-#|				
+#|
 (defun set-stream-output-buffer (stream buffer)
 	(check-type stream stream)
 	(check-type buffer (vector byte))
@@ -1140,7 +1140,7 @@
         (dolist (x (broadcast-stream-streams output-stream))
             (force-output x))	;; handle t, nil
         (progn
-        	(if (null output-stream) 
+        	(if (null output-stream)
         		(setq output-stream *standard-output*)
         		(if (eq output-stream t)
         			(setq output-stream *terminal-io*)))
@@ -1187,8 +1187,8 @@
 		(if (stream-binary s)
 			(setf output-bytes (stream-output-buffer s)
 				  bytes-to-write (stream-output-buffer-pos s))
-			(setf output-bytes 
-				(expand-line-feeds (stream-output-buffer s) 
+			(setf output-bytes
+				(expand-line-feeds (stream-output-buffer s)
 					(stream-output-buffer-pos s))
 				  bytes-to-write (length output-bytes)))
 		(ct:with-fresh-foreign-block (bytes-written ':unsigned-long)
@@ -1202,7 +1202,7 @@
 					(error "Could not write to file ~A. ~A"
 						s (win:system-error-text (win:GetLastError))))
 				(setf (stream-output-buffer-pos s) 0)
-				(ct:cref (:unsigned-long 1) bytes-written 0)))))			
+				(ct:cref (:unsigned-long 1) bytes-written 0)))))
 
 (defun compress-line-feeds (byte-buf char-buf bytes)
 	(do ((i 0 (+ i 1))
@@ -1213,10 +1213,10 @@
 				(incf i)
 				(if (>= i bytes)
 					(return count))
-				(setf b (ct:cref (byte *) byte-buf i)))			
+				(setf b (ct:cref (byte *) byte-buf i)))
 			(setf (elt char-buf count)
 				(int-char b)))))
-						
+
 ;;; Overrides the kernel function.
 (defun file-underflow-function (s)
 	(let* ((streambuf (stream-input-buffer s))
@@ -1233,12 +1233,12 @@
 						(setf input-bytes (ct:cref (:unsigned-long 1) bytes-read 0))
 						(dotimes (i input-bytes)
 							(setf (elt streambuf i) (ct:cref (byte *) buf i))))
-					(setf input-bytes 
+					(setf input-bytes
 						(compress-line-feeds buf streambuf
 							(ct:cref (:unsigned-long 1) bytes-read 0))))
 				(setf (stream-input-buffer-pos s) 0
 					  (stream-input-buffer-num s) input-bytes)))
-		input-bytes))					
+		input-bytes))
 
 ;;;
 ;;;	Common Lisp READ-SEQUENCE function.
@@ -1252,15 +1252,15 @@
 		(setf end (length sequence)))
 	(let ((element-type (stream-element-type stream))
 		  (eof (cons nil nil)))
-		(cond 
+		(cond
 			((eq element-type 'character)
 				(dotimes (count (- end start) (- end start))
 					(let ((c (read-char stream nil eof)))
 						(if (eq c eof)
 							(return (+ count start)))
 						(setf (elt sequence (+ count start)) c))))
-			((or (eq element-type 'byte) 
-					(eq element-type 'unsigned-byte) 
+			((or (eq element-type 'byte)
+					(eq element-type 'unsigned-byte)
 					(eq element-type 'signed-byte))
 				(dotimes (count (- end start) (- end start))
 					(let ((b (read-byte stream nil eof)))
@@ -1339,7 +1339,7 @@
 
 ;;;
 ;;; Redefine kernel function %OUTPUT-CHARS. This fixes a bug
-;;; in the kernel function where the stream position was not being 
+;;; in the kernel function where the stream position was not being
 ;;; updated properly.
 ;;;
 (defun cl::%output-chars (str stream start end)
@@ -1353,18 +1353,18 @@
 (defun listen (&optional (s *standard-input*))
 	;; handle t, nil
 	(if (symbolp s)
-		(if (null s) 
+		(if (null s)
 			(setq s *standard-input*)
 			(if (eq s t)
 				(setq s *terminal-io*))))
-    
+
 	;; if not a console stream, just call PEEK-CHAR
 	(unless (eq (stream-subclass s) 'console-stream)
         (return-from listen (characterp (peek-char nil s nil 'eof))))
 
 	(unless (input-stream-p s)
 		(error "Expected a character input stream, got ~A" s))
-        
+
 	(if (= (stream-input-buffer-pos s)
 		   (stream-input-buffer-num s))
 		(if (> (console-input-chars-available) 0)
@@ -1410,7 +1410,7 @@
             (let ((ret (win:CloseHandle (ct:int-to-foreign-ptr (cl::stream-handle stream)))))
                 (setf (cl::stream-open stream) nil)
                 ret))
-        t)) 
+        t))
 
 (declare-type-specifier file-stream (x specifier)
     (declare (ignore specifier))
@@ -1454,4 +1454,3 @@
         (bytes-to-double-float bytes)))
 
 (export '(ccl::write-double-float ccl::read-double-float))
-

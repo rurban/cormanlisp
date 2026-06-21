@@ -8,13 +8,11 @@ Copyright (C) 2003-2016 Gil Dabah
 This library is licensed under the BSD license. See the file COPYING.
 */
 
-
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
 
 #include "config.h"
 #include "prefix.h"
-
 
 /*
  * Operand type possibilities:
@@ -22,7 +20,8 @@ This library is licensed under the BSD license. See the file COPYING.
  * actually, it depends on the decoding mode, unless there's an operand/address size prefix.
  * For example, the code: 33 c0 could be decoded/executed as XOR AX, AX or XOR EAX, EAX.
  */
-typedef enum OpType {
+typedef enum OpType
+{
 	/* No operand is set */
 	OT_NONE = 0,
 
@@ -127,7 +126,7 @@ typedef enum OpType {
 	 * We need this to detect whether an operand size prefix is used.
 	 */
 	OT_SEG,
-	
+
 	/* Use AL */
 	OT_ACC8,
 	/* Use AX (FSTSW) */
@@ -147,7 +146,8 @@ typedef enum OpType {
 	/* Read one word (limit) and a dword/qword (limit) (depends on operand size), used by SGDT, SIDT, LGDT, LIDT. */
 	OT_MEM16_3264,
 
-	/* Read a byte(8 bits) immediate and calculate it relatively to the current offset of the instruction being decoded */
+	/* Read a byte(8 bits) immediate and calculate it relatively to the current offset of the instruction being decoded
+	 */
 	OT_RELCB,
 	/* Read a word/dword immediate and calculate it relatively to the current offset of the instruction being decoded */
 	OT_RELC_FULL,
@@ -306,7 +306,8 @@ typedef enum OpType {
 #define INST_PRE_ADDR_SIZE (1 << 14)
 /* Native instructions which needs suffix letter to indicate their operation-size (and don't depend on operands). */
 #define INST_NATIVE (1 << 15)
-/* Use extended mnemonic, means it's an _InstInfoEx structure, which contains another mnemonic for 32 bits specifically. */
+/* Use extended mnemonic, means it's an _InstInfoEx structure, which contains another mnemonic for 32 bits specifically.
+ */
 #define INST_USE_EXMNEMONIC (1 << 16)
 /* Use third operand, means it's an _InstInfoEx structure, which contains another operand for special instructions. */
 #define INST_USE_OP3 (1 << 17)
@@ -316,9 +317,11 @@ typedef enum OpType {
 #define INST_MNEMONIC_MODRM_BASED (1 << 19)
 /* The instruction uses a ModR/M byte which the MOD must be 11 (for registers operands only). */
 #define INST_MODRR_REQUIRED (1 << 20)
-/* The way of 3DNow! instructions are built, we have to handle their locating specially. Suffix imm8 tells which instruction it is. */
+/* The way of 3DNow! instructions are built, we have to handle their locating specially. Suffix imm8 tells which
+ * instruction it is. */
 #define INST_3DNOW_FETCH (1 << 21)
-/* The instruction needs two suffixes, one for the comparison type (imm8) and the second for its operation size indication (second mnemonic). */
+/* The instruction needs two suffixes, one for the comparison type (imm8) and the second for its operation size
+ * indication (second mnemonic). */
 #define INST_PSEUDO_OPCODE (1 << 22)
 /* Invalid instruction at 64 bits decoding mode. */
 #define INST_INVALID_64BITS (1 << 23)
@@ -372,18 +375,25 @@ typedef enum OpType {
  * Destination (1st), Source (2nd), op3 (3rd), op4 (4th).
  * Used to set the operands' fields in the _DInst structure!
  */
-typedef enum {ONT_NONE = -1, ONT_1 = 0, ONT_2 = 1, ONT_3 = 2, ONT_4 = 3} _OperandNumberType;
+typedef enum
+{
+	ONT_NONE = -1,
+	ONT_1 = 0,
+	ONT_2 = 1,
+	ONT_3 = 2,
+	ONT_4 = 3
+} _OperandNumberType;
 
 /* CPU Flags that instructions modify, test or undefine, in compacted form (CF,PF,AF,ZF,SF are 1:1 map to EFLAGS). */
-#define D_COMPACT_CF 1		/* Carry */
-#define D_COMPACT_PF 4		/* Parity */
-#define D_COMPACT_AF 0x10	/* Auxiliary */
-#define D_COMPACT_ZF 0x40	/* Zero */
-#define D_COMPACT_SF 0x80	/* Sign */
+#define D_COMPACT_CF 1 /* Carry */
+#define D_COMPACT_PF 4 /* Parity */
+#define D_COMPACT_AF 0x10 /* Auxiliary */
+#define D_COMPACT_ZF 0x40 /* Zero */
+#define D_COMPACT_SF 0x80 /* Sign */
 /* The following flags have to be translated to EFLAGS. */
-#define D_COMPACT_IF 2		/* Interrupt */
-#define D_COMPACT_DF 8		/* Direction */
-#define D_COMPACT_OF 0x20	/* Overflow */
+#define D_COMPACT_IF 2 /* Interrupt */
+#define D_COMPACT_DF 8 /* Direction */
+#define D_COMPACT_OF 0x20 /* Overflow */
 
 /* The mask of flags that are already compatible with EFLAGS. */
 #define D_COMPACT_SAME_FLAGS (D_COMPACT_CF | D_COMPACT_PF | D_COMPACT_AF | D_COMPACT_ZF | D_COMPACT_SF)
@@ -396,7 +406,8 @@ typedef enum {ONT_NONE = -1, ONT_1 = 0, ONT_2 = 1, ONT_3 = 2, ONT_4 = 3} _Operan
  * Info about the instruction, source/dest types, meta and flags.
  * _InstInfo points to a table of _InstSharedInfo.
  */
-typedef struct {
+typedef struct
+{
 	uint8_t flagsIndex; /* An index into FlagsTables */
 	uint8_t s, d; /* OpType. */
 	uint8_t meta; /* Hi 5 bits = Instruction set class | Lo 3 bits = flow control flags. */
@@ -414,9 +425,11 @@ typedef struct {
  * This structure is used for the instructions DB and NOT for the disassembled result code!
  * This is the BASE structure, there are extensions to this structure below.
  */
-typedef struct {
+typedef struct
+{
 	uint16_t sharedIndex; /* An index into the SharedInfoTable. */
-	uint16_t opcodeId; /* The opcodeId is really a byte-offset into the mnemonics table. MSB is a privileged indication. */
+	uint16_t
+		opcodeId; /* The opcodeId is really a byte-offset into the mnemonics table. MSB is a privileged indication. */
 } _InstInfo;
 
 /*
@@ -430,7 +443,8 @@ typedef struct {
  * There are a few instructions (SHLD/SHRD/IMUL and SSE too) which use third operand (or a fourth).
  * A flag will indicate it uses a third/fourth operand.
  */
-typedef struct {
+typedef struct
+{
 	/* Base structure (doesn't get accessed directly from code). */
 	_InstInfo BASE;
 
@@ -441,7 +455,8 @@ typedef struct {
 } _InstInfoEx;
 
 /* Trie data structure node type: */
-typedef enum {
+typedef enum
+{
 	INT_NOTEXISTS = 0, /* Not exists. */
 	INT_INFO = 1, /* It's an instruction info. */
 	INT_INFOEX,

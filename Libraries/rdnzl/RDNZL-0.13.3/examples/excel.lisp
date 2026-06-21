@@ -55,12 +55,12 @@ defined.")
   "Returned by `OpenFileDialog' if the user confirmed the dialog.")
 
 (defconstant +initial-directory+
-  (load-time-value 
+  (load-time-value
    (namestring (make-pathname :name nil :type nil
                               :defaults *this-file*))))
 
 (defconstant +initial-filename+
-  (load-time-value 
+  (load-time-value
    (namestring (make-pathname :name "example" :type "xls"
                               :defaults *this-file*))))
 

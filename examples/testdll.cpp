@@ -22,23 +22,23 @@ extern "C" double testfunc3(double x, double y, double z)
 
 extern "C" __int64 testfunc4(__int32 hi, __int32 lo)
 {
-    __int64 result = (__int64)hi;
+	__int64 result = (__int64)hi;
 
-    result = result<<32;
-    result += (__int64)lo;
+	result = result << 32;
+	result += (__int64)lo;
 
 	return result;
 }
 
 extern "C" __int64 testfunc5(__int64 x, __int64 y)
 {
-    __int64 result = x + y;
+	__int64 result = x + y;
 	return result;
 }
 
 extern "C" unsigned __int64 testfunc6(unsigned __int64 x, unsigned __int64 y)
 {
-    unsigned __int64 result = x + y;
+	unsigned __int64 result = x + y;
 	return result;
 }
 
@@ -46,6 +46,7 @@ class testclass
 {
 	__declspec(dllexport) testclass(long num);
 	__declspec(dllexport) int mulsub(long x, long y, long z);
+
 private:
 	long num_;
 };

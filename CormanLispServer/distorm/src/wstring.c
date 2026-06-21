@@ -8,7 +8,6 @@ Copyright (C) 2003-2016 Gil Dabah
 This library is licensed under the BSD license. See the file COPYING.
 */
 
-
 #include "wstring.h"
 
 #ifndef DISTORM_LIGHT

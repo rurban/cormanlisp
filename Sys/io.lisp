@@ -12,9 +12,9 @@
 ;;;;	Common Lisp PEEK-CHAR function.
 ;;;;
 
-(defun peek-char (&optional 
-					(peek-type nil) 
-					(input-stream *standard-input*) 
+(defun peek-char (&optional
+					(peek-type nil)
+					(input-stream *standard-input*)
 					(eof-error-p t)
 					(eof-value nil)
 					(recursive-p nil))

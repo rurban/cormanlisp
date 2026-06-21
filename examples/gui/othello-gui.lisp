@@ -5,7 +5,7 @@
 ;;;;
 ;;;;	Windows OTHELLO program.
 ;;;;    Based on Othello, Paradigms of AI, P.Norvig
-;;;;    
+;;;;
 ;;;;    To run from lisp, load this file and enter:
 ;;;;
 ;;;;		(th:create-thread #'win::othello-gui)
@@ -44,9 +44,9 @@
 (defparameter *move-number* 0)
 
 (defun initialize-moves ()
-    (setf *black-moves* '() *white-moves* '())   
+    (setf *black-moves* '() *white-moves* '())
     (push (first  *initial-black-moves*) *black-moves*)
-    (push (second *initial-black-moves*) *black-moves*)   
+    (push (second *initial-black-moves*) *black-moves*)
     (push (first  *initial-white-moves*) *white-moves*)
     (push (second *initial-white-moves*) *white-moves*))
 
@@ -54,8 +54,8 @@
     (let* ((moves (if (eql player white) *white-moves* *black-moves*))
            (but-last-move (reverse (cdr (mapcar #'get-square-from-move moves))))
            (last-move (get-square-from-move (first moves))))
-        (concatenate 'string 
-            (format nil "~{~a : ~}" but-last-move) 
+        (concatenate 'string
+            (format nil "~{~a : ~}" but-last-move)
             (format nil "~a" last-move))))
 
 (defun move-history-game ()
@@ -81,7 +81,7 @@
     (loop for i from 11 to 88 when (<= 1 (mod i 10) 8) collect i))
 
 (defmacro set-initial-squares ()
-    `(setf (cells-ref cells ,(first  *initial-white-moves*)) white 
+    `(setf (cells-ref cells ,(first  *initial-white-moves*)) white
            (cells-ref cells ,(second *initial-white-moves*)) white
            (cells-ref cells ,(first  *initial-black-moves*)) black
            (cells-ref cells ,(second *initial-black-moves*)) black))
@@ -94,10 +94,10 @@
     (let ((cells (make-array 100 :element-type 'piece :initial-element out-of-bounds)))
         (dolist (square all-squares)
             (setf (cells-ref cells square) empty))  ; initialize playable squares to empty
-        
+
         ;; Now initialize the four central squares to their proper color
         (set-initial-squares)
-        
+
         cells))
 
 (defmethod reset-game (board)
@@ -142,7 +142,7 @@
         (name-of black) (count black cells)
         (name-of white) (count white cells)
         (count-difference black cells))
-    (loop for row from 1 to 8 do 
+    (loop for row from 1 to 8 do
         (format t "~&  ~d " (elt col-names (- row 1)))
         (loop for col from 1 to 8
               for piece = (cells-ref cells (+ col (* 10 row)))
@@ -172,7 +172,7 @@
             (loop for square from (+ move dir) by dir until (eql square bracket-square)
                 do (setf (cells-ref cells square) player)))))
 
-        
+
 (defun valid-move-p (move)
     "Must be an integer, in the range 11-88 and end in 1-8"
     (and (integerp move) (<= 11 move 88) (<= 1 (mod move 10) 8)))
@@ -205,7 +205,7 @@
     "Find the next player to move.  Nil if no one can move."
     (let ((opp (opponent previous-player)))
         (cond ((any-legal-move? opp (cells board)) opp)
-              ((any-legal-move? previous-player (cells board)) 
+              ((any-legal-move? previous-player (cells board))
                 (when print
                     (format t "~&~c has no moves and must pass." (name-of opp))
                     (force-output))
@@ -270,8 +270,8 @@
     (declare (ignore player cells))
     (get-gui-move))
 
-        
-    
+
+
 (defun human-player (player cells)
     "Human player strategy"
     (declare (ignore cells))
@@ -313,7 +313,7 @@
         (loop for dir in all-directions do
             (if (valid-move-p (+ square dir))
                 (push (+ square dir) (aref neighbor-table square)))))
-    
+
     (defun neighbors (cell)
         (aref neighbor-table cell)))
 
@@ -378,20 +378,20 @@
                 (force-output)
                 move))))
 
-(defconstant beginner-strategies 
-    (list #'random-strategy 
+(defconstant beginner-strategies
+    (list #'random-strategy
         #'maximize-difference
         #'maximize-weight))
 (defun get-beginner-strategy ()
     (random-elt beginner-strategies))
 
-(defconstant intermediate-strategies 
+(defconstant intermediate-strategies
     (list (minimax-search 5 #'count-difference)
-        (minimax-search 4 #'smart-weighted-squares))) 
+        (minimax-search 4 #'smart-weighted-squares)))
 (defun get-intermediate-strategy ()
     (random-elt intermediate-strategies))
 
-(defconstant advanced-strategies 
+(defconstant advanced-strategies
     (list (minimax-search 6 #'smart-weighted-squares))) ;;(minimax-search 6 #'count-difference)
 (defun get-advanced-strategy ()
     (random-elt advanced-strategies))
@@ -399,9 +399,9 @@
 (defparameter *white-strategy* (get-beginner-strategy))  ;; set white to use a beginner strategy by default
 
 (defclass board ()
-	((cells :accessor cells 
+	((cells :accessor cells
 			:initform (initialize-cells))
-	
+
 	 (view-width :initform 1 :accessor view-width)
 	 (view-height :initform 1 :accessor view-height)))
 
@@ -412,7 +412,7 @@
 
 (defun start-move-timer (hwnd)
 	(win:SetTimer hwnd *move-timer-id* *move-time-millis* NULL))
- 
+
 (defun stop-move-timer (hwnd)
 	(win:KillTimer hwnd *move-timer-id*))
 
@@ -445,19 +445,19 @@
 	(let ((window (make-instance '<othello-window>)))
         (reset-game (board window))
 		(create-menu window '(:menu "File") nil 1)
-		(create-menu window 
-			(list :command "New Game"  
-				(lambda () 
+		(create-menu window
+			(list :command "New Game"
+				(lambda ()
 					(reset-game(board window))
-  					(refresh-board window)))         
+  					(refresh-board window)))
 			"File" 1)
-		(create-menu window 
-			(list :command "Quit"  
+		(create-menu window
+			(list :command "Quit"
 				(lambda ()
                     (format t "~&Quit game.~&")
                     (win:CloseWindow (window-hwnd window))
-                    (win:DestroyWindow (window-hwnd window)))) 	  
-			"File" 2)      
+                    (win:DestroyWindow (window-hwnd window))))
+			"File" 2)
         (create-menu window '(:menu "Difficulty Level") nil 2)
         (create-menu window
             (list :command "Beginner"
@@ -492,7 +492,7 @@
 			:caption "Othello - Beginner"
 			:style (logior WS_OVERLAPPEDWINDOW WS_MINIMIZEBOX)
 			:width 500
-			:height 500)			
+			:height 500)
 		(show-window window SW_SHOW)
 		(update-window window)
 		(standard-message-loop)))
@@ -518,10 +518,10 @@
 (defmethod handle-message ((window <othello-window>)(message <timer-message>) wparam lparam)
 	(declare (ignore message wparam lparam))
     (call-next-method)
-    
+
     ;; Stop the timer so it doesn't keep sending events
     (stop-move-timer (window-hwnd window))
-    
+
 	;; Make computer move(s) and refresh board
     ;; Return if next-player is black or null otherwise continue making moves
     ;; until one of those is true.
@@ -531,25 +531,25 @@
            (total-white-moves 0))
         (loop
             (if (> total-white-moves 0)
-                (MessageBox (window-hwnd window) 
-                    (ct:create-c-string "Black has no moves, and must pass.") 
-                    (ct:create-c-string "Othello") 
+                (MessageBox (window-hwnd window)
+                    (ct:create-c-string "Black has no moves, and must pass.")
+                    (ct:create-c-string "Othello")
                     MB_OK))
             (format t "about to make white move.")
             (get-move *white-strategy* player (cells board) t)
             (format t "just made white move.")
             (incf total-white-moves)
-            (refresh-board window)                 
+            (refresh-board window)
             (setf *previous-player* player
                   player (next-to-play board player t))
             (cond
-                ((null player) 
+                ((null player)
                     (print-board (cells board))
                     (let ((msg (format nil "~a" (get-game-over-message (cells board)))))
                         (force-output)
-                        (MessageBox (window-hwnd window) 
-                            (ct:create-c-string msg) 
-                            (ct:create-c-string "Othello") 
+                        (MessageBox (window-hwnd window)
+                            (ct:create-c-string msg)
+                            (ct:create-c-string "Othello")
                             MB_OK))
                     (return-from handle-message 0))
                 ((eql player black) (return-from handle-message 0)))))
@@ -568,7 +568,7 @@
 	(declare (ignore message wparam))
     (call-next-method)
 	(let* ((board (board window))
-           (player (next-to-play board *previous-player* t))) 
+           (player (next-to-play board *previous-player* t)))
         (if (eql player black)
             (progn
                 (format t "~a~%" (name-of player))
@@ -585,19 +585,19 @@
                                     (print-board (cells board))
                                     (let ((msg (format nil "~a" (get-game-over-message (cells board)))))
                                         (force-output)
-                                        (MessageBox (window-hwnd window) 
-                                            (ct:create-c-string msg) 
-                                            (ct:create-c-string "Othello") 
+                                        (MessageBox (window-hwnd window)
+                                            (ct:create-c-string msg)
+                                            (ct:create-c-string "Othello")
                                             MB_OK))
                                     (return-from handle-message 0))
-                                ((eql player black) 
+                                ((eql player black)
                                     (MessageBox (window-hwnd window)
                                         (ct:create-c-string "White has no moves and must pass.")
                                         (ct:create-c-string "Othello")
                                         MB_OK)
                                     (return-from handle-message 0)))
                             ;; Start timer on computer move
-                            (start-move-timer (window-hwnd window)))                        
+                            (start-move-timer (window-hwnd window)))
                         ;;return if move cannot be made
                         (progn
                             (format t "~&Could not make move.~%")
@@ -609,7 +609,7 @@
 
 (defun determine-winner (cells)
     (let ((score (count-difference black cells)))
-        (cond 
+        (cond
             ((> score 0) (long-name-of black))
             ((< score 0) (long-name-of white))
             (t nil))))
@@ -633,7 +633,7 @@
 (defun draw-colored-ellipse (left top right bottom r g b hdc)
 	(let ((brush (CreateSolidBrush (rgb r g b)))
 		  (prev-object))
-		(setf prev-object (SelectObject hdc brush))	
+		(setf prev-object (SelectObject hdc brush))
 		(Ellipse hdc left top right bottom)
 		(SelectObject hdc prev-object)
 		(DeleteObject brush)))
@@ -641,14 +641,14 @@
 ;; draw black vertical grid lines
 (defun draw-vertical-lines (num cell-width height hdc rect)
 	(dotimes (i num)
-		(draw-colored-rect (* cell-width i) 0 
+		(draw-colored-rect (* cell-width i) 0
 			(+ (* cell-width i) 1) height
 			0 0 0 hdc rect)))
 
 ;; draw black horizontal grid lines
 (defun draw-horizontal-lines (num cell-height width hdc rect)
 	(dotimes (i num)
-		(draw-colored-rect 0 (* cell-height i) 
+		(draw-colored-rect 0 (* cell-height i)
 			width (+ (* cell-height i) 1)
 			0 0 0 hdc rect)))
 
@@ -656,7 +656,7 @@
     (let ((rgb-list '()))
         (if (eql piece white)
             (setf rgb-list '(255 255 255))
-            (setf rgb-list '(0 0 0)))     
+            (setf rgb-list '(0 0 0)))
         (draw-colored-ellipse (+ 2 (* x cell-width)) (+ 2 (* y cell-height))
 			(1- (* (+ x 1) cell-width)) (1- (* (+ y 1) cell-height))
             (first rgb-list) (second rgb-list) (third rgb-list) hdc)))
@@ -667,7 +667,7 @@
                 (let ((piece (cells-ref cells (+ x (* 10 y)))))
 				    (if (or (eql piece white) (eql piece black))
 					   (draw-piece piece (- x 1) (- y 1) cell-width cell-height hdc))))))
- 
+
 (defun draw-board (board hdc rect)
 	(let* ((horiz (horiz-cells board))
 		   (vert (vert-cells board))
@@ -692,7 +692,7 @@
             (progn
                 (warn "Illegal move.")
                 nil))))
-        
+
 (defun move-to-cell-at-position (x y player board)
 	(let* ((horiz (horiz-cells board))
            (vert (vert-cells board))
@@ -717,12 +717,12 @@
     (map 'vector #'random-elt (map 'list #'list (first pair) (second pair))))
 
 (defun make-ob-elts-zero (weights)
-    (loop for i from 0 to 10 do 
+    (loop for i from 0 to 10 do
         (setf (aref weights i) 0))
-    (loop for i from 11 to 88 do 
+    (loop for i from 11 to 88 do
         (when (or (< (mod i 10) 1)  (> (mod i 10) 8))
             (setf (aref weights i) 0)))
-    (loop for i from 89 to 99 do 
+    (loop for i from 89 to 99 do
         (setf (aref weights i) 0))
     weights)
 
@@ -749,15 +749,15 @@
             (show-progress ,var ,times)
             ,@body)
         (format t "100%...Done.~c" (code-char 13))))
-    
+
 
 (defun evolve-weights (initial-weights generations pop-size)
     (let*((best-score 0)
           (*weights* initial-weights)
           (best-weights *weights*))
-        (dotimes-with-progress (i generations) 
-            (dolist (weights-arr 
-                    (mapcar #'make-ob-elts-zero 
+        (dotimes-with-progress (i generations)
+            (dolist (weights-arr
+                    (mapcar #'make-ob-elts-zero
                         (mapcar #'crossover (new-generation best-weights pop-size))))
                 (setf *weights* weights-arr)
                 (let ((score (test-strategy (maximizer #'smart-weighted-squares) (maximizer #'count-difference))))
@@ -766,5 +766,3 @@
                         (setf best-score score)
                         (setf best-weights *weights*)))))
         (values best-weights best-score)))
-
-        

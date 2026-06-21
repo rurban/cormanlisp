@@ -1,4 +1,4 @@
-;;;; Unofficial patch to Corman Lisp 1.41 to enable 
+;;;; Unofficial patch to Corman Lisp 1.41 to enable
 ;;;; EQL specialisers with defmethod.
 ;;;;
 ;;;; Version 1.4
@@ -6,7 +6,7 @@
 ;;;; Available from http://www.double.nz/cl
 ;;;;
 ;;;; This patch is in the public domain and may therefore
-;;;; be used in any manner you wish. 
+;;;; be used in any manner you wish.
 ;;;;
 ;;;; This patch modifies the CLOS implementation in
 ;;;; Corman Lisp 1.41 to allow EQL specialisers to work.
@@ -18,7 +18,7 @@
 ;;;;
 ;;;; Notes
 ;;;; =====
-;;;; For each object that EQL specialisation is used on, a 
+;;;; For each object that EQL specialisation is used on, a
 ;;;; new CLOS class is created that represents the most
 ;;;; specific type for that object. This is modelled on the
 ;;;; way singleton types work in the Dylan programming language.
@@ -29,7 +29,7 @@
 ;;;; object could be removed from the hash table. Maybe weak types
 ;;;; could be used here somehow.
 ;;;;
-;;;; 09/12/1999 - 1.0 
+;;;; 09/12/1999 - 1.0
 ;;;;              Initial release.
 ;;;;
 ;;;; 10/12/1999 - 1.1
@@ -41,12 +41,12 @@
 ;;;;
 ;;;; 02/03/2000 - 1.3
 ;;;;              Verified to work with Corman Lisp 1.4. No actual changes made.
-;;;;              See end of file for example showing the overhead on generic 
+;;;;              See end of file for example showing the overhead on generic
 ;;;;              function dispatch this patch imposes.
 ;;;;
 ;;;; 14/07/2000 - 1.4
 ;;;;              Verified to work with Corman Lisp 1.41. No actual changes made.
-;;;;              See end of file for example showing the overhead on generic 
+;;;;              See end of file for example showing the overhead on generic
 ;;;;              function dispatch this patch imposes.
 ;;;;
 (in-package :common-lisp)
@@ -57,11 +57,11 @@
 
 (defun get-singleton (object)
 	"Return a CLOS class representing a type that is specific
-	for the object. Used in method dispatch to implement EQL 
+	for the object. Used in method dispatch to implement EQL
 	specialisers."
-	(or 
+	(or
 		(gethash object *singletons*)
-		(setf (gethash object *singletons*)			
+		(setf (gethash object *singletons*)
 			(ensure-class (gensym)
 				:direct-superclasses (list (class-of object))
 				:direct-slots (list)))))

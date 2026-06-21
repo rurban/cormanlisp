@@ -244,4 +244,3 @@ assembly-qualified type name TYPE-NAME."
 (defun whitespacep (chr)
   "Tests whether a character is whitespace."
   (member chr +whitespace-char-list+ :test #'char=))
-

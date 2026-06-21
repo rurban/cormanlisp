@@ -22,7 +22,7 @@
 ;; and the name of the function is the same name as the passed argument.
 ;; The form is a terminating form in the lambda (if evaluated, it will always
 ;; be the last form evaluated, and return the resulting value(s)).
-;; 
+;;
 ;; A form is considered a terminating form if it is one of the following:
 ;; -The form is the last form in the lambda.
 ;; -The form's value is returned as the return value of the outermost block
@@ -44,7 +44,7 @@
 ;;;
 ;;; Search a block for RETURN-FROM forms which will return from that block.
 ;;;
-;;; When we found a block: 
+;;; When we found a block:
 ;;; 	If the target label is NIL, there is no need
 ;;; 	to analyze this block (no way to return from within it to the target).
 ;;;		If the target label is not NIL, and this label matches (shadows) the
@@ -87,7 +87,7 @@
                     (if (or (and (symbolp decl) (cl::symbol-special-p decl))
                             (and (consp decl) (symbolp (car decl)) (cl::symbol-special-p (car decl))))
                         nil)
-                    
+
                     ;; traverse any initializing forms
 					(if (and (consp decl) (cdr decl))
 						(setq result (traverse-form (second decl) labels-list result))))
@@ -100,7 +100,7 @@
 						(setq result (traverse-form (second p) labels-list result))))
 				(dolist (y (cddr form))
 					(setq result (traverse-form y labels-list result)))))
-		(declare nil)	;; ignore declarations			
+		(declare nil)	;; ignore declarations
 		(otherwise
 			(dolist (x (cdr form))
 				(setq result (traverse-form x labels-list result)))))
@@ -132,8 +132,8 @@
                                 (and (consp decl) (symbolp (car decl)) (cl::symbol-special-p (car decl))))
                             (return-from tail-forms form-list))))
                 (tail-forms (car (last (cddr form))) form-list))
-		 	(block   		(append 
-								(mapcar 'third (block-return-from-forms form)) 
+		 	(block   		(append
+								(mapcar 'third (block-return-from-forms form))
 								(tail-forms (car (last form)) form-list)))
 			(quote   		(cons form form-list))
 			(if      		(tail-forms (fourth form) (tail-forms (third form) form-list)))
@@ -146,31 +146,31 @@
                     ((not (consp x)) nil)
                     ((is-lambda-form x) (return-from has-embedded-lambdas 't))
                     (t (let ((head (car x)))
-                            (cond 
+                            (cond
                                 ((and (or (eq head 'flet) (eq head 'labels))
-                                        (consp (cdr x)) 
+                                        (consp (cdr x))
                                         (consp (cadr x)))
                                     (return-from has-embedded-lambdas 't))
                                 ((eq head 'quote) nil)
                                 (t (search-for-lambdas head)(search-for-lambdas (cdr x)))))))))
         (search-for-lambdas form)))
-        
+
 (defun ignore-warning (condition)
     (declare (ignore condition))
     (muffle-warning))
-  
+
 (defun has-tail-recursive-calls (lambda name)
 	(let ((lambda-list (second lambda)))
 		(dolist (x lambda-list)
 			(if (or (member x '(&optional &rest &key &aux))
 					(cl::symbol-special-p x))	;; watch for special variables
 				(return-from has-tail-recursive-calls nil)))
-        
-        ;; If there are any embedded lambdas, implicit capture of 
+
+        ;; If there are any embedded lambdas, implicit capture of
         ;; lexical variable bindings are changed by tail recursion
         ;; elimination. For now, just bail on tail call optimization
         ;; if we find any embedded lambdas which capture variables from
-        ;; outer scope. 
+        ;; outer scope.
         ;; To determine if this is the case, we first see if there are any
         ;; embedded lambdas. If so, we compile the whole thing by calling
         ;; EVAL on the lambda expression, and use a callback to return
@@ -184,7 +184,7 @@
                          (eval lambda)))
                  (if captured-vars
                     (return-from has-tail-recursive-calls nil))))
-        
+
 		(let ((tail-forms (tail-forms lambda nil)))
 			(let* ((tail-recursive-calls '()))
 				(dolist (x tail-forms tail-recursive-calls)
@@ -215,7 +215,7 @@
 			  (lambda-list (second lambda))
 			  (forms (cddr lambda))
 			  (decls '()))
-			
+
 			;; skip any DECLARE forms
 			(do ((f forms (cdr f)))
 				((null f))
@@ -232,20 +232,20 @@
 						(dolist (x (cdr clause))
 							(if (member x lambda-list)
 								(return-from remove-tail-recursion lambda))))))
-                        			
+
 			(dolist (x tail-recursive-forms)
 				(setf forms (subst (transform-tail-call x tag-sym lambda-list) x forms :test #'eq)))
-			(let ((x 
-				`(lambda ,(second lambda) 
+			(let ((x
+				`(lambda ,(second lambda)
 					,@(nreverse decls)
-					(block ,block-sym 
-						(tagbody ,tag-sym 
+					(block ,block-sym
+						(tagbody ,tag-sym
 							(return-from ,block-sym
 								(progn ,@forms)))))))
 				(when *compile-verbose*
 					(format t "Performing tail recursion elimination on function ~A~%" name))
 				x))))
- 
+
 (defun compiler-optimize-tail-recursion () *optimize-tail-recursion*)
 
 #|
@@ -254,4 +254,3 @@
 		(setf cl::*ERROR-TRACE* (cl::STACK-TRACE)))
 	(cl::%THROW_EXCEPTION :system-exception ex 1))
 |#
-

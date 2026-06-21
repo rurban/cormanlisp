@@ -68,7 +68,7 @@ the CLISP FFI."
     (ffi-wide-char 'ffi:uint16)
     (ffi-float 'ffi:single-float)
     (ffi-double 'ffi:double-float)))
-      
+
 (defmacro ffi-define-function* ((lisp-name c-name)
                                 arg-list
                                 result-type)
@@ -126,8 +126,8 @@ to be symbols mappable by FFI-MAP-TYPE above."
       `(progn
 	 (defun ,c-name ,(mapcar #'first arg-list)
 	   ,@body)
-	     
-	 (let ((,foreign-function (ffi:allocate-deep 
+
+	 (let ((,foreign-function (ffi:allocate-deep
 				   '(ffi:c-function
 				     (:language :stdc-stdcall)
 				     (:arguments ,@(mapcar (lambda (name-and-type)
@@ -139,7 +139,7 @@ to be symbols mappable by FFI-MAP-TYPE above."
 
 	   (defmethod get-function-pointer ((name (eql ',c-name)))
 	     (ffi:with-c-place (f-function ,foreign-function)
-	       (unless f-function 
+	       (unless f-function
 		 (setf f-function #',c-name))
 	       (ffi:foreign-address f-function)))))))
 
@@ -213,7 +213,7 @@ corresponding foreign string."
               (,arg-pointers (make-array ,length :initial-element nil)))
          (unwind-protect
              (progn
-               (ffi:with-c-var 
+               (ffi:with-c-var
                    (,ffi-arg-pointers `(ffi:c-array ffi:c-pointer ,,length)
 		      (apply #'vector
                              (loop for ,arg in ,args
@@ -240,7 +240,7 @@ corresponding foreign string."
 
 (defun flag-for-finalization (object &optional function)
   "Mark OBJECT such that FUNCTION is applied to OBJECT before OBJECT
-is removed by GC."  
+is removed by GC."
   (ext:finalize object function))
 
 (defun register-exit-function (function &optional name)

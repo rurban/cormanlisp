@@ -5,7 +5,7 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
@@ -19,29 +19,29 @@
   #+(and :allegro (not :unix)) (setf *foreign-module* "odbc32.dll")
   ;; adapt the library location to your needs
   #+(and :allegro :unix) (setf *foreign-module* "~/adabas/odbc/adabasodbc.so")
-  
+
   (define-foreign-function "SQLAllocEnv"
     ((*phenv sql-handle-ptr)    ; HENV   FAR *phenv
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLAllocConnect"
     ((henv sql-handle)          ; HENV        henv
      (*phdbc sql-handle-ptr)    ; HDBC   FAR *phdbc
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLConnect"
     ((hdbc sql-handle)          ; HDBC        hdbc
      (*szDSN string-ptr)        ; UCHAR  FAR *szDSN
      (cbDSN :short)             ; SWORD       cbDSN
-     (*szUID string-ptr)        ; UCHAR  FAR *szUID 
+     (*szUID string-ptr)        ; UCHAR  FAR *szUID
      (cbUID :short)             ; SWORD       cbUID
      (*szAuthStr string-ptr)    ; UCHAR  FAR *szAuthStr
      (cbAuthStr :short)         ; SWORD       cbAuthStr
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLDriverConnect"
     ((hdbc sql-handle)          ; HDBC        hdbc
      (hwnd sql-handle)          ; SQLHWND     hwnd
@@ -53,17 +53,17 @@
      (fDriverCompletion :short) ; UWORD       fDriverCompletion
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLDisconnect"
     ((hdbc sql-handle))         ; HDBC        hdbc
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLAllocStmt"
     ((hdbc sql-handle)          ; HDBC        hdbc
      (*phstmt sql-handle-ptr)   ; HSTMT  FAR *phstmt
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLGetInfo"
     ((hdbc sql-handle)          ; HDBC        hdbc
      (fInfoType :short)         ; UWORD       fInfoType
@@ -79,29 +79,29 @@
      (cbSqlStr :long)           ; SDWORD      cbSqlStr
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLExecute"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLExecDirect"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      (*szSqlStr string-ptr)     ; UCHAR  FAR *szSqlStr
      (cbSqlStr :long)           ; SDWORD      cbSqlStr
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLFreeStmt"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      (fOption :short))          ; UWORD       fOption
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLCancel"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLError"
     ((henv sql-handle)          ; HENV        henv
      (hdbc sql-handle)          ; HDBC        hdbc
@@ -113,19 +113,19 @@
      (*pcbErrorMsg :ptr)        ; SWORD  FAR *pcbErrorMsg
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLNumResultCols"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      (*pccol :ptr)              ; SWORD  FAR *pccol
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLRowCount"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      (*pcrow :ptr)              ; SDWORD FAR *pcrow
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLDescribeCol"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      (icol :short)              ; UWORD       icol
@@ -138,7 +138,7 @@
      (*pfNullable :ptr)         ; SWORD  FAR *pfNullable
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLColAttributes"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      (icol :short)              ; UWORD       icol
@@ -172,12 +172,12 @@
      (*pcbValue :ptr)           ; SDWORD FAR *pcbValue
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLFetch"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      )
     :signed-short)              ; RETCODE_SQL_API
-    
+
   (define-foreign-function "SQLTransact"
     ((henv sql-handle)          ; HENV        henv
      (hdbc sql-handle)          ; HDBC        hdbc
@@ -195,7 +195,7 @@
      (*pfNullable :ptr)         ; SWORD  FAR *pfNullable
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   ;; ODBC 2.0
   (define-foreign-function "SQLBindParameter"
     ((hstmt sql-handle)         ; HSTMT       hstmt
@@ -210,7 +210,7 @@
      (*pcbValue :ptr)           ; SDWORD FAR *pcbValue
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   ;; level 1
   (define-foreign-function "SQLGetData"
     ((hstmt sql-handle)         ; HSTMT       hstmt
@@ -227,21 +227,21 @@
      (*prgbValue :ptr)          ; PTR    FAR *prgbValue
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLPutData"
     ((hstmt sql-handle)         ; HSTMT       hstmt
      (rgbValue :ptr)            ; PTR         rgbValue
      (cbValue :long)            ; SDWORD      cbValue
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLGetConnectOption"
     ((hdbc sql-handle)          ; HDBC        hdbc
      (fOption :short)           ; UWORD       fOption
      (pvParam :ptr)             ; PTR         pvParam
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLSetConnectOption"
     ((hdbc sql-handle)          ; HDBC        hdbc
      (fOption :short)           ; UWORD       fOption
@@ -266,7 +266,7 @@
      (*rgfRowStatus :ptr)       ; UWORD  FAR *rgfRowStatus
      )
     :signed-short)              ; RETCODE_SQL_API
-  
+
   (define-foreign-function "SQLDataSources"
     ((henv sql-handle)          ; HENV        henv
      (fDirection :short)
@@ -285,7 +285,7 @@
     :signed-short)              ; RETCODE_SQL_API
   )
 
-(defmacro %sql-len-data-at-exec (length) 
+(defmacro %sql-len-data-at-exec (length)
   `(- $SQL_LEN_DATA_AT_EXEC_OFFSET ,length))
 
 ;; to do: make unifying interface for defrecord etc
@@ -297,7 +297,7 @@
   (day   :short))
 
 #+mcl
-(defrecord (sql-c-time :ptr) 
+(defrecord (sql-c-time :ptr)
   (hour   :short)
   (minute :short)
   (second :short))
@@ -314,16 +314,16 @@
 
 #+lispworks
 (eval-when (:execute :load-toplevel :compile-toplevel)
-  (fli:define-c-struct sql-c-time 
+  (fli:define-c-struct sql-c-time
     (hour   :short)
     (minute :short)
     (second :short))
-  
+
   (fli:define-c-struct sql-c-date
     (year  :short)
     (month :short)
     (day   :short))
-  
+
   (fli:define-c-struct sql-c-timestamp
     (year     :short)
     (month    :short)
@@ -335,20 +335,20 @@
 
 #+allegro
 (eval-when (:execute :load-toplevel :compile-toplevel)
-  (ff:def-foreign-type sql-c-time 
-    (:struct 
+  (ff:def-foreign-type sql-c-time
+    (:struct
      (hour   :short)
      (minute :short)
      (second :short)))
-  
+
   (ff:def-foreign-type sql-c-date
-    (:struct 
+    (:struct
      (year  :short)
      (month :short)
      (day   :short)))
-  
+
   (ff:def-foreign-type sql-c-timestamp
-    (:struct 
+    (:struct
      (year     :short)
      (month    :short)
      (day      :short)

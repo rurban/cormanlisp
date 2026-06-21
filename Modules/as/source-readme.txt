@@ -17,13 +17,13 @@ in main.cl for *aserve-version*.
 How to build and test AllegroServe:
 
 1. start lisp
-    
+
    This should work in a lisp running in a :case-insensitive-upper
    or :case-sensitive-lower mode, although we do most of our running
    and testing in a :case-sensitive-lower lisp.
    The current case mode is the value of excl:*current-case-mode*
 
-2. load in the file load.cl 
+2. load in the file load.cl
 
    user(1):  :ld <path-to-aserve>/load.cl
 
@@ -41,7 +41,7 @@ How to build and test AllegroServe:
 4.  try out the server
 
     go to a web browser and try http://your-machine-name:8000/
-    
+
     If the web browser is on the same machine as AllegroServe is running
     you can use
 	   http://localhost:8000/
@@ -58,16 +58,10 @@ an aserve.fasl that you can load into your application.
 
     user(3): :cd  <path-to-aserve>
 
-    
+
 6.  make a distribution
 
     user(4): (make-aserve.fasl)
 
 
 7.  now you'll find aserve.fasl in the aserve source directory.
-
-
-
-
-
-

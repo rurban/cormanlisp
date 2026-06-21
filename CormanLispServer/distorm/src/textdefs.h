@@ -8,7 +8,6 @@ Copyright (C) 2003-2016 Gil Dabah
 This library is licensed under the BSD license. See the file COPYING.
 */
 
-
 #ifndef TEXTDEFS_H
 #define TEXTDEFS_H
 

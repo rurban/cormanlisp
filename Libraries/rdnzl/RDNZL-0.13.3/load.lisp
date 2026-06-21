@@ -67,8 +67,3 @@
             (compile-file pathname))
           (setq pathname compiled-pathname))
         (load pathname)))))
-
-
-
-
-

@@ -17,10 +17,10 @@
 ;;;
 ;;;
 ;;;
-;;; FLONUM-TO-STRING (and its subsidiary function FLOAT-STRING) does most of 
+;;; FLONUM-TO-STRING (and its subsidiary function FLOAT-STRING) does most of
 ;;; the work for all printing of floating point numbers in the printer and in
-;;; FORMAT.  It converts a floating point number to a string in a free or 
-;;; fixed format with no exponent.  The interpretation of the arguments is as 
+;;; FORMAT.  It converts a floating point number to a string in a free or
+;;; fixed format with no exponent.  The interpretation of the arguments is as
 ;;; follows:
 ;;;
 ;;;     X        - The floating point number to convert, which must not be
@@ -65,25 +65,25 @@
 ;;;
 ;;; WARNING: For efficiency, there is a single string object *digit-string*
 ;;; which is modified destructively and returned as the value of
-;;; FLONUM-TO-STRING.  Thus the returned value is not valid across multiple 
+;;; FLONUM-TO-STRING.  Thus the returned value is not valid across multiple
 ;;; calls.
 ;;;
 ;;; NOTE:  FLONUM-TO-STRING goes to a lot of trouble to guarantee accuracy.
-;;; Specifically, the decimal number printed is the closest possible 
-;;; approximation to the true value of the binary number to be printed from 
+;;; Specifically, the decimal number printed is the closest possible
+;;; approximation to the true value of the binary number to be printed from
 ;;; among all decimal representations  with the same number of digits.  In
-;;; free-format output, i.e. with the number of digits unconstrained, it is 
+;;; free-format output, i.e. with the number of digits unconstrained, it is
 ;;; guaranteed that all the information is preserved, so that a properly-
-;;; rounding reader can reconstruct the original binary number, bit-for-bit, 
+;;; rounding reader can reconstruct the original binary number, bit-for-bit,
 ;;; from its printed decimal representation. Furthermore, only as many digits
 ;;; as necessary to satisfy this condition will be printed.
 ;;;
 ;;;
 ;;; FLOAT-STRING actually generates the digits for positive numbers.  The
-;;; algorithm is essentially that of algorithm Dragon4 in "How to Print 
-;;; Floating-Point Numbers Accurately" by Steele and White.  The current 
+;;; algorithm is essentially that of algorithm Dragon4 in "How to Print
+;;; Floating-Point Numbers Accurately" by Steele and White.  The current
 ;;; (draft) version of this paper may be found in [CMUC]<steele>tradix.press.
-;;; DO NOT EVEN THINK OF ATTEMPTING TO UNDERSTAND THIS CODE WITHOUT READING 
+;;; DO NOT EVEN THINK OF ATTEMPTING TO UNDERSTAND THIS CODE WITHOUT READING
 ;;; THE PAPER!
 
 (in-package "CORMANLISP")
@@ -121,8 +121,8 @@
     ;;Rational arithmetic avoids loss of precision in subsequent calculations.
     (cond ((> exponent 0)
 	   (setq r (ash fraction exponent))
-	   (setq m- (ash 1 exponent))	   
-	   (setq m+ m-))                   
+	   (setq m- (ash 1 exponent))
+	   (setq m+ m-))
 	  ((< exponent 0)
 	   (setq s (ash 1 (- exponent)))))
     ;;adjust the error bounds m+ and m- for unequal gaps
@@ -265,7 +265,7 @@
 ;;;; Entry point for the float printer.
 
 ;;; Entry point for the float printer as called by PRINT, PRIN1, PRINC,
-;;; etc.  The argument is printed free-format, in either exponential or 
+;;; etc.  The argument is printed free-format, in either exponential or
 ;;; non-exponential notation, depending on its magnitude.
 ;;;
 ;;; NOTE: When a number is to be printed in exponential format, it is scaled in
@@ -373,7 +373,7 @@
 	(print-float-exponent x 0 stream))
        (t
 	(output-float-aux x stream (float 1/1000 x) (float 10000000 x))))))))
-;;;  
+;;;
 (defun output-float-aux (x stream e-min e-max)
     (if
         (and (>= x e-min) (< x e-max))
@@ -405,7 +405,7 @@
 			(and (cl::single-float-p f)(= e 105)(= m #x800000))
 			(and (cl::short-float-p f)(= e 107)(= m #x200000)))))
 
-(defun float-nan-p (f) 
+(defun float-nan-p (f)
 	(multiple-value-bind (m e s)
 		(integer-decode-float f)
 		(declare (ignore s))
@@ -420,12 +420,12 @@
 (defun float-trapping-nan-p (f) (declare (ignore f)) nil)
 
 #|
-(%set-format-dispatch-func #\F 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(%set-format-dispatch-func #\F
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional width digits (scale 0) overflow-char padchar)
 		(declare (ignore control colon-modifier))
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~F format directive"))
 		(if (and overflow-char (integerp overflow-char))
 			(setf overflow-char (int-char overflow-char)))
@@ -439,8 +439,8 @@
 				(declare (ignore digit-length point-pos))
 				(if width
 					;; do any necessary padding
-					(dotimes (i (- width 
-								(+ (length float-str) sign-width 
+					(dotimes (i (- width
+								(+ (length float-str) sign-width
 									(if leading-point 1 0)
 									(if trailing-point 1 0))))
 						(write-char padchar stream)))
@@ -477,13 +477,13 @@
 			nil)
 		(t (let ((spaceleft w))
 				(when (and w (or atsign (minusp number))) (decf spaceleft))
-      			(multiple-value-bind 
+      			(multiple-value-bind
 	  				(str len lpoint tpoint)
 	  				(ccl::flonum-to-string (abs number) spaceleft d k)
 					;;if caller specifically requested no fraction digits, suppress the
 					;;optional trailing zero
 					(when (and d (zerop d)) (setq tpoint nil))
-					(when w 
+					(when w
 						(decf spaceleft len)
 	  					;;optional leading zero
 	  					(when lpoint
@@ -606,7 +606,7 @@
 	      (multiple-value-bind
 		  (fstr flen lpoint)
 		  (ccl::flonum-to-string num spaceleft fdig k fmin)
-		(when w 
+		(when w
 		  (decf spaceleft flen)
 		  (when lpoint
 		    (if (> spaceleft 0)
@@ -627,95 +627,95 @@
 					 (format-exponent-marker number))
 				     stream)
 			 (write-char (if (minusp expt) #\- #\+) stream)
-			 (when e 
+			 (when e
 			   ;;zero-fill before exponent if necessary
 			   (dotimes (i (- e (length estr)))
 			     (write-char #\0 stream)))
 			 (write-string estr stream)))))))))
 
-(cl::%set-format-dispatch-func #\E 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
-				&optional width digits exp-digits 
-					scale overflow-char 
+(cl::%set-format-dispatch-func #\E
+	#'(lambda (stream args index atsign-modifier colon-modifier control
+				&optional width digits exp-digits
+					scale overflow-char
 					padchar
 					exponent-char)
 		(declare (ignore control))
 		(when colon-modifier
 		    (error "Cannot specify the colon modifier ~~E format directive."))
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~E format directive"))
 
 		;; initialize defaults
 		(unless padchar (setf padchar #\Space))
 		(unless scale (setf scale 1))
-		(if (integerp overflow-char) 
+		(if (integerp overflow-char)
 			(setf overflow-char (int-char overflow-char)))
-		(if (integerp padchar) 
+		(if (integerp padchar)
 			(setf padchar (int-char padchar)))
-		(if (integerp exponent-char) 
+		(if (integerp exponent-char)
 			(setf exponent-char (int-char exponent-char)))
 
 		(format-exponential stream (car args) width digits exp-digits scale
 			overflow-char padchar exponent-char atsign-modifier)
 		(1+ index)))
 
-(cl::%set-format-dispatch-func #\F 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(cl::%set-format-dispatch-func #\F
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional width digits
-					scale overflow-char 
+					scale overflow-char
 					padchar)
 		(declare (ignore control))
 		(when colon-modifier
 		    (error "Cannot specify the colon modifier with ~~F format directive."))
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~F format directive"))
 
 		(unless padchar (setf padchar #\Space))
-		(if (integerp overflow-char) 
+		(if (integerp overflow-char)
 			(setf overflow-char (int-char overflow-char)))
-		(if (integerp padchar) 
+		(if (integerp padchar)
 			(setf padchar (int-char padchar)))
 
 		(format-fixed stream (car args) width digits scale
 			overflow-char padchar atsign-modifier)
 		(1+ index)))
 
-(cl::%set-format-dispatch-func #\G 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(cl::%set-format-dispatch-func #\G
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional width digits exp-digits scale overflow-char padchar
 					exponent-char)
 		(declare (ignore control))
 		(when colon-modifier
 		    (error "Cannot specify the colon modifier with ~~G format directive."))
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~G format directive"))
 
 		;; initialize defaults
 		(unless padchar (setf padchar #\Space))
-		(if (integerp overflow-char) 
+		(if (integerp overflow-char)
 			(setf overflow-char (int-char overflow-char)))
-		(if (integerp padchar) 
+		(if (integerp padchar)
 			(setf padchar (int-char padchar)))
-		(if (integerp exponent-char) 
+		(if (integerp exponent-char)
 			(setf exponent-char (int-char exponent-char)))
 
 		(format-general stream (car args) width digits exp-digits scale
 			overflow-char padchar exponent-char atsign-modifier)
 		(1+ index)))
 
-(cl::%set-format-dispatch-func #\$ 
-	#'(lambda (stream args index atsign-modifier colon-modifier control 
+(cl::%set-format-dispatch-func #\$
+	#'(lambda (stream args index atsign-modifier colon-modifier control
 				&optional digits n width padchar)
 		(declare (ignore control atsign-modifier colon-modifier n)) ;; need to implement these
 		(setq args (nthcdr index args))
-		(if (null args) 
+		(if (null args)
 			(error "Not enough args for ~~$ format directive"))
 
 		(unless padchar (setf padchar #\Space))
-		(if (integerp padchar) 
+		(if (integerp padchar)
 			(setf padchar (int-char padchar)))
 		(format-fixed stream (car args) width (if digits digits 2) nil
 			nil padchar nil)

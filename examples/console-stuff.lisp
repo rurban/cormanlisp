@@ -33,7 +33,7 @@ HANDLE WINAPI GetStdHandle(DWORD nStdHandle);
 (defconstant console-critical-section (cl::allocate-critical-section))
 
 ;; allocate wide char foreign buffer
-(defconstant console-text-buffer 
+(defconstant console-text-buffer
     (ct:malloc (* 2 (cl::stream-input-buffer-length *terminal-io*))))
 
 ;; allocate once here, rather than each time functions are called
@@ -44,14 +44,14 @@ HANDLE WINAPI GetStdHandle(DWORD nStdHandle);
         (force-output stream)
         (let* ((input-handle (win:GetStdHandle win:STD_INPUT_HANDLE))
                (buf (cl::stream-input-buffer stream))
-    	       (num (cl::stream-input-buffer-length stream)))     
-            (win:ReadConsoleW input-handle 
+    	       (num (cl::stream-input-buffer-length stream)))
+            (win:ReadConsoleW input-handle
                 console-text-buffer num console-num-ptr ct:null)
             (let ((num-received (ct:cref (win:DWORD *) console-num-ptr 0)))
                 (setf (cl::stream-input-buffer-pos stream) 0)
                 (setf (cl::stream-input-buffer-num stream) num-received)
                 (dotimes (i num-received)
-                    (setf (elt buf i) 
+                    (setf (elt buf i)
                         (int-char (ct:cref (:unsigned-short *) console-text-buffer i))))
                 num-received)))
 
@@ -60,14 +60,14 @@ HANDLE WINAPI GetStdHandle(DWORD nStdHandle);
         (let ((output-handle (win:GetStdHandle win:STD_OUTPUT_HANDLE))
               (buf (cl::stream-output-buffer stream))
     		  (num (cl::stream-output-buffer-pos stream)))
-            (win:WriteConsoleW output-handle (ct:lisp-string-to-unicode buf) 
+            (win:WriteConsoleW output-handle (ct:lisp-string-to-unicode buf)
                 num console-num-ptr ct:null)
             (setf (cl::stream-output-buffer-pos stream) 0)
             num))
 
 (defun setup-console ()
     (win:AllocConsole)
-    (setf (uref *terminal-io* cl::stream-overflow-func-offset) #'dll-terminal-io-overflow) 
+    (setf (uref *terminal-io* cl::stream-overflow-func-offset) #'dll-terminal-io-overflow)
     (setf (uref *terminal-io* cl::stream-underflow-func-offset) #'dll-terminal-io-underflow))
 
 (defun console-prompt (index)
@@ -82,40 +82,40 @@ HANDLE WINAPI GetStdHandle(DWORD nStdHandle);
 	(let ((init-path (concatenate 'string ccl::*cormanlisp-directory* "init.lisp")))
 		(if (and (not cl::*loading-kernel*)(probe-file init-path))
 			(load init-path)))
-	(do (expr 
-         result 
+	(do (expr
+         result
         (stack-overflow nil)
         (index 0 (+ index 1)))
 		(nil)
 		(restart-case
 			(progn
 				(block eval-expression
-					(handler-bind 
-						((win:stack-overflow 
-								(lambda (condition) 
+					(handler-bind
+						((win:stack-overflow
+								(lambda (condition)
 									(format *error-output* "~A~%" condition)
 									(force-output *error-output*)
 									(setf stack-overflow t)
 									(return-from eval-expression condition))))
 						(progn
 							(setq cl::*read-level* 0)
-							(write (console-prompt index) :escape nil) 
+							(write (console-prompt index) :escape nil)
 							(setq expr (read *standard-input* nil 'Eof nil))
 							(if (eq expr 'quit)
 								(return 'quit))
-                                                        
+
 							(setq - expr)
 							(unwind-protect
-								(setq result (multiple-value-list (eval expr))))					
+								(setq result (multiple-value-list (eval expr))))
 							(cl::update-toplevel-globals expr result)
-							(if (null result) 
+							(if (null result)
 								(force-output)
 								(dolist (i result)
 									(write i)
 									(terpri)
 									(force-output))))))
 				(if stack-overflow (cl::protect-stack)))
-			(abort () :report "Abort to top level." 
+			(abort () :report "Abort to top level."
 				(format *standard-output* "~%;;; Returning to top level loop.~%")
 				(go next)))
 		next))
@@ -123,4 +123,3 @@ HANDLE WINAPI GetStdHandle(DWORD nStdHandle);
 (defun main ()
     (setup-console)
     (console-loop))
-

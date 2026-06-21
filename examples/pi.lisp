@@ -27,10 +27,10 @@
 	(let* ((n digits)
 		   (m (+ n 3))
 		   (tenpower (expt 10 m)))
-		(values 
-			(truncate 
-				(- 
-					(+ (pi-atan 18 (* tenpower 48)) 
+		(values
+			(truncate
+				(-
+					(+ (pi-atan 18 (* tenpower 48))
 					   (pi-atan 57 (* tenpower 32)))
 					(pi-atan 239 (* tenpower 20)))
 				1000))))

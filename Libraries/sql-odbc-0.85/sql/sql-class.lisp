@@ -6,13 +6,13 @@
 ;; paul.meurer@hit.uib.no
 ;;
 
-;;; "This software is based on the design of the ODBC interface provided by 
-;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows 
+;;; "This software is based on the design of the ODBC interface provided by
+;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows
 ;;;  Operating System products. This implementation is not the property of
 ;;;  Harlequin and they have no responsibility for its content or accuracy."
 
-;; Documentation and the license agreement can be found in file 
-;; "sql-odbc-documentation.lisp" 
+;; Documentation and the license agreement can be found in file
+;; "sql-odbc-documentation.lisp"
 
 (in-package :sql)
 
@@ -30,9 +30,9 @@
    (query :initform nil :accessor db-query-object)
    ;; resource of (active and inactive) query objects
    (queries :initform () :accessor db-queries))
-  ;; #+cormanlisp (:metaclass cl::class-slot-class)	
+  ;; #+cormanlisp (:metaclass cl::class-slot-class)
   (:documentation
-   "Class used to store connection information. 
+   "Class used to store connection information.
 Several database objects can coexist, and are listed in *connected-databases*.
 The API packages (ODBC, DTF, or others) should subclass this class.
 There is a *default-database*, so you don't have always to mention the
@@ -41,11 +41,11 @@ database you want to work with." ))
 (defmethod print-object ((db database) stream)
   (print-unreadable-object (db stream :identity t)
     (format stream "~a ~s"
-            (class-name (class-of db)) 
+            (class-name (class-of db))
             (db-name db))))
 
 ;; mixin classes for specific databases.
-;; those are not subclasses of odbc-database because they are not 
+;; those are not subclasses of odbc-database because they are not
 ;; necessarily accessed via odbc.
 (defclass db-mixin ()
   ;; plist stores SQL-specific anomalies

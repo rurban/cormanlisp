@@ -11,8 +11,8 @@
 (in-package :win32)
 (export '(
 	STRING-GUID
-	GUID-STRING 
-	ALLOCATE-GUID 
+	GUID-STRING
+	ALLOCATE-GUID
 	CREATE-GUID
 	PROGID-CLSID
 	CLSID-PROGID
@@ -30,7 +30,7 @@
 	 (Data2 :unsigned-short)
 	 (Data3 :unsigned-short)
 	 (Data4 (:unsigned-char 8))
-	))		
+	))
 (defwintype LPGUID (GUID *))
 (defwintype REFGUID (GUID *))
 (defwintype LPOLESTR LPSTR)
@@ -76,7 +76,7 @@
 (defwinconstant CLSCTX_INPROC_HANDLER		#x2)
 (defwinconstant CLSCTX_LOCAL_SERVER			#x4)
 (defwinconstant CLSCTX_REMOTE_SERVER		#x10)
-		
+
 #! (:library "ole32" :export t :pascal "WINAPI")
 HRESULT WINAPI CoCreateGuid (LPGUID pguid);
 HRESULT WINAPI StringFromCLSID(REFCLSID rclsid, LPOLESTRPTR lplpsz);
@@ -128,8 +128,8 @@ WINOLEAUTAPI UINT SysStringLen(BSTR);
 	(let* ((size (* guid-string-char-length 2))
 		   (buf (ct:malloc size)))
 		(StringFromGUID2 guid buf size)
-		(prog1 
-			(ct:unicode-to-lisp-string buf) 
+		(prog1
+			(ct:unicode-to-lisp-string buf)
 			(ct:free buf))))
 
 ;;; convert a string to a GUID
@@ -142,10 +142,10 @@ WINOLEAUTAPI UINT SysStringLen(BSTR);
 		guid))
 
 (defun display-guid (guid &optional (stream *standard-output*))
-	(format stream "#< GUID: ~A >" (guid-string guid))) 
+	(format stream "#< GUID: ~A >" (guid-string guid)))
 
 (defun output-guid (guid &optional (stream *standard-output*))
-	(format stream (guid-string guid))) 
+	(format stream (guid-string guid)))
 
 (defun ProgID-CLSID (progID clsid)
 	(let ((buf (ct:malloc (* (+ (length progID) 1) 2))))
@@ -161,7 +161,7 @@ WINOLEAUTAPI UINT SysStringLen(BSTR);
 #|
 (defun display-guid (g &optional (stream *standard-output*))
 	(let ((bytes (ct:cref guid g data4)))
-		(format stream 
+		(format stream
 			"#< GUID: ~8,'0x-~4,'0x-~4,'0x-~2,'0x-~2,'0x-~2,'0x-~2,'0x-~2,'0x-~2,'0x-~2,'0x-~2,'0x >"
 			(ct:cref guid g data1)
 			(ct:cref guid g data2)
@@ -189,7 +189,7 @@ WINOLEAUTAPI UINT SysStringLen(BSTR);
 		(com-object-refcount obj)
 		(com-object-id obj)))
 
-(defstruct (com-object 
+(defstruct (com-object
 	(:print-function print-com-object))
 	guid
 	data
@@ -219,12 +219,12 @@ WINOLEAUTAPI UINT SysStringLen(BSTR);
 	(let* ((num-funcs (length callback-func-names))
 		   (vtable-size (* func-ptr-size num-funcs))
 		   (com-obj (ct:malloc (+ vtable-size (ct:sizeof 'COM-Interface))))
-		   (count 2)) 	;; start past interface 
+		   (count 2)) 	;; start past interface
 		(setf (ct:cref COM-Interface com-obj vtable)
-			(ct:int-to-foreign-ptr 
-				(+ (ct:foreign-ptr-to-int com-obj) 
-					(ct:sizeof 'COM-Interface))))  
-		(setf (ct:cref COM-Interface com-obj id) id) 
+			(ct:int-to-foreign-ptr
+				(+ (ct:foreign-ptr-to-int com-obj)
+					(ct:sizeof 'COM-Interface))))
+		(setf (ct:cref COM-Interface com-obj id) id)
 		(dolist (func callback-func-names)
 			(setf (ct:cref ((:void *) *) com-obj count)
 				(ct:get-callback-procinst func))
@@ -262,11 +262,11 @@ interface IMalloc : IUnknown
 
 interface IDispatch : IUnknown
 {
-    HRESULT GetTypeInfoCount(UINT *pctinfo);     
+    HRESULT GetTypeInfoCount(UINT *pctinfo);
     HRESULT GetTypeInfo(UINT iTInfo, LCID lcid, ITypeInfo **ppTInfo);
-    HRESULT GetIDsOfNames(REFIID riid, LPOLESTR *rgszNames, UINT cNames, 
+    HRESULT GetIDsOfNames(REFIID riid, LPOLESTR *rgszNames, UINT cNames,
         LCID lcid, DISPID *rgDispId);
-    HRESULT Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags, 
+    HRESULT Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
         DISPPARAMS *pDispParams,
         VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
 };
@@ -285,10 +285,10 @@ interface IDispatch : IUnknown
             (unwind-protect
                 (progn ,@body)
                 (win:iunknown-Release ,interface)))
-        
+
         (let ((p (gensym)))
             `(let* ((,p (ct:malloc (ct:sizeof '(win:interface *))))
-                    (,interface 
+                    (,interface
                         (symbol-macrolet ((,interface ,p))
                             ,expr
                             (ct:cref ((win:interface *) *) ,interface 0))))
@@ -300,11 +300,11 @@ interface IDispatch : IUnknown
 #|
 (setq my-data #( "roger" 10 40))
 (ct:defun-callback func1 ((this (:void *))(x :long))
-	(let ((obj (aref *com-objects* (ct:cref (COM-Interface *) this id)))) 
+	(let ((obj (aref *com-objects* (ct:cref (COM-Interface *) this id))))
 		(+ (second (com-object-data obj)) 1)))
 
 (ct:defun-callback func2 ((this (:void *))(x :long))
-	(let ((obj (aref *com-objects* (ct:cref (COM-Interface *) this id)))) 
+	(let ((obj (aref *com-objects* (ct:cref (COM-Interface *) this id))))
 		(+ (second (com-object-data obj)) 2)))
 
 (setq callback-funcs '(func1 func2))
@@ -313,14 +313,14 @@ interface IDispatch : IUnknown
 (setq id (create-com-object guid my-data))
 (setq iface (create-com-interface id callback-funcs))
 
-(defconstant word-clsid 
+(defconstant word-clsid
 	(string-guid "{000209FF-0000-0000-C000-000000000046}" (allocate-guid)))
 (setf ppv (ct:malloc (ct:sizeof 'LPVOID)))
 (setf (ct:cref LPVOIDPTR ppv 0) null)
-(setq result 
-	(CoCreateInstance 
-		word-clsid 
-		null 
+(setq result
+	(CoCreateInstance
+		word-clsid
+		null
 		CLSCTX_LOCAL_SERVER
 		IID_IUnknown
 		ppv))
@@ -345,8 +345,8 @@ interface IDispatch : IUnknown
 (iunknown_release i)
 
 (setf a (ct:malloc (ct:sizeof '(:void *))))
-(LoadTypeLib 
+(LoadTypeLib
 	(ct:lisp-string-to-unicode "C:\\Program Files\\Microsoft Office\\Office\\REFEDIT.DLL")
-	 a) 
+	 a)
 
 |#

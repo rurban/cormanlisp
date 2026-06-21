@@ -18,10 +18,10 @@
 ;;;;
 
 (defpackage "IDE"
-  (:export 
+  (:export
         "CURRENT-EDIT-FRAME-WINDOW-HANDLE"
-		"CURRENT-EDIT-WINDOW-HANDLE" 
-		"SET-SELECTION" 
+		"CURRENT-EDIT-WINDOW-HANDLE"
+		"SET-SELECTION"
 		"GET-CURRENT-SELECTION-TEXT"
         "GET-SELECTION-TEXT"
         "GET-CURRENT-SELECTION"
@@ -53,7 +53,7 @@
         "REMOVE-LISP-DISPLAY-VARIABLE"
         "ON-INIT-MENU-POPUP"
         "ADD-SYMBOL-MENU-TO-MENUBAR"
-        "ADD-COMMAND-HISTORY-MENU-TO-MENUBAR"))        
+        "ADD-COMMAND-HISTORY-MENU-TO-MENUBAR"))
 
 (in-package :ide)
 
@@ -84,14 +84,14 @@ typedef struct _gettextlengthex
 	UINT	codepage;		/* code page for translation (CP_ACP for default,
 							   1200 for Unicode)					    */
 } GETTEXTLENGTHEX;
-    
+
 /* Flags for the GETEXTEX data structure */
 #define GT_DEFAULT		0
 #define GT_USECRLF		1
 #define GT_SELECTION	2
 
 typedef BOOL* LPBOOL;
-    
+
 /* EM_GETTEXTEX info; this struct is passed in the wparam of the message */
 typedef struct _gettextex
 {
@@ -110,7 +110,7 @@ typedef struct _gettextex
 #define ENM_SCROLL				0x00000004
 #define ENM_SCROLLEVENTS		0x00000008
 #define ENM_DRAGDROPDONE		0x00000010
-#define ENM_PARAGRAPHEXPANDED	0x00000020          
+#define ENM_PARAGRAPHEXPANDED	0x00000020
 #define ENM_KEYEVENTS			0x00010000
 #define ENM_MOUSEEVENTS			0x00020000
 #define ENM_REQUESTRESIZE		0x00040000
@@ -146,10 +146,10 @@ BOOL    WINAPI GetScrollInfo(HWND, int, LPSCROLLINFO);
 
 ;; DEFINE_GUIDXXX(IID_ITextDocument,0x8CC497C0,0xA1DF,0x11CE,0x80,0x98,
 ;;                0x00,0xAA,0x00,0x47,0xBE,0x5D);
-(defwinconstant IID_ITextDocument 
+(defwinconstant IID_ITextDocument
 	(string-guid "{8CC497C0-A1DF-11CE-8098-00AA0047BE5D}" (allocate-guid)))
 
-(defwinconstant IID_ITextRange 
+(defwinconstant IID_ITextRange
 	(string-guid "{8CC497C2-A1DF-11CE-8098-00AA0047BE5D}"  (allocate-guid)))
 
 (defwinconstant IID_ITextFont
@@ -179,7 +179,7 @@ interface ITextDocument : IDispatch
     HRESULT Undo(long Count, long* prop);
     HRESULT Redo(long Count, long* prop);
     HRESULT Range(long cp1, long cp2, ITextRange** ppRange);
-    HRESULT RangeFromPoint(long x, long y, ITextRange** ppRange);        
+    HRESULT RangeFromPoint(long x, long y, ITextRange** ppRange);
 };
 !#
 
@@ -190,15 +190,15 @@ interface ITextRange : IDispatch
     HRESULT SetText(BSTR* pbstr);
     HRESULT GetChar(long* pch);
     HRESULT SetChar(long  ch);
-    HRESULT GetDuplicate(ITextRange** ppRange);  
-    HRESULT GetFormattedText(ITextRange** ppRange); 
+    HRESULT GetDuplicate(ITextRange** ppRange);
+    HRESULT GetFormattedText(ITextRange** ppRange);
     HRESULT SetFormattedText(ITextRange* pRange);
-    HRESULT GetStart(long* pcpFirst); 
+    HRESULT GetStart(long* pcpFirst);
     HRESULT SetStart(long cpFirst);
-    HRESULT GetEnd(long* pcpLim);    
-    HRESULT SetEnd(long cpLim);    
-    HRESULT GetFont(ITextFont** pFont);   
-    HRESULT SetFont(ITextFont* pFont);   
+    HRESULT GetEnd(long* pcpLim);
+    HRESULT SetEnd(long cpLim);
+    HRESULT GetFont(ITextFont** pFont);
+    HRESULT SetFont(ITextFont* pFont);
     HRESULT GetPara(ITextPara** pPara);
     HRESULT SetPara(ITextPara* pPara);
     HRESULT GetStoryLength(long *pcch);
@@ -244,11 +244,11 @@ interface ITextRange : IDispatch
 interface ITextFont : IDispatch
 {
     HRESULT GetDuplicate(ITextFont **ppFont);
-    HRESULT SetDuplicate(ITextFont *pFont);        
-    HRESULT CanChange(long *pB);        
+    HRESULT SetDuplicate(ITextFont *pFont);
+    HRESULT CanChange(long *pB);
     HRESULT IsEqual(ITextFont *pFont,long *pB);
-    HRESULT Reset(long Value);        
-    HRESULT GetStyle(long *pValue);        
+    HRESULT Reset(long Value);
+    HRESULT GetStyle(long *pValue);
     HRESULT SetStyle(long Value);
     HRESULT GetAllCaps(long *pValue);
     HRESULT SetAllCaps(long Value);
@@ -256,48 +256,48 @@ interface ITextFont : IDispatch
     HRESULT SetAnimation(long Value);
     HRESULT GetBackColor(long *pValue);
     HRESULT SetBackColor(long Value);
-    HRESULT GetBold(long *pValue);        
-    HRESULT SetBold(long Value);        
-    HRESULT GetEmboss(long *pValue);        
-    HRESULT SetEmboss(long Value);        
+    HRESULT GetBold(long *pValue);
+    HRESULT SetBold(long Value);
+    HRESULT GetEmboss(long *pValue);
+    HRESULT SetEmboss(long Value);
     HRESULT GetForeColor(long *pValue);
     HRESULT SetForeColor(long Value);
     HRESULT GetHidden(long *pValue);
     HRESULT SetHidden(long Value);
     HRESULT GetEngrave(long *pValue);
-    HRESULT SetEngrave(long Value);        
-    HRESULT GetItalic(long *pValue);        
-    HRESULT SetItalic(long Value);        
-    HRESULT GetKerning(float *pValue);        
-    HRESULT SetKerning(float Value);        
-    HRESULT GetLanguageID(long *pValue);        
-    HRESULT SetLanguageID(long Value);        
-    HRESULT GetName(BSTR *pbstr);        
-    HRESULT SetName(BSTR bstr);        
-    HRESULT GetOutline(long *pValue);        
-    HRESULT SetOutline(long Value);        
-    HRESULT GetPosition(float *pValue);       
-    HRESULT SetPosition(float Value);        
+    HRESULT SetEngrave(long Value);
+    HRESULT GetItalic(long *pValue);
+    HRESULT SetItalic(long Value);
+    HRESULT GetKerning(float *pValue);
+    HRESULT SetKerning(float Value);
+    HRESULT GetLanguageID(long *pValue);
+    HRESULT SetLanguageID(long Value);
+    HRESULT GetName(BSTR *pbstr);
+    HRESULT SetName(BSTR bstr);
+    HRESULT GetOutline(long *pValue);
+    HRESULT SetOutline(long Value);
+    HRESULT GetPosition(float *pValue);
+    HRESULT SetPosition(float Value);
     HRESULT GetProtected(long *pValue);
     HRESULT SetProtected(long Value);
-    HRESULT GetShadow(long *pValue);        
-    HRESULT SetShadow(long Value);        
-    HRESULT GetSize(float *pValue);        
-    HRESULT SetSize(float Value);        
-    HRESULT GetSmallCaps(long *pValue);        
-    HRESULT SetSmallCaps(long Value);        
+    HRESULT GetShadow(long *pValue);
+    HRESULT SetShadow(long Value);
+    HRESULT GetSize(float *pValue);
+    HRESULT SetSize(float Value);
+    HRESULT GetSmallCaps(long *pValue);
+    HRESULT SetSmallCaps(long Value);
     HRESULT GetSpacing(float *pValue);
     HRESULT SetSpacing(float Value);
-    HRESULT GetStrikeThrough(long *pValue);        
+    HRESULT GetStrikeThrough(long *pValue);
     HRESULT SetStrikeThrough(long Value);
-    HRESULT GetSubscript(long *pValue);        
+    HRESULT GetSubscript(long *pValue);
     HRESULT SetSubscript(long Value);
-    HRESULT GetSuperscript(long *pValue);        
-    HRESULT SetSuperscript(long Value);        
-    HRESULT GetUnderline(long *pValue);        
-    HRESULT SetUnderline(long Value);        
-    HRESULT GetWeight(long *pValue);        
-    HRESULT SetWeight(long Value);        
+    HRESULT GetSuperscript(long *pValue);
+    HRESULT SetSuperscript(long Value);
+    HRESULT GetUnderline(long *pValue);
+    HRESULT SetUnderline(long Value);
+    HRESULT GetWeight(long *pValue);
+    HRESULT SetWeight(long Value);
 };
 !#
 
@@ -351,7 +351,7 @@ interface ITextPara : IDispatch
     HRESULT AddTab(float tbPos, long tbAlign, long tbLeader);
     HRESULT ClearAllTabs();
     HRESULT DeleteTab(float tbPos);
-    HRESULT GetTab(long iTab, float* ptbPos, long* ptbAlign, long* ptbLeader);        
+    HRESULT GetTab(long iTab, float* ptbPos, long* ptbAlign, long* ptbLeader);
 };
 !#
 
@@ -370,7 +370,7 @@ interface ITextPara : IDispatch
 (defwinconstant tomLineSpaceAtLeast	 3)
 (defwinconstant tomLineSpaceExactly	 4)
 (defwinconstant tomLineSpaceMultiple 5)
-          
+
 (in-package :ide)
 
 (defvar *local-CHARRANGE* (ct:malloc (ct:sizeof 'win32:CHARRANGE)))
@@ -401,7 +401,7 @@ interface ITextPara : IDispatch
 
 (defconstant cl-package (find-package ':common-lisp))
 
-(defstruct text-format 
+(defstruct text-format
     (bold nil)
     (italic nil)
     (color black))
@@ -413,10 +413,10 @@ interface ITextPara : IDispatch
 
 ;; the color of the user's preference will be used if it has been set, and
 ;; the color of normal-format ignored
-(defparameter normal-format 
+(defparameter normal-format
     (make-text-format :bold nil :italic nil :color black))
 
-     
+
 (defun get-preferences-text-color ()
     (let ((color 0)
           (registry-value
@@ -431,16 +431,16 @@ interface ITextPara : IDispatch
         (if registry-value
             (setq color (parse-integer registry-value :radix 16)))
         color))
-        
+
 ;;;
 ;;; Corman Lisp CURRENT-EDIT-FRAME-WINDOW-HANDLE function.
 ;;; Returns the frame window handle of the editor window currently active.
 ;;;
 (defun current-edit-frame-window-handle ()
-	(win32:FindWindowEx 
+	(win32:FindWindowEx
 		(win32:FindWindowEx (cl::get-application-main-window) null null null)
-		null 
-		null 
+		null
+		null
 		null))
 
 ;;;
@@ -448,10 +448,10 @@ interface ITextPara : IDispatch
 ;;; Returns the window handle of the editor window currently active.
 ;;;
 (defun current-edit-window-handle ()
-	(win32:FindWindowEx 
+	(win32:FindWindowEx
 		(current-edit-frame-window-handle)
-		null 
-		null 
+		null
+		null
 		null))
 
 ;;;
@@ -483,33 +483,33 @@ interface ITextPara : IDispatch
 				(setq pos2 (min pos2 (- next-line-pos 1)))))
 		(setf (ct:cref win32:CHARRANGE range win32::cpMin) pos1)
 		(setf (ct:cref win32:CHARRANGE range win32::cpMax) pos2)
-		(win32:SendMessage richedit-window 
+		(win32:SendMessage richedit-window
 			win32::EM_EXSETSEL 0 (cl::foreign-ptr-to-int range))))
 
 ;;;
 ;;; Corman Lisp SET-CURRENT-SELECTION function.
 ;;; Sets the beginning and ending index of the current selection.
-;;; 
+;;;
 (defun set-current-selection (hwnd min max)
 	(let* ((range *local-CHARRANGE*))
 		(if (ct:cpointer-null hwnd)
 			(return-from set-current-selection nil))
    		(setf (ct:cref win32:CHARRANGE range win32::cpMin) min)
 		(setf (ct:cref win32:CHARRANGE range win32::cpMax) max)
-		(win32:SendMessage hwnd 
+		(win32:SendMessage hwnd
 			win32::EM_EXSETSEL 0 (cl::foreign-ptr-to-int range))))
 
 ;;;
 ;;; Corman Lisp GET-CURRENT-SELECTION function.
 ;;; Returns two values, the beginning and ending index of the current selection.
-;;; 
+;;;
 (defun get-current-selection (hwnd)
 	(let ((range *local-CHARRANGE*))
 		(if (ct:cpointer-null hwnd)
 			(return-from get-current-selection nil))
-		(win32:SendMessage hwnd 
+		(win32:SendMessage hwnd
 			win32:EM_EXGETSEL 0 (ct:foreign-ptr-to-int range))
-        (values 
+        (values
             (ct:cref win32:CHARRANGE range win::cpMin)
             (ct:cref win32:CHARRANGE range win::cpMax))))
 
@@ -538,9 +538,9 @@ interface ITextPara : IDispatch
 			(if (<= selection-length 0)
 				(return-from get-selection-text nil))
 			(let ((textbuf (get-text-buffer (1+ selection-length))))
-				(win:SendMessage hwnd 
+				(win:SendMessage hwnd
 					win:EM_GETSELTEXT 0 (cl::foreign-ptr-to-int textbuf))
-				(ct:c-string-to-lisp-string textbuf)))))         
+				(ct:c-string-to-lisp-string textbuf)))))
 
 ;;;
 ;;; Corman Lisp GET-CURRENT-SELECTION-TEXT function.
@@ -555,25 +555,25 @@ interface ITextPara : IDispatch
 ;;; Returns the event mask of the active edit window as an integer.
 ;;;
 (defun get-richedit-event-mask (hwnd)
-    (win32:SendMessage hwnd win:EM_GETEVENTMASK 0 0)) 
+    (win32:SendMessage hwnd win:EM_GETEVENTMASK 0 0))
 
 ;;;
 ;;; Corman Lisp SET-RICHEDIT-EVENT-MASK function.
 ;;; Sets the event mask of the active edit window, given the mask as an integer.
 ;;;
 (defun set-richedit-event-mask (hwnd mask)
-    (win:SendMessage hwnd win:EM_SETEVENTMASK 0 mask)) 
+    (win:SendMessage hwnd win:EM_SETEVENTMASK 0 mask))
 
 ;;;
 ;;; Corman Lisp GET-SCROLL-INFO function.
 ;;; Returns scrollbar info as a foreign heap object of type win:SCROLLINFO.
-;;; 
+;;;
 (defun get-scroll-info (hwnd)
 	(let ((scrollinfo *local-SCROLLINFO*))
 		(if (ct:cpointer-null hwnd)
 			(return-from get-scroll-info nil))
         (setf (ct:cref win:SCROLLINFO scrollinfo win::cbSize) (ct:sizeof 'win:SCROLLINFO))
-        (setf (ct:cref win:SCROLLINFO scrollinfo win::fMask) 
+        (setf (ct:cref win:SCROLLINFO scrollinfo win::fMask)
             (logior win:SIF_PAGE win:SIF_POS win:SIF_RANGE win:SIF_TRACKPOS))
 		(win:GetScrollInfo hwnd win:SB_VERT scrollinfo)
         scrollinfo))
@@ -581,12 +581,12 @@ interface ITextPara : IDispatch
 ;;;
 ;;; Corman Lisp SET-SCROLL-INFO function.
 ;;; Sets scrollbar info using a foreign heap object of type win:SCROLLINFO.
-;;; 
+;;;
 (defun set-scroll-info (hwnd scrollinfo)
 	(if (ct:cpointer-null hwnd)
 		(return-from set-scroll-info nil))
     (setf (ct:cref win:SCROLLINFO scrollinfo win::cbSize) (ct:sizeof 'win:SCROLLINFO))
-    (setf (ct:cref win:SCROLLINFO scrollinfo win::fMask) 
+    (setf (ct:cref win:SCROLLINFO scrollinfo win::fMask)
         (logior win:SIF_PAGE win:SIF_POS win:SIF_RANGE win:SIF_TRACKPOS))
 	(win:SetScrollInfo hwnd win::SB_VERT scrollinfo win:FALSE))
 
@@ -595,28 +595,28 @@ interface ITextPara : IDispatch
 ;;; Disables redraw on the current active window.
 ;;;
 (defun disable-editor-redraw (hwnd)
-    (win32:SendMessage hwnd win:WM_SETREDRAW 0 0))  
+    (win32:SendMessage hwnd win:WM_SETREDRAW 0 0))
 
 ;;;
 ;;; Corman Lisp ENABLE-EDITOR-REDRAW function.
 ;;; Enables redraw on the current active window.
 ;;;
 (defun enable-editor-redraw (hwnd)
-    (win32:SendMessage hwnd win:WM_SETREDRAW 1 0))  
+    (win32:SendMessage hwnd win:WM_SETREDRAW 1 0))
 
 ;;;
 ;;; Corman Lisp GET-FIRST-VISIBLE-LINE function.
 ;;; Enables redraw on the current active window.
 ;;;
 (defun get-first-visible-line (hwnd)
-    (win:SendMessage hwnd win:EM_GETFIRSTVISIBLELINE 0 0))  
+    (win:SendMessage hwnd win:EM_GETFIRSTVISIBLELINE 0 0))
 
 ;;;
 ;;; Corman Lisp SCROLL-LINES function.
 ;;; Scrolls the edit window the requested number of lines.
 ;;;
 (defun scroll-lines (hwnd lines)
-    (win:SendMessage hwnd win:EM_LINESCROLL 0 lines))  
+    (win:SendMessage hwnd win:EM_LINESCROLL 0 lines))
 
 (defun get-richedit-ole-interface (hwnd)
     (let ((interfaceptr *local-interface-ptr*))
@@ -634,23 +634,23 @@ interface ITextPara : IDispatch
 (defun resume-undo (itextdocument)
     (if itextdocument (win:ITEXTDOCUMENT-UNDO itextdocument win:tomResume ct:null)))
 
-;;; 
+;;;
 ;;; Make sure that SAVE-IMAGE does not waste memory storing this temporary buffer,
 ;;; which during the course of execution will grow to accomodate the largest size
 ;;; text file that is opened for editing (if using the IDE).
 ;;;
-(cl::register-save-image-cleanup-func 
+(cl::register-save-image-cleanup-func
     #'(lambda ()
         (unless (null *text-window-text-buffer*)
             (ct:free *text-window-text-buffer*)
             (setf *text-window-text-buffer* nil))))
-                
+
 (defun get-editor-buffer-length (hwnd)
     (let ((textlength *local-GETTEXTLENGTHEX*))
         (ct:with-c-struct (x textlength win:GETTEXTLENGTHEX)
             (setf win::flags win:GTL_DEFAULT
                   win::codepage win::CP_ACP))
-        (win:SendMessage hwnd win:EM_GETTEXTLENGTHEX 
+        (win:SendMessage hwnd win:EM_GETTEXTLENGTHEX
             (ct:foreign-ptr-to-int textlength) 0)))
 
 (defun get-editor-buffer-contents (hwnd)
@@ -663,8 +663,8 @@ interface ITextPara : IDispatch
                   win::codepage win::CP_ACP
                   win::lpDefaultChar ct:null
                   win::lpUsedDefChar ct:null))
-        (win:SendMessage hwnd win:EM_GETTEXTEX 
-            (ct:foreign-ptr-to-int gettextex) 
+        (win:SendMessage hwnd win:EM_GETTEXTEX
+            (ct:foreign-ptr-to-int gettextex)
             (ct:foreign-ptr-to-int buf))
         (ct:c-string-to-lisp-string buf)))
 
@@ -710,7 +710,7 @@ interface ITextPara : IDispatch
                                             start (cl::stream-position stream))))
                             (unread-char ch stream))))
                 (push ch chars))
-            (progn 
+            (progn
                 (cl::__read-char stream nil ':eof)      ;; skip dispatch character and exit
                 nil))))
 
@@ -723,7 +723,7 @@ interface ITextPara : IDispatch
              (list ':string (coerce (nreverse chars) 'string)
                     start (cl::stream-position stream)))
             (push ch chars))))
-    
+
 ;;
 ;; COLORIZE-READ
 ;; simpler than READ, just returns strings of 1) symbols 2) comments 3) literal strings
@@ -738,17 +738,17 @@ interface ITextPara : IDispatch
               ((char= ch #\")(unread-char ch stream)(colorize-read-string-token stream))
               ((cl::constituent-char ch)(unread-char ch stream)(colorize-read-symbol-token stream)))))
 
-(defun common-lisp-symbol-name-p (string) 
-    (and (stringp string) 
-        (eq (nth-value 1 
-                (find-symbol (string-upcase string) cl-package)) 
+(defun common-lisp-symbol-name-p (string)
+    (and (stringp string)
+        (eq (nth-value 1
+                (find-symbol (string-upcase string) cl-package))
             ':external)))
 
 (defun keyword-name-p (string)
     (and (stringp string)
         (char= (char string 0) #\:)))
 
-(defun format-text (ITextRange start end 
+(defun format-text (ITextRange start end
         &key (bold nil supplied-bold)
              (italic nil supplied-italic)
              (color black supplied-color))
@@ -762,7 +762,7 @@ interface ITextPara : IDispatch
             (win:ITextFont-SetItalic ITextFont (if italic win:tomTrue win:tomFalse)))
         (if supplied-color
             (win:ITextFont-SetForeColor ITextFont color))))
-    
+
 (defun format-text-bold (ITextRange start end &optional (bold t))
     (win:ITextRange-SetStart ITextRange start)
     (win:ITextRange-SetEnd ITextRange end)
@@ -778,42 +778,42 @@ interface ITextPara : IDispatch
         (win:ITextFont-SetForeColor ITextFont color)))
 
 (defun format-commenting (ITextRange start end)
-    (format-text ITextRange start end 
+    (format-text ITextRange start end
         :bold (text-format-bold comment-format)
         :italic (text-format-italic comment-format)
         :color (text-format-color comment-format)))
 
 (defun format-string (ITextRange start end)
-    (format-text ITextRange start end 
+    (format-text ITextRange start end
         :bold (text-format-bold string-format)
         :italic (text-format-italic string-format)
         :color (text-format-color string-format)))
 
 (defun format-common-lisp-symbol (ITextRange start end)
-    (format-text ITextRange start end 
+    (format-text ITextRange start end
         :bold (text-format-bold lisp-symbol-format)
         :italic (text-format-italic lisp-symbol-format)
         :color (text-format-color lisp-symbol-format)))
 
 (defun format-declared-symbol (ITextRange start end)
-    (format-text ITextRange start end 
+    (format-text ITextRange start end
         :bold (text-format-bold lisp-symbol-format)
         :italic (text-format-italic lisp-symbol-format)
         :color (text-format-color lisp-symbol-format)))
 
 (defun format-keyword (ITextRange start end)
-    (format-text ITextRange start end 
+    (format-text ITextRange start end
         :bold (text-format-bold keyword-format)
         :italic (text-format-italic keyword-format)
         :color (text-format-color keyword-format)))
 
 (defun format-normal (ITextRange start end)
-    (format-text ITextRange start end 
+    (format-text ITextRange start end
         :bold (text-format-bold normal-format)
         :italic (text-format-italic normal-format)
         :color (or (get-preferences-text-color)
             (text-format-color normal-format))))
-    
+
 (defun clear-formatting (ITextRange)
     (format-normal ITextRange 0 10000000)) ;; some large value for end
 
@@ -834,24 +834,24 @@ interface ITextPara : IDispatch
 ;;;
 (defun set-line-spacing (ITextRange)
     (win:ITextRange-SetRange ITextRange 0 *editor-buffer-length*)
-    
+
     ;; look up the font height--add 2 to that to derive the line height
     (win:with-com-interface (ITextFont *local-interface-ptr*)
         (win:ITextRange-GetFont ITextRange ITextFont)
         (win:ItextFont-GetSize ITextFont *font-height-value*)
         (setq *font-height* (ct:cref (:single-float *) *font-height-value* 0)))
-    
+
     (win:with-com-interface (ITextPara *local-interface-ptr*)
         (win:ITextRange-GetPara ITextRange ITextPara)
         (win:ITextPara-SetLineSpacing ITextPara win:tomLineSpaceExactly (+ 3 *font-height*))))
-                      
+
 (defun colorize-buffer (ITextDocument stream offset)
     (win:with-com-interface (ITextRange *local-interface-ptr*)
         (win:ITextDocument-Range ITextDocument 0 0 ITextRange)
         (clear-formatting ITextRange)
         (set-line-spacing ITextRange)
         (do* ((form (colorize-read-token stream)(colorize-read-token stream))
-              (last-token-was-declaration nil)) 
+              (last-token-was-declaration nil))
             ((eq ':eof form))
             (if form
                 (let ((type (first form))
@@ -859,10 +859,10 @@ interface ITextPara : IDispatch
                       (start (+ (third form) offset))
                       (end (+ (fourth form) offset)))
                     (cond
-                        ((eq type ':comment) 
+                        ((eq type ':comment)
                          (format-commenting ITextRange start end)
                          (setq last-token-was-declaration nil))
-                        ((eq type ':string) 
+                        ((eq type ':string)
                          (format-string ITextRange start end)
                          (setq last-token-was-declaration nil))
                         ((eq type ':symbol)
@@ -871,7 +871,7 @@ interface ITextPara : IDispatch
                                 (setq last-token-was-declaration nil))
                                ((common-lisp-symbol-name-p string)
                                 (format-common-lisp-symbol ITextRange start end)
-                                (setq last-token-was-declaration 
+                                (setq last-token-was-declaration
                                     (member string ide:*declaration-symbols* :test 'string-equal)))
                                ((keyword-name-p string)
                                 (format-keyword ITextRange start end)
@@ -891,11 +891,11 @@ interface ITextPara : IDispatch
                             (unwind-protect
                                 (win:with-com-interface (ITextDocument *local-interface-ptr*)
                                     (win:IUNKNOWN-QUERYINTERFACE IRichEdit win::IID_ITextDocument ITextDocument)
-                                    (suspend-undo ITextDocument) 
-                                    (ITextDocument-Freeze ITextDocument long-ptr) 
+                                    (suspend-undo ITextDocument)
+                                    (ITextDocument-Freeze ITextDocument long-ptr)
                                     (colorize-buffer ITextDocument in)
-                                    (ITextDocument-Unfreeze ITextDocument long-ptr) 
-                                    (resume-undo ITextDocument) 
+                                    (ITextDocument-Unfreeze ITextDocument long-ptr)
+                                    (resume-undo ITextDocument)
                                     nil)
                                 (win:IUnknown-Release IRichEdit)))))
                 nil))))
@@ -903,7 +903,7 @@ interface ITextPara : IDispatch
 
 
 #|
-;;; this always seems to return NIL, finding that the document never 
+;;; this always seems to return NIL, finding that the document never
 ;;; has a name, so is not too useful
 (defun get-document-name (ITextDocument)
     (win:ITextDocument-GetName ITextDocument *local-BSTR-ptr*)
@@ -914,12 +914,12 @@ interface ITextPara : IDispatch
                 (unless (ct:cpointer-null bstr) (win:bstr-to-lisp-string bstr)))
              (if nil (win:SysFreeString bstr)))))
 |#
-                   
+
 (defun colorize-window (hwnd start end)
     (setq *editor-buffer-length* (get-editor-buffer-length hwnd))
     (let* ((text (get-editor-buffer-contents hwnd))
-           (in (make-string-input-stream 
-                    (subseq text start 
+           (in (make-string-input-stream
+                    (subseq text start
                         (min end *editor-buffer-length*)))))
         (win:with-com-interface (IRichEdit *local-interface-ptr*)
             (win:SendMessage hwnd win:EM_GETOLEINTERFACE 0 (ct:foreign-ptr-to-int IRichEdit))
@@ -935,7 +935,7 @@ interface ITextPara : IDispatch
                             (set-current-selection hwnd save-start save-end))
                         (set-scroll-info hwnd save-scroll-info))
                     (win:ITextDocument-Unfreeze ITextDocument *freeze-count*))
-                (resume-undo ITextDocument) 
+                (resume-undo ITextDocument)
                 nil))))
 
 (defun colorize-current-window ()
@@ -952,21 +952,21 @@ interface ITextPara : IDispatch
 ;; (ide:set-current-window-zoom 1 1)  ;; to restore normal zoom
 (defun set-current-window-zoom (num denom)
     (win32:SendMessage (current-edit-window-handle) win:EM_SETZOOM num denom))
-   
+
 (defparameter lisp-display-variables '())
-(defun add-lisp-display-variable (name expr) 
+(defun add-lisp-display-variable (name expr)
     (setf lisp-display-variables
         (append lisp-display-variables (list (list name expr)))))
 
-(defun remove-lisp-display-variable (name) 
-    (setf lisp-display-variables 
+(defun remove-lisp-display-variable (name)
+    (setf lisp-display-variables
         (remove name lisp-display-variables :key 'car :test 'equalp)))
-  
+
 (defun format-symbol (sym stream)
     (if (not (boundp sym))
         (format stream "<Unbound>")
         (format stream "~A" (symbol-value sym))))
-    
+
 (defun format-variable-or-expression (x stream)
     (let ((name (car x))
           (expr (cadr x)))
@@ -976,7 +976,7 @@ interface ITextPara : IDispatch
                 (format-symbol expr stream)
                 (format stream "~%"))
             (format stream "~A: ~A~%" name (ignore-errors (eval expr))))))
-        
+
 (defun lisp-variable-display-text ()
     (with-output-to-string (s)
         (dolist (x lisp-display-variables)
@@ -1037,7 +1037,7 @@ interface ITextPara : IDispatch
                     (push ch new-chars)))
             (concatenate 'string (nreverse new-chars)))
         str))
- 
+
 (defun populate-symbol-submenu (hmenu package)
     (let ((count (win:GetMenuItemCount hmenu)))
         (loop for i from (- count 1) downto 0 do
@@ -1052,7 +1052,7 @@ interface ITextPara : IDispatch
                                 (declare (ignore id))
                                 (setf *package* package)
                                 (values)))
-            (incf i)         
+            (incf i)
             (let ((syms '()))
                 (do-symbols (sym package)
                     (multiple-value-bind (s status)
@@ -1064,7 +1064,7 @@ interface ITextPara : IDispatch
                     (win32::insert-dynamic-menu-item
                                 hmenu
                                 i
-                                "Separator" 
+                                "Separator"
                                 (lambda (id)
                                     (declare (ignore id))
                                     (values))
@@ -1079,7 +1079,7 @@ interface ITextPara : IDispatch
                         (win32::insert-dynamic-menu-item
                             hmenu
                             i
-                            (escape-ampersand (symbol-name sym)) 
+                            (escape-ampersand (symbol-name sym))
                             (lambda (id)
                                 (declare (ignore id))
                                 (describe s *terminal-io*)
@@ -1093,14 +1093,14 @@ interface ITextPara : IDispatch
 (defun populate-symbol-menu (hmenu)
     (win:remove-all-menu-items hmenu)
     (let ((index 0)
-          (packages 
+          (packages
                 (sort (list-all-packages)
-                    (lambda (x y) 
+                    (lambda (x y)
                         (string< (package-name x)(package-name y))))))
         (dolist (package packages)
             (let* ((p package))
-				(win:create-dynamic-menu-item 
-					(list :menu 
+				(win:create-dynamic-menu-item
+					(list :menu
                         (package-name package)
                         (lambda (hmenu)
                             (populate-symbol-submenu hmenu p)))
@@ -1109,7 +1109,7 @@ interface ITextPara : IDispatch
                 (incf index))))
 
 (defun add-symbol-menu-to-menubar ()
-    (win:create-menu-item 
+    (win:create-menu-item
        (list :menu "&Symbols" 'populate-symbol-menu)
        nil
        5))
@@ -1136,7 +1136,7 @@ interface ITextPara : IDispatch
             (incf i))))
 
 (defun add-command-history-menu-to-menubar ()
-    (win:create-dynamic-menu-item 
+    (win:create-dynamic-menu-item
        (list :menu "H&istory" 'populate-command-history-menu)
        nil
        6))

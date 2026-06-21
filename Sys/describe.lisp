@@ -11,12 +11,12 @@
 ;;;;                11/15/02 RGC  Replaced with JP Massar's implementation of 11/15/02.
 ;;;;
 ;;;;
-;;;;    JP Massar.   11/15/02.  
+;;;;    JP Massar.   11/15/02.
 ;;;;        Removed repetitive strings from all the definitions, making them
 ;;;;        global variables.
 ;;;;        Changed functions around to conform to hyperspec.  DESCRIBE now simply
 ;;;;        calls DESCRIBE-OBJECT, which has methods on all Common Lisp standard
-;;;;        objects (which used to be the functions) 
+;;;;        objects (which used to be the functions)
 ;;;;        Changed use of ~A to ~S in many places for readability.  E.g., describing
 ;;;;        #\Newline would print out a real newline, not '#\Newline'.
 
@@ -36,11 +36,11 @@
 ;;; Symbols
 
 (defmethod describe-object ((x symbol) s)
-  (let* ((is-special 
-	  (= (logand (%symbol-get-flags x) *symbol-special-flag*) 
+  (let* ((is-special
+	  (= (logand (%symbol-get-flags x) *symbol-special-flag*)
 	     *symbol-special-flag*))
-	 (function (if (fboundp x) (symbol-function x) "#< UNBOUND >")) 
-	 (value (if (boundp x) (symbol-value x) "#< UNBOUND >"))) 
+	 (function (if (fboundp x) (symbol-function x) "#< UNBOUND >"))
+	 (value (if (boundp x) (symbol-value x) "#< UNBOUND >")))
     (format s "SYMBOL:~%~?~?~?~?~?~?~?~?~?~?~?"
 	    *dfs-a* (list "name" 		(symbol-name x))
 	    (if (boundp x) *dfs-s* *dfs-a*) (list "value" 		value)
@@ -59,15 +59,15 @@
 (defmethod describe-object ((x integer) s)
   (if (fixnump x) (describe-fixnum x s) (describe-bignum x s)))
 
-(defun describe-fixnum (x s) 
+(defun describe-fixnum (x s)
   (format s "INTEGER:~%~?~?~?~?~?"
 	  *dfs-a* (list "subclass" 		'fixnum)
 	  *dfs-a* (list "value" 			x)
 	  "~4T~A:~20T~B~%" (list "binary" x)
-	  "~4T~A:~20T~O~%" (list "octal" x)		
+	  "~4T~A:~20T~O~%" (list "octal" x)
 	  "~4T~A:~20T~X~%" (list "hex" x)))
 
-(defun describe-bignum (x s) 
+(defun describe-bignum (x s)
   (format s "INTEGER:~%~?~?~?~?~?"
 	  *dfs-a* (list "subclass" 		'bignum)
 	  *dfs-a* (list "value" 			x)
@@ -75,7 +75,7 @@
 	  *dfs-a* (list "number of cells" (truncate (uref x 1) 2))
 	  *dfs-hex* (list "heap address" (%uvector-address x))))
 
-(defmethod describe-object ((x ratio) s) 
+(defmethod describe-object ((x ratio) s)
   (format s "RATIO:~%~?~?~?~?"
 	  *dfs-a* (list "value" 			x)
 	  *dfs-a* (list "numerator" 		(numerator x))
@@ -89,14 +89,14 @@
 			    ((double-float-p x) 'double-float)
 			    (t 'short-float))))
       (format s "FLOAT:~%~?~?~?~?~?"
-	      *dfs-a* (list "subclass" float-type)	
+	      *dfs-a* (list "subclass" float-type)
 	      *dfs-a* (list "value" x)
 	      *dfs-a* (list "significand" significand)
 	      *dfs-a* (list "exponent" exponent)
 	      *dfs-a* (list "sign" (if (plusp sign) #\+ #\-))
 	      ))))
 
-(defmethod describe-object ((x complex) s) 
+(defmethod describe-object ((x complex) s)
   (format s "COMPLEX:~%~?~?~?~?"
 	  *dfs-a* (list "value" 			x)
 	  *dfs-a* (list "real part" 		(realpart x))
@@ -113,7 +113,7 @@
 
 ;;; Cons cells
 
-(defmethod describe-object ((x cons) s) 
+(defmethod describe-object ((x cons) s)
 	(format s "CONS:~%~?~?~?~?"
 		*dfs-s* (list "car" 		(car x))
 		*dfs-s* (list "cdr" 		(cdr x))
@@ -123,14 +123,14 @@
 ;;; Function objects (all function objects are compiled)
 
 (defmethod describe-object ((x function) s)
-  (let* ((compiled-code-obj 
-	  (unless (pl::kernel-function-p x) 
+  (let* ((compiled-code-obj
+	  (unless (pl::kernel-function-p x)
 	    (uref x function-code-buffer-offset)))
-	 (references 
-	  (if compiled-code-obj 
+	 (references
+	  (if compiled-code-obj
 	      (uref compiled-code-obj compiled-code-references-offset)))
-	 (properties 
-	  (if compiled-code-obj 
+	 (properties
+	  (if compiled-code-obj
 	      (uref compiled-code-obj compiled-code-info-offset)))
 	 (name (getf properties 'function-name))
 	 (lambda-list (getf properties 'lambda-list))
@@ -147,20 +147,20 @@
 
     ;;(if (null lambda)
     ;; (setq lambda "#< UNKNOWN >"))
-	 
+
 
     ;; Make the original lambda definition pretty print
 
     (format s "FUNCTION:~%~?~?~?~?~?~?~?~?~?~?"
 	    *dfs-a* (list "subclass" 	'compiled-function)
-	    *dfs-a* (list "implementation" 
+	    *dfs-a* (list "implementation"
 			  (if (pl::kernel-function-p x) 'kernel 'standard))
 	    *dfs-a* (list "environment" (function-environment x))
 	    *dfs-hex* (list "code address" (execution-address x))
 	    *dfs-a* (list "references" references)
 	    *dfs-a* (list "name" 		name)
 	    *dfs-a* (list "lambda-list" lambda-list)
-	    ;; *dfs-a* (list "lambda" lambda)	
+	    ;; *dfs-a* (list "lambda" lambda)
 	    *dfs-a* (list "source file" source-file)
 	    *dfs-a* (list "source line" source-line)
 	    *dfs-hex* (list "heap address" (%uvector-address x)))
@@ -174,7 +174,7 @@
 
 
 (defmethod describe-object ((x vector) s)
-  (cond 
+  (cond
      ((simple-vector-p x)(describe-simple-vector x s))
      ((simple-char-vector-p x)(describe-simple-char-vector x s))
      ((simple-byte-vector-p x)(describe-simple-byte-vector x s))
@@ -192,9 +192,9 @@
 	  *dfs-a* (list "type" 		(array-type x))
 	  *dfs-a* (list "number of cells" (array-num-cells x))
 	  *dfs-hex* (list "heap address" (%uvector-address x))))
-  
 
-(defun describe-simple-vector (x s) 
+
+(defun describe-simple-vector (x s)
   (describe-generic-simple-vector x s "SIMPLE-VECTOR"))
 
 (defun describe-simple-char-vector (x s)
@@ -215,14 +215,14 @@
 (defun describe-simple-single-float-vector (x s)
   (describe-generic-simple-vector x s "SIMPLE-SINGLE-FLOAT-VECTOR"))
 
-(defmethod describe-object ((x array) s) 
-  (let* ((*print-array* nil)) 
-    (format 
+(defmethod describe-object ((x array) s)
+  (let* ((*print-array* nil))
+    (format
      s "ARRAY:~%~?~?~?~?~?~?~?~?"
      *dfs-a* (list "type" 		(array-type x))
      *dfs-a* (list "number of dimensions" (uref x adjustable-array-dimensions-offset))
      *dfs-a* (list "dimensions" (array-dimensions x))
-     *dfs-a* (list "fill pointer" 
+     *dfs-a* (list "fill pointer"
 		   (if (< (uref x adjustable-array-fill-pointer-offset) 0) nil
 		     (uref x adjustable-array-fill-pointer-offset)))
      *dfs-a* (list "number of cells" (array-num-cells x))
@@ -235,11 +235,11 @@
 ;;; Other Common Lisp data structures.
 ;;; Streams, packages, hash-tables, readtables and pathnames.
 
-(defmethod describe-object ((x stream) s) 
+(defmethod describe-object ((x stream) s)
   (let* ((*print-array* nil)
 	 (*dfs-s* "~4T~A:~30T~S~%")
 	 (*dfs-hex* "~4T~A:~30T#x~X~%"))
-    (format 
+    (format
      s "STREAM:~%~?~?~?~?~?~?~?~?~?~?~?~?~?~?~?~?~?~?~?~?~?~?"
      *dfs-s* (list "subclass" 	(uref x stream-subclass-offset))
      *dfs-s* (list "name" 		(uref x stream-name-offset))
@@ -264,14 +264,14 @@
      *dfs-s* (list "associated streams" (uref x stream-associated-streams-offset))
      *dfs-hex* (list "heap address" (%uvector-address x)))))
 
-(defmethod describe-object ((x package) s) 
+(defmethod describe-object ((x package) s)
   (let* ((*print-array* nil)
 	 (shadowing-syms (package-shadowing-symbols x))
 	 (external-syms
 	  (let ((elist nil)) (do-external-symbols (e x) (push e elist)) elist)
 	  ))
-    
-    (format 
+
+    (format
      s "PACKAGE:~%~?~?~?~?~?~?~?~?~?~?~?~?"
      *dfs-s* (list "name" 		(package-name x))
      *dfs-s* (list "nicknames" 	(package-nicknames x))
@@ -289,7 +289,7 @@
 
 
 (defmethod describe-object ((x hash-table) s)
-  (let* ((*print-array* nil)) 
+  (let* ((*print-array* nil))
     (format s "HASH-TABLE:~%~?~?~?~?~?~?~?~?~?"
 	    *dfs-a* (list "size" 		(hash-table-size x))
 	    *dfs-a* (list "count" 		(hash-table-count x))
@@ -301,8 +301,8 @@
 	    *dfs-a* (list "test function" (hash-table-test-function x))
 	    *dfs-hex* (list "heap address" (%uvector-address x)))))
 
-(defmethod describe-object ((x readtable) s) 
-  (let* ((*print-array* nil)) 
+(defmethod describe-object ((x readtable) s)
+  (let* ((*print-array* nil))
     (format s "READTABLE:~%~?~?~?~?"
 	    *dfs-a* (list "read level" (uref x 1))
 	    *dfs-a* (list "table" 		(uref x 3))
@@ -327,7 +327,7 @@
 
 (defmethod describe-object ((object t) stream)
   (let ((*print-length* 6))
-    (cond 
+    (cond
      ((structurep object)(describe-structure object stream))
      ((foreignp object)	(describe-foreign object stream))
      ((compiled-code-p object) (describe-compiled-code object stream))
@@ -345,8 +345,8 @@
 			    (nconc template (list (intern (format nil "SLOT~A" (+ i 1)) keyword-package) nil t nil nil))))
                     template)))
 
-(defun describe-structure (x s) 
-  
+(defun describe-structure (x s)
+
   ;; The old code constructed a template if template was a symbol.
   ;; But the format of the template it constructed seemed to be wrong.
   ;; First, why would the template ever be a symbol?  I don't know.
@@ -357,8 +357,8 @@
 
   (let* ((template (get-template x))
 	 (*print-escape* nil)
-	 (num-slots)) 
-				
+	 (num-slots))
+
     (setq num-slots (cl::struct-template-num-slots template))
 
     (format s "STRUCTURE:~%~?~?~?~?"
@@ -372,14 +372,14 @@
 		(elt template (+ 6 (* i 5)))
 		(uref x (+ 2 i))))))
 
-(defun describe-foreign (x s) 
+(defun describe-foreign (x s)
 	(format s "FOREIGN POINTER:~%~?~?"
 		*dfs-hex* (list "address" 		(foreign-ptr-to-int x))
 		*dfs-hex* (list "heap address" (%uvector-address x))))
 
 ;; (defconstant compiled-code-code-offset 4)
 
-(defun describe-compiled-code (x s) 
+(defun describe-compiled-code (x s)
 	(let* ((references (uref x compiled-code-references-offset))
 		   (properties (uref x compiled-code-info-offset))
 		   (name (getf properties 'function-name))
@@ -393,9 +393,9 @@
 			(setq lambda-list "#< UNKNOWN >"))
 		(if (null lambda)
 			(setq lambda "#< UNKNOWN >"))
-	 
+
 		(format s "COMPILED-CODE:~%~?~?~?~?~?~?~?~?"
-			*dfs-hex* (list "code address" 
+			*dfs-hex* (list "code address"
 					(+ (%uvector-address x) (* compiled-code-code-offset 4)))
 			*dfs-a* (list "references" references)
 			*dfs-s* (list "name" 		name)
@@ -405,13 +405,13 @@
 			*dfs-a* (list "source line" source-line)
 			*dfs-hex* (list "heap address" (%uvector-address x)))))
 
-(defun describe-foreign-heap (x s) 
+(defun describe-foreign-heap (x s)
 	(format s "FOREIGN HEAP POINTER:~%~?~?~?"
 		*dfs-hex* (list "address" 		(foreign-ptr-to-int x))
 		*dfs-a*   (list "no. bytes" 	(uref x 2))
 		*dfs-hex* (list "heap address" (%uvector-address x))))
 
-(defun describe-weak-pointer (x s) 
+(defun describe-weak-pointer (x s)
 	(format s "WEAK POINTER:~%~?~?"
 		*dfs-a* (list "object" 		(uref x 1))
 		*dfs-hex* (list "heap address" (%uvector-address x))))
@@ -434,4 +434,3 @@
 ;; (defun nd (x) (new-describe x))
 
 ;; (export '(new-describe nd) (find-package :lisp))
-

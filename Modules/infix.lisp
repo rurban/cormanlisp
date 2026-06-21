@@ -13,12 +13,12 @@
 ;;; full replacement for the normal Lisp syntax. If you want a more complete
 ;;; alternate syntax for Lisp, get a copy Apple's MLisp or Pratt's CGOL.
 ;;;
-;;; Although similar in concept to the Symbolics infix reader (#<DIAMOND>), 
-;;; no real effort has been made to ensure compatibility beyond coverage 
-;;; of at least the same set of basic arithmetic operators. There are several 
-;;; differences in the syntax beyond just the choice of #I as the macro 
-;;; character. (Our syntax is a little bit more C-like than the Symbolics 
-;;; macro in addition to some more subtle differences.) 
+;;; Although similar in concept to the Symbolics infix reader (#<DIAMOND>),
+;;; no real effort has been made to ensure compatibility beyond coverage
+;;; of at least the same set of basic arithmetic operators. There are several
+;;; differences in the syntax beyond just the choice of #I as the macro
+;;; character. (Our syntax is a little bit more C-like than the Symbolics
+;;; macro in addition to some more subtle differences.)
 ;;;
 ;;; We initially chose $ as a macro character because of its association
 ;;; with mathematics in LaTeX, but unfortunately that character is already
@@ -33,7 +33,7 @@
 ;;; Use and copying of this software and preparation of derivative works
 ;;; based upon this software are permitted, so long as the following
 ;;; conditions are met:
-;;;      o no fees or compensation are charged for use, copies, 
+;;;      o no fees or compensation are charged for use, copies,
 ;;;        distribution or access to this software
 ;;;      o this copyright notice is included intact.
 ;;; This software is made available AS IS, and no warranty is made about
@@ -45,7 +45,7 @@
 ;;; inability to use (including but not limited to loss of data or data being
 ;;; rendered inaccurate or losses sustained by third parties or a failure of
 ;;; the program to operate as documented) the program, or for any claim by
-;;; any other party, whether in an action of contract, negligence, or 
+;;; any other party, whether in an action of contract, negligence, or
 ;;; other tortious action.
 ;;;
 ;;; Please send bug reports, comments and suggestions to mkant@cs.cmu.edu.
@@ -65,7 +65,7 @@
 ;;; notification about major updates, bug fixes, and additions to the Lisp
 ;;; Utilities Repository. The mailing list is intended to have low traffic.
 ;;;
-
+
 ;;; ********************************
 ;;; Documentation ******************
 ;;; ********************************
@@ -115,18 +115,18 @@
 ;;;                         also parenthesis (x+y)/z -->   (/ (+ x y) z)
 ;;;     f(x,y)              functions                      (f x y)
 ;;;     a[i,j]              array reference                (aref a i j)
-;;;     x+y x*y             arithmetic                     (+ x y) (* x y) 
-;;;     x-y x/y             arithmetic                     (- x y) (/ x y) 
+;;;     x+y x*y             arithmetic                     (+ x y) (* x y)
+;;;     x-y x/y             arithmetic                     (- x y) (/ x y)
 ;;;     -y                  value negation                 (- y)
 ;;;     x % y               remainder                      (mod x y)
 ;;;     x<y x>y             inequalities                   (< x y) (> x y)
 ;;;     x <= y  x >= y      inequalities                   (<= x y) (>= x y)
-;;;     x == y              equality                       (= x y) 
+;;;     x == y              equality                       (= x y)
 ;;;     x != y              equality                       (not (= x y))
 ;;;     if p then q         conditional                    (when p q)
-;;;     if p then q else r  conditional                    (if p q r) 
+;;;     if p then q else r  conditional                    (if p q r)
 ;;;
-
+
 ;;; Precedence:
 ;;;
 ;;;    The following precedence conventions are obeyed by the infix operators:
@@ -144,7 +144,7 @@
 ;;;      and
 ;;;      or
 ;;;      = += -= *= /=
-;;;      , 
+;;;      ,
 ;;;      if
 ;;;      then else
 ;;;      ] )
@@ -154,14 +154,14 @@
 ;;;    C precedence conventions. You can change the precedence conventions by
 ;;;    modifying the value of the variable *operator-ordering*.
 ;;;
-
+
 ;;; ********************************
 ;;; To Do **************************
 ;;; ********************************
 ;;;
 ;;;    Write some more test cases.
 ;;;    Write some more syntactic optimizations.
-;;;    Would really like ~x to be (not x), but need it for (lognot x). 
+;;;    Would really like ~x to be (not x), but need it for (lognot x).
 
 ;;; ********************************
 ;;; Change Log *********************
@@ -172,14 +172,14 @@
 ;;; 14-OCT-93 mk    Changed macro character from #$ to #I(). Suggested by
 ;;;                 Scott McKay.
 
-
+
 ;;; ********************************
 ;;; Implementation Notes ***********
 ;;; ********************************
 ;;;
 ;;; Initially we tried implementing everything within the Lisp reader,
 ;;; but found this to not be workable. Parameters had to be passed in
-;;; global variables, and some of the processing turned out to be 
+;;; global variables, and some of the processing turned out to be
 ;;; indelible, so it wasn't possible to use any kind of lookahead.
 ;;; Center-embedded constructions were also a problem, due to the lack
 ;;; of an explicit stack.
@@ -187,10 +187,10 @@
 ;;; So we took another tack, that used below. The #I macro binds the
 ;;; *readtable* to a special readtable, which is used solely for tokenization
 ;;; of the input. Then the problem is how to correctly parenthesize the input.
-;;; We do that with what is essentially a recursive-descent parser. An 
-;;; expression is either a prefix operator followed by an expression, or an 
-;;; expression followed by an infix operator followed by an expression. When 
-;;; the latter expression is complex, the problem becomes a little tricky. 
+;;; We do that with what is essentially a recursive-descent parser. An
+;;; expression is either a prefix operator followed by an expression, or an
+;;; expression followed by an infix operator followed by an expression. When
+;;; the latter expression is complex, the problem becomes a little tricky.
 ;;; For example, suppose we have
 ;;;      exp1 op1 exp2 op2
 ;;; We need to know whether to parenthesize it as
@@ -203,13 +203,13 @@
 ;;; When we see op1, we want to gobble up exp2 op2 exp3 op3 ... opn expn+1
 ;;; into an expression where op2 through opn all have higher precedence
 ;;; than op1 (or are the same right-associative operator), and opn+1 doesn't.
-;;; This algorithm is implemented by the GATHER-SUPERIORS function. 
-;;; 
+;;; This algorithm is implemented by the GATHER-SUPERIORS function.
+;;;
 ;;; Because + and - are implemented in the infix readtable as terminating
 ;;; macro cahracters, the exponentiation version of Lisp number syntax
 ;;;    1e-3 == 0.001
 ;;; doesn't work correctly -- it parses it as (- 1e 3). So we add a little
-;;; cleverness to GATHER-SUPERIORS to detect when the tokenizer goofed. 
+;;; cleverness to GATHER-SUPERIORS to detect when the tokenizer goofed.
 ;;; Since this requires the ability to lookahead two tokens, we use a
 ;;; stack to implement the lookahead in PEEK-TOKEN and READ-TOKEN.
 ;;;
@@ -218,13 +218,13 @@
 ;;; (< (< a b) c), which obviously isn't correct. So POST-PROCESS-EXPRESSION
 ;;; detects this and similar cases, replacing the expression with (< a b c).
 ;;; For cases like a<b<=c, it replaces it with (and (< a b) (<= b c)).
-;;; 
-
+;;;
+
 ;;; ********************************
 ;;; Package Cruft ******************
 ;;; ********************************
 
-(defpackage "INFIX" (:use #-:lucid "COMMON-LISP" 
+(defpackage "INFIX" (:use #-:lucid "COMMON-LISP"
 			  #+:lucid "LISP" #+:lucid "LUCID-COMMON-LISP"))
 (in-package "INFIX")
 (export 'test-infix)
@@ -280,7 +280,7 @@
   (let ((*readtable* *normal-readtable*))
     (read stream t nil t)))
 
-
+
 ;;; ********************************
 ;;; Reader Code ********************
 ;;; ********************************
@@ -290,7 +290,7 @@
 
 (defun same-token-p (x y)
   (and (symbolp x)
-       (symbolp y) 
+       (symbolp y)
        (string-equal (symbol-name x) (symbol-name y))))
 
 ;;; Peeking Token Reader
@@ -324,7 +324,7 @@
 		 ;; it is one of the fancy numbers, so return it
 		 (read-token stream)
 		 (let ((*readtable* *normal-readtable*))
-		   (read-from-string (format nil "~A~A~A" 
+		   (read-from-string (format nil "~A~A~A"
 					     left operator right))))
 		(t
 		 ;; it isn't one of the fancy numbers, so unread the token
@@ -407,15 +407,15 @@
     ;; Gather the expression until the next delimiter.
     (push (gather-superiors delimiter-token stream) list)))
 
-
+
 ;;; ********************************
 ;;; Precedence *********************
 ;;; ********************************
 
-(defparameter *operator-ordering* 
+(defparameter *operator-ordering*
     '(( \[ \( \! )			; \[ is array reference
       ( ^^ )				; exponentiation
-      ( ~ )				; lognot 
+      ( ~ )				; lognot
       ( * /  % )			; % is mod
       ( + - )
       ( << >> )
@@ -446,7 +446,7 @@
 (defun operator-right-associative-p (operator)
   (find operator *right-associative-operators*))
 
-
+
 ;;; ********************************
 ;;; Define Operators ***************
 ;;; ********************************
@@ -493,7 +493,7 @@
   (defmacro define-character-tokenization (char function)
     `(set-macro-character ,char ,function nil *infix-readtable*)))
 
-
+
 ;;; ********************************
 ;;; Operator Definitions ***********
 ;;; ********************************
@@ -571,10 +571,10 @@
 (define-token-operator *
     :infix `(* ,left ,(gather-superiors '* stream)))
 (define-token-operator *=
-    :infix `(,(if (symbolp left) 
+    :infix `(,(if (symbolp left)
 		  'setq
 		  'setf)
-	      ,left 
+	      ,left
 	      (* ,left ,(gather-superiors '*= stream))))
 
 (define-character-tokenization #\/
@@ -589,10 +589,10 @@
     :infix `(/ ,left ,(gather-superiors '/ stream))
     :prefix `(/ ,(gather-superiors '/ stream)))
 (define-token-operator /=
-    :infix `(,(if (symbolp left) 
+    :infix `(,(if (symbolp left)
 		  'setq
 		  'setf)
-	      ,left 
+	      ,left
 	      (/ ,left ,(gather-superiors '/= stream))))
 
 (define-character-tokenization #\^
@@ -662,7 +662,7 @@
 (define-token-operator ==
     :infix `(= ,left ,(gather-superiors '== stream)))
 (define-token-operator =
-    :infix `(,(if (symbolp left) 
+    :infix `(,(if (symbolp left)
 		  'setq
 		  'setf)
 	      ,left
@@ -784,14 +784,14 @@
 		    (read stream t nil t))))
 	  (read-char stream))))
 
-
+
 ;;; ********************************
 ;;; Syntactic Modifications ********
 ;;; ********************************
 
 ;;; Post processes the expression to remove some unsightliness caused
 ;;; by the way infix processes the input. Note that it is also required
-;;; for correctness in the a<b<=c case. 
+;;; for correctness in the a<b<=c case.
 
 (defun post-process-expression (expression)
   (if (and (consp expression)
@@ -804,14 +804,14 @@
 	       ;; Flatten the expression if possible
 	       (cond ((and (eq operator '-)
 			   (= (length left) 2))
-		      ;; -a-b --> (+ (- a) (- b)). 
+		      ;; -a-b --> (+ (- a) (- b)).
 		      `(+ ,left (- ,right)))
 		     ((and (eq operator '/)
 			   (= (length left) 2))
 		      ;; ditto with /
 		      `(/ (* ,(second left) ,right)))
-		     (t 
-		      ;; merges a+b+c as (+ a b c).	     
+		     (t
+		      ;; merges a+b+c as (+ a b c).
 		      (append left (list right)))))
 	      ((and (consp left)
 		    (eq operator '-)
@@ -829,12 +829,12 @@
 	       expression)))
       expression))
 
-
+
 ;;; ********************************
 ;;; Test Infix *********************
 ;;; ********************************
 
-;;; Invoke with (infix:test-infix). 
+;;; Invoke with (infix:test-infix).
 ;;; Prints out all the tests that fail and a count of the number of failures.
 
 (defparameter *test-cases*
@@ -952,9 +952,9 @@
       ("a^^b^^c"         (expt a (expt b c)))
       ("a(d)^^b^^c"      (expt (a d) (expt b c)))
       ("a<b+c<d"       (< a (+ b c) d))
-      ("1*~2+3"        (+ (* 1 (lognot 2)) 3)) 
-      ("1+~2*3"        (+ 1 (* (lognot 2) 3))) 
-      ("1+~2+3"        (+ 1 (lognot 2) 3)) 
+      ("1*~2+3"        (+ (* 1 (lognot 2)) 3))
+      ("1+~2*3"        (+ 1 (* (lognot 2) 3)))
+      ("1+~2+3"        (+ 1 (lognot 2) 3))
       ("f(a)*=g(b)"    (setf (f a) (* (f a) (g b))))
       ("f(a)+=g(b)"    (incf (f a) (g b)))
       ("f(a)-=g(b)"    (decf (f a) (g b)))
@@ -1017,16 +1017,16 @@
 	  ((eq result :error)
 	   (format t "~&Test #I(~A) failed. ~
                            ~&   Expected ERROR ~
-                           ~&   but got ~A." 
+                           ~&   but got ~A."
 		   string value)
 	   nil)
 	  ((not (equal value result))
 	   (format t "~&Test #I(~A) failed. ~
                            ~&   Expected ~A ~
-                           ~&   but got ~A." 
+                           ~&   but got ~A."
 		   string result value)
 	   nil)
 	  (t
-	   t))))  
+	   t))))
 
 ;;; *EOF*

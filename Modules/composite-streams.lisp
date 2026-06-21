@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
@@ -107,7 +107,7 @@
 
 (defmethod gs:stream-write-char ((stream two-way-stream) character)
   (write-char character (two-way-stream-output-stream stream)))
-  
+
 (defmethod gs:stream-write-string ((stream two-way-stream) string &optional start end)
   (write-string string (two-way-stream-output-stream stream)
                 :start start :end end))
@@ -150,7 +150,7 @@ operations fail."
 (defclass synonym-stream (gs:fundamental-stream openable-mixin)
   ((symbol :reader synonym-stream-symbol :initarg :symbol))
   (:documentation "synonym-stream as per ANSI."))
-  
+
 (defun make-synonym-stream (symbol)
   "Make a synonym stream for SYMBOL."
   (check-type symbol symbol)
@@ -210,7 +210,7 @@ stream operations fail."
 
 (defmethod gs:stream-write-char ((stream synonym-stream) character)
   (write-char character (symbol-value (synonym-stream-symbol stream))))
-  
+
 (defmethod gs:stream-write-string ((stream synonym-stream) string &optional start end)
   (write-string string (symbol-value (synonym-stream-symbol stream))
                 :start start :end end))

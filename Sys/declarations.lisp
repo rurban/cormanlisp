@@ -38,7 +38,7 @@
 	(defun inline-proclaim-p (sym)
 		(if (and (consp sym) (eq (car sym) 'setf))
 			(setf sym (cl::get-setf-function (second sym))))
-		(and (symbolp sym)(gethash sym inline-proclamations))))	
+		(and (symbolp sym)(gethash sym inline-proclamations))))
 
 (defun proclaim-optimize-decls (decls)
 	(dolist (x decls)
@@ -49,7 +49,7 @@
 			(safety (setf pl::*compiler-optimize-safety* (second x)))
 			(space (setf pl::*compiler-optimize-space* (second x)))
 			(debug (setf pl::*compiler-optimize-debug* (second x))))))
-		
+
 ;;;
 ;;;	Common Lisp PROCLAIM function.
 ;;;
@@ -79,7 +79,7 @@
 	`#',form)
 ;(setq *compiler-warn-on-dynamic-return* t)	;; disable for this macro only
 
-(defun intersection (list-1 list-2 
+(defun intersection (list-1 list-2
 				&key (key nil)
 					(test #'eql)
 					(test-not nil))
@@ -99,32 +99,32 @@
 			(if (and (symbolp sym) (inline-function-p sym))
 				(let* ((func (symbol-function sym))
 					   (lambda (function-lambda-expression func)))
-					(unless lambda 
-						(warn "Call to function ~S was not inlined because the ~ 
+					(unless lambda
+						(warn "Call to function ~S was not inlined because the ~
 							source definition was not available" sym)
 						(return-from inline-expand expr))
 					(let* ((lambda-list (second lambda))
-						   (forms (cddr lambda)) 
+						   (forms (cddr lambda))
 					   	   (arg-forms nil)
 						   (arg-exprs (cdr expr)))
 						(unless (= (length lambda-list)(length arg-exprs))
-							(warn "Call to function ~S was not inlined because the 
-								number of passed parameters did not match the number of 
+							(warn "Call to function ~S was not inlined because the
+								number of passed parameters did not match the number of
 								required arguments" sym)
-							(return-from inline-expand expr))	;; only inline if number of args matches						
+							(return-from inline-expand expr))	;; only inline if number of args matches
 						(unless (null (function-environment func))
-							(warn "Call to function ~S was not inlined because it was defined 
+							(warn "Call to function ~S was not inlined because it was defined
 								in a non-null lexical environment" sym)
-							(return-from inline-expand expr))	;; only inline if null lexical environment						
+							(return-from inline-expand expr))	;; only inline if null lexical environment
 						(when (intersection cl::lambda-list-keywords lambda-list)
-							(warn "Call to function ~S was not inlined because it can take &optional, &rest, &key, or &aux arguments" 
+							(warn "Call to function ~S was not inlined because it can take &optional, &rest, &key, or &aux arguments"
 								sym)
-							(return-from inline-expand expr))	;; only inline if only required args are used						
+							(return-from inline-expand expr))	;; only inline if only required args are used
 						(do* ((x arg-exprs (cdr x))
 							  (lambda-var lambda-list (cdr lambda-var)))
 							((null x))
 							(push `(,(car lambda-var) ,(car x)) arg-forms))
-						(return-from inline-expand `(let ,(nreverse arg-forms) 
+						(return-from inline-expand `(let ,(nreverse arg-forms)
 								(with-only-lexicals ,lambda-list
 									,@forms))))))))
 	expr)

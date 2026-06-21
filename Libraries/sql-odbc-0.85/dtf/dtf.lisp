@@ -14,7 +14,7 @@
   (:import-from "SQL"
                 "DB-DISCONNECT" "DB-COMMIT" "DB-ROLLBACK" "DB-QUERY"
                 "DB-EXECUTE-COMMAND" "DB-QUERY-OBJECT"
-                "%DB-EXECUTE" "%INITIALIZE-QUERY" 
+                "%DB-EXECUTE" "%INITIALIZE-QUERY"
                 "%DISPOSE-QUERY-VARS" "%READ-QUERY-DATA"
                 "WITH-BLOB"))
 
@@ -29,7 +29,7 @@
   (defconstant $dtFnameSize 25)     ; SCresRecEnum: name string size
   ; includes trailing null
   (defconstant $dtFpwSize 17)       ; Length of password; includes trailing null
-  
+
   (defconstant $dtFcolTypeDecimal     #x0000)  ; Decimal type
   (defconstant $dtFcolTypeByte        #x0f00)  ; Byte type
   (defconstant $dtFcolTypeWord        #x0f01)  ; Word type
@@ -87,11 +87,11 @@
   (defconstant $dtF2moveStart   0)
   (defconstant $dtF2moveEnd     1)
   (defconstant $dtF2moveCurrent 2)
-  
+
   (define-entry-point ("dtFcreateDatabase" ("dtFPPCSV1"))
     ((string :ptr))
     :word)
-  
+
   (define-entry-point ("dtFMacSetDatabasePath" ("dtFPPCSV1"))
     ((fixnum :short)
      (fixnum :long)
@@ -100,103 +100,103 @@
      (fixnum :long)
      (string :ptr))
     :word)
-  
-  (define-entry-point ("dtF2ident" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2ident" ("dtFPPCSV1"))
     ((string :ptr) (string :ptr))
     :word)
-  
-  (define-entry-point ("dtF2start" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2start" ("dtFPPCSV1"))
     ()
     :word)
-  
-  (define-entry-point ("dtF2stop" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2stop" ("dtFPPCSV1"))
     ()
     :word)
-  
-  (define-entry-point ("dtF2exec" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2exec" ("dtFPPCSV1"))
     ((string :ptr))
     :word)
-  
-  (define-entry-point ("dtF2execWS" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2execWS" ("dtFPPCSV1"))
     ((fixnum :word)
      (string :ptr))
     :word)
-  
+
   (define-entry-point ("dtF2rows" ("dtFPPCSV1"))
     ()
     :long)
-  
+
   (define-entry-point ("dtF2rowsWS" ("dtFPPCSV1"))
     ((fixnum :word))
     :long)
-  
+
   (define-entry-point ("dtF2cols" ("dtFPPCSV1"))
     ()
     :long)
-  
+
   (define-entry-point ("dtF2colsWS" ("dtFPPCSV1"))
     ((fixnum :word))
     :long)
-  
+
   #+not-used
   (define-entry-point ("dtF2cinfo" ("dtFPPCSV1"))
     ((fixnum :byte))
     :ptr)
-  
+
   (define-entry-point ("dtF2cinfoP" ("dtFPPCSV1"))
     ((fixnum :byte)
      (t :ptr))
     :word)
-  
+
   (define-entry-point ("dtF2cinfoPWS" ("dtFPPCSV1"))
     ((fixnum :word)
      (fixnum :byte)
      (t :ptr))
     :word)
-  
-  (define-entry-point ("dtF2resultAvailable" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2resultAvailable" ("dtFPPCSV1"))
     ()
     :boolean)
-  
-  (define-entry-point ("dtF2resultAvailableWS" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2resultAvailableWS" ("dtFPPCSV1"))
     ((fixnum :word))
     :boolean)
-  
+
   (define-entry-point ("dtF2move" ("dtFPPCSV1"))
     ((fixnum :word)
      (fixnum :signed-long))
     :word)
-  
+
   (define-entry-point ("dtF2moveWS" ("dtFPPCSV1"))
     ((fixnum :word)
      (fixnum :word)
      (fixnum :signed-long))
     :word)
-  
+
   (define-entry-point ("dtF2setBlob" ("dtFPPCSV1"))
     ((t :ptr)
      (fixnum :long))
     :ptr)
-  
+
   (define-entry-point ("dtF2setBlobWS" ("dtFPPCSV1"))
     ((fixnum :word)
      (t :ptr)
      (fixnum :long))
     :ptr)
-  
+
   (define-entry-point ("dtF2getFieldInfo" ("dtFPPCSV1"))
     ((fixnum :byte)
      (t :ptr)
      (t :ptr))
     :word)
-  
+
   (define-entry-point ("dtF2getFieldInfoWS" ("dtFPPCSV1"))
     ((fixnum :word)
      (fixnum :byte)
      (t :ptr)
      (t :ptr))
     :word)
-  
+
   (define-entry-point ("dtF2getField" ("dtFPPCSV1"))
     ((fixnum :byte)
      (t :ptr)
@@ -204,7 +204,7 @@
      (t :ptr)
      (t :ptr))
     :word)
-  
+
   (define-entry-point ("dtF2getFieldWS" ("dtFPPCSV1"))
     ((fixnum :word)
      (fixnum :byte)
@@ -213,24 +213,24 @@
      (t :ptr)
      (t :ptr))
     :word)
-  
-  (define-entry-point ("dtFgetError" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtFgetError" ("dtFPPCSV1"))
     ((fixnum :long))
     :ptr)
-  
-  (define-entry-point ("dtF2getWS" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2getWS" ("dtFPPCSV1"))
     ()
     :word)
-  
+
   (define-entry-point ("dtF2releaseWS" ("dtFPPCSV1"))
     ((fixnum :word))
     :word)
-  
-  (define-entry-point ("dtF2getDefaultWS" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2getDefaultWS" ("dtFPPCSV1"))
     ()
     :word)
-  
-  (define-entry-point ("dtF2setDefaultWS" ("dtFPPCSV1")) 
+
+  (define-entry-point ("dtF2setDefaultWS" ("dtFPPCSV1"))
     ((fixnum :word))
     :word)
 
@@ -293,7 +293,7 @@
    (column-types :initform (make-array 0 :element-type 'fixnum :adjustable t :fill-pointer t)
                    :accessor column-types)))
 
-(defmethod initialize-instance :after ((database dtf-database) 
+(defmethod initialize-instance :after ((database dtf-database)
                                            &key &allow-other-keys)
   (with-slots (query) database
     (setf query (make-instance 'dtf-query))))
@@ -305,7 +305,7 @@
 
 (defun catch-error (errno &optional desc)
   (unless (zerop errno)
-    (format *standard-output* "~%~a (~a)" 
+    (format *standard-output* "~%~a (~a)"
             (get-error errno)
             (or desc "?")))
   errno)
@@ -317,7 +317,7 @@
        (dtF2ident username-ptr password-ptr)))))
 
 (defmethod db-connect ((db-type (eql :dtf)) db-file user-id password autocommit)
-  (let ((db (make-instance 'dtf-database 
+  (let ((db (make-instance 'dtf-database
               :db-type :dtf
               :db-name db-file
               :user-id user-id
@@ -332,7 +332,7 @@
 
 (defmethod db-connect ((db dtf-database) db-file user-id password autocommit)
   (declare (ignore autocommit))
-  (let ((db (make-instance 'dtf-database 
+  (let ((db (make-instance 'dtf-database
               :db-type :dtf
               :db-name db-file
               :user-id user-id
@@ -365,7 +365,7 @@
       (ccl::with-cstr (db-name-ptr db-name)
         (ccl::with-cstr (blob-name-ptr blob-name)
           (catch-error
-           (dtfmacsetdatabasepath db-refnum db-dirid db-name-ptr 
+           (dtfmacsetdatabasepath db-refnum db-dirid db-name-ptr
                                   blob-refnum blob-dirid blob-name-ptr)
            "choose-database")))))))
 
@@ -396,7 +396,7 @@
   (with-slots (workspace) database
     (ccl::with-cstr (sqlstr sql-expression)
       (catch-error
-       (if workspace 
+       (if workspace
          (dtF2execws workspace sqlstr)
          (dtf2exec sqlstr))
        "query"))))
@@ -421,7 +421,7 @@
                          (= ,end (ccl::%i+ ,max-size ,offset))) ; to be sure
                    (return)
                    (setq ,end (ccl::%i+ ,end 1))))
-           (%str-from-ptr-in-script (%incf-ptr p ,offset) 
+           (%str-from-ptr-in-script (%incf-ptr p ,offset)
                                     (ccl::%i- ,end ,offset)))))))
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
@@ -433,7 +433,7 @@
 
 (defun get-field-info (column &optional workspace)
   (rlet ((info :info-entry))
-    (if workspace 
+    (if workspace
       (dtf2cinfopws workspace column info)
       (dtf2cinfop column info))
     (values (r-cstr-ref info info-entry.table)
@@ -442,7 +442,7 @@
             (rref info info-entry.full-type))))
 
 (defun result-available-p (&optional workspace)
-  (if workspace 
+  (if workspace
     (dtf2resultavailablews workspace)
     (dtf2resultavailable)))
 
@@ -511,7 +511,7 @@
        (let ((field-length (%get-long field-len)))
          (%stack-block ((huge-string field-length)
                         (field-len #.(ccl::record-field-length :long)))
-           (catch-error 
+           (catch-error
             (if workspace
               (dtf2getfieldws workspace col huge-string field-length field-len (%null-ptr))
               (dtf2getfield col huge-string field-length field-len (%null-ptr)))
@@ -521,7 +521,7 @@
      (%stack-block ((field-len #.(ccl::record-field-length :long)))
        (catch-error
         (if workspace
-          (dtf2getfieldinfows workspace col field-len (%null-ptr)) 
+          (dtf2getfieldinfows workspace col field-len (%null-ptr))
           (dtf2getfieldinfo col field-len (%null-ptr)))
         "retrieve-field/info: bit")
        (let* ((field-length (%get-long field-len))
@@ -541,8 +541,8 @@
      (%stack-block ((real #.(ccl::record-field-length :double-float))
                     (field-len #.(ccl::record-field-length :long))
                     (col-type #.(ccl::record-field-length :word)))
-       (catch-error 
-        (if workspace 
+       (catch-error
+        (if workspace
           (dtf2getfieldws workspace col real #.(ccl::record-field-length :long) field-len col-type)
           (dtf2getfield col real #.(ccl::record-field-length :double-float) field-len col-type))
         "retrieve-field: real")
@@ -551,7 +551,7 @@
      (%stack-block ((date #.(ccl::record-field-length :long))
                     (field-len #.(ccl::record-field-length :long))
                     (col-type #.(ccl::record-field-length :word)))
-       (catch-error 
+       (catch-error
         (if workspace
           (dtf2getfieldws workspace col date #.(ccl::record-field-length :long) field-len col-type)
           (dtf2getfield col date #.(ccl::record-field-length :long) field-len col-type))
@@ -593,7 +593,7 @@
      (%stack-block ((byte #.(ccl::record-field-length :byte))
                     (field-len #.(ccl::record-field-length :long))
                     (col-type #.(ccl::record-field-length :word)))
-       (catch-error 
+       (catch-error
         (if workspace
           (dtf2getfieldws workspace col byte #.(ccl::record-field-length :long) field-len col-type)
           (dtf2getfield col byte #.(ccl::record-field-length :long) field-len col-type))
@@ -603,7 +603,7 @@
      (%stack-block ((short #.(ccl::record-field-length :word))
                     (field-len #.(ccl::record-field-length :long))
                     (col-type #.(ccl::record-field-length :word)))
-       (catch-error 
+       (catch-error
         (if workspace
           (dtf2getfieldws workspace col short #.(ccl::record-field-length :long) field-len col-type)
           (dtf2getfield col short #.(ccl::record-field-length :long) field-len col-type))
@@ -687,7 +687,7 @@
     ;; DBL: Looks like there's a compiler bug.  The col argument doesn't
     ;; get passed correctly.  Substituting a constant 0 makes the test
     ;; case work.  Look above at the #+broken and #-broken code; this affects
-    ;; behavior in the following case.  It looks like the compiler gets the 
+    ;; behavior in the following case.  It looks like the compiler gets the
     ;; value of col just fine, but then tries to move it to the stack from
     ;; the wrong result register.  Bug submitted to Digitool on Halloween 98.
     ((#.$dtFcolTypeLong #.$dtFcolTypeLongWord)
@@ -731,7 +731,7 @@
                          (mapcar #'(lambda (type)
                                      (prog1
                                        (retrieve-field col type workspace)
-                                       (incf col))) 
+                                       (incf col)))
                                  col-types)))
                      while (and (neq which :first)
                                 (zerop (move-cursor :current 1 workspace)))))
@@ -773,30 +773,30 @@
   (%initialize-query (db-query-object database) arglen col-positions))
 
 (defmethod %initialize-query ((query dtf-query) &optional arglen col-positions)
-  (with-slots (workspace column-count row-count table-names column-names column-types 
-                         cursor-position) 
+  (with-slots (workspace column-count row-count table-names column-names column-types
+                         cursor-position)
               query
     (when (result-available-p workspace)
       (setf column-count (if arglen
                            (min arglen (%column-count workspace))
                            (%column-count workspace))
-            row-count (%row-count workspace) 
+            row-count (%row-count workspace)
             (fill-pointer table-names) 0
             (fill-pointer column-names) 0
             (fill-pointer column-types) 0
             cursor-position nil)
-      (if col-positions 
+      (if col-positions
         (dotimes (col column-count)
           (multiple-value-bind (table-name col-name col-type)
                                (get-field-info col)
             (vector-push-extend table-name table-names)
-            (vector-push-extend col-name column-names) 
+            (vector-push-extend col-name column-names)
             (vector-push-extend col-type column-types)))
         (dotimes (col column-count)
           (multiple-value-bind (table-name col-name col-type)
                                (get-field-info col)
             (vector-push-extend table-name table-names)
-            (vector-push-extend col-name column-names) 
+            (vector-push-extend col-name column-names)
             (vector-push-extend col-type column-types)))))))
 
 (defmethod %read-query-data ((database dtf-database) ignore-columns)

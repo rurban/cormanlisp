@@ -1,7 +1,7 @@
 ;;;; ACL socket wrapper library for Corman Lisp - Version 1.1
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
@@ -35,10 +35,10 @@
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 17/09/2000 - 1.0 
+;;;; 17/09/2000 - 1.0
 ;;;;              Initial release.
 ;;;;
 ;;;; 20/09/2000 - 1.1
@@ -59,7 +59,7 @@
 
 (defpackage socket
   (:use "COMMON-LISP")
-  (:export 
+  (:export
 		"MAKE-SOCKET"
 		"ACCEPT-CONNECTION"
 		"DOTTED-TO-IPADDR"
@@ -78,13 +78,13 @@
 			      &key (wait t))
 	(unless wait
 		(error "WAIT keyword to ACCEPT-CONNECTION not implemented."))
-	(sockets:make-socket-stream 
+	(sockets:make-socket-stream
 		(sockets:accept-socket server-socket)))
 
 (defun make-socket (&key (remote-host "0.0.0.0") ;;localhost?
 		type
 			 local-port
-			 remote-port 
+			 remote-port
 			 (connect :active)
 			 (format :text)
 		ssl
@@ -96,13 +96,13 @@
 		(warn ":BINARY keyword to MAKE-SOCKET partially implemented."))
 	(when reuse-address
 		(warn ":REUSE-ADDRESS keyword to MAKE-SOCKET not implemented."))
-	
+
 	(ecase connect
 		(:passive
-			(sockets:make-server-socket 
+			(sockets:make-server-socket
 				:host remote-host
 				:port local-port))
-		(:active			
+		(:active
 			(sockets:make-socket-stream
 				(if ssl
 					(ssl-sockets:make-client-ssl-socket
@@ -111,7 +111,7 @@
 					(sockets:make-client-socket
 						:host remote-host
 						:port remote-port))))))
-					
+
 
 (defun dotted-to-ipaddr (dotted &key errorp)
 	(when errorp
@@ -133,7 +133,7 @@
 		(warn ":IGNORE-CACHE keyword to IPADDR-TO-HOSTNAME not supported."))
 	(if (stringp host)
 		(sockets:host-to-ipaddr host)
-		(dotted-to-ipaddr (ipaddr-to-dotted host))))	
+		(dotted-to-ipaddr (ipaddr-to-dotted host))))
 
 (defun remote-host (socket-or-stream)
 	(let ((socket (if (typep socket-or-stream 'sockets:base-socket)
@@ -200,5 +200,5 @@
 (let ((stream (make-socket :remote-host "localhost" :remote-port 8002)))
 	(write-line "quit" stream)
 	(force-output stream))
-	
+
 |#

@@ -3,7 +3,7 @@
 ;;;;	See LICENSE.txt for license information.
 ;;;;	-------------------------------
 ;;;;	Portions Copyright (c) 2000 Vassili Bykov
-;;;; 
+;;;;
 ;;;;	File:		parse-c-decls.lisp
 ;;;;	Contents:	Functions to parse C declarations pasted
 ;;;;                    from header files.
@@ -63,7 +63,7 @@
   (when *export-all*
     (push symbol *exported-syms*)))
 
-
+
 ;;;
 ;;;  THE TOKENS AND SOME C KNOWLEDGE
 ;;;
@@ -97,7 +97,7 @@
 	ht))))
 
 (define-c-keywords +c-keywords+
-    "void" "char" "int" "float" "HANDLE" 
+    "void" "char" "int" "float" "HANDLE"
     "signed" "unsigned" "short" "long" "single" "double"
     "_pascal" "PASCAL" "const" "CONST"
     "near" "NEAR" "far" "FAR"
@@ -115,7 +115,7 @@
   '(:if :ifdef :ifndef :else :endif))
 
 ;; MAKE-TOKEN below is on the bottleneck path (originating in read-token).
-;; It is executed for each word read from the input.  
+;; It is executed for each word read from the input.
 
 (defun make-token (string)
   ;; If the string is a known C keyword, return the corresponding Lisp
@@ -202,7 +202,7 @@
   (or (cadr (assoc tok *name-translations* :test #'string=))
       (intern (string-upcase (fun-symbol-name tok)))))
 
-
+
 ;;;
 ;;;  TOKENIZING A C STREAM AND GROUPING TOKENS INTO "THINGS"
 ;;;
@@ -269,7 +269,7 @@
 	   (when in-token
 	     (unread-char c stream)
 	     (setq in-token nil)
-	     (return 
+	     (return
 	       (make-token (concatenate 'string (nreverse token)))))
 	   (return
 	     (if (and (eql c #\/ ) (maybe-skip-comment stream))
@@ -314,7 +314,7 @@
     (nreverse tokens)))
 
 
-
+
 ;;;
 ;;;  PREPROCESSOR #define
 ;;;
@@ -346,7 +346,7 @@
 (defun translate-arithmetic-expression (tokens)
   (let* ((input tokens)
 	 (lookahead (car tokens)))
-    (labels  
+    (labels
 	((match (token)
 	   (unless (eql token (car input))
 	     (syntax-error "~A expected, got: ~A" token lookahead))
@@ -425,9 +425,9 @@
     (setq const-name (intern-id const-name))
     (maybe-export-sym const-name)
     `(defconstant ,const-name ,(translate-expression expr))))
-    
 
-
+
+
 ;;;
 ;;;  TYPEDEFS
 ;;;
@@ -526,7 +526,7 @@
 	   (setq base-type (list lookahead))
 	   (match lookahead))
 	 (pointers ()
-	   (do () 
+	   (do ()
 	       ((not (eql lookahead #\*)))
 	     (incf pointer-level)
 	     (match #\*))))
@@ -663,7 +663,7 @@
 		(when have-name-p
 		  (syntax-error "Unexpected token: ~A" lookahead))
 		(cond
-		  ((member lookahead '(:near :far :const))) 
+		  ((member lookahead '(:near :far :const)))
 		  ((id-token-p lookahead)
 		   (push (intern-id lookahead) vtoks)
 		   (setq have-name-p t))
@@ -685,7 +685,7 @@
 ;; definition to the symbol named as its tag.
 ;;
 (defun translate-struct (tokens)
-  (multiple-value-bind (tag fields vars) 
+  (multiple-value-bind (tag fields vars)
                        (parse-struct-declaration tokens)
 	(declare (ignore vars))
     (when (null tag)
@@ -729,7 +729,7 @@
     (translate-typedef-scalar tokens)))
 
 
-
+
 ;;;
 ;;;  FUNCTION PROTOTYPES
 ;;;
@@ -808,7 +808,7 @@
 	(match #\) )
 	(match nil))
       (values name (delete-if (lambda (decl) (eq (second decl) :void)) params) return-type entry-name linkage))))
-      
+
 (defun translate-function-prototype (tokens)
   (unless *target-library*
     (syntax-error "No target library specified"))
@@ -822,7 +822,7 @@
       :linkage-type ,linkage)))
 
 
-
+
 ;;;
 ;;; COM INTERFACES
 ;;;
@@ -914,7 +914,7 @@
 				      toks))
 				 method-toks)))
       (maybe-export-sym name)
-      `(let ((,base-index ,(if parent-name 
+      `(let ((,base-index ,(if parent-name
 			       `(length (interface-method-list ',parent-name))
 			       0)))
 				(defctype ,name win::interface)
@@ -924,9 +924,9 @@
 		      `(interface-method-list ',parent-name)
 		      nil)
 	  ',(mapcar #'cadr method-forms)))))))
- 
 
-
+
+
 ;;;
 ;;; TOP LEVEL INTERFACE
 ;;;
@@ -1013,14 +1013,14 @@
       (otherwise
        (syntax-error "Unexpected translation parameter: ~S" key)))
     (push (cons key value) canonical)))
-     
+
 (defun translations-from-name-list (names)
   (mapcar
    #'(lambda (funname)
        (unless (stringp funname)
 	 (syntax-error "Invalid ANSI function name ~S" funname))
-       (list funname 
-	     (intern 
+       (list funname
+	     (intern
 	      (string-upcase ; NSTRING-UPCASE would do but it is broken
 	       (subseq funname 0 (1- (length funname)))))))
    names))
@@ -1072,7 +1072,7 @@
 (defun cl::format-universal-time (time stream)
 	(declare (ignore time stream)) nil) ;; forward declaration
 
-(defun transcribe-file (in-file out-file 
+(defun transcribe-file (in-file out-file
 				&optional (package :common-lisp-user)
 				          (prettyp t))
   ;; Open IN-FILE, read all forms in it and write them prettily formatted into
@@ -1105,4 +1105,3 @@
 	  (terpri out))))))
 
 ;;;; EOF
-

@@ -8,10 +8,8 @@ Copyright (C) 2003-2016 Gil Dabah
 This library is licensed under the BSD license. See the file COPYING.
 */
 
-
 #ifndef X86DEFS_H
 #define X86DEFS_H
-
 
 #define SEG_REGS_MAX (6)
 #define CREGS_MAX (9)

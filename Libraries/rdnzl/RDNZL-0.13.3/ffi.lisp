@@ -328,7 +328,7 @@ called after DllEnsureInit has been called."
      (arg-types ffi-void-pointer))
   ffi-void-pointer)
 
-(ffi-define-callable 
+(ffi-define-callable
   (LispCallback ffi-void-pointer)
   ((index ffi-integer)
    (args ffi-void-pointer))
@@ -336,7 +336,7 @@ called after DllEnsureInit has been called."
   ;; adapter.lisp
   (funcall (gethash index *callback-hash*) args))
 
-(ffi-define-callable 
+(ffi-define-callable
   (ReleaseDelegateAdapter ffi-void)
   ((index ffi-integer))
   ;; remove entry from hash table if CLR is done with it

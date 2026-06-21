@@ -45,7 +45,7 @@
 				       :text-hook #'lxml-text-hook))))
 
 (defun plist->alist (plist)
-  (when plist 
+  (when plist
     (cons (cons (first plist) (second plist))
           (plist->alist (rest (rest plist))))))
 
@@ -56,13 +56,13 @@
 	((consp dom)
 	 (let (tag attributes)
 	   (cond ((symbolp (first dom)) (setf tag (first dom)))
-		 ((consp (first dom)) (setf tag (first (first dom)) 
+		 ((consp (first dom)) (setf tag (first (first dom))
                                             attributes (plist->alist (rest (first dom)))))
 		 (t (error "Input not recognized as LXML ~s" dom)))
            (let ((*namespaces* (extend-namespaces attributes *namespaces*)))
-             (write-char #\< stream) 
+             (write-char #\< stream)
              (print-identifier tag stream)
-             (loop :for (name . value) :in attributes 
+             (loop :for (name . value) :in attributes
                    :do (print-attribute name value stream))
              (if (rest dom)
                  (let ((children (rest dom)))
@@ -79,5 +79,5 @@
                    (print-closing-tag tag stream))
                (write-string "/>" stream)))))
 	(t (error "Input not recognized as LXML ~s" dom))))
-  
+
 ;;;; eof

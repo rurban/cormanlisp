@@ -9,7 +9,7 @@
 ;;;;	Insults variously attributed to:
 ;;;;						a) William Shakespeare
 ;;;;						b) A fellow priest who was the Vicar of a
-;;;; 						neighbouring parish when I worked in the beautiful Waikato 
+;;;; 						neighbouring parish when I worked in the beautiful Waikato
 ;;;;						District
 ;;;;						c) Matthew A. Lecher  (mal6315@cs.rit.edu)
 ;;;;					    d) Jerry Maguire, who teaches English at Center Grove High School
@@ -21,7 +21,7 @@
 (defvar column2 nil)
 (defvar column3 nil)
 (let ((words '(
-;;;			1						 2						 3   
+;;;			1						 2						 3
 		 artless                 base-court              apple-john
          bawdy                   bat-fowling             baggage
          beslubbering            beef-witted             barnacle
@@ -73,7 +73,7 @@
          weedy                   unchin-snouted          whey-face
          yeasty                  weather-bitten          wagtail
 	)))
-	(do ((x words (cdddr x))) 
+	(do ((x words (cdddr x)))
 		((null x))
 		(push (first x) column1)
 		(push (second x) column2)

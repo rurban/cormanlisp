@@ -1,7 +1,7 @@
 ;; Meta class to provide :class allocation slots.
 (in-package :common-lisp)
 
-(defmethod shared-initialize ((instance standard-object) 
+(defmethod shared-initialize ((instance standard-object)
                               slot-names &rest all-keys)
   (dolist (slot (class-slots (class-of instance)))
     (let ((slot-name (slot-definition-name slot)))
@@ -41,7 +41,7 @@
 						(if (not (null initfunction))
 							(funcall initfunction)
 							unbound-class-slot))))
-			(remove-if-not #'class-slot-p 
+			(remove-if-not #'class-slot-p
 				(class-direct-slots class)))))
 
 (defun class-slot-value (class slot-name)
@@ -74,7 +74,7 @@
         (when slot
            (let ((value (cdr (assoc slot-name
                                     (class-allocated-slots super)))))
-             (return-from class-slot-boundp 
+             (return-from class-slot-boundp
                           (eq value secret-unbound-value)))))))
 
 (defun class-slot-makunbound (class slot-name)

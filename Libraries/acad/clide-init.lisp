@@ -1,14 +1,14 @@
 ;;; Acad CLARX: CLIDE code goes here
 
 ;;; temp fix until ccl exports it, only needed without arx
-(unless pl::*basemodule-directory* 
-  (defconstant pl::*basemodule-directory* 
+(unless pl::*basemodule-directory*
+  (defconstant pl::*basemodule-directory*
                (concatenate 'string pl::*cormanlisp-directory* "Libraries\\acad\\")))
 ;;; we need this for the registry-utils
 (push-module-directory (concatenate 'string pl::*cormanlisp-directory* "examples"))
 
 (princ "...loading clide-init.lisp")
-(load (concatenate 'string 
+(load (concatenate 'string
 	pl::*basemodule-directory*
         "acad.lisp"))
 

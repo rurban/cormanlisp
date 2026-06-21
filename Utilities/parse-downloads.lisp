@@ -1,12 +1,12 @@
 
 (require 'find-in-files)  ;; for kmpsearch-list
 
-(defstruct (download-record 
+(defstruct (download-record
         (:constructor make-download-record (name organization country email add-to-list)))
-    name 
-    organization 
-    country 
-    email 
+    name
+    organization
+    country
+    email
     add-to-list)
 
 (defun split-string (string)
@@ -76,22 +76,22 @@
     (let* ((pos (position #\@ string))
            (name (subseq string 0 pos))
            (domain (subseq string (+ pos 1))))
-        (if (and (> (length name) 0) 
-                (> (length domain) 2) 
+        (if (and (> (length name) 0)
+                (> (length domain) 2)
                 (find #\. domain)
                 (> (position #\. domain) 0)
                 (< (position #\. domain) (- (length domain) 1)))
              t nil)))
 
 (defun fix-commas (string)
-    (do () 
+    (do ()
         ((null (ccl::kmpsearch-lisp "%2c" string)) string)
         (let ((pos (ccl::kmpsearch-lisp "%2c" string)))
             (setf string (concatenate 'string (subseq string 0 pos) "," (subseq string (+ pos 3)))))))
 
 (defun fix-record-commas (rec)
     (setf (download-record-name rec) (fix-commas (download-record-name rec)))
-    (setf (download-record-organization rec) (fix-commas (download-record-organization rec)))    
+    (setf (download-record-organization rec) (fix-commas (download-record-organization rec)))
     (setf (download-record-email rec) (fix-commas (download-record-email rec)))
     rec)
 
@@ -104,7 +104,7 @@
             (format output "~A" (download-record-country x)) (write-char #\tab output)
             (format output "~A" (if (download-record-add-to-list x) "yes" "no")) (write-char #\tab output)
             (terpri output))))
-                            
+
 #|
 (setf download-records (read-download-records "../cormanlisp.downloads"))
 
@@ -121,4 +121,3 @@
          *download-records*))
 
 |#
-

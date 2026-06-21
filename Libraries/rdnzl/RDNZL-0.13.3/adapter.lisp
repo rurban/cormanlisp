@@ -42,7 +42,7 @@ RETURN-TYPE and ARG-TYPE-ARRAY are DOT-NET-OBJECTs."
                                (make-type-from-name "System.Void")]))
     ;; wrapper starts here
     (lambda (args-pointer &aux completed)
-      (unwind-protect 
+      (unwind-protect
 	  (prog1
             (let ((i 0)
                   args)
@@ -68,7 +68,7 @@ RETURN-TYPE and ARG-TYPE-ARRAY are DOT-NET-OBJECTs."
 	(unless completed
 	  (labels ((block-throw (&aux (block t))
 		     (unwind-protect
-			 (restart-case 
+			 (restart-case
 			     (error "Cannot safely throw over a .NET -> Lisp callback.")
 			   (continue-throw ()
 			     :report "Continue throw anyway."

@@ -55,7 +55,7 @@
 	NotNumberID	   ;; 	Unused						30
 	NotNumberID	   ;; 	Unused						31
     ))
-#| 
+#|
 (defasm num-type (n)
     {
         push    ebp
@@ -67,32 +67,32 @@
         cmp     eax, uvector-tag
         jne     short :next1
 		mov 	edx, [edx - uvector-tag]
-    :check-double 
+    :check-double
 		cmp 	dl, (tag-byte uvector-double-float-tag)
         jne     short :check-single
         mov     eax, (* DoubleFloatID 8)
         jmp     short :done
-    :check-single  
+    :check-single
 		cmp 	dl, (tag-byte uvector-single-float-tag)
         jne     short :check-bignum
         mov     eax, (* SingleFloatID 8)
-        jmp     short :done            
-     :check-bignum        
+        jmp     short :done
+     :check-bignum
 		cmp 	dl, (tag-byte uvector-bignum-tag)
         jne     short :check-ratio
         mov     eax, (* BignumID 8)
-        jmp     short :done 
-     :check-ratio        
+        jmp     short :done
+     :check-ratio
 		cmp 	dl, (tag-byte uvector-ratio-tag)
         jne     short :check-complex
         mov     eax, (* RatioID 8)
-        jmp     short :done                    
-     :check-complex        
+        jmp     short :done
+     :check-complex
 		cmp 	dl, (tag-byte uvector-complex-tag)
         jne     short :check-none
         mov     eax, (* ComplexID 8)
-        jmp     short :done   
-    :check-none                 
+        jmp     short :done
+    :check-none
         mov     eax, (* NotNumberID 8)
         jmp     short :done
     :next1
@@ -100,7 +100,7 @@
         cmp     eax, 3
         jne     short :check-none
         mov     eax, (* ShortFloatID 8)
-    :done   
+    :done
         pop     ebp
         ret
     })
@@ -112,7 +112,7 @@
         mov     ebp, esp
         mov     eax, [ebp + ARGS_OFFSET]
         mov     edx, eax
-        and     eax, 7      
+        and     eax, 7
         je      short :done         ;; fixnum
         cmp     eax, uvector-tag
         je      short :uvector
@@ -124,12 +124,12 @@
     :short-float
         mov     eax, (* ShortFloatID 8)
         jmp     short :done
-    :uvector 
+    :uvector
 		mov 	al, [edx - uvector-tag]
         shr     eax, 3
         mov     edx, num-type-table
         mov     eax, [edx + eax*4 + (uvector-offset 2)]   ;; eax = result
-    :done   
+    :done
         pop     ebp
         ret
     })
@@ -153,13 +153,13 @@
 		mov		[esi + (* thread-heap-qv-offset 4)], edx
         mov     edx, [ebp + ARGS_OFFSET]
         and     edx, #xf8
-        or      edx, (+ uvector-header-tag #x100)   ;; set length to 1        
+        or      edx, (+ uvector-header-tag #x100)   ;; set length to 1
         or      [eax + (uvector-offset 0)], edx
     end-atomic
         mov     ecx, 1
 		pop		ebp
 		ret
-	})    
+	})
 
 (defasm alloc-16-byte-uvector (type)
 	{
@@ -178,7 +178,7 @@
 		xor     ecx, ecx
 		mov     [eax - 4], ecx      ;; clear cells
 		mov     [eax], ecx          ;;
-		mov		eax, [esi + (* thread-heap-qv-offset 4)]		
+		mov		eax, [esi + (* thread-heap-qv-offset 4)]
 	:next1
 		add		eax, uvector-tag
 		lea		edx, [eax + (- 16 uvector-tag)]
@@ -192,13 +192,13 @@
 		mov		[esi + (* thread-heap-qv-offset 4)], edx
         mov     edx, [ebp + ARGS_OFFSET]
         and     edx, #xf8
-        or      edx, (+ uvector-header-tag #x200)   ;; set length to 2        
+        or      edx, (+ uvector-header-tag #x200)   ;; set length to 2
         or      [eax + (uvector-offset 0)], edx
     end-atomic
         mov     ecx, 1
 		pop		ebp
 		ret
-  	})    
+  	})
 
 (defasm alloc-24-byte-uvector (type)
 	{
@@ -226,7 +226,7 @@
 		mov     [eax - 4], ecx          ;; clear cells
 		mov     [eax], ecx              ;;
 	:next2
-		mov		eax, [esi + (* thread-heap-qv-offset 4)]		
+		mov		eax, [esi + (* thread-heap-qv-offset 4)]
 	:next1
 		add		eax, uvector-tag
 		lea		edx, [eax + (- 24 uvector-tag)]
@@ -240,7 +240,7 @@
 		mov		[esi + (* thread-heap-qv-offset 4)], edx
         mov     edx, [ebp + ARGS_OFFSET]
         and     edx, #xf8
-        or      edx, (+ uvector-header-tag #x300)   ;; set length to 3        
+        or      edx, (+ uvector-header-tag #x300)   ;; set length to 3
         or      [eax + (uvector-offset 0)], edx
     end-atomic
         mov     ecx, 1
@@ -248,9 +248,9 @@
 		ret
   	})
 
-(defun cl::alloc-bignum (size) 
-    (let ((bn 
-                (if (<= size 2) 
+(defun cl::alloc-bignum (size)
+    (let ((bn
+                (if (<= size 2)
                     (alloc-16-byte-uvector uvector-bignum-tag)
                     (if (<= size 4)
                         (alloc-24-byte-uvector uvector-bignum-tag)
@@ -259,14 +259,14 @@
         (dotimes (i size) (setf (uref bn (+ i 2)) 0))
 		bn))
 
-(defasm cl::alloc-double-float () 
+(defasm cl::alloc-double-float ()
     {
         push        ebp
         mov         ebp, esp
         push        (* uvector-double-float-tag 8)
         mov         ecx, 1
         callp       alloc-16-byte-uvector    ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
         mov         ecx, 1
         pop         ebp
         ret
@@ -279,20 +279,20 @@
         push        (* uvector-double-float-tag 8)
         mov         ecx, 1
         callp       alloc-16-byte-uvector    ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
         mov         ecx, 1
         pop         ebp
         ret
     })
 
-(defasm cl::alloc-single-float () 
+(defasm cl::alloc-single-float ()
     {
         push        ebp
         mov         ebp, esp
         push        (* uvector-single-float-tag 8)
         mov         ecx, 1
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
         mov         ecx, 1
         pop         ebp
         ret
@@ -305,7 +305,7 @@
         push        (* uvector-single-float-tag 8)
         mov         ecx, 1
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
         mov         ecx, 1
         pop         ebp
         ret
@@ -363,7 +363,7 @@
   		end-atomic
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -385,7 +385,7 @@
   		end-atomic
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector  ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
 		fstp       [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -397,7 +397,7 @@
     (let ((r (cl::alloc-uvector 2 uvector-complex-tag)))
         (setf (uref r 1) n (uref r 2) 0)
         r))
-    
+
 (defun bignum-to-ratio (n)
     (let ((r (alloc-16-byte-uvector uvector-ratio-tag)))
         (setf (uref r 1) n (uref r 2) 1)
@@ -410,7 +410,7 @@
 		mov         ebp,esp
         mov         edx, [ebp + ARGS_OFFSET] ;; edx = n
         mov         ecx, [edx + (uvector-offset 1)]
-        shr         ecx, 4                  ;; ecx = number of bignum cells 
+        shr         ecx, 4                  ;; ecx = number of bignum cells
         shl         ecx, 2
         begin-atomic
         push        0
@@ -444,7 +444,7 @@
         mov         ecx, 1
         pop         ebp
         ret
-    })               
+    })
 
 (defasm double-float-to-fixnum (n)
     {
@@ -556,17 +556,17 @@
         (multiple-value-bind (mantissa exponent sign)
             (integer-decode-float n)
             (* sign (ash mantissa exponent)))))
-                  
+
 (defasm bignum-to-short-float (n)
 	{
 		push        ebp
 		mov         ebp,esp
         push        [ebp + ARGS_OFFSET]
-        callp       bignum-to-double    
+        callp       bignum-to-double
         add         esp, 4
   		begin-atomic
         push        ecx
-		fstp.single [esp]                   
+		fstp.single [esp]
         pop         edx
 		mov			eax, edx				;; untagged 32-bit float in eax, edx
 		and         edx, #x7FFFFF			;; eax = 23-bit mantissa
@@ -595,11 +595,11 @@
 		push        ebp
 		mov         ebp,esp
         push        [ebp + ARGS_OFFSET]
-        callp       bignum-to-double    
+        callp       bignum-to-double
         add         esp, 4
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -612,11 +612,11 @@
 		push        ebp
 		mov         ebp,esp
         push        [ebp + ARGS_OFFSET]
-        callp       bignum-to-double    
+        callp       bignum-to-double
         add         esp, 4
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector  ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
    		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -680,11 +680,11 @@
 		push        ebp
 		mov         ebp,esp
         push        [ebp + ARGS_OFFSET]
-        callp       ratio-to-double    
+        callp       ratio-to-double
         add         esp, 4
   		begin-atomic
         push        ecx
-		fstp.single [esp]                   
+		fstp.single [esp]
         pop         edx
 		mov			eax, edx				;; untagged 32-bit float in eax, edx
 		and         edx, #x7FFFFF			;; eax = 23-bit mantissa
@@ -706,35 +706,35 @@
 		mov         esp,ebp
 		pop         ebp
 		ret
-	})        
+	})
 
 (defasm ratio-to-single-float (n)
 	{
 		push        ebp
 		mov         ebp,esp
         push        [ebp + ARGS_OFFSET]
-        callp       ratio-to-double    
+        callp       ratio-to-double
         add         esp, 4
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
   		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
 		pop         ebp
 		ret
 	})
-   
+
 (defasm ratio-to-double-float (n)
 	{
 		push        ebp
 		mov         ebp,esp
         push        [ebp + ARGS_OFFSET]
-        callp       ratio-to-double    
+        callp       ratio-to-double
         add         esp, 4
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector  ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
    		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -761,7 +761,7 @@
         end-atomic
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -815,7 +815,7 @@
         add         esp, 4
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector  ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
   		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -871,7 +871,7 @@
 		fld.single  [eax + (uvector-offset 1)]
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector  ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
    		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -890,7 +890,7 @@
 		fld         [eax + (uvector-offset 2)]
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -910,17 +910,17 @@
 
 (defun not-number (n) n)        ;; just return object
 
-(defconstant number-promotion-functions 
+(defconstant number-promotion-functions
     (vector
         nil      #'fixnum-to-bignum #'fixnum-to-ratio #'fixnum-to-short-float #'fixnum-to-single-float       #'fixnum-to-double-float       #'fixnum-to-complex       #'not-number
-        nil      nil                #'bignum-to-ratio #'bignum-to-short-float #'bignum-to-single-float       #'bignum-to-double-float       #'bignum-to-complex       #'not-number        
-        nil      nil                nil               #'ratio-to-short-float  #'ratio-to-single-float        #'ratio-to-double-float        #'ratio-to-complex        #'not-number        
-        nil      nil                nil               nil                     #'short-float-to-single-float  #'short-float-to-double-float  #'short-float-to-complex  #'not-number                
-        nil      nil                nil               nil                     nil                            #'single-float-to-double-float #'single-float-to-complex #'not-number                
-        nil      nil                nil               nil                     nil                            nil                            #'double-float-to-complex #'not-number                
-        nil      nil                nil               nil                     nil                            nil                            nil                       #'not-number                
-    #'not-number #'not-number       #'not-number      #'not-number            #'not-number                   #'not-number                   #'not-number              #'not-number                
-     ))                   
+        nil      nil                #'bignum-to-ratio #'bignum-to-short-float #'bignum-to-single-float       #'bignum-to-double-float       #'bignum-to-complex       #'not-number
+        nil      nil                nil               #'ratio-to-short-float  #'ratio-to-single-float        #'ratio-to-double-float        #'ratio-to-complex        #'not-number
+        nil      nil                nil               nil                     #'short-float-to-single-float  #'short-float-to-double-float  #'short-float-to-complex  #'not-number
+        nil      nil                nil               nil                     nil                            #'single-float-to-double-float #'single-float-to-complex #'not-number
+        nil      nil                nil               nil                     nil                            nil                            #'double-float-to-complex #'not-number
+        nil      nil                nil               nil                     nil                            nil                            nil                       #'not-number
+    #'not-number #'not-number       #'not-number      #'not-number            #'not-number                   #'not-number                   #'not-number              #'not-number
+     ))
 
 ;;;
 ;;; Takes a number of any type, type1 is the fixnum type id of that number, and type2
@@ -959,13 +959,13 @@
         (unless (eq temp 1)
             (setf num (/ num temp))
             (setf denom (/ denom temp)))
-        (if (eq denom 1) 
+        (if (eq denom 1)
             num
             (let ((ratio (alloc-16-byte-uvector uvector-ratio-tag)))
                 (setf (uref ratio 1) num)
                 (setf (uref ratio 2) denom)
-                ratio)))) 
-        
+                ratio))))
+
 (defasm add-fixnums (n1 n2)
     {
         push    ebp
@@ -998,7 +998,7 @@
            (den1 (denominator n1))
            (num2 (numerator n2))
            (den2 (denominator n2)))
-        (simplify-ratio (+ (* den2 num1) (* den1 num2)) (* den1 den2))))    
+        (simplify-ratio (+ (* den2 num1) (* den1 num2)) (* den1 den2))))
 
 (defasm add-short-floats (x y)
 	{
@@ -1027,14 +1027,14 @@
 	:t1
 		or          al, 3
         mov         [ebp + ARGS_OFFSET], ecx            ;; for safety, wipe out untagged data
-		mov         [ebp + (+ ARGS_OFFSET 4)], ecx      ;; for safety, wipe out untagged data       
+		mov         [ebp + (+ ARGS_OFFSET 4)], ecx      ;; for safety, wipe out untagged data
 		end-atomic
         mov         cl, 1
 		mov			esp, ebp
 		pop			ebp
 		ret
     })
- 
+
 (defasm add-single-floats (x y)
 	{
 		push		ebp
@@ -1045,14 +1045,14 @@
 		fadd.single [edx + (uvector-offset 1)]
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
 		pop         ebp
 		ret
-    })    
- 
+    })
+
 (defasm add-double-floats (x y)
 	{
 		push		ebp
@@ -1063,7 +1063,7 @@
 		fadd        [edx + (uvector-offset 2)]
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
    		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -1080,29 +1080,29 @@
     (unless (numberp y)
         (cl::signal-type-error y 'number)))
 
-(defconstant add-functions 
-    (vector 
+(defconstant add-functions
+    (vector
         #'add-fixnums
         #'add-bignums
         #'add-ratios
         #'add-short-floats
         #'add-single-floats
         #'add-double-floats
-        #'add-complex 
+        #'add-complex
         #'add-non-numbers))
 
 (defasm add-numbers (x y)
     {
         push    ebp
         mov     ebp, esp
-    
+
         ;; quick check for adding two fixnums
         xor     eax, eax
         mov     al, [ebp + (+ ARGS_OFFSET 4)]
         or      al, [ebp + ARGS_OFFSET]
         and     al, 7
         jne     :next
-        
+
         ;; attempt fixnum add
 		mov     eax, [ebp + (+ ARGS_OFFSET 4)]
 		add     eax, [ebp + ARGS_OFFSET]
@@ -1115,14 +1115,14 @@
         mov     [ebp + (+ ARGS_OFFSET 4)], eax      ;; promote x to bignum
         push    [ebp + ARGS_OFFSET]
         push    0
-        push    8                 
+        push    8
         callp   promote-number
         add     esp, 12
         mov     [ebp + ARGS_OFFSET], eax            ;; promote y to bignum
         mov     eax, 8
         jmp     short :same
-       
-    :next    
+
+    :next
         push    [ebp + (+ ARGS_OFFSET 4)]
         callp   num-type
         add     esp, 4
@@ -1134,7 +1134,7 @@
         cmp     edx, eax
         jl      short :less
         jg      short :greater
-        
+
         ;; types are the same
     :same
         mov     edx, add-functions
@@ -1146,7 +1146,7 @@
    		callfunc eax
         add     esp, 8
         jmp     short   :done
-    
+
     :less
         push    eax
         push    [ebp + (+ ARGS_OFFSET 4)]
@@ -1158,7 +1158,7 @@
         mov     [ebp + (+ ARGS_OFFSET 4)], eax      ;; promote x
         pop     eax                                 ;; eax = typeof(y)
         jmp     short :same
-    
+
     :greater
         push    edx
         push    [ebp + ARGS_OFFSET]
@@ -1169,27 +1169,27 @@
         add     esp, 12
         mov     [ebp + ARGS_OFFSET], eax            ;; promote y
         pop     eax                                 ;; eax = typeof(y)
-        jmp     short :same        
-            
+        jmp     short :same
+
     :done
         mov     ecx, 1
         mov     esp, ebp
         pop     ebp
         ret
-    })            
-#|          
+    })
+#|
 (defun add-numbers (x y)
     (let ((xtype (num-type x))
           (ytype (num-type y)))
-        (cond 
+        (cond
             ((eq xtype ytype)
              (funcall (uref add-functions (+ 2 xtype)) x y))
             ((< xtype ytype)
              (funcall (uref add-functions (+ 2 ytype)) (promote-number x xtype ytype) y))
-            (t 
+            (t
              (funcall (uref add-functions (+ 2 xtype)) x (promote-number y ytype xtype))))))
 |#
-                  
+
 (defasm subtract-fixnums (n1 n2)
     {
         push    ebp
@@ -1216,7 +1216,7 @@
         pop     ebp
         ret
     })
-    
+
 (defun subtract-ratios (n1 n2)
     (let* ((num1 (numerator n1))
            (den1 (denominator n1))
@@ -1251,14 +1251,14 @@
 	:t1
 		or          al, 3
         mov         [ebp + ARGS_OFFSET], ecx            ;; for safety, wipe out untagged data
-		mov         [ebp + (+ ARGS_OFFSET 4)], ecx      ;; for safety, wipe out untagged data       
+		mov         [ebp + (+ ARGS_OFFSET 4)], ecx      ;; for safety, wipe out untagged data
 		end-atomic
         mov         cl, 1
 		mov			esp, ebp
 		pop			ebp
 		ret
     })
-    
+
 (defasm subtract-single-floats (x y)
 	{
 		push		ebp
@@ -1269,14 +1269,14 @@
 		fsub.single [edx + (uvector-offset 1)]
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
 		pop         ebp
 		ret
-    })    
- 
+    })
+
 (defasm subtract-double-floats (x y)
 	{
 		push		ebp
@@ -1287,7 +1287,7 @@
 		fsub        [edx + (uvector-offset 2)]
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
    		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -1304,29 +1304,29 @@
     (unless (numberp y)
         (cl::signal-type-error y 'number)))
 
-(defconstant subtract-functions 
-    (vector 
+(defconstant subtract-functions
+    (vector
         #'subtract-fixnums
         #'sub-bignums
         #'subtract-ratios
         #'subtract-short-floats
         #'subtract-single-floats
         #'subtract-double-floats
-        #'subtract-complex 
+        #'subtract-complex
         #'subtract-non-numbers))
 
 (defasm subtract-numbers (x y)
     {
         push    ebp
         mov     ebp, esp
-    
+
         ;; quick check for subtracting two fixnums
         xor     eax, eax
         mov     al, [ebp + (+ ARGS_OFFSET 4)]
         or      al, [ebp + ARGS_OFFSET]
         and     al, 7
         jne     :next
-        
+
         ;; attempt fixnum subtract
 		mov     eax, [ebp + (+ ARGS_OFFSET 4)]
 		sub     eax, [ebp + ARGS_OFFSET]
@@ -1339,14 +1339,14 @@
         mov     [ebp + (+ ARGS_OFFSET 4)], eax      ;; promote x to bignum
         push    [ebp + ARGS_OFFSET]
         push    0
-        push    8                 
+        push    8
         callp   promote-number
         add     esp, 12
         mov     [ebp + ARGS_OFFSET], eax            ;; promote y to bignum
         mov     eax, 8
         jmp     short :same
-       
-    :next    
+
+    :next
         push    [ebp + (+ ARGS_OFFSET 4)]
         callp   num-type
         add     esp, 4
@@ -1358,7 +1358,7 @@
         cmp     edx, eax
         jl      short :less
         jg      short :greater
-        
+
         ;; types are the same
     :same
         mov     edx, subtract-functions
@@ -1370,7 +1370,7 @@
         callfunc	eax
         add     esp, 8
         jmp     short   :done
-    
+
     :less
         push    eax
         push    [ebp + (+ ARGS_OFFSET 4)]
@@ -1382,7 +1382,7 @@
         mov     [ebp + (+ ARGS_OFFSET 4)], eax      ;; promote x
         pop     eax                                 ;; eax = typeof(y)
         jmp     short :same
-    
+
     :greater
         push    edx
         push    [ebp + ARGS_OFFSET]
@@ -1393,20 +1393,20 @@
         add     esp, 12
         mov     [ebp + ARGS_OFFSET], eax            ;; promote y
         pop     eax                                 ;; eax = typeof(y)
-        jmp     short :same        
-            
+        jmp     short :same
+
     :done
         mov     ecx, 1
         mov     esp, ebp
         pop     ebp
         ret
-    })            
+    })
 
 (defasm multiply-fixnums (n1 n2)
     {
         push    ebp
         mov     ebp, esp
-    
+
         mov     eax, [ebp + (+ ARGS_OFFSET 4)]  ;; eax = n1
         begin-atomic
    		shr     eax, 3
@@ -1415,7 +1415,7 @@
         xor     edx, edx                        ;; clear untagged data
         end-atomic
         jmp     short :done
-    :overflow    
+    :overflow
         ;; handle overflow
         xor     edx, edx        ; clear untagged data
         end-atomic
@@ -1472,7 +1472,7 @@
 	:t1
 		or          al, 3
         mov         [ebp + ARGS_OFFSET], ecx            ;; for safety, wipe out untagged data
-		mov         [ebp + (+ ARGS_OFFSET 4)], ecx      ;; for safety, wipe out untagged data       
+		mov         [ebp + (+ ARGS_OFFSET 4)], ecx      ;; for safety, wipe out untagged data
 		end-atomic
         mov         cl, 1
 		mov			esp, ebp
@@ -1490,7 +1490,7 @@
 		fmul.single [edx + (uvector-offset 1)]
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -1508,7 +1508,7 @@
 		fmul        [edx + (uvector-offset 2)]
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
    		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -1521,7 +1521,7 @@
     (let ((realx (realpart x))
           (realy (realpart y))
           (imagx (imagpart x))
-          (imagy (imagpart y)))  
+          (imagy (imagpart y)))
         (complex (- (* realx realy) (* imagx imagy))
                  (+ (* imagx realy) (* realx imagy)))))
 
@@ -1531,29 +1531,29 @@
     (unless (numberp y)
         (cl::signal-type-error y 'number)))
 
-(defconstant multiply-functions 
-    (vector 
+(defconstant multiply-functions
+    (vector
         #'multiply-fixnums
         #'multiply-bignums
         #'multiply-ratios
         #'multiply-short-floats
         #'multiply-single-floats
         #'multiply-double-floats
-        #'multiply-complex 
+        #'multiply-complex
         #'multiply-non-numbers))
 
 (defasm multiply-numbers (x y)
     {
         push    ebp
         mov     ebp, esp
-    
+
         ;; quick check for multiplying two fixnums
         xor     eax, eax
         mov     al, [ebp + (+ ARGS_OFFSET 4)]
         or      al, [ebp + ARGS_OFFSET]
         and     al, 7
         jne     :next
-        
+
         ;; attempt fixnum multiply
         mov     eax, [ebp + (+ ARGS_OFFSET 4)]  ;; eax = n1
         begin-atomic
@@ -1563,7 +1563,7 @@
         xor     edx, edx        ; clear untagged data
         end-atomic
         jmp     :done
-    :overflow    
+    :overflow
         ;; handle overflow
         xor     edx, edx        ; clear untagged data
         end-atomic
@@ -1581,8 +1581,8 @@
         mov     ecx, 2
         callp   multiply-bignums
         add     esp, 8
-        jmp     short :done       
-    :next    
+        jmp     short :done
+    :next
         push    [ebp + (+ ARGS_OFFSET 4)]
         callp   num-type
         add     esp, 4
@@ -1594,7 +1594,7 @@
         cmp     edx, eax
         jl      short :less
         jg      short :greater
-        
+
         ;; types are the same
     :same
         mov     edx, multiply-functions
@@ -1606,7 +1606,7 @@
         callfunc	eax
         add     esp, 8
         jmp     short   :done
-    
+
     :less
         push    eax
         push    [ebp + (+ ARGS_OFFSET 4)]
@@ -1618,7 +1618,7 @@
         mov     [ebp + (+ ARGS_OFFSET 4)], eax      ;; promote x
         pop     eax                                 ;; eax = typeof(y)
         jmp     short :same
-    
+
     :greater
         push    edx
         push    [ebp + ARGS_OFFSET]
@@ -1629,14 +1629,14 @@
         add     esp, 12
         mov     [ebp + ARGS_OFFSET], eax            ;; promote y
         pop     eax                                 ;; eax = typeof(y)
-        jmp     short :same        
-            
+        jmp     short :same
+
     :done
         mov     ecx, 1
         mov     esp, ebp
         pop     ebp
         ret
-    })            
+    })
 
 ;; This could result in a bignum, in the case of most-negative-fixnum
 (defasm abs-fixnum (n)
@@ -1646,7 +1646,7 @@
         mov     eax, [ebp + (+ ARGS_OFFSET 0)]  ; eax = n
         cmp     eax, 0                          ; n1 < 0?
         jge     short :done
-        neg     eax        
+        neg     eax
         jno      short :done
         push    8
         mov     ecx, 1
@@ -1682,7 +1682,7 @@
     :eq
         mov     eax, 0
         jmp     short :done
-    
+
     :do-bignum
         mov     eax, edx
         test    al, 7
@@ -1702,14 +1702,14 @@
         add     esp, 4
     :next2
         push    eax         ; push bignum(n2)
-        mov     ecx, 2 
+        mov     ecx, 2
         callp   bignum-compare
         add     esp, 8
     :done
         mov     ecx, 1
         pop     ebp
         ret
-    }) 
+    })
 
 (defasm zerop-fixnum (n)
     {
@@ -1789,7 +1789,7 @@
     })
 
 (defun zerop-complex (n) (and (= (realpart n) 0) (= (imagpart n) 0)))
-               
+
 (defun gcd-bignums (n1 n2) (gcd n1 n2))     ;; RGC--redefined below
 (defun gcd-fixnums (n1 n2) (gcd n1 n2))     ;; RGC--redefined below
 
@@ -1800,7 +1800,7 @@
         (return-from gcd-bignums n2))
     (if (= n2 0)
         (return-from gcd-bignums n1))
-    
+
     (do ((temp 0))
         (nil)
         (if (and (fixnump n1) (fixnump n2))
@@ -1813,7 +1813,7 @@
             (return-from gcd-bignums n2))
         (setq n1 n2)
         (setq n2 temp)))
-  
+
 (defasm gcd-fixnums (n1 n2)
     {
         push    ebp
@@ -1831,11 +1831,11 @@
         jne     short :next1
         mov     eax, ecx
         jmp     short :done
-    :next1            
+    :next1
         test    ecx, ecx
         jne     short :next2
         jmp     short :done
-        
+
         ;; eax = n1, ecx = n2
     :next2
         xor     edx, edx
@@ -1843,11 +1843,11 @@
         or      dl, cl
         and     dl, 7
         jne     :do-bignum
-    
+
         begin-atomic
         shr     eax, 3
         shr     ecx, 3
-        
+
     :loop
         mov     edx, 0
         div     ecx
@@ -1856,7 +1856,7 @@
         mov     eax, ecx
         shl     eax, 3
         jmp     short :done
-    :next3    
+    :next3
         mov     eax, ecx
         mov     ecx, edx
         jmp     short :loop
@@ -1875,18 +1875,18 @@
         callp   fixnum-to-bignum
         add     esp, 4
     :next5
-        push    eax        
+        push    eax
         callp   gcd-bignums
         add     esp, 8
-    
+
     :done
         mov     ecx, 1
         xor     edx, edx
         end-atomic
         pop     ebp
         ret
-    })    
-               
+    })
+
 (defasm divide-and-truncate-integers (n1 n2)
     {
         push    ebp
@@ -1932,14 +1932,14 @@
         add     esp, 4
     :next2
         push    eax         ; push bignum(n2)
-        mov     ecx, 2 
+        mov     ecx, 2
         callp   divide-bignums
         add     esp, 8
     :done
         mov     ecx, 1
         pop     ebp
         ret
-    }) 
+    })
 
 (defun gcd-numbers (n1 n2)
     (unless (integerp n1)
@@ -1960,26 +1960,26 @@
         (setf (uref r cl::ratio-numerator-offset) num)
         (setf (uref r cl::ratio-denominator-offset) denom)
         r))
-                  
+
 (defun simplify-ratio (num denom)
     (if (eq num 0)
         0
         (if (= denom 0)
             (cl::signal-division-by-zero (list num denom))
             (progn
-                (when (eq (compare-integers denom 0) -1) 
+                (when (eq (compare-integers denom 0) -1)
                     (setq denom (- 0 denom))
                     (setq num (- 0 num)))
                 (let ((temp (gcd-numbers num denom)))
                     (unless (eq temp 1)
                         (setq num (divide-and-truncate-integers num temp))
                         (setq denom (divide-and-truncate-integers denom temp)))
-                    (if (eq denom 1) 
+                    (if (eq denom 1)
                         num
                         (let ((ratio (alloc-16-byte-uvector uvector-ratio-tag)))
                             (setf (uref ratio cl::ratio-numerator-offset) num)
                             (setf (uref ratio cl::ratio-denominator-offset) denom)
-                            ratio))))))) 
+                            ratio)))))))
 
 (defun divide-fixnums (n1 n2)
     (simplify-ratio n1 n2))
@@ -2021,7 +2021,7 @@
 	:t1
 		or          al, 3
         mov         [ebp + ARGS_OFFSET], ecx            ;; for safety, wipe out untagged data
-		mov         [ebp + (+ ARGS_OFFSET 4)], ecx      ;; for safety, wipe out untagged data       
+		mov         [ebp + (+ ARGS_OFFSET 4)], ecx      ;; for safety, wipe out untagged data
 		end-atomic
         mov         cl, 1
 		mov			esp, ebp
@@ -2053,7 +2053,7 @@
 		fdiv.single [edx + (uvector-offset 1)]
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -2085,7 +2085,7 @@
 		fdiv        [edx + (uvector-offset 2)]
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
    		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
 		mov         esp,ebp
@@ -2093,13 +2093,13 @@
 		ret
     })
 
-;; (a + bi) / (c + di) == (ac + bd)/(cc + dd) + ((bc - ad)/(cc + dd))i          
+;; (a + bi) / (c + di) == (ac + bd)/(cc + dd) + ((bc - ad)/(cc + dd))i
 (defun divide-complex (x y)
     (let* ((a (realpart x))
            (c (realpart y))
            (b (imagpart x))
            (d (imagpart y))
-           (temp (+ (* c c) (* d d))))  
+           (temp (+ (* c c) (* d d))))
         (complex (/ (+ (* a c) (* b d)) temp)
                  (/ (- (* b c) (* a d)) temp))))
 
@@ -2108,16 +2108,16 @@
         (cl::signal-type-error x 'number))
     (unless (numberp y)
         (cl::signal-type-error y 'number)))
-    
-(defconstant divide-functions 
-    (vector 
+
+(defconstant divide-functions
+    (vector
         #'divide-fixnums
         #'divide-bignums-2
         #'divide-ratios
         #'divide-short-floats
         #'divide-single-floats
         #'divide-double-floats
-        #'divide-complex 
+        #'divide-complex
         #'divide-non-numbers))
 
 (defasm divide-numbers (x y)
@@ -2135,7 +2135,7 @@
         cmp     edx, eax
         jl      short :less
         jg      short :greater
-        
+
         ;; types are the same
     :same
         mov     edx, divide-functions
@@ -2147,7 +2147,7 @@
     	callfunc	eax
         add     esp, 8
         jmp     short   :done
-    
+
     :less
         push    eax
         push    [ebp + (+ ARGS_OFFSET 4)]
@@ -2159,7 +2159,7 @@
         mov     [ebp + (+ ARGS_OFFSET 4)], eax      ;; promote x
         pop     eax                                 ;; eax = typeof(y)
         jmp     short :same
-    
+
     :greater
         push    edx
         push    [ebp + ARGS_OFFSET]
@@ -2170,8 +2170,8 @@
         add     esp, 12
         mov     [ebp + ARGS_OFFSET], eax            ;; promote y
         pop     eax                                 ;; eax = typeof(y)
-        jmp     short :same        
-            
+        jmp     short :same
+
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -2196,7 +2196,7 @@
         jne     short :next2
         mov     eax, [ebp + (+ ARGS_OFFSET 0)]
         jmp     short :done
-    :next2      
+    :next2
         mov     eax, 0      ; identity is 0
         jmp     short :done
     :next3
@@ -2247,11 +2247,11 @@
                         jno      short :done
                         sub     eax, edx
                         push    eax
-                        push    edx  
+                        push    edx
                     :next
 						callp	x86::add-numbers
 						add		esp, 8
-                    :done 
+                    :done
 					})
 			   (x86::offset-stack 8))
 			  ((= num-args 1)
@@ -2313,7 +2313,7 @@
         callp   subtract-numbers
         add     esp, 8
         jmp     short :done
-    :next2      
+    :next2
         mov     eax, 0      ; identity is 0
         jmp     short :done
     :next3
@@ -2363,11 +2363,11 @@
                         jno     short :done
                         add     eax, edx
                         push    eax
-                        push    edx  
+                        push    edx
                     :next
 						callp	x86::subtract-numbers
 						add		esp, 8
-                    :done 
+                    :done
 					})
 			   (x86::offset-stack 8))
 			  ((= num-args 1)
@@ -2381,7 +2381,7 @@
 						callp	x86::subtract-numbers
 						add		esp, 8
                     })
-                (x86::offset-stack 4))                
+                (x86::offset-stack 4))
 			  ((= num-args 0)
 			   (parse-assembler
 					{
@@ -2417,7 +2417,7 @@
 						mov		ecx, 1
 					}))))
 	t)
-	
+
 (defasm multiply (#|&rest nums|#)
     {
         push    ebp
@@ -2435,7 +2435,7 @@
         jne     short :next2
         mov     eax, [ebp + (+ ARGS_OFFSET 0)]
         jmp     short :done
-    :next2      
+    :next2
         mov     eax, 8      ; identity is 1
         jmp     short :done
     :next3
@@ -2537,7 +2537,7 @@
         add     esp, 8
         jmp     short :done
     :next2
-        callp   x86::_wrong-number-of-args-error          
+        callp   x86::_wrong-number-of-args-error
     :next3
         mov     eax, [ebp + ecx*4 + (- (+ ARGS_OFFSET 0) 4)]
         dec     ecx
@@ -2588,11 +2588,11 @@
 						callp	x86::divide-numbers
 						add		esp, 8
                     })
-                (x86::offset-stack 4))                
+                (x86::offset-stack 4))
   			  ((= num-args 0)
 			   (parse-assembler
 					{
-                        callp   x86::_wrong-number-of-args-error          
+                        callp   x86::_wrong-number-of-args-error
   					}))
 			  (t
 			   (cl::compile-sub-form (second form) :dest-stack t)
@@ -2699,13 +2699,13 @@
         test    eax, #x0100
         jne     short :less
     :greater
-        mov     eax, 8                                  ;; eax = 1 
+        mov     eax, 8                                  ;; eax = 1
         jmp     short :done
     :less
         mov     eax, -8                                 ;; eax = -1
         jmp     short :done
     :equal
-        mov     eax, 0                                  ;; eax = 0 
+        mov     eax, 0                                  ;; eax = 0
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -2729,13 +2729,13 @@
         test    eax, #x0100
         jne     short :less
     :greater
-        mov     eax, 8                                  ;; eax = 1 
+        mov     eax, 8                                  ;; eax = 1
         jmp     short :done
     :less
         mov     eax, -8                                 ;; eax = -1
         jmp     short :done
     :equal
-        mov     eax, 0                                  ;; eax = 0 
+        mov     eax, 0                                  ;; eax = 0
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -2759,13 +2759,13 @@
         test    eax, #x0100
         jne     short :less
     :greater
-        mov     eax, 8                                  ;; eax = 1 
+        mov     eax, 8                                  ;; eax = 1
         jmp     short :done
     :less
         mov     eax, -8                                 ;; eax = -1
         jmp     short :done
     :equal
-        mov     eax, 0                                  ;; eax = 0 
+        mov     eax, 0                                  ;; eax = 0
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -2782,36 +2782,36 @@
     (if (and (= (realpart n1) (realpart n2)) (= (imagpart n1) (imagpart n2)))
         0
         1))
-    
+
 (defun compare-non-numbers (x y)
     (unless (numberp x)
         (cl::signal-type-error x 'number))
     (unless (numberp y)
         (cl::signal-type-error y 'number)))
 
-(defconstant numeric-compare-functions 
-    (vector 
+(defconstant numeric-compare-functions
+    (vector
         #'numeric-compare-fixnums
         #'bignum-compare
         #'numeric-compare-ratio
         #'numeric-compare-short-float
         #'numeric-compare-single-float
         #'numeric-compare-double-float
-        #'numeric-compare-complex 
+        #'numeric-compare-complex
         #'compare-non-numbers))
 
 (defasm numeric-compare-numbers (x y)
     {
         push    ebp
         mov     ebp, esp
-    
+
         ;; quick check for comparing two fixnums
         xor     eax, eax
         mov     al, [ebp + (+ ARGS_OFFSET 4)]
         or      al, [ebp + ARGS_OFFSET]
         and     al, 7
         jne     :next
-        
+
         ;; attempt fixnum compare
 		mov     eax, [ebp + (+ ARGS_OFFSET 4)]
 		cmp     eax, [ebp + ARGS_OFFSET]
@@ -2825,8 +2825,8 @@
     :gt
         mov     eax, 8
         jmp     short :done
-       
-    :next    
+
+    :next
         push    [ebp + (+ ARGS_OFFSET 4)]
         callp   num-type
         add     esp, 4
@@ -2838,7 +2838,7 @@
         cmp     edx, eax
         jl      short :less
         jg      short :greater
-        
+
         ;; types are the same
     :same
         mov     edx, numeric-compare-functions
@@ -2850,7 +2850,7 @@
    		callfunc	eax
         add     esp, 8
         jmp     short   :done
-    
+
     :less
         push    eax
         push    [ebp + (+ ARGS_OFFSET 4)]
@@ -2862,7 +2862,7 @@
         mov     [ebp + (+ ARGS_OFFSET 4)], eax      ;; promote x
         pop     eax                                 ;; eax = typeof(y)
         jmp     short :same
-    
+
     :greater
         push    edx
         push    [ebp + ARGS_OFFSET]
@@ -2873,8 +2873,8 @@
         add     esp, 12
         mov     [ebp + ARGS_OFFSET], eax            ;; promote y
         pop     eax                                 ;; eax = typeof(y)
-        jmp     short :same        
-            
+        jmp     short :same
+
     :done
         mov     ecx, 1
         mov     esp, ebp
@@ -2900,8 +2900,8 @@
         cmp     ecx, 1
         jne     short :next2
         jmp     short :true     ; single arg case always true
-    :next2      
-        callp   x86::_wrong-number-of-args-error          
+    :next2
+        callp   x86::_wrong-number-of-args-error
     :next3
         mov     eax, [ebp + ecx*4 + (- (+ ARGS_OFFSET 0) 4)]
         dec     ecx
@@ -2949,8 +2949,8 @@
         cmp     ecx, 1
         jne     short :next2
         jmp     short :true     ; single arg case always true
-    :next2      
-        callp   x86::_wrong-number-of-args-error          
+    :next2
+        callp   x86::_wrong-number-of-args-error
     :next3
         mov     eax, [ebp + ecx*4 + (- (+ ARGS_OFFSET 0) 4)]
         dec     ecx
@@ -2998,8 +2998,8 @@
         cmp     ecx, 1
         jne     short :next2
         jmp     short :true     ; single arg case always true
-    :next2      
-        callp   x86::_wrong-number-of-args-error          
+    :next2
+        callp   x86::_wrong-number-of-args-error
     :next3
         mov     eax, [ebp + ecx*4 + (- (+ ARGS_OFFSET 0) 4)]
         dec     ecx
@@ -3047,8 +3047,8 @@
         cmp     ecx, 1
         jne     short :next2
         jmp     short :true     ; single arg case always true
-    :next2      
-        callp   x86::_wrong-number-of-args-error          
+    :next2
+        callp   x86::_wrong-number-of-args-error
     :next3
         mov     eax, [ebp + ecx*4 + (- (+ ARGS_OFFSET 0) 4)]
         dec     ecx
@@ -3096,8 +3096,8 @@
         cmp     ecx, 1
         jne     short :next2
         jmp     short :true     ; single arg case always true
-    :next2      
-        callp   x86::_wrong-number-of-args-error          
+    :next2
+        callp   x86::_wrong-number-of-args-error
     :next3
         mov     eax, [ebp + ecx*4 + (- (+ ARGS_OFFSET 0) 4)]
         dec     ecx
@@ -3145,8 +3145,8 @@
         cmp     ecx, 1
         jne     short :next2
         jmp     short :true     ; single arg case always true
-    :next2      
-        callp   x86::_wrong-number-of-args-error          
+    :next2
+        callp   x86::_wrong-number-of-args-error
     :next3
         mov     eax, [ebp + ecx*4 + (- (+ ARGS_OFFSET 0) 4)]
         dec     ecx
@@ -3225,14 +3225,14 @@
             (unless (< source-type ComplexID)
                 (cl::signal-type-error number 'real))
             (cond ((eq source-type target-type) number)
-                  ((< source-type target-type)             
+                  ((< source-type target-type)
                    (promote-number number source-type target-type))
                   (t (if (eq source-type DoubleFloatID)
                         (if (eq target-type SingleFloatID)
                             (double-float-to-single-float number)
                             (double-float-to-short-float number))
-                        (single-float-to-short-float number)))))))  
-        
+                        (single-float-to-short-float number)))))))
+
 (define-compiler-macro cl::max (&whole form &rest args)
     (declare (ignore form))
     (cond
@@ -3240,7 +3240,7 @@
          (let ((t1 (gensym))(t2 (gensym)))
             `(let ((,t1 ,(car args))
                    (,t2 ,(cadr args)))
-                (if (>= ,t1 ,t2) 
+                (if (>= ,t1 ,t2)
                     ,t1
                     ,t2))))
         ((= (length args) 1)
@@ -3248,7 +3248,7 @@
         (t (let ((t1 (gensym))(t2 (gensym)))
             `(let* ((,t1 ,(car args))
                     (,t2 (cl::max ,@(cdr args))))
-                (if (>= ,t1 ,t2) 
+                (if (>= ,t1 ,t2)
                     ,t1
                     ,t2))))))
 
@@ -3259,7 +3259,7 @@
          (let ((t1 (gensym))(t2 (gensym)))
             `(let ((,t1 ,(car args))
                    (,t2 ,(cadr args)))
-                (if (<= ,t1 ,t2) 
+                (if (<= ,t1 ,t2)
                     ,t1
                     ,t2))))
         ((= (length args) 1)
@@ -3267,7 +3267,7 @@
         (t (let ((t1 (gensym))(t2 (gensym)))
             `(let* ((,t1 ,(car args))
                     (,t2 (cl::min ,@(cdr args))))
-                (if (<= ,t1 ,t2) 
+                (if (<= ,t1 ,t2)
                     ,t1
                     ,t2))))))
 
@@ -3328,7 +3328,7 @@
         jne     short :next2
         mov     eax, [ebp + (+ ARGS_OFFSET 0)]
         jmp     short :done
-    :next2      
+    :next2
         mov     eax, 0      ; identity is 0
         jmp     short :done
     :next3
@@ -3375,7 +3375,7 @@
                     :next
 						callp	x86::xor-numbers
 						add		esp, 8
-                    :done 
+                    :done
 					})
 			   (x86::offset-stack 8))
 			  ((= num-args 1)
@@ -3473,7 +3473,7 @@
         jne     short :next2
         mov     eax, [ebp + (+ ARGS_OFFSET 0)]
         jmp     short :done
-    :next2      
+    :next2
         mov     eax, 0      ; identity is 0
         jmp     short :done
     :next3
@@ -3520,7 +3520,7 @@
                     :next
 						callp	x86::ior-numbers
 						add		esp, 8
-                    :done 
+                    :done
 					})
 			   (x86::offset-stack 8))
 			  ((= num-args 1)
@@ -3560,7 +3560,7 @@
 						mov		ecx, 1
 					}))))
 	t)
- 
+
 (defasm and-numbers (i1 i2)
     {
         push    ebp
@@ -3618,7 +3618,7 @@
         jne     short :next2
         mov     eax, [ebp + (+ ARGS_OFFSET 0)]
         jmp     short :done
-    :next2      
+    :next2
         mov     eax, -8      ; identity is -1
         jmp     short :done
     :next3
@@ -3665,7 +3665,7 @@
                     :next
 						callp	x86::and-numbers
 						add		esp, 8
-                    :done 
+                    :done
 					})
 			   (x86::offset-stack 8))
 			  ((= num-args 1)
@@ -3705,7 +3705,7 @@
 						mov		ecx, 1
 					}))))
 	t)
-    
+
 ;;;
 ;;; Replace Common Lisp LOGNOT operator
 ;;;
@@ -3732,7 +3732,7 @@
         pop     ebp
         ret
     })
-    
+
 ;;;
 ;;; Common Lisp LOGANDC1 operator
 ;;;
@@ -3795,7 +3795,7 @@
 		cmp		ecx, 32
 		jl		:t1
 		mov		eax, 0
-		jmp		:exit 
+		jmp		:exit
 	:t1
 		sar		eax, cl
 		and		eax, -8
@@ -3863,7 +3863,7 @@
 ;;;
 ;;;	Common Lisp ABS function.
 ;;;
-(defun abs (x) 
+(defun abs (x)
 	(if (complexp x)
         (let ((r (realpart x))
               (i (imagpart x)))
@@ -3888,7 +3888,7 @@
 ;;;;
 ;;;; Common Lisp EVENP function.
 ;;;;
-(defun evenp (x) 
+(defun evenp (x)
     (unless (integerp x)
         (cl::signal-type-error x 'integer))
     (= (mod x 2) 0))
@@ -3896,7 +3896,7 @@
 ;;;;
 ;;;; Common Lisp ODDP function.
 ;;;;
-(defun oddp (x) 
+(defun oddp (x)
     (unless (integerp x)
         (cl::signal-type-error x 'integer))
     (/= (mod x 2) 0))
@@ -3939,7 +3939,7 @@
   		end-atomic
         push    (* uvector-single-float-tag 8)
         callp   alloc-8-byte-uvector    ;; eax = single float node
-        add     esp, 4    
+        add     esp, 4
         fsqrt
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
@@ -3960,7 +3960,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
+    })
 
 (defasm sqrt-ratio (n)
     {
@@ -3975,8 +3975,8 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
-    
+    })
+
 (defasm sqrt-short-float (n)
     {
 		push        ebp
@@ -4020,11 +4020,11 @@
         fsqrt
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defasm sqrt-double-float (n)
@@ -4036,11 +4036,11 @@
         fsqrt
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defun sqrt-complex (c)
@@ -4071,15 +4071,15 @@
     (unless (numberp x)
         (cl::signal-type-error x 'number)))
 
-(defconstant sqrt-functions 
-    (vector 
+(defconstant sqrt-functions
+    (vector
         #'sqrt-fixnum
         #'sqrt-bignum
         #'sqrt-ratio
         #'sqrt-short-float
         #'sqrt-single-float
         #'sqrt-double-float
-        #'sqrt-complex 
+        #'sqrt-complex
         #'sqrt-non-number))
 
 ;;;
@@ -4088,23 +4088,23 @@
 (defasm sqrt (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         push    0
         callp   numeric-compare-numbers
         add     esp, 8
         cmp     eax, -8                                 ;; x < 0?
         jne     :next
-    
+
         ;; negative x, promote to complex
         push    (* uvector-complex-tag 8)
         callp   alloc-16-byte-uvector               ;; eax = complex node
-        add     esp, 4    
+        add     esp, 4
         mov     edx, [ebp + ARGS_OFFSET]
         mov     [eax + (uvector-offset 1)], edx
         xor     edx, edx
-        mov     [eax + (uvector-offset 2)], edx    
-        mov     [ebp + ARGS_OFFSET], eax 
+        mov     [eax + (uvector-offset 2)], edx
+        mov     [ebp + ARGS_OFFSET], eax
     :next
         push    [ebp + ARGS_OFFSET]
         callp   num-type
@@ -4119,7 +4119,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 (defun floor-fixnum (n int-flag) (if int-flag n (float n)))
 (defun floor-bignum (n int-flag) (if int-flag n (float n)))
@@ -4134,7 +4134,7 @@
             (progn
                 (setf sign -1)
                 (setf num (- num))    ;; handle floor
-                (incf num (- denom 1))))  
+                (incf num (- denom 1))))
         (setq result (divide-and-truncate-integers num denom))
         (if int-flag (* sign result) (float (* sign result)))))
 
@@ -4157,7 +4157,7 @@
         fldcw       [esp]
         frndint                             ;; floor
         pop         eax
-        fldcw       [esp]                   ;; restore original       
+        fldcw       [esp]                   ;; restore original
 		fstp.single [esp]
         pop         edx
 		mov			eax, edx				;; untagged 32-bit float in eax, edx
@@ -4178,7 +4178,7 @@
 		end-atomic
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       short-float-to-integer
@@ -4207,14 +4207,14 @@
         fldcw       [esp]
         frndint                             ;; floor
         fldcw       [esp + 4]               ;; restore original
-        add         esp, 8       
+        add         esp, 8
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       single-float-to-integer
@@ -4243,14 +4243,14 @@
         fldcw       [esp]
         frndint                             ;; floor
         fldcw       [esp + 4]               ;; restore original
-        add         esp, 8       
+        add         esp, 8
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector   ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       double-float-to-integer
@@ -4266,21 +4266,21 @@
 
 (defun floor-non-number (x) (cl::signal-type-error x 'real))
 
-(defconstant floor-functions 
-    (vector 
+(defconstant floor-functions
+    (vector
         #'floor-fixnum
         #'floor-bignum
         #'floor-ratio
         #'floor-short-float
         #'floor-single-float
         #'floor-double-float
-        #'floor-complex 
+        #'floor-complex
         #'floor-non-number))
 
 (defasm floor-number (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -4295,12 +4295,12 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 (defasm ffloor-number (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -4315,7 +4315,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 ;;;
 ;;;	Common Lisp FLOOR operator
@@ -4373,7 +4373,7 @@
         fldcw       [esp]
         frndint                             ;; ceiling
         pop         eax
-        fldcw       [esp]                   ;; restore original       
+        fldcw       [esp]                   ;; restore original
 		fstp.single [esp]
         pop         edx
 		mov			eax, edx				;; untagged 32-bit float in eax, edx
@@ -4394,7 +4394,7 @@
 		end-atomic
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       short-float-to-integer
@@ -4423,14 +4423,14 @@
         fldcw       [esp]
         frndint                             ;; ceiling
         fldcw       [esp + 4]               ;; restore original
-        add         esp, 8       
+        add         esp, 8
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       single-float-to-integer
@@ -4459,14 +4459,14 @@
         fldcw       [esp]
         frndint                             ;; ceiling
         fldcw       [esp + 4]               ;; restore original
-        add         esp, 8       
+        add         esp, 8
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector   ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       double-float-to-integer
@@ -4482,21 +4482,21 @@
 
 (defun ceiling-non-number (x) (cl::signal-type-error x 'real))
 
-(defconstant ceiling-functions 
-    (vector 
+(defconstant ceiling-functions
+    (vector
         #'ceiling-fixnum
         #'ceiling-bignum
         #'ceiling-ratio
         #'ceiling-short-float
         #'ceiling-single-float
         #'ceiling-double-float
-        #'ceiling-complex 
+        #'ceiling-complex
         #'ceiling-non-number))
 
 (defasm ceiling-number (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -4511,12 +4511,12 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 (defasm fceiling-number (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -4531,7 +4531,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 ;;;
 ;;;	Common Lisp CEILING operator
@@ -4555,7 +4555,7 @@
 
 (defun truncate-fixnum (n int-flag) (if int-flag n (float n)))
 (defun truncate-bignum (n int-flag) (if int-flag n (float n)))
-(defun truncate-ratio (n int-flag) 
+(defun truncate-ratio (n int-flag)
     (let* ((num (numerator n))
            (denom (denominator n))
            result
@@ -4588,7 +4588,7 @@
         fldcw       [esp]
         frndint                             ;; truncate
         pop         eax
-        fldcw       [esp]                   ;; restore original       
+        fldcw       [esp]                   ;; restore original
 		fstp.single [esp]
         pop         edx
 		mov			eax, edx				;; untagged 32-bit float in eax, edx
@@ -4609,7 +4609,7 @@
 		end-atomic
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       short-float-to-integer
@@ -4638,14 +4638,14 @@
         fldcw       [esp]
         frndint                             ;; truncate
         fldcw       [esp + 4]               ;; restore original
-        add         esp, 8       
+        add         esp, 8
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       single-float-to-integer
@@ -4674,14 +4674,14 @@
         fldcw       [esp]
         frndint                             ;; truncate
         fldcw       [esp + 4]               ;; restore original
-        add         esp, 8       
+        add         esp, 8
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector   ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       double-float-to-integer
@@ -4697,21 +4697,21 @@
 
 (defun truncate-non-number (x) (cl::signal-type-error x 'real))
 
-(defconstant truncate-functions 
-    (vector 
+(defconstant truncate-functions
+    (vector
         #'truncate-fixnum
         #'truncate-bignum
         #'truncate-ratio
         #'truncate-short-float
         #'truncate-single-float
         #'truncate-double-float
-        #'truncate-complex 
+        #'truncate-complex
         #'truncate-non-number))
 
 (defasm truncate-number (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -4726,12 +4726,12 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 (defasm ftruncate-number (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -4746,7 +4746,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 ;;;
 ;;;	Common Lisp TRUNCATE operator
@@ -4794,7 +4794,7 @@
         fldcw       [esp]
         frndint                             ;; round
         pop         eax
-        fldcw       [esp]                   ;; restore original       
+        fldcw       [esp]                   ;; restore original
 		fstp.single [esp]
         pop         edx
 		mov			eax, edx				;; untagged 32-bit float in eax, edx
@@ -4815,7 +4815,7 @@
 		end-atomic
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       short-float-to-integer
@@ -4843,14 +4843,14 @@
         fldcw       [esp]
         frndint                             ;; round
         fldcw       [esp + 4]               ;; restore original
-        add         esp, 8       
+        add         esp, 8
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       single-float-to-integer
@@ -4878,14 +4878,14 @@
         fldcw       [esp]
         frndint                             ;; round
         fldcw       [esp + 4]               ;; restore original
-        add         esp, 8       
+        add         esp, 8
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector   ;; eax = double float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         edx, [ebp + (+ ARGS_OFFSET 0)]
         cmp         edx, [esi]
-        je          short :done  
+        je          short :done
         push        eax
         mov         ecx, 1
         callf       double-float-to-integer
@@ -4901,21 +4901,21 @@
 
 (defun round-non-number (x) (cl::signal-type-error x 'real))
 
-(defconstant round-functions 
-    (vector 
+(defconstant round-functions
+    (vector
         #'round-fixnum
         #'round-bignum
         #'round-ratio
         #'round-short-float
         #'round-single-float
         #'round-double-float
-        #'round-complex 
+        #'round-complex
         #'round-non-number))
 
 (defasm round-number (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -4930,12 +4930,12 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 (defasm fround-number (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -4950,7 +4950,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })                
+    })
 
 ;;;
 ;;;	Common Lisp ROUND operator
@@ -4986,7 +4986,7 @@
   		end-atomic
         push    (* uvector-single-float-tag 8)
         callp   alloc-8-byte-uvector    ;; eax = single float node
-        add     esp, 4    
+        add     esp, 4
         fsin
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
@@ -5007,7 +5007,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
+    })
 
 (defasm sin-ratio (n)
     {
@@ -5022,8 +5022,8 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
-    
+    })
+
 (defasm sin-short-float (n)
     {
 		push        ebp
@@ -5067,11 +5067,11 @@
         fsin
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defasm sin-double-float (n)
@@ -5083,11 +5083,11 @@
         fsin
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defun complex-sin (x)
@@ -5099,15 +5099,15 @@
     (unless (numberp x)
         (cl::signal-type-error x 'number)))
 
-(defconstant sin-functions 
-    (vector 
+(defconstant sin-functions
+    (vector
         #'sin-fixnum
         #'sin-bignum
         #'sin-ratio
         #'sin-short-float
         #'sin-single-float
         #'sin-double-float
-        #'complex-sin 
+        #'complex-sin
         #'sin-non-number))
 
 ;;;
@@ -5116,7 +5116,7 @@
 (defasm cl:sin (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -5146,7 +5146,7 @@
   		end-atomic
         push    (* uvector-single-float-tag 8)
         callp   alloc-8-byte-uvector    ;; eax = single float node
-        add     esp, 4    
+        add     esp, 4
         fcos
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
@@ -5167,7 +5167,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
+    })
 
 (defasm cos-ratio (n)
     {
@@ -5182,8 +5182,8 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
-    
+    })
+
 (defasm cos-short-float (n)
     {
 		push        ebp
@@ -5227,11 +5227,11 @@
         fcos
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defasm cos-double-float (n)
@@ -5243,11 +5243,11 @@
         fcos
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defun complex-cos (x)
@@ -5259,15 +5259,15 @@
     (unless (numberp x)
         (cl::signal-type-error x 'number)))
 
-(defconstant cos-functions 
-    (vector 
+(defconstant cos-functions
+    (vector
         #'cos-fixnum
         #'cos-bignum
         #'cos-ratio
         #'cos-short-float
         #'cos-single-float
         #'cos-double-float
-        #'complex-cos 
+        #'complex-cos
         #'cos-non-number))
 
 ;;;
@@ -5276,7 +5276,7 @@
 (defasm cl:cos (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -5306,7 +5306,7 @@
   		end-atomic
         push    (* uvector-single-float-tag 8)
         callp   alloc-8-byte-uvector    ;; eax = single float node
-        add     esp, 4    
+        add     esp, 4
         fsincos
         fdivp    st1, st0
    		fstp.single [eax + (uvector-offset 1)]
@@ -5329,7 +5329,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
+    })
 
 (defasm tan-ratio (n)
     {
@@ -5345,8 +5345,8 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
-    
+    })
+
 (defasm tan-short-float (n)
     {
 		push        ebp
@@ -5392,11 +5392,11 @@
         fdivp    st1, st0
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defasm tan-double-float (n)
@@ -5409,11 +5409,11 @@
         fdivp    st1, st0
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defun complex-tan (x)
@@ -5425,15 +5425,15 @@
     (unless (numberp x)
         (cl::signal-type-error x 'number)))
 
-(defconstant tan-functions 
-    (vector 
+(defconstant tan-functions
+    (vector
         #'tan-fixnum
         #'tan-bignum
         #'tan-ratio
         #'tan-short-float
         #'tan-single-float
         #'tan-double-float
-        #'complex-tan 
+        #'complex-tan
         #'tan-non-number))
 
 ;;;
@@ -5442,7 +5442,7 @@
 (defasm cl:tan (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -5464,7 +5464,7 @@
 ;;;
 (defun asin (number)
     (let ((result
-	       (* (- #C(0 1)) 
+	       (* (- #C(0 1))
 	           (log (+ (* #C(0 1) number) (sqrt (- 1 (* number number))))))))
         (if (and (complexp result) (= (imagpart result) 0))
             (realpart result)
@@ -5495,7 +5495,7 @@
         push    (* uvector-single-float-tag 8)
         callp   alloc-8-byte-uvector    ;; eax = single float node
         add     esp, 4
-        fld1    
+        fld1
         fpatan
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
@@ -5517,7 +5517,7 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
+    })
 
 (defasm atan-ratio (n)
     {
@@ -5533,8 +5533,8 @@
         mov     ecx, 1
         pop     ebp
         ret
-    })               
-    
+    })
+
 (defasm atan-short-float (n)
     {
 		push        ebp
@@ -5580,11 +5580,11 @@
         fpatan
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defasm atan-double-float (n)
@@ -5597,11 +5597,11 @@
         fpatan
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defun complex-atan (x)
@@ -5618,22 +5618,22 @@
     (unless (numberp x)
         (cl::signal-type-error x 'number)))
 
-(defconstant atan-functions 
-    (vector 
+(defconstant atan-functions
+    (vector
         #'atan-fixnum
         #'atan-bignum
         #'atan-ratio
         #'atan-short-float
         #'atan-single-float
         #'atan-double-float
-        #'complex-atan 
+        #'complex-atan
         #'atan-non-number))
 
 ;;;
 ;;;	Common Lisp ATAN function.
 ;;; arctan x = -i log  ((1+ix) sqrt(1/(1+x^2)) )
-;;; arctan x = 
-;;; 
+;;; arctan x =
+;;;
 (defconstant pi/2 (/ pi 2))
 (defconstant -pi/2 (/ pi -2))
 (defun atan (y &optional x);;; This atan is numerically stable for single-floats.
@@ -5706,18 +5706,18 @@
   		end-atomic
         push    (* uvector-single-float-tag 8)
         callp   alloc-8-byte-uvector    ;; eax = single float node
-        add     esp, 4 
-        fldl2e                  ; log2(e) x 
-        fmul        st0, st1    ; z = x * log2(e) x 
-        fst         st1         ; z z 
-        frndint                 ; int(z) z 
-        fxch                    ; z int(z) 
-        fsub        st0, st1    ; frac(z) int(z) 
-        f2xm1                   ; 2^frac(z)-1 int(z) 
-        fld1                    ; 1 2^frac(z)-1 int(z) 
-        faddp       st1, st0    ; 2^frac(z) int(z) 
-        fscale                  ; 2^z int(z) 
-        fstp        st1         ; 2^z 
+        add     esp, 4
+        fldl2e                  ; log2(e) x
+        fmul        st0, st1    ; z = x * log2(e) x
+        fst         st1         ; z z
+        frndint                 ; int(z) z
+        fxch                    ; z int(z)
+        fsub        st0, st1    ; frac(z) int(z)
+        f2xm1                   ; 2^frac(z)-1 int(z)
+        fld1                    ; 1 2^frac(z)-1 int(z)
+        faddp       st1, st0    ; 2^frac(z) int(z)
+        fscale                  ; 2^z int(z)
+        fstp        st1         ; 2^z
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
         pop     ebp
@@ -5732,22 +5732,22 @@
         callp   bignum-to-single-float
         add     esp, 4
         fld.single [eax + (uvector-offset 1)]
-        fldl2e                  ; log2(e) x 
-        fmul        st0, st1    ; z = x * log2(e) x 
-        fst         st1         ; z z 
-        frndint                 ; int(z) z 
-        fxch                    ; z int(z) 
-        fsub        st0, st1    ; frac(z) int(z) 
-        f2xm1                   ; 2^frac(z)-1 int(z) 
-        fld1                    ; 1 2^frac(z)-1 int(z) 
-        faddp       st1, st0    ; 2^frac(z) int(z) 
-        fscale                  ; 2^z int(z) 
-        fstp        st1         ; 2^z 
+        fldl2e                  ; log2(e) x
+        fmul        st0, st1    ; z = x * log2(e) x
+        fst         st1         ; z z
+        frndint                 ; int(z) z
+        fxch                    ; z int(z)
+        fsub        st0, st1    ; frac(z) int(z)
+        f2xm1                   ; 2^frac(z)-1 int(z)
+        fld1                    ; 1 2^frac(z)-1 int(z)
+        faddp       st1, st0    ; 2^frac(z) int(z)
+        fscale                  ; 2^z int(z)
+        fstp        st1         ; 2^z
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
         pop     ebp
         ret
-    })               
+    })
 
 (defasm exp-ratio (n)
     {
@@ -5757,23 +5757,23 @@
         callp   ratio-to-single-float
         add     esp, 4
         fld.single [eax + (uvector-offset 1)]
-        fldl2e                  ; log2(e) x 
-        fmul        st0, st1    ; z = x * log2(e) x 
-        fst         st1         ; z z 
-        frndint                 ; int(z) z 
-        fxch                    ; z int(z) 
-        fsub        st0, st1    ; frac(z) int(z) 
-        f2xm1                   ; 2^frac(z)-1 int(z) 
-        fld1                    ; 1 2^frac(z)-1 int(z) 
-        faddp       st1, st0    ; 2^frac(z) int(z) 
-        fscale                  ; 2^z int(z) 
-        fstp        st1         ; 2^z 
+        fldl2e                  ; log2(e) x
+        fmul        st0, st1    ; z = x * log2(e) x
+        fst         st1         ; z z
+        frndint                 ; int(z) z
+        fxch                    ; z int(z)
+        fsub        st0, st1    ; frac(z) int(z)
+        f2xm1                   ; 2^frac(z)-1 int(z)
+        fld1                    ; 1 2^frac(z)-1 int(z)
+        faddp       st1, st0    ; 2^frac(z) int(z)
+        fscale                  ; 2^z int(z)
+        fstp        st1         ; 2^z
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
         pop     ebp
         ret
-    })               
-    
+    })
+
 (defasm exp-short-float (n)
     {
 		push        ebp
@@ -5783,17 +5783,17 @@
 		and         al, #xfc
         push        eax
 		fld.single  [esp]
-        fldl2e                  ; log2(e) x 
-        fmul        st0, st1    ; z = x * log2(e) x 
-        fst         st1         ; z z 
-        frndint                 ; int(z) z 
-        fxch                    ; z int(z) 
-        fsub        st0, st1    ; frac(z) int(z) 
-        f2xm1                   ; 2^frac(z)-1 int(z) 
-        fld1                    ; 1 2^frac(z)-1 int(z) 
-        faddp       st1, st0    ; 2^frac(z) int(z) 
-        fscale                  ; 2^z int(z) 
-        fstp        st1         ; 2^z 
+        fldl2e                  ; log2(e) x
+        fmul        st0, st1    ; z = x * log2(e) x
+        fst         st1         ; z z
+        frndint                 ; int(z) z
+        fxch                    ; z int(z)
+        fsub        st0, st1    ; frac(z) int(z)
+        f2xm1                   ; 2^frac(z)-1 int(z)
+        fld1                    ; 1 2^frac(z)-1 int(z)
+        faddp       st1, st0    ; 2^frac(z) int(z)
+        fscale                  ; 2^z int(z)
+        fstp        st1         ; 2^z
   		fstp.single [esp]
         pop         edx
 		mov			eax, edx				;; untagged 32-bit float in eax, edx
@@ -5824,24 +5824,24 @@
 		mov         ebp,esp
         mov         eax, [ebp + ARGS_OFFSET]
 		fld.single  [eax + (uvector-offset 1)]
-        fldl2e                  ; log2(e) x 
-        fmul        st0, st1    ; z = x * log2(e) x 
-        fst         st1         ; z z 
-        frndint                 ; int(z) z 
-        fxch                    ; z int(z) 
-        fsub        st0, st1    ; frac(z) int(z) 
-        f2xm1                   ; 2^frac(z)-1 int(z) 
-        fld1                    ; 1 2^frac(z)-1 int(z) 
-        faddp       st1, st0    ; 2^frac(z) int(z) 
-        fscale                  ; 2^z int(z) 
-        fstp        st1         ; 2^z 
+        fldl2e                  ; log2(e) x
+        fmul        st0, st1    ; z = x * log2(e) x
+        fst         st1         ; z z
+        frndint                 ; int(z) z
+        fxch                    ; z int(z)
+        fsub        st0, st1    ; frac(z) int(z)
+        f2xm1                   ; 2^frac(z)-1 int(z)
+        fld1                    ; 1 2^frac(z)-1 int(z)
+        faddp       st1, st0    ; 2^frac(z) int(z)
+        fscale                  ; 2^z int(z)
+        fstp        st1         ; 2^z
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defasm exp-double-float (n)
@@ -5850,45 +5850,45 @@
 		mov         ebp,esp
         mov         eax, [ebp + ARGS_OFFSET]
 		fld         [eax + (uvector-offset 2)]
-        fldl2e                  ; log2(e) x 
-        fmul        st0, st1    ; z = x * log2(e) x 
-        fst         st1         ; z z 
-        frndint                 ; int(z) z 
-        fxch                    ; z int(z) 
-        fsub        st0, st1    ; frac(z) int(z) 
-        f2xm1                   ; 2^frac(z)-1 int(z) 
-        fld1                    ; 1 2^frac(z)-1 int(z) 
-        faddp       st1, st0    ; 2^frac(z) int(z) 
-        fscale                  ; 2^z int(z) 
-        fstp        st1         ; 2^z 
+        fldl2e                  ; log2(e) x
+        fmul        st0, st1    ; z = x * log2(e) x
+        fst         st1         ; z z
+        frndint                 ; int(z) z
+        fxch                    ; z int(z)
+        fsub        st0, st1    ; frac(z) int(z)
+        f2xm1                   ; 2^frac(z)-1 int(z)
+        fld1                    ; 1 2^frac(z)-1 int(z)
+        faddp       st1, st0    ; 2^frac(z) int(z)
+        fscale                  ; 2^z int(z)
+        fstp        st1         ; 2^z
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defun complex-exp (x)
     (let* ((re (realpart x))
            (im (imagpart x))
            (x (exp re)))
-        (complex (* x (cos im)) (* x (sin im))))) 
+        (complex (* x (cos im)) (* x (sin im)))))
 
 (defun exp-non-number (x)
     (unless (numberp x)
         (cl::signal-type-error x 'number)))
 
-(defconstant exp-functions 
-    (vector 
+(defconstant exp-functions
+    (vector
         #'exp-fixnum
         #'exp-bignum
         #'exp-ratio
         #'exp-short-float
         #'exp-single-float
         #'exp-double-float
-        #'complex-exp 
+        #'complex-exp
         #'exp-non-number))
 
 ;;;
@@ -5897,7 +5897,7 @@
 (defasm cl:exp (x)
     {
         push    ebp
-        mov     ebp, esp  
+        mov     ebp, esp
         push    [ebp + ARGS_OFFSET]
         callp   num-type
         add     esp, 4                                  ;; eax = typeof(x)
@@ -5923,7 +5923,7 @@
 		(error 'type-error :datum power :expected-type 'number))
 	(if (and (integerp power)
 			(or (rationalp base)
-				(and (complexp base) 
+				(and (complexp base)
 					(rationalp (realpart base))
 					(rationalp (imagpart base)))))
 		;; calculate exact result
@@ -5941,9 +5941,9 @@
 					(setf result (* result base)))
 				(setf power (ash power -1))
 				(setf base (* base base))))
-		
+
 		;; approximate result
-		(if (or (complexp base) 
+		(if (or (complexp base)
 				(complexp power)
 				(and (< base 0) (not (integerp power))))
 			(cl::complex-expt base power)    ;; for now, just use definition in math2.lisp
@@ -5971,7 +5971,7 @@
         callf   abs
         add     esp, 4
         jmp     short :done
-    :next2      
+    :next2
         mov     eax, 0      ; identity is 0
         jmp     short :done
     :next3
@@ -6018,7 +6018,7 @@
                         (if (= first 0)
                             (return-from lcm 0))
                         (setq first (/ (abs (* first x)) (gcd first x)))))))))
-                    
+
 (defasm log-fixnum (n base)
     {
         push    ebp
@@ -6033,7 +6033,7 @@
         mov     edx, [ebp + (+ ARGS_OFFSET 0)]
   		end-atomic
         fyl2x                                        ;; log2(x)
-        cmp         edx, [esi]                 
+        cmp         edx, [esi]
         jne         short :next1
         fldl2e                                       ;; push log2(e)
         jmp         short :next2
@@ -6042,10 +6042,10 @@
         fld         [edx + (uvector-offset 2)]
         fyl2x
     :next2
-        fdivp                                         ;; compute log2(n)/log2(base)         
+        fdivp                                         ;; compute log2(n)/log2(base)
         push    (* uvector-single-float-tag 8)
         callp   alloc-8-byte-uvector    ;; eax = single float node
-        add     esp, 4 
+        add     esp, 4
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
         pop     ebp
@@ -6063,7 +6063,7 @@
         fld1                                    ;; push constant 1.0
         fld.single [eax + (uvector-offset 1)]
         fyl2x                                   ;; log2(x)
-        cmp         edx, [esi]                 
+        cmp         edx, [esi]
         jne         short :next1
         fldl2e                                  ;; push log2(e)
         jmp         short :next2
@@ -6072,12 +6072,12 @@
         fld         [edx + (uvector-offset 2)]
         fyl2x
     :next2
-        fdivp                                   ;; compute log2(n)/log2(base)         
+        fdivp                                   ;; compute log2(n)/log2(base)
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
         pop     ebp
         ret
-    })               
+    })
 
 (defasm log-ratio (n base)
     {
@@ -6090,7 +6090,7 @@
         fld1                                    ;; push constant 1.0
         fld.single [eax + (uvector-offset 1)]
         fyl2x                                   ;; log2(x)
-        cmp         edx, [esi]                 
+        cmp         edx, [esi]
         jne         short :next1
         fldl2e                                  ;; push log2(e)
         jmp         short :next2
@@ -6099,13 +6099,13 @@
         fld         [edx + (uvector-offset 2)]
         fyl2x
     :next2
-        fdivp                                   ;; compute log2(n)/log2(base)         
+        fdivp                                   ;; compute log2(n)/log2(base)
    		fstp.single [eax + (uvector-offset 1)]
         mov     ecx, 1
         pop     ebp
         ret
-    })               
-    
+    })
+
 (defasm log-short-float (n base)
     {
 		push        ebp
@@ -6118,7 +6118,7 @@
         fld1                                    ;; push constant 1.0
   		fld.single  [esp]
         fyl2x                                   ;; log2(x)
-        cmp         edx, [esi]                 
+        cmp         edx, [esi]
         jne         short :next1
         fldl2e                                  ;; push log2(e)
         jmp         short :next2
@@ -6127,7 +6127,7 @@
         fld         [edx + (uvector-offset 2)]
         fyl2x
     :next2
-        fdivp                                   ;; compute log2(n)/log2(base)         
+        fdivp                                   ;; compute log2(n)/log2(base)
   		fstp.single [esp]
         pop         edx
 		mov			eax, edx				;; untagged 32-bit float in eax, edx
@@ -6162,7 +6162,7 @@
         fld1                                         ;; push constant 1.0
 		fld.single  [eax + (uvector-offset 1)]
         fyl2x                                        ;; log2(x)
-        cmp         edx, [esi]                 
+        cmp         edx, [esi]
         jne         short :next1
         fldl2e                                       ;; push log2(e)
         jmp         short :next2
@@ -6171,14 +6171,14 @@
         fld         [edx + (uvector-offset 2)]
         fyl2x
     :next2
-        fdivp                                         ;; compute log2(n)/log2(base)         
+        fdivp                                         ;; compute log2(n)/log2(base)
         push        (* uvector-single-float-tag 8)
         callp       alloc-8-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp.single [eax + (uvector-offset 1)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 (defasm log-double-float (n base)
@@ -6190,7 +6190,7 @@
         fld1                                         ;; push constant 1.0
   		fld         [eax + (uvector-offset 2)]
         fyl2x                                        ;; log2(x)
-        cmp         edx, [esi]                 
+        cmp         edx, [esi]
         jne         short :next1
         fldl2e                                       ;; push log2(e)
         jmp         short :next2
@@ -6199,36 +6199,36 @@
         fld         [edx + (uvector-offset 2)]
         fyl2x
     :next2
-        fdivp                                         ;; compute log2(n)/log2(base)         
+        fdivp                                         ;; compute log2(n)/log2(base)
         push        (* uvector-double-float-tag 8)
         callp       alloc-16-byte-uvector    ;; eax = single float node
-        add         esp, 4    
+        add         esp, 4
 		fstp        [eax + (uvector-offset 2)]
         mov         ecx, 1
         pop         ebp
-        ret  
+        ret
     })
 
 ;; How can this not take into account the base??
 (defun complex-log (n base)
     (if base
         (/ (log n) (log base))
-        (complex (log (float (abs n))) (phase n))))   
+        (complex (log (float (abs n))) (phase n))))
 
 (defun log-non-number (n base)
     (declare (ignore base))
     (unless (numberp n)
         (cl::signal-type-error n 'number)))
 
-(defconstant log-functions 
-    (vector 
+(defconstant log-functions
+    (vector
         #'log-fixnum
         #'log-bignum
         #'log-ratio
         #'log-short-float
         #'log-single-float
         #'log-double-float
-        #'complex-log 
+        #'complex-log
         #'log-non-number))
 
 (defconstant log_neg_1 (complex 0d0 (float pi 0d0)))
@@ -6243,7 +6243,7 @@
         	(return-from log (float 0 (float n))))  ;; return 0 of same type as n (if float)
     (if (zerop n)
         (error 'floating-point-underflow :operation 'log :operands (list n base)))
-    (if (realp base) 
+    (if (realp base)
         (setq base (float base 0d0))      ;; base must be a double-float
         (if (complexp base)
             (return-from log (/ (log n) (log base)))))
@@ -6296,7 +6296,7 @@
 		mov		ebp, esp
         push    (* uvector-single-float-tag 8)
         callp   alloc-8-byte-uvector    ;; eax = single float node
-        add     esp, 4    
+        add     esp, 4
    		mov		ecx, [ebp + ARGS_OFFSET]
 		test	ecx, 7
     begin-atomic
@@ -6326,7 +6326,7 @@
 		mov		ebp, esp
         push    (* uvector-double-float-tag 8)
         callp   alloc-16-byte-uvector    ;; eax = double float node
-        add     esp, 4    
+        add     esp, 4
    		mov		ecx, [ebp + ARGS_OFFSET]
 		test	ecx, 7
     begin-atomic
@@ -6425,7 +6425,7 @@
 		mov		edx, [ebp + ARGS_OFFSET]
     begin-atomic
 		mov		eax, [edx + (uvector-offset cl::double-float-offset)]
-		mov		ecx, [edx + (uvector-offset (+ 1 cl::double-float-offset))] 
+		mov		ecx, [edx + (uvector-offset (+ 1 cl::double-float-offset))]
 		test	eax, #xe0000000
 		jne		short :bignum
 		test	ecx, ecx
@@ -6485,7 +6485,7 @@
 	:exit
 		pop		ebp
 		ret
-	})   
+	})
 
 ;;;
 ;;; Common Lisp NUMBERP operator
@@ -6556,7 +6556,7 @@
 ;;;
 ;;;	Common Lisp CIS function.
 ;;;
-(defun cis (x) 
+(defun cis (x)
     (unless (realp x)
         (cl::signal-type-error x 'real))
     (exp (* cl::imag-one x)))
@@ -6580,7 +6580,7 @@
 	(cond
 		((complexp number)(atan (imagpart number) (realpart number)))
 		((minusp number) pi)
-		(t 0.0)))	 
+		(t 0.0)))
 
 ;;;
 ;;; Common Lisp REALPART operator
@@ -6608,23 +6608,23 @@
 (defun cl:upgraded-complex-part-type (typespec &optional environment)
     (declare (ignore environment))
     typespec)       ;; we can store any numeric type in the complex number
-            
+
 ;;;;
 ;;;;	Common Lisp NUMERATOR function.
 ;;;;
-(defun numerator (x) 
-	(unless (rationalp x) 
+(defun numerator (x)
+	(unless (rationalp x)
         (cl::signal-type-error x 'rational))
-	(if (ratiop x) 
+	(if (ratiop x)
         (uref x cl::ratio-numerator-offset) x))
 
 ;;;;
 ;;;;	Common Lisp DENOMINATOR function.
 ;;;;
-(defun denominator (x) 
-	(unless (rationalp x) 
+(defun denominator (x)
+	(unless (rationalp x)
         (cl::signal-type-error x 'rational))
-	(if (ratiop x) 
+	(if (ratiop x)
         (uref x cl::ratio-denominator-offset) 1))
 
 ;;;;
@@ -6710,7 +6710,7 @@
 (defun rational (number)
 	(unless (realp number)
         (cl::signal-type-error number 'number))
-	(if (rationalp number) 
+	(if (rationalp number)
 		(return-from rational number))
 	(multiple-value-bind (mantissa exp sign)
 		(integer-decode-float number)
@@ -6789,8 +6789,8 @@
 ;;;
 ;;;	Common Lisp PARSE-INTEGER operator
 ;;;
-(defun parse-integer (string 
-		&key (start 0) 
+(defun parse-integer (string
+		&key (start 0)
 			 (end (length string))
 			 (radix 10)
 			 (junk-allowed nil)
@@ -6802,7 +6802,7 @@
         (cl::signal-type-error radix '(integer 2 36)))
     (unless (stringp string)
         (cl::signal-type-error string 'string))
-    
+
 	;; check for leading sign
 	(setf c (char string start))
 	(if (char= c #\-)
@@ -6818,21 +6818,21 @@
 		(cond
 			(n (progn
 				(cond
-					((eq state :finished) 
+					((eq state :finished)
 					 (if (not junk-allowed)
 						(error 'parse-error "Invalid integer parsed: ~A" string)
 						(progn (setq end i) (return)))))
 				(setq result (+ (* result radix) n))
 				(setq state :collecting)))
-			
+
 			((member c (list (int-char 13) (int-char 32) (int-char 9)))	;; '(#\Newline #\Space #\Tab)
 				(cond
 					((eq state :collecting) (setq state :finished))
 					((eq state :initial) nil)	; don't do anything
 					((eq state :finished) nil)))
-			(t 
+			(t
 				(if (not junk-allowed)
-					(error 'parse-error "Invalid integer parsed: ~A" string)  ;; string  
+					(error 'parse-error "Invalid integer parsed: ~A" string)  ;; string
 					(progn (setq end i) (return))))))
 
 	(if (eq state :initial)
@@ -6843,23 +6843,23 @@
 ;;;
 ;;; BOOLE constants are defined in boole.lisp
 ;;;
-(defconstant boole-funcs 
+(defconstant boole-funcs
     (vector
         (lambda (i1 i2) (check-type i1 integer) (check-type i2 integer) 0)  ; BOOLE-CLR
         #'logand                                                            ; BOOLE-AND
         #'logandc1                                                          ; BOOLE-ANDC1
         (lambda (i1 i2) (check-type i1 integer) (check-type i2 integer) i2) ; BOOLE-2
         #'logandc2                                                          ; BOOLE-ANDC2
-        (lambda (i1 i2) (check-type i1 integer) (check-type i2 integer) i1) ; BOOLE-1        
+        (lambda (i1 i2) (check-type i1 integer) (check-type i2 integer) i1) ; BOOLE-1
         #'logxor                                                            ; BOOLE-XOR
         #'logior                                                            ; BOOLE-IOR
         #'lognor                                                            ; BOOLE-NOR
-        #'logeqv                                                            ; BOOLE-EQV        
+        #'logeqv                                                            ; BOOLE-EQV
         (lambda (i1 i2) (check-type i2 integer) (lognot i1))                ; BOOLE-C1
         #'logorc1                                                           ; BOOLE-ORC1
         (lambda (i1 i2) (check-type i1 integer) (lognot i2))                ; BOOLE-C2
         #'logorc2                                                           ; BOOLE-ORC2
-        #'lognand                                                           ; BOOLE-NAND        
+        #'lognand                                                           ; BOOLE-NAND
         (lambda (i1 i2) (check-type i1 integer) (check-type i2 integer) -1) ; BOOLE-SET
     ))
 
@@ -6874,7 +6874,7 @@
 ;;;
 ;;;	Common Lisp LOGTEST function.
 ;;;
-(defun logtest (x y) 
+(defun logtest (x y)
     (not (zerop (logand x y))))
 
 ;;;
@@ -6894,7 +6894,7 @@
 		(let ((retval (cl::%once-only-forms place))
 			  (sym (gensym)))
 			`(let ,(car retval)
-				(let ((,sym ,new-byte)) 
+				(let ((,sym ,new-byte))
 					(setf ,(cdr retval) (deposit-field ,sym ,bytespec ,(cdr retval)))
 					,sym)))
 		(let ((sym (gensym)))
@@ -6958,7 +6958,7 @@
 			(let* ((bits (cl::%single-float-bits float)))
 				(cl::%make-single-float (+ (logand #x807fffff bits)(ash exp-bits 23))))
 			(let* ((bits (cl::%double-float-bits float)))
-				(cl::%make-double-float (+ (logand #x800fffffffffffff bits)(ash exp-bits 52)))))))		 	
+				(cl::%make-double-float (+ (logand #x800fffffffffffff bits)(ash exp-bits 52)))))))
 
 (defun cl::float-get-sign-bit (float)
 	(if (cl::short-float-p float)
@@ -6975,31 +6975,31 @@
 			(+ #x10000000000000 (logand (cl::%double-float-bits float) #xfffffffffffff)))))
 
 (defun %create-double-float-from-bits (mantissa exponent sign)
-	(let ((n (+ 
-				(if (= sign -1) (ash 1 63) 0) 
-				(ash (+ exponent #x3ff) 52) 
-				(- mantissa #x10000000000000))))	
+	(let ((n (+
+				(if (= sign -1) (ash 1 63) 0)
+				(ash (+ exponent #x3ff) 52)
+				(- mantissa #x10000000000000))))
 		(cl::%make-double-float n)))
 
 (defun %create-single-float-from-bits (mantissa exponent sign)
-	(let ((n (+ 
-				(if (= sign -1) (ash 1 31) 0) 
-				(ash (+ exponent #x7f) 23) 
-				(- mantissa #x800000))))	
+	(let ((n (+
+				(if (= sign -1) (ash 1 31) 0)
+				(ash (+ exponent #x7f) 23)
+				(- mantissa #x800000))))
 		(cl::%make-single-float n)))
 
 (defun %create-short-float-from-bits (mantissa exponent sign)
-	(let ((n (+ 
-				(if (= sign -1) (ash 1 29) 0) 
-				(ash (+ exponent #x7f) 21) 
-				(- mantissa #x200000))))	
+	(let ((n (+
+				(if (= sign -1) (ash 1 29) 0)
+				(ash (+ exponent #x7f) 21)
+				(- mantissa #x200000))))
 		(cl::%make-short-float n)))
 
 ;;;
 ;;;	Common Lisp DECODE-FLOAT function.
 ;;;
 (defun decode-float (float)
-	(unless (floatp float) 
+	(unless (floatp float)
         (cl::signal-type-error float 'float))
 	(if (= float 0.0)
 		(values 0.0 0 1.0)
@@ -7016,7 +7016,7 @@
 ;;;	Common Lisp SCALE-FLOAT function.
 ;;;
 (defun scale-float (float scale)
-	(unless (floatp float) 
+	(unless (floatp float)
         (cl::signal-type-error float 'float))
    	(multiple-value-bind (mantissa expt sign)
 		(integer-decode-float float)
@@ -7045,13 +7045,13 @@
 ;;;
 ;;;	Common Lisp FLOAT-SIGN function.
 ;;;
-(defun float-sign (float-1 &optional float-2) 
-	(unless (floatp float-1) 
+(defun float-sign (float-1 &optional float-2)
+	(unless (floatp float-1)
         (cl::signal-type-error float-1 'float))
-  	(setf float-2 
+  	(setf float-2
 		(if float-2
-            (progn 
-            	(unless (floatp float-2) 
+            (progn
+            	(unless (floatp float-2)
                     (cl::signal-type-error float-2 'float))
 			     (abs float-2))
 			(setf float-2 (float 1 float-1))))
@@ -7063,8 +7063,8 @@
 ;;;
 ;;;	Common Lisp FLOAT-DIGITS function.
 ;;;
-(defun float-digits (float) 
-	(unless (floatp float) 
+(defun float-digits (float)
+	(unless (floatp float)
         (cl::signal-type-error float 'float))
 	(if (cl::short-float-p float)
 		22
@@ -7075,8 +7075,8 @@
 ;;;
 ;;;	Common Lisp FLOAT-PRECISION function.
 ;;;
-(defun float-precision (float) 
-	(unless (floatp float) 
+(defun float-precision (float)
+	(unless (floatp float)
         (cl::signal-type-error float 'float))
 	(if (zerop float)
 		(return-from float-precision 0))
@@ -7090,7 +7090,7 @@
 			(if (cl::single-float-p float)
 				(if (= expt -150)
 					(integer-length (- mantissa #x800000))
-					24)		
+					24)
 				(if (= expt -1075)
 					(integer-length (- mantissa #x10000000000000))
 					53)))))
@@ -7099,7 +7099,7 @@
 ;;;	Common Lisp INTEGER-DECODE-FLOAT function.
 ;;;
 (defun integer-decode-float (float)
-	(unless (floatp float) 
+	(unless (floatp float)
         (cl::signal-type-error float 'float))
 	(if (= float 0.0)
 		(values 0 0 1)
@@ -7150,7 +7150,7 @@
         callp   alloc-16-byte-uvector
         add     esp, 4
         mov     edx, [ebx + (uvector-offset 1)] ;; raw pointer in edx--
-                                                ;; should be OK because it cannot 
+                                                ;; should be OK because it cannot
                                                 ;; point into lisp heap
         mov     [eax + (uvector-offset 1)], edx
         mov     edx, [ebp + ARGS_OFFSET]        ;; edx = size (wrapped)
@@ -7235,4 +7235,3 @@
 
 ;;; Common Lisp LONG-FLOAT-NEGATIVE-EPSILON
 (defconstant long-float-negative-epsilon double-float-negative-epsilon)
-

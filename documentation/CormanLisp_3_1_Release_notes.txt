@@ -92,4 +92,3 @@ Release 3.1 includes new contributions from the following people (in alphabetica
 
 To see the full list of contributors, please, visit the following page:
 https://github.com/sharplispers/cormanlisp/graphs/contributors
-

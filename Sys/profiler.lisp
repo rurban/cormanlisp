@@ -22,7 +22,7 @@
 			(error "Not a symbol: ~A" func))
 		(unless (symbol-function func)
 			(error "The symbol ~A does not have a function associated with it" func))
-		(setf *profiled-functions* 
+		(setf *profiled-functions*
 			(adjoin (cons func (symbol-function func)) *profiled-functions*
 				:key #'car :test #'eq))
 		(let ((total-time 0)
@@ -34,7 +34,7 @@
 						   (stop-time (get-internal-run-time)))
 						(incf total-time (- stop-time start-time))
 						(values-list ret))))))
-	funcs) 
+	funcs)
 
 (defun %unregister-profiled-functions (funcs)
 	(dolist (func funcs)
@@ -46,7 +46,7 @@
 			(if (null saved-func)
 				(error "The function ~A is not being profiled" func))
 			(setf (symbol-function func) saved-func)
-			(setf *profiled-functions* 
+			(setf *profiled-functions*
 				(remove func *profiled-functions* :key #'car :test #'eq)))))
 
 (defun profiled-function-timing-results (func)
@@ -97,4 +97,3 @@
 			(%unregister-profiled-functions ,funcs-sym)
 			(report-profiled-results ,timings-sym)
 			(values-list ,results-sym))))
-

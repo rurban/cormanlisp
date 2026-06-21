@@ -5,12 +5,12 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;;; "This software is based on the design of the ODBC interface provided by 
-;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows 
+;;; "This software is based on the design of the ODBC interface provided by
+;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows
 ;;;  Operating System products. This implementation is not the property of
 ;;;  Harlequin and they have no responsibility for its content or accuracy."
 
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
@@ -60,7 +60,7 @@
 
 ;; use this method if the db object does not exist yet
 (defmethod db-connect ((db-type (eql :odbc)) db-name user-id password autocommit)
-  (let ((db (make-instance 'odbc-database 
+  (let ((db (make-instance 'odbc-database
               :db-type :odbc
               :db-name db-name
               :user-id user-id
@@ -104,7 +104,7 @@
       (dolist (query queries)
         (if (query-active-p query)
           (with-slots (hstmt) query
-            (when hstmt 
+            (when hstmt
               (%free-statement hstmt :drop)
               (setf hstmt nil)))))
       (%disconnect hdbc)
@@ -123,13 +123,13 @@
     (%sql-cancel hstmt)
     (setf (query-active-p query) nil)))
 
-(defmethod initialize-instance :after ((query odbc-query) 
+(defmethod initialize-instance :after ((query odbc-query)
                                            &key sql henv hdbc &allow-other-keys)
   (when sql
     (let ((hstmt (%new-statement-handle hdbc)))
       (%sql-exec-direct sql hstmt henv hdbc)
-      (with-slots (column-count 
-                   column-names column-c-types column-sql-types column-data-ptrs 
+      (with-slots (column-count
+                   column-names column-c-types column-sql-types column-data-ptrs
                    column-out-len-ptrs column-precisions column-scales
                    column-nullables-p active-p) query
         (setf (hstmt query) hstmt)
@@ -139,7 +139,7 @@
 ;; one for odbc-database is missing
 (defmethod terminate ((query odbc-query))
   (with-slots (column-data-ptrs column-out-len-ptrs hstmt) query
-    (when hstmt 
+    (when hstmt
       (%free-statement hstmt :drop)
       (%dispose-ptr hstmt)) ;; ??
     (loop for data-ptr across column-data-ptrs
@@ -163,7 +163,7 @@
 
 (defmethod db-fetch-query-results ((query odbc-query) &optional count flatp)
   (when (query-active-p query)
-    (with-slots (column-count column-data-ptrs column-c-types column-sql-types 
+    (with-slots (column-count column-data-ptrs column-c-types column-sql-types
                               column-out-len-ptrs column-precisions hstmt)
                 query
       (values
@@ -175,7 +175,7 @@
                     (sql-type (aref column-sql-types 0))
                     (out-len-ptr (aref column-out-len-ptrs 0))
                     (precision (aref column-precisions 0)))
-                (loop for i from 0 
+                (loop for i from 0
                       until (or (and count (= i count))
                                 ;;(setf no-data ;; not used???
                                 (= (%sql-fetch hstmt) $SQL_NO_DATA_FOUND))
@@ -185,7 +185,7 @@
                         (read-data-in-chunks hstmt 0 data-ptr c-type sql-type
                                              out-len-ptr nil)))))
              (t
-              (loop for i from 0 
+              (loop for i from 0
                     until (or (and count (= i count))
                               ;;(setf no-data
                               (= (%sql-fetch hstmt) $SQL_NO_DATA_FOUND));)
@@ -196,7 +196,7 @@
                           for out-len-ptr across column-out-len-ptrs
                           for precision across column-precisions
                           for j from 0 ; column count is zero based in lisp
-                          collect 
+                          collect
                           (if (and precision (< precision +max-precision+))
                             (read-data data-ptr c-type sql-type out-len-ptr nil)
                             (read-data-in-chunks hstmt j data-ptr c-type sql-type
@@ -218,7 +218,7 @@
 
 (defmethod db-query ((database odbc-database) query-expression &optional flatp)
   (let ((free-query
-         ;; make it thread safe 
+         ;; make it thread safe
          (get-free-query database)))
     (setf (sql-expression free-query) query-expression)
     (unwind-protect
@@ -234,7 +234,7 @@
 (defmethod %db-execute ((query odbc-query) sql-expression &key &allow-other-keys)
   (with-slots (henv hdbc) (sql::query-database query)
     (with-slots (hstmt) query
-      (unless hstmt (setf hstmt (%new-statement-handle hdbc))) 
+      (unless hstmt (setf hstmt (%new-statement-handle hdbc)))
       (%sql-exec-direct sql-expression hstmt henv hdbc)
       query)))
 
@@ -243,12 +243,12 @@
   "get-free-query finds or makes a nonactive query object, and then sets it to active.
 This makes the functions db-execute-command and db-query thread safe."
   (with-slots (queries) database
-    (or (without-interrupts ;; not context switch allowed here 
+    (or (without-interrupts ;; not context switch allowed here
          (let ((inactive-query (find-if (lambda (query)
                                           (not (query-active-p query)))
                                         queries)))
-           (when inactive-query 
-             (with-slots (column-count column-names column-c-types 
+           (when inactive-query
+             (with-slots (column-count column-names column-c-types
                                        column-sql-types column-data-ptrs
                                        column-out-len-ptrs column-precisions
                                        column-scales column-nullables-p)
@@ -277,8 +277,8 @@ This makes the functions db-execute-command and db-query thread safe."
     (unless (eq *active-transactions* t)
       (pushnew database *active-transactions*))
     (with-slots (henv hdbc) database
-      (unless hstmt (setf hstmt (%new-statement-handle hdbc))) 
-      (unwind-protect 
+      (unless hstmt (setf hstmt (%new-statement-handle hdbc)))
+      (unwind-protect
         (%sql-exec-direct sql-string hstmt henv hdbc)
         (db-close-query query)))))
 
@@ -286,11 +286,11 @@ This makes the functions db-execute-command and db-query thread safe."
   (%initialize-query (db-query-object database) arglen col-positions))
 
 (defmethod %initialize-query ((query odbc-query) &optional arglen col-positions)
-  (with-slots (hstmt 
+  (with-slots (hstmt
                column-count column-names column-c-types column-sql-types
                column-data-ptrs column-out-len-ptrs column-precisions
-               column-scales column-nullables-p) 
-              query 
+               column-scales column-nullables-p)
+              query
     (setf column-count (if arglen
                          (min arglen (result-columns-count hstmt))
                          (result-columns-count hstmt)))
@@ -317,7 +317,7 @@ This makes the functions db-execute-command and db-query thread safe."
                          (out-len-ptr (%new-ptr :long)))
                     (unless long-p ;; if long-p we fetch in chunks with %sql-get-data
                       (%bind-column hstmt col-nr c-type data-ptr (1+ size) out-len-ptr))
-                    (vector-push-extend name column-names) 
+                    (vector-push-extend name column-names)
                     (vector-push-extend sql-type column-sql-types)
                     (vector-push-extend (sql-to-c-type sql-type) column-c-types)
                     (vector-push-extend (if (zerop precision) nil precision)
@@ -360,17 +360,17 @@ This makes the functions db-execute-command and db-query thread safe."
               query
     (unless (= (SQLFetch hstmt) $SQL_NO_DATA_FOUND)
       (values
-       (loop for col-nr from 0 to (- column-count 
+       (loop for col-nr from 0 to (- column-count
                                      (if (eq ignore-columns :last) 2 1))
              collect
              (if (>= (aref column-precisions col-nr) +max-precision+)
                (read-data-in-chunks hstmt col-nr
-                                    (aref column-data-ptrs col-nr) 
+                                    (aref column-data-ptrs col-nr)
                                     (aref column-c-types col-nr)
                                     (aref column-sql-types col-nr)
                                     (aref column-out-len-ptrs col-nr)
                                     nil)
-               (read-data (aref column-data-ptrs col-nr) 
+               (read-data (aref column-data-ptrs col-nr)
                           (aref column-c-types col-nr)
                           (aref column-sql-types col-nr)
                           (aref column-out-len-ptrs col-nr)
@@ -393,7 +393,7 @@ This makes the functions db-execute-command and db-query thread safe."
     ;; dispose of memory and set query inactive or get rid of it
     (db-close-query query)))
 
-(defmethod db-map-bind-query ((query odbc-query) type function 
+(defmethod db-map-bind-query ((query odbc-query) type function
                                  &rest parameters)
   (declare (ignore type)) ; preliminary. Do a type coersion here
   (unwind-protect
@@ -429,7 +429,7 @@ This makes the functions db-execute-command and db-query thread safe."
 (defmethod db-prepare-statement ((database odbc-database) sql
                                      &key parameter-table parameter-columns)
   (with-slots (hdbc) database
-    (let ((query (get-free-query database))) 
+    (let ((query (get-free-query database)))
       (with-slots (hstmt) query
         (unless hstmt (setf hstmt (%new-statement-handle hdbc))))
       (db-prepare-statement query sql parameter-table parameter-columns))))
@@ -459,11 +459,11 @@ This makes the functions db-execute-command and db-query thread safe."
   (unless (eq *active-transactions* t)
     (pushnew (sql::query-database query) *active-transactions*))
   (with-slots (sql::table sql::parameter-columns) sql-expression
-    (when sql::parameter-columns 
+    (when sql::parameter-columns
       ;; this is a workaround to get hold of the column types when the driver does
       ;; not support SQLDescribeParam
       (let ((columns-as-positions (integerp (car sql::parameter-columns))))
-        (%db-execute query 
+        (%db-execute query
                      (with-output-to-string (stream)
                        (write-string "select " stream)
                        (if columns-as-positions
@@ -500,11 +500,11 @@ This makes the functions db-execute-command and db-query thread safe."
                   parameter
                   (write-to-string parameter))
            size (length parameter-string)
-                data-ptr 
+                data-ptr
                 #+:lispworks (%new-cstring (1+ size))
                 #-:lispworks (%new-ptr :ptr (1+ size)))
           (vector-push-extend data-ptr parameter-data-ptrs)
-          (%sql-bind-parameter 
+          (%sql-bind-parameter
            hstmt (1- (fill-pointer parameter-data-ptrs)) $SQL_PARAM_INPUT
            $SQL_C_CHAR ; (aref column-c-types parameter-count)
            $SQL_CHAR ; sql-type
@@ -530,7 +530,7 @@ This makes the functions db-execute-command and db-query thread safe."
   (with-slots (hstmt parameter-data-ptrs) query
     (prog1
       (db-fetch-query-results query nil ; flatp
-                              nil) 
+                              nil)
       (%free-statement hstmt :reset) ;; but _not_ :unbind !
       (%free-statement hstmt :close)
       (dotimes (param-nr (fill-pointer parameter-data-ptrs))
@@ -542,7 +542,7 @@ This makes the functions db-execute-command and db-query thread safe."
   (with-slots (hstmt parameter-data-ptrs) query
     (prog1
       (db-fetch-query-results query nil ; flatp
-                              nil) 
+                              nil)
       (%free-statement hstmt :reset) ;; but _not_ :unbind !
       (%free-statement hstmt :close)
       (dotimes (param-nr (fill-pointer parameter-data-ptrs))
@@ -555,8 +555,8 @@ This makes the functions db-execute-command and db-query thread safe."
                                      (sql-expression sql::sql-insert-expression)
                                      &rest parameters)
   (when (not (query-active-p query)) (error "Query ~s is inactive." query))
-  (with-slots (hstmt column-count 
-                     column-names column-c-types column-sql-types column-data-ptrs 
+  (with-slots (hstmt column-count
+                     column-names column-c-types column-sql-types column-data-ptrs
                      column-out-len-ptrs column-precisions column-scales
                      column-nullables-p active-p database) query
     (unless (eq *active-transactions* t)
@@ -579,14 +579,14 @@ This makes the functions db-execute-command and db-query thread safe."
                    (out-len-ptr (aref column-out-len-ptrs parameter-nr))
                    (column-size (if (zerop precision)
                                   +max-precision+ ;; if the precision cannot be determined
-                                  (min precision +max-precision+)))) 
+                                  (min precision +max-precision+))))
               (cond ((and (< column-size +max-precision+)
                           (not (and (consp parameter) (eq (car parameter) :stream))))
                      (ecase lisp-type
                        (:short
                         (%put-word data-ptr parameter)
                         (setf out-len-ptr (%null-ptr)))
-                       (:long 
+                       (:long
                         (%put-long data-ptr parameter)
                         (setf out-len-ptr (%null-ptr)))
                        (:string
@@ -619,8 +619,8 @@ This makes the functions db-execute-command and db-query thread safe."
                                           0
                                           out-len-ptr)
                      (%put-long out-len-ptr
-                                (%sql-len-data-at-exec 
-                                 (if sql-need-long-data-len 
+                                (%sql-len-data-at-exec
+                                 (if sql-need-long-data-len
                                    (if (consp parameter)
                                      (cadr parameter) ;; size of stream
                                      (min (length parameter) +max-precision+))
@@ -645,7 +645,7 @@ This makes the functions db-execute-command and db-query thread safe."
                             (end +max-precision+ (+ end +max-precision+)))
                            ((> start size))
                          (print start)
-                         (let ((chunk (subseq parameter start (when (< end size) end)))) 
+                         (let ((chunk (subseq parameter start (when (< end size) end))))
                            (%with-temporary-allocation
                              ((data-ptr :string (length chunk)))
                              ;;(ffc::%%str-pointer chunk data-ptr)
@@ -666,12 +666,12 @@ This makes the functions db-execute-command and db-query thread safe."
 
 ;; database inquiery functions
 
-(defmethod db-describe-columns ((database odbc-database) 
+(defmethod db-describe-columns ((database odbc-database)
                                     table-qualifier table-owner table-name column-name)
   (with-slots (hdbc) database
     (%describe-columns hdbc table-qualifier table-owner table-name column-name)))
 
-;; should translate info-type integers to keywords in order to make this 
+;; should translate info-type integers to keywords in order to make this
 ;; more readable?
 (defmethod get-odbc-info ((database odbc-database) info-type)
   (with-slots (hdbc info) database
@@ -688,7 +688,7 @@ This makes the functions db-execute-command and db-query thread safe."
    (let ((henv (%new-environment-handle)))
     (unwind-protect
           (loop with direction = :first
-               for data-source+description 
+               for data-source+description
                = (multiple-value-list (%sql-data-sources henv :direction direction))
                while (car data-source+description)
                collect data-source+description

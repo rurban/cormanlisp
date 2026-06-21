@@ -85,5 +85,3 @@
 		   (setf (cdr tree) (nsubst-if-not new predicate (cdr tree) :key key))
 		   tree)
 		  (t tree)))
-
-

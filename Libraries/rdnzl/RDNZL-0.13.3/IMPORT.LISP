@@ -92,7 +92,7 @@ closure with a correspoding signature."
                          type
                          other-args))))
         (t (error "Don't know how to make a new ~S." type))))
-         
+
 (defun load-assembly (name)
   "Loads and returns the assembly with the name NAME \(a string), uses
 LoadWithPartialName and then Load so we get a meaningful error if the

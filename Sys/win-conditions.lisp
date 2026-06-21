@@ -84,12 +84,12 @@
     (cl::%lisp-shutdown message))
 
 (export '(
-        ccl::register-shutdown-function 
-        ccl::unregister-shutdown-function 
+        ccl::register-shutdown-function
+        ccl::unregister-shutdown-function
         ccl::*shutdown-functions*
-        ccl::lisp-shutdown) 
+        ccl::lisp-shutdown)
     :ccl)
-   
+
 ;;; Redefine top-level to use conditions.
 (defun top-level ()
   (write (copyright-notice) :escape nil)
@@ -123,12 +123,12 @@
                   (return 'quit))
               (if (eq expr 'Eof)
                   (return 'Eof))
-              
+
               ;; add support for top-level shortcuts
               (if (symbolp expr)
                   (let ((expansion (find-toplevel-shortcut expr)))
                     (if expansion (setf expr expansion))))
-              
+
               (setq - expr)
               (editor-set-message "Working...")
               (unwind-protect
@@ -155,4 +155,3 @@
     next))
 
 (setq *top-level* #'top-level)
-

@@ -65,5 +65,3 @@
 (defun (setf cddddr) (val list) (setf (cdr (cdr (cdr (cdr list)))) val))
 
 (defun remove-struct-print (func) (remprop func ':struct-print))
-
-

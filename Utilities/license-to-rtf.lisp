@@ -64,7 +64,7 @@
           (t (vector-push-extend c result)))))
     result))
 
-    
+
 (defun lines-to-paragraphs (lines)
   (let ((pars))
     (dolist (l lines)
@@ -75,7 +75,7 @@
            (push text pars))
           ((plusp (length text))
            (cond
-             ;; some heuristics to detect numbered lists 
+             ;; some heuristics to detect numbered lists
              ((and (car pars)
                    (looks-like-numbered-list-member text))
               (push text pars))
@@ -158,6 +158,3 @@
   (concatenate 'string *cormanlisp-directory* "zlib\\README")
   (concatenate 'string *cormanlisp-directory* "Sys\\scmindent\\COPYING")
   (concatenate 'string *cormanlisp-directory* "installer\\LICENSE.rtf"))
-
-
-

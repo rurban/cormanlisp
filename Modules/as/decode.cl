@@ -2,11 +2,11 @@
 ;;
 ;; decode.cl
 ;;
-;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA 
+;; copyright (c) 1986-2000 Franz Inc, Berkeley, CA
 ;;
 ;; This code is free software; you can redistribute it and/or
 ;; modify it under the terms of the version 2.1 of
-;; the GNU Lesser General Public License as published by 
+;; the GNU Lesser General Public License as published by
 ;; the Free Software Foundation, as clarified by the AllegroServe
 ;; prequel found in license-allegroserve.txt.
 ;;
@@ -15,11 +15,11 @@
 ;; merchantability or fitness for a particular purpose.  See the GNU
 ;; Lesser General Public License for more details.
 ;;
-;; Version 2.1 of the GNU Lesser General Public License is in the file 
+;; Version 2.1 of the GNU Lesser General Public License is in the file
 ;; license-lgpl.txt that was distributed with this file.
 ;; If it is not present, you can access it from
 ;; http://www.gnu.org/copyleft/lesser.txt (until superseded by a newer
-;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
+;; version) or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA  02111-1307  USA
 ;;
 
@@ -41,12 +41,12 @@
 ; that are referred to as "url encodings".  We'll refer to
 ; the first as uriencoding and the second as form-urlencoding
 ;
-; 1. uri's.   rfc2396 describes the format of uri's 
+; 1. uri's.   rfc2396 describes the format of uri's
 ;       uris use only the printing characters.
 ;	a url can be broken down into a set of a components using
 ;	a regular expression matcher.
 ;	Each component consists of a string of characters.  Certain
-;	characters must be escaped with %xy in order to put them 
+;	characters must be escaped with %xy in order to put them
 ;	in the uri, and others need only be escaped in certain components
 ;	where not escaping them would change the meaning.  It's legal
 ;	to over-escape though.
@@ -55,14 +55,14 @@
 ;		upper case A-Z
 ;		numbers    0-9
 ;	        mark chars: - _ . ! ~ * ' ( )
-;       
+;
 ;	anything else should be escaped.
 ;
 ;       The encoding (converting characters to their %xy form) must be
 ;	done on a component by component basis for a uri.
 ;	You can't just give a function a complete uri and say "encode this"
 ;	because if it's a uri then it's already encoded.   You can
-;	give a function a filename to be put into a uri and 
+;	give a function a filename to be put into a uri and
 ;	say "encode this" and that function
 ;	could look for reserved characters in the filename and convert them
 ;	to %xy form.
@@ -73,7 +73,7 @@
 ;	1. the "get" method where the form data is passed in the uri
 ;	    after a "?".
 ;	2  the "post" method where the data is stored in the body
-;	   of the post with an application/x-www-form-urlencoded  
+;	   of the post with an application/x-www-form-urlencoded
 ;	   mime type.
 ;
 ;	the form data is sent in this format
@@ -87,7 +87,7 @@
 ;		+ # ; / ? : @ = & < > %
 ;	    all non-printing ascii characters are encoded as %xy
 ;	    printing characters not mentioned are passed through
-;	
+;
 ;
 
 ;--- uriencoding
@@ -96,7 +96,7 @@
     ;; maps 7 bit characters to t iff they have to be encoded
     ;; all characters with the 8th bit set must be encoded
     (let ((res (make-array 128 :initial-element t)))
-      
+
       ; the alphanums
       (dolist (range '((#\a #\z)
 		       (#\A #\Z)
@@ -104,11 +104,11 @@
 	(do ((i (char-code (car range)) (1+ i)))
 	    ((> i (char-code (cadr range))))
 	  (setf (svref res i) nil)))
-      
+
       ; the mark characters:
       (dolist (ch '(#\- #\_ #\. #\! #\~ #\* #\' #\( #\)))
 	(setf (svref res (char-code ch)) nil))
-      
+
       res))
 
 (defun uri-encode-p (ch)
@@ -127,7 +127,7 @@
     ; count the number of encodings that must be done
     (dotimes (i len)
       (if* (uri-encode-p (char str i)) then (incf count)))
-    
+
     (if* (zerop count)
        then str ; just return the string, no encoding done
        else (let ((newstr (make-array (+ len (* 2 count))
@@ -148,10 +148,10 @@
 				     (upcode (logand #xf (ash code -4)))
 				     (downcode (logand #xf code)))
 				(setf (schar newstr (+ j 1))
-				  (code-char 
+				  (code-char
 				   (hexdig upcode)))
 				(setf (schar newstr (+ j 2))
-				  (code-char 
+				  (code-char
 				   (hexdig downcode)))))
 			    (incf j 3)
 		       else (setf (schar newstr j) ch)
@@ -177,33 +177,33 @@
 
 (defvar *url-form-encode*
     ;; maps 7 bit characters to t iff they have to be encoded
-    ;; all characters with the 8th bit set must be encoded 
+    ;; all characters with the 8th bit set must be encoded
     ;;
     ;; what's stored in the table is
     ;;  nil - no encoding needed
     ;;  N (integer) - how many extra characters are needed to encode this
     ;;               (i.e. one less than the total size encoded)
-    
+
     (let ((res (make-array 128 :initial-element nil)))
-      
+
       ; must escape the non printing characters
       (dotimes (i 32) (setf (svref res i) 2))
       (setf (svref res 127) 2)	; delete
-      
+
       ; the printing characters needing escaping
       (dolist (ch '(#\+ #\# #\; #\/ #\? #\: #\@ #\= #\& #\< #\> #\%))
 	(setf (svref res (char-code ch)) 2))
-      
+
       ; note: character needing special handling are space and newline
       (setf (svref res #.(char-code #\space)) 0)
       (setf (svref res #.(char-code #\linefeed)) 5)
-      
-      
+
+
       res))
 
 
 (defun query-to-form-urlencoded (query)
-  ;; query is a list of conses, each of which has as its 
+  ;; query is a list of conses, each of which has as its
   ;; car the query name and as its cdr the value.  A value of
   ;; nil means we encode  name=   and nothing else
   ;; encode into single string
@@ -215,27 +215,27 @@
       (push (encode-form-urlencoded (car ent)) res)
       (push "=" res)
       (if* (cdr ent) then (push (encode-form-urlencoded (cdr ent)) res)))
-    
+
     (apply #'concatenate 'string (nreverse res))))
-      
+
 
 
 (defun encode-form-urlencoded (str)
   ;; encode the given string using form-urlencoding
-  
-  ;; a x-www-form-urlencoded string consists of a sequence 
-  ;; of name=value items separated by &'s. 
+
+  ;; a x-www-form-urlencoded string consists of a sequence
+  ;; of name=value items separated by &'s.
   ;; Each of the names and values is separately encoded using this function.
-  
-  ;; to build a complete x-www-form-urlencoded string use 
+
+  ;; to build a complete x-www-form-urlencoded string use
   ;; query-to-form-urlencoded.
-  
+
   ; first compute if encoding has to be done and what it will
   ; cost in space
-  
+
   (if* (not (stringp str))
      then (setq str (format nil "~a" str)))
-  
+
   (let (extra)
     (dotimes (i (length str))
       (let ((code (char-code (char str i))))
@@ -245,7 +245,7 @@
 				  )))
 	  (if* this-extra
 	     then (setq extra (+ (or extra 0) this-extra))))))
-    
+
     (if* (null extra)
        then ; great, no encoding necessary
 	    str
@@ -279,9 +279,9 @@
 						   (+ #.(char-code #\0)
 						      xnum))))))
 			    (setf (schar ret to) #\%)
-			    (setf (schar ret (+ to 1)) 
+			    (setf (schar ret (+ to 1))
 			      (hex-digit-char (logand #xf (ash code -4))))
-			    (setf (schar ret (+ to 2)) 
+			    (setf (schar ret (+ to 2))
 			      (hex-digit-char (logand #xf code))))
 			  (incf to 3)
 		     else ; normal char
@@ -289,12 +289,12 @@
 			  (incf to))))
 	      ret))))
 
-			  
-			  
-	      
-				  
-  
-  
+
+
+
+
+
+
 
 (defun form-urlencoded-to-query (str)
   ;; decode the x-www-form-urlencoded string returning a list
@@ -303,7 +303,7 @@
   ;;
   (let ((res nil)
 	(max (length str)))
-    
+
     (do ((i 0)
 	 (start 0)
 	 (name)
@@ -312,7 +312,7 @@
 	 (ch))
 	((>= i max))
       (setq ch (schar str i))
-      
+
       (let (obj)
 	(if* (or (eq ch #\=)
 		 (eq ch #\&))
@@ -323,12 +323,12 @@
 	 elseif (and (not seenpct) (or (eq ch #\%)
 				       (eq ch #\+)))
 	   then (setq seenpct t))
-      
+
 	(if* obj
 	   then (if* seenpct
 		   then (setq obj (un-hex-escape obj t)
 			      seenpct nil))
-	      
+
 		(if* name
 		   then (push (cons name obj) res)
 			(setq name nil)
@@ -338,9 +338,9 @@
 			(push (cons obj "") res)
 		   else ; assert (eq ch #\=)
 			(setq name obj))))
-      
+
       (incf i))
-    
+
     (nreverse res)))
 
 (defun un-hex-escape (given spacep)
@@ -350,12 +350,12 @@
   (let ((count 0)
 	(seenplus nil)
 	(len (length given)))
-    
+
     ; compute the number of %'s (times 2)
     (do ((i 0 (1+ i)))
 	((>= i len))
       (let ((ch (schar given i)))
-	(if* (eq ch #\%) 
+	(if* (eq ch #\%)
 	   then ; check for %0a%0d which is to be converted to #\newline
 		(if* (and (< (+ i 5) len)  ; enough chars left
 			  (do ((xi (+ i 1) (+ xi 1))
@@ -370,11 +370,11 @@
 			; newline
 			(incf count 5) ; 5 char shrinkage
 			(incf i 5)
-		   else (incf count 2) 
+		   else (incf count 2)
 			(incf i 2))
 	 elseif (eq ch #\+)
 	   then (setq seenplus t))))
-    
+
     (if* (and (null seenplus)
 	      (eq 0 count))
        then ; move along, nothing to do here
@@ -386,15 +386,15 @@
 		    (if* (<= mych #.(char-code #\9))
 		       then (- mych #.(char-code #\0))
 		       else (+ 9 (logand mych 7))))))
-			    
+
       (let ((str (make-string (- len count))))
 	(do ((to 0 (1+ to))
 	     (from 0 (1+ from)))
 	    ((>= from len))
 	  (let ((ch (schar given from)))
 	    (if* (eq ch #\%)
-	       then (let ((newchar 
-			   (code-char (+ (ash (cvt-ch (schar given (1+ from))) 
+	       then (let ((newchar
+			   (code-char (+ (ash (cvt-ch (schar given (1+ from)))
 					      4)
 					 (cvt-ch (schar given (+ 2 from)))))))
 		      (if* (and (eq newchar #\linefeed)
@@ -402,14 +402,14 @@
 				(eq (schar str (1- to)) #\return))
 			 then ; replace return by newline
 			      (decf to))
-		      
+
 		      (setf (schar str to) newchar))
-		    
+
 		    (incf from 2)
 	     elseif (and spacep (eq ch #\+))
 	       then (setf (schar str to) #\space)
 	       else (setf (schar str to) ch))))
-      
+
 	str))))
 
 
@@ -432,7 +432,7 @@
 ;; Zero values are added to the end of the string in order to get
 ;; a size divisible by 3 (these 0 values are represented by the = character
 ;; so that the resulting characters will be discarded on decode)
-;; 
+;;
 ;; encoding
 ;; 0-25   A-Z
 ;; 26-51  a-z
@@ -442,11 +442,11 @@
 ;;
 
 
-(defvar *base64-decode* 
+(defvar *base64-decode*
     ;;
     ;; use in decoding to map characters to values
     ;;
-    (let ((arr (make-array 128 
+    (let ((arr (make-array 128
 			   :element-type '(unsigned-byte 8)
 			   :initial-element 0)))
       (do ((i 0 (1+ i))
@@ -463,7 +463,7 @@
 	(setf (aref arr ch) i))
       (setf (aref arr (char-code #\+)) 62)
       (setf (aref arr (char-code #\/)) 63)
-      
+
       arr))
 
 
@@ -502,10 +502,10 @@
 	((>= i (length string)))
       (let ((val (+ (ash (aref arr (char-code (char string i))) 18)
 		    (ash (aref arr (char-code (char string (+ i 1)))) 12)
-		    (ash (aref arr (char-code 
+		    (ash (aref arr (char-code
 				    (setq cha (char string (+ i 2)))))
 			 6)
-		    (aref arr (char-code 
+		    (aref arr (char-code
 			       (setq chb (char string (+ i 3))))))))
 	(vector-push-extend (code-char (ash val -16)) res)
 	;; when the original size wasn't a mult of 3 there may be
@@ -522,73 +522,71 @@
   ;; take the given string and encode as a base64 string
   ;; beware: the result will not be a simple string
   ;;
-  (let ((output (make-array 20 
-			    :element-type 'character  
+  (let ((output (make-array 20
+			    :element-type 'character
 			    :fill-pointer 0
 			    :adjustable t))
 	v1 v2 v3 eol
 	(from 0)
 	(max (length str))
 	)
-      
+
     (loop
-      (if* (>= from max) 
+      (if* (>= from max)
 	 then (return))
       (setq v1 (char-code (schar str from)))
-	
+
       (incf from)
-	
+
       (if* (>= from max)
 	 then (setq v2 0
 		    eol t)
 	 else (setq v2 (char-code (schar str from))))
-	
+
       (incf from)
-	
+
       ; put out first char of encoding
       (vector-push-extend (schar *base64-encode* (logand #x3f
 							 (ash v1 -2)))
 			  output)
-	
+
       ; put out second char of encoding
-	
-      (vector-push-extend (schar *base64-encode* 
+
+      (vector-push-extend (schar *base64-encode*
 				 (+ (ash (logand 3 v1) 4)
 				    (logand #xf (ash v2 -4))))
-							   
+
 			  output)
-	
+
       (if* eol
 	 then ; two pads
 	      (vector-push-extend #\= output)
 	      (vector-push-extend #\= output)
 	      (return))
-	
+
       (if* (>= from max)
 	 then (setq v3 0
 		    eol t)
 	 else (setq v3 (char-code (schar str from))))
-	
+
       (incf from)
-	
-	
+
+
       ; put out third char of encoding
-	
-      (vector-push-extend (schar *base64-encode* 
+
+      (vector-push-extend (schar *base64-encode*
 				 (+ (ash (logand #xf v2) 2)
 				    (logand 3 (ash v3 -6))))
-							   
+
 			  output)
-	
+
       (if* eol
 	 then (vector-push-extend #\= output)
 	      (return))
-	
+
       ; put out fourth char of encoding
-	
+
       (vector-push-extend (schar *base64-encode* (logand #x3f v3))
 			  output))
-      
+
     output))
-
-

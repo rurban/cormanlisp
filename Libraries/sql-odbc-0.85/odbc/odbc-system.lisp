@@ -6,12 +6,12 @@
 ;; paul.meurer@hit.uib.no
 ;;
 
-;;; "This software is based on the design of the ODBC interface provided by 
-;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows 
+;;; "This software is based on the design of the ODBC interface provided by
+;;;  Harlequin Group plc in the LispWorks and LispWorks for the Windows
 ;;;  Operating System products. This implementation is not the property of
 ;;;  Harlequin and they have no responsibility for its content or accuracy."
 
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
@@ -25,7 +25,7 @@
   (um:use-module :odbc-constants "sql:odbc;odbc-constants")
   (um:use-module :odbc-ff-interface "sql:odbc;odbc-ff-interface")
   (um:use-module :odbc-functions "sql:odbc;odbc-functions")
-  (um:use-module :odbc-sql-interface "sql:odbc;odbc-sql-interface")  
+  (um:use-module :odbc-sql-interface "sql:odbc;odbc-sql-interface")
   (um:use-module :odbc-streams "sql:odbc;odbc-streams"))
 
 #+lispworks
@@ -34,7 +34,7 @@
     (:package "COMMON-LISP-USER"
      :default-pathname "sql:odbc;")
     :members ("sql:lispworks;ff-compatibility-lw"
-              "odbc-package" "odbc-constants" 
+              "odbc-package" "odbc-constants"
               "odbc-ff-interface" "odbc-functions" "odbc-sql-interface"
               "odbc-streams")
     :rules ((:in-order-to :compile :all
@@ -44,19 +44,19 @@
 
 #+allegro
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  (defsystem :odbc 
+  (defsystem :odbc
     (:default-pathname "sql:odbc;"
       :default-package :odbc)
     (:serial
      "sql:allegro;ff-compatibility-acl"
-     "odbc-package" "odbc-constants" 
+     "odbc-package" "odbc-constants"
      "odbc-ff-interface" "odbc-functions" "odbc-sql-interface"
      "odbc-streams"
      ))
   (compile-system :odbc)
   (load-system :odbc))
 
-;; See corman\system-init.lisp for details on loading the SQL 
+;; See corman\system-init.lisp for details on loading the SQL
 ;; and ODBC packages.
 #+cormanlisp
 (require 'SQL)

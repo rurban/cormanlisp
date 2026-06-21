@@ -109,7 +109,7 @@
 		ret
 	})
 
-;;;;	
+;;;;
 ;;;;	On entry:		eax = list to be copied
 ;;;;	On exit:		eax = copy, edx = last cons in copy
 ;;;;
@@ -149,7 +149,7 @@
 		mov		[eax], ecx
 		jmp		short :t2
 	:t10
-		mov		eax, [ebp - 8]	
+		mov		eax, [ebp - 8]
 		add		esp, 4
 		pop		edi
 		mov		esp, ebp
@@ -399,7 +399,7 @@
 ;;;;
 ;;;;	Common Lisp FUNCALL function.
 ;;;;
-(defasm funcall (func &rest args) 
+(defasm funcall (func &rest args)
 	{
 		push	ebp
 		mov		ebp, esp
@@ -452,8 +452,8 @@
 	:t5
 		cmp 	edx, uvector-function-tag
 		jne		short :t6
-		mov		edi, [eax + (- (* 4 function-environment-offset) uvector-tag)] 
-		callfunc	eax	
+		mov		edi, [eax + (- (* 4 function-environment-offset) uvector-tag)]
+		callfunc	eax
 		jmp		short :t8
 	:t6
 		cmp 	edx, uvector-kfunction-tag
@@ -474,7 +474,7 @@
 		pop		ebp
 		ret
 	})
-	
+
 ;;;;
 ;;;;	Common Lisp APPLY function.
 ;;;;
@@ -544,8 +544,8 @@
 	:t8
 		cmp 	edx, uvector-function-tag
 		jne		short :t9
-		mov		edi, [eax + (- (* 4 function-environment-offset) uvector-tag)] 
-		callfunc	eax	
+		mov		edi, [eax + (- (* 4 function-environment-offset) uvector-tag)]
+		callfunc	eax
 		jmp		short :t11
 	:t9
 		cmp 	edx, uvector-kfunction-tag
@@ -589,7 +589,7 @@
 	:next2
 ;		mov 	ecx, 1
 		pop		ebp
-		ret	
+		ret
 	})
 
 ;;;;
@@ -679,7 +679,7 @@
 	:t3
 ;		mov 	ecx, 1
 		pop		ebp
-		ret	
+		ret
 	})
 |#
 ;;;;
@@ -711,10 +711,10 @@
 	:t3
 		pop		ecx
 		pop		ecx
-		pop		edi		
+		pop		edi
 		mov 	ecx, 1
 		pop		ebp
-		ret	
+		ret
 	})
 
 ;;;;
@@ -741,11 +741,11 @@
 		jmp		short :t2
 	:t3
 		pop		ecx
-		pop		ecx	
-		pop		edi	
+		pop		ecx
+		pop		edi
 		mov 	ecx, 1
 		pop		ebp
-		ret	
+		ret
 	})
 
 ;;;;
@@ -764,7 +764,7 @@
 
 		cmp		ecx, 0
 		je		short :t10
-	:t1	
+	:t1
 		cmp		ecx, 1
 		jne		short :t2
 		mov		eax, [ebp + ARGS_OFFSET]
@@ -802,7 +802,7 @@
 		mov 	ecx, 1
 		pop		edi
 		pop		ebp
-		ret	
+		ret
 	})
 
 ;;;;
@@ -825,26 +825,26 @@
 ;;;;
 (defasm car (x)
 	{
-		push    ebp                 
-		mov     ebp,esp             
-		cmp     ecx, 1          
-		jz      short :t1                
+		push    ebp
+		mov     ebp,esp
+		cmp     ecx, 1
+		jz      short :t1
 		callp 	_wrong-number-of-args-error
-	:t1 
-		mov     eax, [ebp + ARGS_OFFSET]    
-		mov     edx, eax             
-		and     edx, 7          
-		cmp     edx, cons-tag  		;; arg is a cons?        
-		jnz     short :t2                
-		mov     eax, [eax - 4]    
+	:t1
+		mov     eax, [ebp + ARGS_OFFSET]
+		mov     edx, eax
+		and     edx, 7
+		cmp     edx, cons-tag  		;; arg is a cons?
+		jnz     short :t2
+		mov     eax, [eax - 4]
 		jmp     short :t3
-	:t2          
-		cmp     eax, [esi]  		;; arg = NIL?         
-		je      short :t3                
-		push    eax                 
-		callp   _not-a-list-error 
-	:t3       
-		pop     ebp                 
+	:t2
+		cmp     eax, [esi]  		;; arg = NIL?
+		je      short :t3
+		push    eax
+		callp   _not-a-list-error
+	:t3
+		pop     ebp
 		ret
 	})
 
@@ -853,26 +853,26 @@
 ;;;;
 (defasm cdr (x)
 	{
-		push    ebp                 
-		mov     ebp,esp             
-		cmp     ecx, 1          
-		jz      short :t1                
+		push    ebp
+		mov     ebp,esp
+		cmp     ecx, 1
+		jz      short :t1
 		callp 	_wrong-number-of-args-error
-	:t1 
-		mov     eax, [ebp + ARGS_OFFSET]    
-		mov     edx, eax             
-		and     edx, 7          
-		cmp     edx, cons-tag  		;; arg is a cons?        
-		jnz     short :t2                
-		mov     eax, [eax]    
+	:t1
+		mov     eax, [ebp + ARGS_OFFSET]
+		mov     edx, eax
+		and     edx, 7
+		cmp     edx, cons-tag  		;; arg is a cons?
+		jnz     short :t2
+		mov     eax, [eax]
 		jmp     short :t3
-	:t2          
-		cmp     eax, [esi]  		;; arg = NIL?         
-		je      short :t3                
-		push    eax                 
-		callp   _not-a-list-error 
-	:t3       
-		pop     ebp                 
+	:t2
+		cmp     eax, [esi]  		;; arg = NIL?
+		je      short :t3
+		push    eax
+		callp   _not-a-list-error
+	:t3
+		pop     ebp
 		ret
 	})
 
@@ -881,22 +881,22 @@
 ;;;;
 (defasm null (x)
 	{
-		push    ebp                 
-		mov     ebp,esp             
-		cmp     ecx, 1          
-		jz      short :t1                
+		push    ebp
+		mov     ebp,esp
+		cmp     ecx, 1
+		jz      short :t1
 		callp 	_wrong-number-of-args-error
-	:t1 
-		mov     eax, [ebp + ARGS_OFFSET]    
+	:t1
+		mov     eax, [ebp + ARGS_OFFSET]
 		cmp		eax, [esi]
 		mov		eax, [esi]
 		jne		short :t2
 		mov		eax, [esi + t-offset]
-	:t2             
-		pop     ebp                 
+	:t2
+		pop     ebp
 		ret
 	})
- 
+
 ;;;;
 ;;;;	Common Lisp EQ function.
 ;;;;
@@ -924,10 +924,10 @@
 ;;;;
 (defasm cons (x1 x2)
 	{
-		push    ebp                 
-		mov     ebp, esp             
-		cmp     ecx, 2          
-		je      short :t1                
+		push    ebp
+		mov     ebp, esp
+		cmp     ecx, 2
+		je      short :t1
 		callp 	_wrong-number-of-args-error
 	:t1
 		callp	cl::%alloc-cons
@@ -1025,7 +1025,7 @@
 	:t2
 		cmp 	cl, (tag-byte uvector-simple-char-vector-tag)
 		jne		:t3
-		mov		eax, [esi + t-offset]		
+		mov		eax, [esi + t-offset]
 	:t3
 		mov		ecx, 1
 		pop		ebp
@@ -1187,10 +1187,10 @@
 		mov		eax, edx
 		and		eax, 7
 		cmp		eax, uvector-tag
-		jne		short :check-list	
+		jne		short :check-list
 		mov 	cl, [edx - uvector-tag]
 		cmp 	cl, (tag-byte uvector-array-tag)
-		jne		short :check-simple-vector		
+		jne		short :check-simple-vector
 		mov		ecx, [edx + (- (* 4 cl::adjustable-array-dimensions-offset) uvector-tag)]
 		cmp		ecx, 8
 		jne		short :no
@@ -1200,7 +1200,7 @@
 		jb		short :no
 		cmp		cl, (tag-byte uvector-simple-single-float-vector-tag)
 		ja		short :no
-		jmp		short :yes		
+		jmp		short :yes
 	:check-list
 		cmp		eax, cons-tag
 		jne		short :no
@@ -1573,7 +1573,7 @@
 		mov		eax, [ebp + ARGS_OFFSET]
 		jmp		short :t5
 	:t2
-		;; make a list of the passed values is more than 1	
+		;; make a list of the passed values is more than 1
 		push	ecx			;; allocate variable at [ebp - 12]
 		mov		eax, [esi]
 		mov		edi, 0
@@ -1590,12 +1590,12 @@
 	:t4
 		pop		ecx
 		mov		[esi + 8], eax
-		mov		eax, [eax - 4]		
+		mov		eax, [eax - 4]
 	:t5
 		pop		edi
 		pop		edi
 		pop		ebp
-		ret	
+		ret
 	})
 
 ;;;;
@@ -1613,7 +1613,7 @@
 		callp 	check-symbol
 		mov 	eax, [eax + (- (* 4 symbol-constant-offset) uvector-tag)]
 		pop		ebp
-		ret	
+		ret
 	})
 
 ;;;;
@@ -1634,7 +1634,7 @@
 		mov		eax, ecx
 		mov		ecx, 1
 		pop		ebp
-		ret	
+		ret
 	})
 
 ;;;;
@@ -1771,7 +1771,7 @@
 		callp 	check-function
 		mov 	eax, [eax + (- (* 4 function-environment-offset) uvector-tag)]
 		pop		ebp
-		ret	
+		ret
 	})
 
 ;;;;
@@ -1779,10 +1779,10 @@
 ;;;;
 (defasm uref-set (value uvector index)
 	{
-		push    ebp                 
-		mov     ebp, esp             
-		cmp     ecx, 3          
-		je      short :t1                
+		push    ebp
+		mov     ebp, esp
+		cmp     ecx, 3
+		je      short :t1
 		callp 	_wrong-number-of-args-error
 	:t1
 		mov		eax, [ebp + (+ ARGS_OFFSET 8)]		;; eax = value
@@ -1795,17 +1795,17 @@
 	end-atomic
 		pop		ebp
 		ret
-	})		
+	})
 
 ;;;;
 ;;;;	Corman Lisp kernel UREF function.
 ;;;;
 (defasm uref (uvector index)
 	{
-		push    ebp                 
-		mov     ebp, esp             
-		cmp     ecx, 2          
-		je      short :t1                
+		push    ebp
+		mov     ebp, esp
+		cmp     ecx, 2
+		je      short :t1
 		callp 	_wrong-number-of-args-error
 	:t1
 		mov		edx, [ebp + (+ ARGS_OFFSET 4)]	;; edx = uvector
@@ -1817,17 +1817,17 @@
 	end-atomic
 		pop		ebp
 		ret
-	})		
+	})
 
 ;;;;
 ;;;;	Common Lisp CHAR-INT function.
 ;;;;
 (defasm char-int (char)
 	{
-		push    ebp                 
-		mov     ebp, esp             
-		cmp     ecx, 1          
-		je      short :t1                
+		push    ebp
+		mov     ebp, esp
+		cmp     ecx, 1
+		je      short :t1
 		callp 	_wrong-number-of-args-error
 	:t1
 		mov		eax, [ebp + ARGS_OFFSET]
@@ -1845,8 +1845,8 @@
 
 (defasm %char-int (char)
 	{
-		push    ebp                 
-		mov     ebp, esp             
+		push    ebp
+		mov     ebp, esp
 		mov		eax, [ebp + ARGS_OFFSET]
 		shr		eax, 5
 		pop		ebp
@@ -1858,10 +1858,10 @@
 ;;;;
 (defasm int-char (int)
 	{
-		push    ebp                 
-		mov     ebp, esp             
-		cmp     ecx, 1          
-		je      short :t1                
+		push    ebp
+		mov     ebp, esp
+		cmp     ecx, 1
+		je      short :t1
 		callp 	_wrong-number-of-args-error
 	:t1
 		mov		eax, [ebp + ARGS_OFFSET]
@@ -1892,8 +1892,8 @@
 
 (defasm %int-char (int)
 	{
-		push    ebp                 
-		mov     ebp, esp             
+		push    ebp
+		mov     ebp, esp
 		mov		eax, [ebp + ARGS_OFFSET]
 		shl		eax, 5
 		inc		eax
@@ -1939,7 +1939,7 @@
 	:t4
 		mov		eax, [eax]
 		sub 	ecx, 8
-		jmp		:t2		
+		jmp		:t2
 	:t5
 		mov		ecx, 1
 		pop		ebp
@@ -1974,13 +1974,13 @@
 		mov 	dl, [eax - uvector-tag]
 		cmp 	dl, (tag-byte uvector-simple-vector-tag)
 		jne 	short :invalid-simple-vector
-		jmp		short :t3		
+		jmp		short :t3
 	:invalid-simple-vector
 		push	"Invalid simple vector: ~A"
 		push	eax
 		mov		ecx, 2
 		callf	error
-	
+
 	:t3
 		mov		edx, [eax + (- 4 uvector-tag)] ;edx = vector length
 		cmp		ecx, edx		; index >= length
@@ -2023,13 +2023,13 @@
 		mov 	al, [edx - uvector-tag]
 		cmp 	al, (tag-byte uvector-simple-vector-tag)
 		jne 	short :invalid-simple-vector
-		jmp		short :t3		
+		jmp		short :t3
 	:invalid-simple-vector
 		push	"Invalid simple vector: ~A"
 		push	edx
 		mov		ecx, 2
 		callf	error
-	
+
 	:t3
 		mov		eax, [edx + (- 4 uvector-tag)] ;eax = vector length
 		cmp		ecx, eax		; index >= length
@@ -2577,7 +2577,7 @@
 	:t1
 		test	esi, #xf0000000
 		jne		:bignum
-	
+
 		begin-atomic
 		mov		eax, esi
 		shl		eax, 3
@@ -2680,7 +2680,7 @@
 	})
 
 (defun cl::%uvector-address (obj)
-	(logand (ccl::lisp-object-bits obj) (lognot 7)))	;; trim off tag bits 
+	(logand (ccl::lisp-object-bits obj) (lognot 7)))	;; trim off tag bits
 
 ;;;;
 ;;;;	Common Lisp VECTORP function.
@@ -2831,7 +2831,7 @@
 		mov		edi, [esi+edx*4] ;; edi = existing binding
 		mov		[eax], edi
 		mov		edi, [ebp + ebx*4 + 0]
-		mov		[eax - 4], edi	;; push new value	
+		mov		[eax - 4], edi	;; push new value
 		mov		[esi+edx*4], eax
 		sub		ebx, 2
 		jg		short :loop
@@ -2939,8 +2939,8 @@
         mov     ecx, eax
         shl     ecx, 16
         or      eax, ecx                        ;; store two chars in eax
-        mov     ecx, [edx + (uvector-offset 1)] ;; ecx = tagged length 
-        add     ecx, 8       
+        mov     ecx, [edx + (uvector-offset 1)] ;; ecx = tagged length
+        add     ecx, 8
         shr     ecx, 4                          ;; (untagged length + 1) / 2
         dec     ecx
     :loop
@@ -2985,4 +2985,3 @@ indirection (a binding) in the finalization slot of QV.
         ret
     })
 |#
-

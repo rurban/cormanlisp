@@ -6,7 +6,7 @@
 ;;;;	File:		filenames.lisp
 ;;;;	Contents:	Pathname and logical filename support for Corman Lisp.
 ;;;;	History:	3/18/97  RGC  Created.
-;;;;				11/11/98 RGC  Modified GET-FULL-PATH-NAME to 
+;;;;				11/11/98 RGC  Modified GET-FULL-PATH-NAME to
 ;;;;							  accept a PATHNAME as input.
 ;;;;				2/18/01  RGC  Added DIRECTORY-NAMESTRING, TRUENAME implementations.
 ;;;;
@@ -22,9 +22,9 @@
 ;;
 ;; forward references
 ;;
-(declaim (ftype (function (make-pathname 
-			&key host device directory name 
-				 type version defaults case) pathname) 
+(declaim (ftype (function (make-pathname
+			&key host device directory name
+				 type version defaults case) pathname)
 			make-pathname))
 (declaim (ftype (function (stream) t) stream-name))
 (declaim (ftype (function (stream) t) stream-direction))
@@ -37,8 +37,8 @@
 ;;;
 ;;;	The Common Lisp (implementation dependent) PATHNAME class.
 ;;;
-(defstruct (pathname-internal 
-	(:constructor construct-pathname 
+(defstruct (pathname-internal
+	(:constructor construct-pathname
 		(host device directory name type version logical))
 	(:print-function print-pathname))
 	host
@@ -51,7 +51,7 @@
 	case
     logical)
 
-(defun print-pathname (pathname stream level) 
+(defun print-pathname (pathname stream level)
 	(declare (ignore level))
 	(format stream "#P\"~A\"" (namestring pathname)))
 
@@ -60,7 +60,7 @@
 (defvar *default-pathname-defaults*
 	(construct-pathname *default-host* nil nil nil nil nil nil)) ;; initialized later
 
-(defun make-pathname-internal (&key 
+(defun make-pathname-internal (&key
 	(host (pathname-internal-host *default-pathname-defaults*) supplied-host)
 	(device nil supplied-device)
 	(directory nil supplied-directory)
@@ -139,19 +139,19 @@
 			((or (= index length) (eq state :done)))
 			(setq c (elt string index))
 			(case state
-				(:type 
+				(:type
 					(case c
 						((#\\ #\/) 	(setq name type type nil state :directory)
 									(push nil directory))
 						(#\. 		(setq state :name found-dot t))
 						(#\:		(setq name type type nil state :device))
 						(otherwise	(push c type))))
-				(:name 
+				(:name
 					(case c
 						((#\\ #\/) 	(push nil directory) (setq state :directory))
 						(#\:		(setq state :device))
 						(otherwise	(push c name))))
-				(:directory 
+				(:directory
 					(case c
 						((#\\ #\/) 	(push nil directory))
 						(#\:		(setq state :device))
@@ -170,12 +170,12 @@
 			(if directory (push :relative directory)))
 		(if directory
 			(dotimes (i (1- (length directory)))
-				(setf (elt directory (+ i 1)) 
+				(setf (elt directory (+ i 1))
 					(concatenate 'string (elt directory (+ i 1))))))
 		(if (and type (null name) (not found-dot)) (setq name type type nil))
 		(make-pathname :device device :directory directory
 			:name name :type type)))
-			
+
 
 (in-package :common-lisp)
 
@@ -252,7 +252,7 @@
 (defun file-namestring (pathname)
     (concatenate 'string (pathname-name pathname)
 		 (when (pathname-type pathname) ".") (pathname-type pathname)))
-	
+
 ;;;
 ;;;	Common Lisp LOAD-LOGICAL-PATHNAME-TRANSLATIONS function.
 ;;;
@@ -294,8 +294,8 @@
 ;;;
 ;;;	Common Lisp PARSE-NAMESTRING function.
 ;;;
-(defun parse-namestring (thing 
-		&optional (host nil) 
+(defun parse-namestring (thing
+		&optional (host nil)
 				  (default-pathname *default-pathname-defaults*)
 		&key (start 0)
 			 (end nil)
@@ -313,27 +313,27 @@
 		(error "Invalid pathname: ~A" thing))
 	(unless end (setq end (length thing)))
 
-	(cond 
+	(cond
 		((pathnames::logical-host-p host)
 		 (pathnames::parse-logical-pathname-namestring thing start end junk-allowed host))
-		((and (null host) 
+		((and (null host)
 			  (pathnames::valid-logical-pathname-namestring thing start end junk-allowed))
 		 (pathnames::parse-logical-pathname-namestring thing start end junk-allowed host))
-		(t (values 
+		(t (values
 			(pathnames::parse-physical-pathname-namestring thing start end junk-allowed host)
 			end))))
 
 ;;;
 ;;;	Returns the default device for the passed host.
 ;;;
-(defun host-default-device (host) 
+(defun host-default-device (host)
 	(declare (ignore host))
 	nil)
 
 ;;;
 ;;;	Common Lisp MERGE-PATHNAMES function.
 ;;;
-(defun merge-pathnames (pathname &optional 
+(defun merge-pathnames (pathname &optional
 		(default-pathname *default-pathname-defaults*)
 		(default-version :newest))
 	(declare (ignore default-version))
@@ -363,7 +363,7 @@
 				(consp (pathname-directory default-pathname)))
 			(progn
 				(setf directory
-					(copy-list 
+					(copy-list
 						(append (pathname-directory default-pathname)
 							(cdr  ;remove :relative from the front
 								(pathname-directory pathname)))))
@@ -380,8 +380,8 @@
 		(make-pathname :host host :device device :directory directory
 			:name name :type type :version version)))
 
-(ct:defun-dll GetFullPathName ((lpFileName (:unsigned-char *)) 
-							(nBufferLength :long) 
+(ct:defun-dll GetFullPathName ((lpFileName (:unsigned-char *))
+							(nBufferLength :long)
 							(lpBuffer (:unsigned-char *))
 							(lpFilePart ((:unsigned-char *) *)))
    :return-type :long
@@ -392,10 +392,10 @@
 (defun get-full-path-name (name)
 	(let ((fname (ct:create-c-string (namestring name)))
 		  (buf (ct:malloc 256)))
-		(GetFullPathName 
-			fname 
-			256 
-			buf 
+		(GetFullPathName
+			fname
+			256
+			buf
 			(ct::create-foreign-ptr))
 		(values (parse-namestring (ct:c-string-to-lisp-string buf)))))
 
@@ -536,4 +536,3 @@
                                                     version
                                                     nil)
                      defaults)))
-

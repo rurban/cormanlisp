@@ -12,7 +12,7 @@
 ;;;;        (save-application "play-mp3s" #'main :console t :static t)
 ;;;;
 
-                                                                        
+
 (defvar *mp3-list-path* (merge-pathnames "mp3-list.lisp"))
 (defvar *mp3-bat-file* (merge-pathnames "mp3-playlist.bat"))
 
@@ -43,12 +43,12 @@
     (with-open-file (out *mp3-list-path* :direction :output)
         (format out ";;;;~%")
         (format out ";;;; MP3 List cached by play-mp3s.exe~%")
-        (format out ";;;; Copyright (c) 2003 Corman Technologies~%")            
+        (format out ";;;; Copyright (c) 2003 Corman Technologies~%")
         (format out ";;;;~%")
         (format out "(~%") ;; )
         (dolist (x mp3-list)
             (format out "    ~A~%" x))  ; (
-        (format out ")~%")))        
+        (format out ")~%")))
 
 ;;;
 ;;; Reads a previously saved mp3 file list from the path *mp3-list-path*.
@@ -60,7 +60,7 @@
 
 ;;;
 ;;; Searches a directory root for files with a .mp3 extension.
-;;; Returns a list of files found. If any files were found, the 
+;;; Returns a list of files found. If any files were found, the
 ;;; list gets written to path *mp3-list-path* as a side-effect.
 ;;;
 (defun find-mp3s (root)
@@ -71,7 +71,7 @@
     (let ((result (flatten (directory (concatenate 'string root "*.mp3") :recurse t))))
         (if result (save-mp3-list result))
         result))
-                                                                        
+
 (defun random-playlist (mp3s num)
     (let ((list '())
           (len (length mp3s)))
@@ -86,7 +86,7 @@
             (dolist (x list)
                 (format file " \"~A\"" (namestring x)))
             (format file "~%"))))
-                               
+
 (defun play (num &optional args)
     (let ((mp3s (if (and args (stringp (car args)))
                     (find-mp3s (car args))
@@ -97,7 +97,7 @@
                 (write-random-playlist mp3s num)
                 (win::system (format nil "~S" (namestring *mp3-bat-file*)))))))
 
-(defun display-usage-info () 
+(defun display-usage-info ()
 	(format t "Usage: play-mp3s number [path]~%")
 	(format t "~10tnumber~20tA number between 1 and 99~%")
     (format t "~10tpath~20tThe root path to begin a search i.e. f:\\mp3!\\Coil~%"))
@@ -114,5 +114,3 @@
                     (display-usage-info))))
         (force-output)
 		(win:exitprocess 0)))
-
-                                                                                                                                                

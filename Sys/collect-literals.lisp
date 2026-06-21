@@ -6,8 +6,8 @@
 ;;;;	File:	collect-literals.lisp
 ;;;;
 
-(defun is-heap-literal (x) 
-	(cond 
+(defun is-heap-literal (x)
+	(cond
 		((symbolp x) nil)
 		((fixnump x) nil)
 		((characterp x) nil)
@@ -36,4 +36,3 @@
 			x
 			`(let (,@*collected-literals*)
 				,x))))
-	

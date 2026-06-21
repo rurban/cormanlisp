@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	Windows Menu example program.
-;;;;    
+;;;;
 ;;;;    To run from lisp, load this file and enter:
 ;;;;
 ;;;;		(th:create-thread #'win::menu1)
@@ -17,7 +17,7 @@
 (require "GUI")
 
 (defclass <menu-window> (<main-menu-mixin> <frame>))
-                
+
 (defun my-open-file ()
 	(format t "open file selected~%")
 	(force-output))

@@ -38,7 +38,7 @@
 (defun process-opt-declarations (decls)
 	(dolist (x decls)
 		(dolist (y (cdr x))
-			(cond 
+			(cond
 				((eq y 'speed)
 			     (setf cormanlisp::*compiler-optimize-speed* 3))
 				((and (consp y)(eq (car y) 'speed))
@@ -59,17 +59,17 @@
 				   (*lexical-symbol-macros* *lexical-symbol-macros*)
                    (opt-declarations (find-opt-declarations forms)))
                     (if opt-declarations
-						(let ((cormanlisp::*compiler-optimize-speed* 
+						(let ((cormanlisp::*compiler-optimize-speed*
 									cormanlisp::*compiler-optimize-speed*)
-							  (cormanlisp::*compiler-optimize-safety* 
-									cormanlisp::*compiler-optimize-safety*)								
-							  (cormanlisp::*compiler-optimize-debug* 
+							  (cormanlisp::*compiler-optimize-safety*
+									cormanlisp::*compiler-optimize-safety*)
+							  (cormanlisp::*compiler-optimize-debug*
 									cormanlisp::*compiler-optimize-debug*)
-							  (cormanlisp::*compiler-optimize-space* 
+							  (cormanlisp::*compiler-optimize-space*
 									cormanlisp::*compiler-optimize-space*)
-							  (cormanlisp::*compiler-optimize-compilation-speed* 
+							  (cormanlisp::*compiler-optimize-compilation-speed*
 									cormanlisp::*compiler-optimize-compilation-speed*))
-							(process-opt-declarations opt-declarations)								
+							(process-opt-declarations opt-declarations)
                             (rplaca (cdr x) (macroexpand-var-list var-list env))
                             (do ()
                                 ((null forms))
@@ -87,17 +87,17 @@
 				   (*lexical-symbol-macros* *lexical-symbol-macros*)
                    (opt-declarations (find-opt-declarations forms)))
                     (if opt-declarations
-						(let ((cormanlisp::*compiler-optimize-speed* 
+						(let ((cormanlisp::*compiler-optimize-speed*
 									cormanlisp::*compiler-optimize-speed*)
-							  (cormanlisp::*compiler-optimize-safety* 
-									cormanlisp::*compiler-optimize-safety*)								
-							  (cormanlisp::*compiler-optimize-debug* 
+							  (cormanlisp::*compiler-optimize-safety*
+									cormanlisp::*compiler-optimize-safety*)
+							  (cormanlisp::*compiler-optimize-debug*
 									cormanlisp::*compiler-optimize-debug*)
-							  (cormanlisp::*compiler-optimize-space* 
+							  (cormanlisp::*compiler-optimize-space*
 									cormanlisp::*compiler-optimize-space*)
-							  (cormanlisp::*compiler-optimize-compilation-speed* 
+							  (cormanlisp::*compiler-optimize-compilation-speed*
 									cormanlisp::*compiler-optimize-compilation-speed*))
-							(process-opt-declarations opt-declarations)								
+							(process-opt-declarations opt-declarations)
                             (rplaca (cdr x) (macroexpand-var*-list var-list env))
                             (do ()
                                 ((null forms))
@@ -115,17 +115,17 @@
 					   (*lexical-symbol-macros* *lexical-symbol-macros*)
 					   (opt-declarations (find-opt-declarations forms)))
 					(if opt-declarations
-						(let ((cormanlisp::*compiler-optimize-speed* 
+						(let ((cormanlisp::*compiler-optimize-speed*
 									cormanlisp::*compiler-optimize-speed*)
-							  (cormanlisp::*compiler-optimize-safety* 
-									cormanlisp::*compiler-optimize-safety*)								
-							  (cormanlisp::*compiler-optimize-debug* 
+							  (cormanlisp::*compiler-optimize-safety*
+									cormanlisp::*compiler-optimize-safety*)
+							  (cormanlisp::*compiler-optimize-debug*
 									cormanlisp::*compiler-optimize-debug*)
-							  (cormanlisp::*compiler-optimize-space* 
+							  (cormanlisp::*compiler-optimize-space*
 									cormanlisp::*compiler-optimize-space*)
-							  (cormanlisp::*compiler-optimize-compilation-speed* 
+							  (cormanlisp::*compiler-optimize-compilation-speed*
 									cormanlisp::*compiler-optimize-compilation-speed*))
-							(process-opt-declarations opt-declarations)									
+							(process-opt-declarations opt-declarations)
 							(rplaca (cdr x) (macroexpand-lambda-list lambda-list env))
 							(do ()
 								((null forms))
@@ -151,7 +151,7 @@
 			((eq sym 'MACROLET)
 				(let ((temp-macro-sym (gensym))
 					  (*lexical-macros* *lexical-macros*)
-					  (macro-list (cadr x)) 
+					  (macro-list (cadr x))
 					  (forms      (cddr x)))
 					(dolist (m macro-list)
 						(eval `(defmacro ,temp-macro-sym ,(cadr m) ,@(cddr m)))
@@ -164,7 +164,7 @@
 						(setq forms (cdr forms)))))
 			((eq sym 'LABELS)
 				(let ((*lexical-macros* *lexical-macros*)
-					  (func-list (cadr x)) 
+					  (func-list (cadr x))
 					  (forms      (cddr x)))
 					;; lexically defined functions need to shadow macros,
 					;; so we add a macro definition with NIL as the function
@@ -186,7 +186,7 @@
 						(setq forms (cdr forms)))))
 			((eq sym 'FLET)
 				(let ((*lexical-macros* *lexical-macros*)
-					  (func-list (cadr x)) 
+					  (func-list (cadr x))
 					  (forms      (cddr x)))
 					;; lexically defined functions need to shadow macros,
 					;; so we add a macro definition with NIL as the function
@@ -206,7 +206,7 @@
 						(setq forms (cdr forms)))))
 			((eq sym 'SYMBOL-MACROLET)
 				(let ((*lexical-symbol-macros* *lexical-symbol-macros*)
-					  (macro-list (cadr x)) 
+					  (macro-list (cadr x))
 					  (forms      (cddr x)))
 					(dolist (m macro-list)
 						(push (list (car m) (cadr m)) *lexical-symbol-macros*))
@@ -216,7 +216,7 @@
 						((null forms))
 						(rplaca forms (macroexpand-all (car forms) env))
 						(setq forms (cdr forms)))))
-			
+
 			((or (eq sym 'BLOCK)(eq sym 'RETURN-FROM))
 				(do ((forms (cddr x) (cdr forms)))
 					((endp forms))
@@ -227,10 +227,10 @@
 					((endp forms))
 					(unless (or (integerp (car forms))(symbolp (car forms)))
 						(rplaca forms (macroexpand-all (car forms) env)))))
-			
+
 			((eq sym 'GO))
 			((eq sym 'DECLARE))
-						
+
       		;; SETQ on SYMBOL-MACROLET'ted symbols must be SETF, so be careful...
       		((and (eq sym 'SETQ) (%nfixup-setq-lexical-symbol-macros (cdr x) env))
 			 (rplaca x 'SETF)
@@ -273,21 +273,21 @@
 (defun macroexpand-all (x &optional env)
 	(if (and (consp x)(eq (car x) 'quote))
 		(return-from macroexpand-all x))
-		
+
 	;; keep doing compiler macros, macros and inline expansion
 	;; until we go one time through the loop and nothing changes
 	(do ((save x x))
 		(nil)
 		(setq x (expand-compiler-macros x))
-		(setq x (macroexpand x env))   ;; expand top level form	
+		(setq x (macroexpand x env))   ;; expand top level form
 		(setq x (inline-expand x env))
 		(if (eq save x)
 			(return)))
 	(if (compiler-fold-constants)
 		(if (constantp x)
 			(let ((result (eval-constant-expression x)))
-				(if (or (consp result) 
-						(and (symbolp result) 
+				(if (or (consp result)
+						(and (symbolp result)
 							(not (keywordp result))
 							(not (eq result t))
 							(not (eq result nil))))
@@ -306,11 +306,8 @@
 (defun constantp (x &optional environment)
 	(declare (ignore environment))
 	(cond ((symbolp x) (symbol-constant-p x))
-		((consp x) 
+		((consp x)
 		 (or (eq (car x) 'quote)
 			(and (member (car x) constant-functions)
 				(all-constant (cdr x)))))
 		  (t t)))
-
-
-

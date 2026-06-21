@@ -21,44 +21,38 @@ void main()
 	char* funcName;
 	printf("Using dllsample.dll at load time\n");
 
-    printf("%s\n", CORMAN());
+	printf("%s\n", CORMAN());
 
 	arg1 = 10, arg2 = 20;
 	funcName = "lisp_add";
 	result = lisp_add(arg1, arg2);
 
-	printf("The call to %s with arguments %d and %d returned %d\n",
-		funcName, arg1, arg2, result);
+	printf("The call to %s with arguments %d and %d returned %d\n", funcName, arg1, arg2, result);
 
 	funcName = "lisp_subtract";
 	result = lisp_subtract(arg1, arg2);
 
-	printf("The call to %s with arguments %d and %d returned %d\n",
-		funcName, arg1, arg2, result);
+	printf("The call to %s with arguments %d and %d returned %d\n", funcName, arg1, arg2, result);
 
 	funcName = "lisp_multiply";
 	result = lisp_multiply(arg1, arg2);
 
-	printf("The call to %s with arguments %d and %d returned %d\n", funcName,
-		arg1, arg2, result);
+	printf("The call to %s with arguments %d and %d returned %d\n", funcName, arg1, arg2, result);
 
 	double x = 10.1;
 	double y = 20.2;
 	double z = lisp_double_add(x, y);
-	printf("The call to lisp_double_add with arguments %f and %f returned %f\n",
-		x, y, z);
+	printf("The call to lisp_double_add with arguments %f and %f returned %f\n", x, y, z);
 
 	float sx = 20.1;
 	float sy = 30.2;
 	float sz = lisp_single_add(sx, sy);
-	printf("The call to lisp_single_add with arguments %f and %f returned %f\n",
-		(double)sx, (double)sy, (double)sz);
+	printf("The call to lisp_single_add with arguments %f and %f returned %f\n", (double)sx, (double)sy, (double)sz);
 
 	printf("lisp_apropos(\"POWER\"):\n%s\n", lisp_apropos("POWER"));
-
 }
 
-#else	// LOAD_DYNAMIC
+#else // LOAD_DYNAMIC
 
 typedef int (*FuncPtr)(int, int);
 
@@ -75,20 +69,17 @@ void main()
 	funcName = "lisp_add";
 	func = (FuncPtr)GetProcAddress(module, funcName);
 	result = func(arg1, arg2);
-	printf("The call to %s with arguments %d and %d returned %d\n",
-		funcName, arg1, arg2, result);
+	printf("The call to %s with arguments %d and %d returned %d\n", funcName, arg1, arg2, result);
 
 	funcName = "lisp_subtract";
 	func = (FuncPtr)GetProcAddress(module, funcName);
 	result = func(arg1, arg2);
-	printf("The call to %s with arguments %d and %d returned %d\n",
-		funcName, arg1, arg2, result);
+	printf("The call to %s with arguments %d and %d returned %d\n", funcName, arg1, arg2, result);
 
 	funcName = "lisp_multiply";
 	func = (FuncPtr)GetProcAddress(module, funcName);
 	result = func(arg1, arg2);
-	printf("The call to %s with arguments %d and %d returned %d\n",
-		funcName, arg1, arg2, result);
+	printf("The call to %s with arguments %d and %d returned %d\n", funcName, arg1, arg2, result);
 }
 
 #endif // LOAD_DYNAMIC

@@ -140,9 +140,9 @@
   (setq tester (list 1 2 4 1 3 4 5))
   (delete-if #'oddp tester) =>  (2 4 4)
   (setq tester (list 1 2 4 1 3 4 5))
-  (delete-if #'evenp tester :count 1 :from-end t) =>  (1 2 4 1 3 5)    
+  (delete-if #'evenp tester :count 1 :from-end t) =>  (1 2 4 1 3 5)
   (setq tester (list 1 2 3 4 5 6))
-  (delete-if #'evenp tester) =>  (1 3 5) 
+  (delete-if #'evenp tester) =>  (1 3 5)
   )
 
 (define-test-suite test-remove-duplicates ()
@@ -152,7 +152,7 @@
   (remove-duplicates '((foo #\a) (bar #\%) (baz #\A))
 		     :test #'char-equal :key #'cadr)
   =>  ((BAR #\%) (BAZ #\A))
-  (remove-duplicates '((foo #\a) (bar #\%) (baz #\A)) 
+  (remove-duplicates '((foo #\a) (bar #\%) (baz #\A))
 		     :test #'char-equal :key #'cadr :from-end t)
   =>  ((FOO #\a) (BAR #\%))
   (setq tester (list 0 1 2 3 4 5 6))
@@ -176,7 +176,7 @@
   (merge 'string test1 test2 #'char-lessp) =>  "BnOosYy"
   (setq test1 (vector '(red . 1) '(blue . 4)))
   (setq test2 (vector '(yellow . 2) '(green . 7)))
-  (merge 'vector test1 test2 #'< :key #'cdr) 
+  (merge 'vector test1 test2 #'< :key #'cdr)
   =>  (lambda (result)
 	(vector= result #((RED . 1) (YELLOW . 2) (BLUE . 4) (GREEN . 7))))
   ;; (merge '(vector * 4) '(1 5) '(2 4 6) #'<) => :error
@@ -186,7 +186,7 @@
    (setq tester (copy-seq "lkjashd")) =>  "lkjashd"
    (sort tester #'char-lessp) =>  "adhjkls"
    (setq tester (list '(1 2 3) '(4 5 6) '(7 8 9)))
-   (sort tester #'> :key #'car)  =>  ((7 8 9) (4 5 6) (1 2 3)) 
+   (sort tester #'> :key #'car)  =>  ((7 8 9) (4 5 6) (1 2 3))
    (setq tester (list 1 2 3 4 5 6 7 8 9 0))
    (stable-sort tester #'(lambda (x y) (and (oddp x) (evenp y))))
    => (1 3 5 7 9 2 4 6 8 0)
@@ -212,7 +212,7 @@
 		   (("Kent" "Pitman") "Conditions")
 		   (("Dick" "Waters") "Iteration")
 		   (("JonL" "White") "Iteration"))))
-   (setq committee-data 
+   (setq committee-data
        (stable-sort committee-data #'string< :key #'cadr))
    => (lambda (result)
 	(vector= result
@@ -253,8 +253,8 @@
 (define-test-suite test-reduce ()
   (reduce #'* '(1 2 3 4 5)) =>  120
   (reduce #'append '((1) (2)) :initial-value '(i n i t)) =>  (I N I T 1 2)
-  (reduce #'append '((1) (2)) :from-end t                  
-	  :initial-value '(i n i t)) =>  (1 2 I N I T) 
+  (reduce #'append '((1) (2)) :from-end t
+	  :initial-value '(i n i t)) =>  (1 2 I N I T)
   (reduce #'- '(1 2 3 4)) =>  -8
   (reduce #'- '(1 2 3 4) :from-end t)    ;Alternating sum.
   =>  -2
@@ -286,5 +286,3 @@
     (test-substitute)
     (test-nsubstitute)
     (test-reduce))))
-
-

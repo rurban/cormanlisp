@@ -20,14 +20,14 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 		"Finds the CLOS <window> object that exists for the
 		 given HWND. If no object exists for the handle then nil is returned."
 		(gethash (ct:foreign-ptr-to-int hwnd) window-table))
-	
+
 	(defun map-window ( hwnd window )
 		"Adds a mapping between the HWND and the CLOS <window>
 		 object. The mapping will replace any existing mapping for that
 		 HWND in the window table."
-		(setf (gethash (ct:foreign-ptr-to-int hwnd) window-table) 
+		(setf (gethash (ct:foreign-ptr-to-int hwnd) window-table)
 			window))
-	
+
 	(defun remove-window ( hwnd )
 		"Remove the mapping for HWND"
 		(remhash (ct:foreign-ptr-to-int hwnd) window-table)))
@@ -44,12 +44,12 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 
 (defun miniwin-class-name ()
 	"Register the main windows class necessary for this framework.
-     and return the atom used in CreateWindowEx to identify the class."		
+     and return the atom used in CreateWindowEx to identify the class."
 	(let ((class-name (concatenate 'string *class-name-prefix* "main")))
 		(progn
 			(let ((wndclass (ct:malloc (sizeof 'WNDCLASSEX))))
 				(with-c-struct (s wndclass WNDCLASSEX)
-					(setf 
+					(setf
 						cbSize 			(sizeof 'WNDCLASSEX)
 						style 			(logior CS_HREDRAW CS_VREDRAW)
 						lpfnWndProc 	(get-callback-procinst 'miniwin-wndproc)
@@ -62,7 +62,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 						lpszMenuName 	NULL
 						lpszClassName 	(ct:create-c-string class-name)
 						hIconSm 		(LoadIcon NULL IDI_APPLICATION)))
-				(RegisterClassEx wndclass)	
+				(RegisterClassEx wndclass)
 				(setf (gethash class-name *window-class-atoms*) class-name)))
 		(gethash class-name *window-class-atoms*)))
 
@@ -73,7 +73,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 			((not (GetMessage msg NULL 0 0)))
 			(TranslateMessage msg)
 			(DispatchMessage msg))))
-		
+
 (defun make-message ())		;; forward declaration
 
 ;; Generic functions on <window>
@@ -82,13 +82,13 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 ;; object and passes that onto the handle-windows-message generic.
 (defgeneric crack-windows-message ( window imsg wparam lparam ))
 
-;; Methods added to this generic function will perform the 
+;; Methods added to this generic function will perform the
 ;; actual message handling. Methods should be specialised on the
 ;; window and/or message parameter to perform specific handling.
 (defgeneric handle-windows-message (window message wparam lparam))
 
 ;; The default windows handler for messages that our
-;; application does not process. Usually calls DefWindowProc 
+;; application does not process. Usually calls DefWindowProc
 ;; but it could call subclassed windows functions or dialog box
 ;; procedure defaults depending on the method specialisation.
 (defgeneric handle-unknown-message (window message wparam lparam))
@@ -102,7 +102,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 ;; Create a window
 (defgeneric create-window ( window &key class-name ex-style caption style x y width height parent menu ))
 
-;; Methods added to this generic function will perform handle 
+;; Methods added to this generic function will perform handle
 ;; timer messages for the window.
 (defgeneric handle-timer-message (window))
 
@@ -129,7 +129,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 (defun make-message (imsg wparam lparam)
 	(declare (ignore wparam lparam))
 	(or (gethash imsg *message-hash-table*)
-		(setf (gethash imsg *message-hash-table*) 
+		(setf (gethash imsg *message-hash-table*)
 			(make-instance (cond
 					((= imsg WM_NCDESTROY) '<ncdestroy-message>)
 					((= imsg WM_DESTROY) '<destroy-message>)
@@ -157,7 +157,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 (defmethod handle-windows-message ((window <window>)(message <timer-message>) wparam lparam)
 	(declare (ignore window message wparam lparam)))
 		;; default handler does nothing
-	
+
 (defmethod handle-windows-message ((window <window>) (message <size-message>) wparam lparam)
 	(declare (ignore message wparam))
 	(setf (width window) (LOWORD lParam))
@@ -180,10 +180,10 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 			(cl::get-application-instance)
 			(ct:int-to-foreign-ptr current-key))
 		(SetWindowText (window-hwnd window) (ct:create-c-string caption))
-		(when (or (null (window-hwnd window)) 
+		(when (or (null (window-hwnd window))
 				(and (foreignp (window-hwnd window))(cpointer= null (window-hwnd window))))
 			(error "Null window handle"))))
-			
+
 ;; A mixin class for main windows frames. When a window that has
 ;; this class mixed in is destroyed then the message loop is terminated
 ;; which usually results in an application closing down.
@@ -213,7 +213,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 			(setf (window-wndproc window) (cref WNDCLASSEX wndclass win::lpfnWndProc))
 ;;			(when (null (gethash new-class-name *window-class-atoms*))
 				(with-c-struct (s wndclass WNDCLASSEX)
-					(setf 
+					(setf
 						cbSize 			(sizeof 'WNDCLASSEX)
 						style			(logior CS_HREDRAW CS_VREDRAW)
 						cbClsExtra		0
@@ -230,7 +230,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 					(error "registerclassex-failed"))
 				(setf (gethash new-class-name *window-class-atoms*) new-class-name)
 ;;			)
-			
+
 			(let ((current-key (incf *window-create-key*)))
 				(setf (gethash current-key *window-create-mapping*) window)
 				(CreateWindowEx (or ex-style 0)
@@ -256,13 +256,13 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 
 (ct:defun-callback miniwin-wndproc ((hwnd HWND)(iMsg UINT) (wParam WPARAM) (lParam LPARAM))
 	(when (= iMsg WM_NCCREATE)
-		(let ((current-key (ct:foreign-ptr-to-int 
+		(let ((current-key (ct:foreign-ptr-to-int
 						(cref CREATESTRUCT (ct:int-to-foreign-ptr lParam) lpCreateParams))))
 			(let ((window (gethash current-key *window-create-mapping*)))
 				(setf (window-hwnd window) hwnd)
 				(map-window hwnd window))
 			(remhash current-key *window-create-mapping*)))
-	
+
 	(let ((window (find-window hwnd)))
 		(if (null window)
 			(DefWindowProc hwnd iMsg wParam lParam)
@@ -283,7 +283,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 			:style (logior WS_OVERLAPPEDWINDOW WS_MINIMIZEBOX)
 			:width 300
 			:height 300)
-			
+
 		(show-window window SW_SHOW)
 		(update-window window)
 		(standard-message-loop)))
@@ -300,7 +300,7 @@ BOOL WINAPI SetWindowTextA(HWND hWnd, LPCSTR lpString);
 			:style (logior WS_OVERLAPPEDWINDOW WS_MINIMIZEBOX ES_MULTILINE)
 			:width 300
 			:height 300)
-			
+
 		(show-window window SW_SHOW)
 		(update-window window)
 		(standard-message-loop)))

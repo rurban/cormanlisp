@@ -3,8 +3,8 @@ Aug. 14, 2006
 
 Beta 3
 
-Generally many bugs and stability issues have been fixed in this beta 3 
-release. Beta 2 had quite a few problems so we have taken time to put 
+Generally many bugs and stability issues have been fixed in this beta 3
+release. Beta 2 had quite a few problems so we have taken time to put
 more work in this area. Thanks to all who have submitted reports. We still
 have not addressed all of them but we felt it was time to make another
 beta release available.
@@ -24,7 +24,7 @@ soon, so your feedback now is important.
 
 -Added Macroexpand and Macroexpand-1 options to the context menu,
 
--Misc. fixes in code generation (relative to math operators) and 
+-Misc. fixes in code generation (relative to math operators) and
 garbage collection. These fixes were related to potential threading
 issues.
 
@@ -65,7 +65,7 @@ exposed by the kernel.
 -Redefined dozens more kernel functions in Lisp or assembler for thread-safety
 and stability.
 
--Garbage collection heap sizes may be set by the COM host when the kernel is 
+-Garbage collection heap sizes may be set by the COM host when the kernel is
 initialized via new InitializeEx() function.
 
 -Garbage collection fix: if call to SuspenThread() fails the collector will keep
@@ -118,7 +118,7 @@ I removed the Corman Lisp specific code that disables compilation. The compilati
 doesn't accomplish much except possibly speed up the load by a small amount (since
 they will otherwise compile when they are being loaded). If you have any problems
 with compiling please let me know (other than warnings which I also get).
-The messagebox and apropos examples work fine on the systems I have tried 
+The messagebox and apropos examples work fine on the systems I have tried
 (after copying AproposGui.dll into the Corman Lisp root directory).
 
 The FFI and system stability improvements appear to have fixed problems with
@@ -135,8 +135,8 @@ function (allows you to save your files). In the console app it will cause
 the console to exit. The message passed to LISP-SHUTDOWN will be presented
 to the user in the IDE or console application.
 
-Please let me know of any bugs or issues you find in this release. 
-I have not set a final release date but hope to have it finished 
+Please let me know of any bugs or issues you find in this release.
+I have not set a final release date but hope to have it finished
 within 30 days. Therefore if you can provide feedback by mid-June it will be
 most helpful to us.
 
@@ -153,4 +153,3 @@ It requires msvcr80.dll.
 Thanks,
 Roger Corman
 roger@corman.net
-

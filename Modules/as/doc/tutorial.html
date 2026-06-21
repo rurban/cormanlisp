@@ -36,7 +36,7 @@ These are located in two Lisp packages: <strong>net.aserve</strong> and <strong>
 package that <em>uses</em> these packages as well as the normal Lisp packages.&nbsp; Let's
 create a package called <strong>tutorial</strong> and make that the current package:</p>
 
-<pre>(defpackage :tutorial 
+<pre>(defpackage :tutorial
     (:use :common-lisp :excl :net.aserve :net.html.generator))
 
 (in-package :tutorial)
@@ -122,7 +122,7 @@ and <a href="http://test/foo">http://test:8000/foo</a> and <a href="http://local
 
 <p>If we do </p>
 
-<pre>tutorial(30): (publish-file :path &quot;/foo&quot; :file &quot;/tmp/sample.txt&quot; 
+<pre>tutorial(30): (publish-file :path &quot;/foo&quot; :file &quot;/tmp/sample.txt&quot;
                             :host &quot;test.franz.com&quot;)
 #&lt;net.aserve::file-entity @ #x2076e0c2&gt;
 tutorial(31):</pre>
@@ -130,7 +130,7 @@ tutorial(31):</pre>
 <p>Then AllegroServe will only respond to requests for <a href="http://test.franz.com/foo">http://test.franz.com:8000/foo</a>.
 &nbsp; If we do</p>
 
-<pre>tutorial(30): (publish-file :path &quot;/foo&quot; :file &quot;/tmp/sample.txt&quot; 
+<pre>tutorial(30): (publish-file :path &quot;/foo&quot; :file &quot;/tmp/sample.txt&quot;
                             :host (&quot;test&quot; &quot;test.franz.com&quot;))
 #&lt;net.aserve::file-entity @ #x2076e0c2&gt;
 tutorial(31):</pre>
@@ -143,10 +143,10 @@ also had the name <strong>sales.franz.com</strong>.&nbsp; You could publish two 
 ways to respond to the &quot;<strong>/foo</strong>&quot; url, depending on the host name
 specified in the request</p>
 
-<pre>tutorial(30): (publish-file :path &quot;/foo&quot; :file &quot;/tmp/<strong>test</strong>-sample.txt&quot; 
+<pre>tutorial(30): (publish-file :path &quot;/foo&quot; :file &quot;/tmp/<strong>test</strong>-sample.txt&quot;
                             :host &quot;<strong>test</strong>.franz.com&quot;)
 #&lt;net.aserve::file-entity @ #x2076e0c2&gt;
-tutorial(31): (publish-file :path &quot;/foo&quot; :file &quot;/tmp/<strong>sales</strong>-sample.txt&quot; 
+tutorial(31): (publish-file :path &quot;/foo&quot; :file &quot;/tmp/<strong>sales</strong>-sample.txt&quot;
                             :host &quot;<strong>sales</strong>.franz.com&quot;)
 #&lt;net.aserve::file-entity @ #x2076e324&gt;</pre>
 
@@ -167,7 +167,7 @@ simplest response function is published here:</p>
 
 <pre>(publish :path &quot;/hello&quot;
     :content-type &quot;text/plain&quot;
-    :function 
+    :function
     #'(lambda (req ent)
           (with-http-response (req ent)
               (with-http-body (req ent)
@@ -203,13 +203,13 @@ response function that sends html:</p>
 
 <pre>(publish :path &quot;/hello2&quot;
     :content-type &quot;text/html&quot;
-    :function 
+    :function
     #'(lambda (req ent)
          (with-http-response (req ent)
             (with-http-body (req ent)
-               (html 
+               (html
                   (:html (:head (:title &quot;Hello World Test&quot;))
-                         (:body 
+                         (:body
                            ((:font :color &quot;red&quot;) &quot;Hello &quot;)
                            ((:font :color &quot;blue&quot;) &quot;World!&quot;))))))))
 </pre>
@@ -229,13 +229,13 @@ implement a simple counter for the number of accesses:</p>
               (html
                 (:html
                   (:head (:title &quot;Hello Counter&quot;))
-                  (:body 
+                  (:body
                      ((:font :color (nth (random 5)
-                                     '(&quot;red&quot; &quot;blue&quot; 
-                                       &quot;green&quot; &quot;purple&quot; 
+                                     '(&quot;red&quot; &quot;blue&quot;
+                                       &quot;green&quot; &quot;purple&quot;
                                        &quot;black&quot;)))
-                       &quot;Hello World had been called &quot; 
-                       (:princ (incf count)) 
+                       &quot;Hello World had been called &quot;
+                       (:princ (incf count))
                        &quot; times&quot;)))))))))
 </pre>
 
@@ -257,7 +257,7 @@ return a web page to display on the browser screen.&nbsp; This is an important s
 where using Lisp to process the form data is significantly easier than the alternatives
 (such as the shell, or perl or some other primitive scripting language).</p>
 
-<p>There are three ways that form data is sent to the web browser 
+<p>There are three ways that form data is sent to the web browser
 
 <ol>
   <li>query string -- the form data is appended to the url, with a question mark separating
@@ -274,7 +274,7 @@ where using Lisp to process the form data is significantly easier than the alter
 </ol>
 
 <p>The three attributes of a <strong>:form</strong> tag that determine how data is sent to
-the server are: 
+the server are:
 
 <ol>
   <li><strong>:method</strong>&nbsp; -- this is either &quot;GET&quot; (the default) or
@@ -314,7 +314,7 @@ filling out the form:</p>
     :content-type &quot;text/html&quot;
     :function
     #'(lambda (req ent)
-       (let ((name (cdr (assoc &quot;name&quot; (request-query req) 
+       (let ((name (cdr (assoc &quot;name&quot; (request-query req)
                                :test #'equal))))
          (with-http-response (req ent)
            (with-http-body (req ent)
@@ -385,23 +385,23 @@ through <strong>z</strong> are found in the text selection.</p>
            (with-http-body (req ent)
              (if* text
                then ; got the quotation, analyze it
-                    (html 
+                    (html
                      (:html
                        (:head (:title &quot;Character Counts&quot;)
-                       (:body 
+                       (:body
                          (:table
                            (do ((i #.(char-code #\a) (1+ i)))
                                ((&gt; i #.(char-code #\z)))
                              (html (:tr
                                      (:td (:princ (code-char i)))
-                                     (:td (:princ 
+                                     (:td (:princ
                                             (count (code-char i)
                                                     text)))))))))))
                else ; ask for quotation
                     (html
                       (:html
                          (:head (:title &quot;quote character counter&quot;)
-                         (:body 
+                         (:body
                             ((:form :action &quot;charcount&quot;
                                     :method &quot;POST&quot;)
                               &quot;Enter your favorite quote &quot;
@@ -495,7 +495,7 @@ certain amount of time.</p>
                         (html (:head (:title &quot;Secret page&quot;))
                               (:body &quot;You made it to the secret page&quot;))))
                else ; cause browser to ask name and password
-                    (with-http-response (req ent :response 
+                    (with-http-response (req ent :response
                                                  *response-unauthorized*)
                       (set-basic-authorization req &quot;secretserver&quot;)
                       (with-http-body (req ent)))))))</pre>
@@ -531,7 +531,7 @@ significant byte, and that is what we test for in the following example:</p>
                  (with-http-body (req ent)
                    (html
                      (:html (:head (:title &quot;Unauthorized&quot;))
-                            (:body 
+                            (:body
                                 &quot;You cannot access this page &quot;
                                 &quot;from your location&quot;)))))))))
 </pre>

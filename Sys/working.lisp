@@ -23,7 +23,7 @@
 	(let ((cb (function-code-buffer func)))
 		(if cb
 			(uref cb cl::compiled-code-info-offset))))
-	
+
 (defun function-lambda-list (func) (getf (function-info-list func) 'cl::lambda-list))
 (defun function-lambda (func) (getf (function-info-list func) 'cl::lambda))
 (defun function-source-file (func) (getf (function-info-list func) 'ccl:*source-file*))

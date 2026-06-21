@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	File:		bootstrap.lisp
-;;;;	Contents:	Startup code to enable the rest of the system to be 
+;;;;	Contents:	Startup code to enable the rest of the system to be
 ;;;;				loaded.
 ;;;;	History:	11/9/96  RGC  Created.
 ;;;;				1/7/99   RGC  Incorporated Vassili's DOTIMES corrections.
@@ -12,11 +12,11 @@
 ;;;;
 
 ;; set up defun macro
-(set-symbol-macro 
+(set-symbol-macro
 	#'(lambda (x env)
 		(declare (ignore env))
 		`(progn
-			(set-symbol-function 
+			(set-symbol-function
 				(function (lambda ,(car (cdr (cdr x)))
 						(block ,(car (cdr x)) ,@(cdr (cdr (cdr x))))))
 				',(car (cdr x)))
@@ -52,45 +52,45 @@
 (defun car (x) (car x))			;; inlined
 (defun cdr (x) (cdr x))			;; inlined
 
-(defun caar (x) (car (car x)))		
-(defun cadr (x) (car (cdr x)))		
-(defun cdar (x) (cdr (car x)))		
-(defun cddr (x) (cdr (cdr x)))		
+(defun caar (x) (car (car x)))
+(defun cadr (x) (car (cdr x)))
+(defun cdar (x) (cdr (car x)))
+(defun cddr (x) (cdr (cdr x)))
 
-(defun caaar (x) (car (car (car x))))		
-(defun caadr (x) (car (car (cdr x))))		
-(defun cadar (x) (car (cdr (car x))))		
-(defun caddr (x) (car (cdr (cdr x))))		
-(defun cdaar (x) (cdr (car (car x))))		
-(defun cdadr (x) (cdr (car (cdr x))))		
-(defun cddar (x) (cdr (cdr (car x))))		
-(defun cdddr (x) (cdr (cdr (cdr x))))		
+(defun caaar (x) (car (car (car x))))
+(defun caadr (x) (car (car (cdr x))))
+(defun cadar (x) (car (cdr (car x))))
+(defun caddr (x) (car (cdr (cdr x))))
+(defun cdaar (x) (cdr (car (car x))))
+(defun cdadr (x) (cdr (car (cdr x))))
+(defun cddar (x) (cdr (cdr (car x))))
+(defun cdddr (x) (cdr (cdr (cdr x))))
 
-(defun caaaar (x) (car (car (car (car x)))))		
-(defun caaadr (x) (car (car (car (cdr x)))))		
-(defun caadar (x) (car (car (cdr (car x)))))		
-(defun caaddr (x) (car (car (cdr (cdr x)))))		
-(defun cadaar (x) (car (cdr (car (car x)))))		
-(defun cadadr (x) (car (cdr (car (cdr x)))))		
-(defun caddar (x) (car (cdr (cdr (car x)))))		
-(defun cadddr (x) (car (cdr (cdr (cdr x)))))		
-(defun cdaaar (x) (cdr (car (car (car x)))))		
-(defun cdaadr (x) (cdr (car (car (cdr x)))))		
-(defun cdadar (x) (cdr (car (cdr (car x)))))		
-(defun cdaddr (x) (cdr (car (cdr (cdr x)))))		
-(defun cddaar (x) (cdr (cdr (car (car x)))))		
-(defun cddadr (x) (cdr (cdr (car (cdr x)))))		
-(defun cdddar (x) (cdr (cdr (cdr (car x)))))		
-(defun cddddr (x) (cdr (cdr (cdr (cdr x)))))		
+(defun caaaar (x) (car (car (car (car x)))))
+(defun caaadr (x) (car (car (car (cdr x)))))
+(defun caadar (x) (car (car (cdr (car x)))))
+(defun caaddr (x) (car (car (cdr (cdr x)))))
+(defun cadaar (x) (car (cdr (car (car x)))))
+(defun cadadr (x) (car (cdr (car (cdr x)))))
+(defun caddar (x) (car (cdr (cdr (car x)))))
+(defun cadddr (x) (car (cdr (cdr (cdr x)))))
+(defun cdaaar (x) (cdr (car (car (car x)))))
+(defun cdaadr (x) (cdr (car (car (cdr x)))))
+(defun cdadar (x) (cdr (car (cdr (car x)))))
+(defun cdaddr (x) (cdr (car (cdr (cdr x)))))
+(defun cddaar (x) (cdr (cdr (car (car x)))))
+(defun cddadr (x) (cdr (cdr (car (cdr x)))))
+(defun cdddar (x) (cdr (cdr (cdr (car x)))))
+(defun cddddr (x) (cdr (cdr (cdr (cdr x)))))
 
-(defun rest (x)	(cdr x))		
+(defun rest (x)	(cdr x))
 
 (defun macroexpand (x &optional env)
 	(tagbody loop
 		(if (consp x)
 			(if (symbolp (car x))
 				(if (macro-function (car x))
-					(progn 
+					(progn
 						(setq x (funcall (macro-function (car x)) x env))
 						(go loop))))))
 	x)
@@ -102,12 +102,12 @@
 				(setq x (funcall (macro-function (car x)) x env)))))
 	x)
 
-(defun length (x) 
+(defun length (x)
 	(if (vectorp x)
 		(array-dimension x 0)
-		(let ((length 0)) 
-			(tagbody loop 
-				(if (null x) (return-from length length)) 
+		(let ((length 0))
+			(tagbody loop
+				(if (null x) (return-from length length))
 				(setq x (cdr x))
 				(setq length (+ 1 length))
 				(go loop)))))
@@ -115,27 +115,27 @@
 (defun nth (num list)
 	(if (< num 0) (return-from nth nil))
 	(tagbody loop
-		(if (<= num 0) 
+		(if (<= num 0)
 			(return-from nth (car list))
 			(setq list (cdr list)))
 		(setq num (- num 1))
 		(go loop)))
 
-(defun first (x)	(car x))		
-(defun second (x)	(cadr x))		
-(defun third (x)	(caddr x))		
-(defun fourth (x)	(cadddr x))		
-(defun fifth (x)	(car (cddddr x)))		
-(defun sixth (x)	(nth 5 x))		
-(defun seventh (x)	(nth 6 x))		
-(defun eighth (x)	(nth 7 x))		
-(defun ninth (x)	(nth 8 x))		
-(defun tenth (x)	(nth 9 x))		
+(defun first (x)	(car x))
+(defun second (x)	(cadr x))
+(defun third (x)	(caddr x))
+(defun fourth (x)	(cadddr x))
+(defun fifth (x)	(car (cddddr x)))
+(defun sixth (x)	(nth 5 x))
+(defun seventh (x)	(nth 6 x))
+(defun eighth (x)	(nth 7 x))
+(defun ninth (x)	(nth 8 x))
+(defun tenth (x)	(nth 9 x))
 
 (defun nthcdr (num list)
 	(if (< num 0) (return-from nthcdr nil))
 	(tagbody loop
-		(if (<= num 0) 
+		(if (<= num 0)
 			(return-from nthcdr list)
 			(setq list (cdr list)))
 		(setq num (- num 1))
@@ -146,9 +146,9 @@
 (defun 1- (x) (- x 1))
 (defun atom (x) (not (consp x)))
 (defun endp (x) (null x))
-		
+
 ;; set up defmacro macro
-(set-symbol-macro 
+(set-symbol-macro
 	#'(lambda (x env)
 		(declare (ignore env))
 		(let ((name (cadr x))
@@ -180,33 +180,33 @@
 					(if (null lambda-list)
 						(return-from prepare-bindings nil))
 					(if (eq state 'required-args)
-						(setq bindings 
+						(setq bindings
 							(cons `(,var (nth ,(+ 1 argnum) %x)) bindings)))
 					(if (eq state 'optional-args)
 						(let (init)
 							(if (consp var)
-								(progn 
+								(progn
 									(setq init (cadr var))
-									(setq var (car var))))		
-							(setq bindings 
-								(cons 
-									`(,var 
+									(setq var (car var))))
+							(setq bindings
+								(cons
+									`(,var
 										(if (> (length %x) ,(+ 1 argnum))
 											(nth ,(+ 1 argnum) %x)
-											,init)) 
+											,init))
 									bindings))))
 					(if (eq state 'rest-args)
-						(setq bindings 
+						(setq bindings
 							(cons `(,var (nthcdr ,(+ 1 argnum) %x)) bindings)))
 					(if (eq state 'body-args)
-						(setq bindings 
+						(setq bindings
 							(cons `(,var %x) bindings)))
 					(setq argnum (+ argnum 1))
 					(setq lambda-list (cdr lambda-list))
 					(go loop)))
 
 			`(progn
-				(set-symbol-macro 
+				(set-symbol-macro
 					(function (lambda (%x %env) (block ,name (let ,bindings ,@forms))))
 					',name)
 				',name)))
@@ -214,10 +214,10 @@
 
 (defmacro return (&rest x) `(return-from nil ,(car x)))
 
-(defun reverse (x) 
-	(let ((r nil)) 
-		(tagbody loop 
-			(if (null x) 
+(defun reverse (x)
+	(let ((r nil))
+		(tagbody loop
+			(if (null x)
 				(return-from reverse r)
 				(setq r (cons (car x) r)))
 			(setq x (cdr x))
@@ -235,7 +235,7 @@
 	(let ((lambda-list (cadr body))
 		  (forms (cddr body))
 		  (declarations nil))
-	
+
 		;; collect declarations
 		(let (form)
 			(tagbody loop
@@ -297,7 +297,7 @@
 			(go loop))
 		`(let ,(nreverse val-forms)
 			,@(nreverse var-forms)
-			nil))) 
+			nil)))
 
 (defmacro do* (varlist return-clause &whole body)
 	(let ((local-vars nil)
@@ -325,7 +325,7 @@
 			(if (consp sym)
                 (progn
                     (if (not (symbolp (car sym)))
-                    		(signal-program-error 
+                    		(signal-program-error
                     		 "Improper 'do*' variable - not a symbol: ~A" (car sym)))
     				(if (consp (cdr sym))
     						(progn
@@ -344,9 +344,9 @@
 		(setq local-vars (nreverse local-vars))
 		(setq inc-expressions `(setq ,@(nreverse inc-expressions)))
 		(if (not (consp return-clause))
-			(signal-program-error "Invalid return clause in 'do*' expression: ~A" 
+			(signal-program-error "Invalid return clause in 'do*' expression: ~A"
 				return-clause))
-		(setq return-clause 
+		(setq return-clause
 			`(if ,(car return-clause) (return (progn ,@(cdr return-clause)))))
 
 		`(prog* ,local-vars
@@ -401,9 +401,9 @@
 		(setq local-vars (nreverse local-vars))
 		(setq inc-expressions `(psetq ,@(nreverse inc-expressions)))
 		(if (not (consp return-clause))
-			(signal-program-error "Invalid return clause in 'do' expression: ~A" 
+			(signal-program-error "Invalid return clause in 'do' expression: ~A"
 				return-clause))
-		(setq return-clause 
+		(setq return-clause
 			`(if ,(car return-clause) (return (progn ,@(cdr return-clause)))))
 
 		`(prog ,local-vars
@@ -433,7 +433,7 @@
                 (if (symbolp num)
                 	(if (constantp num)
                 	  (if (fixnump (symbol-value num))
-                	    (progn 
+                	    (progn
                 	      (setq vartype 'fixnum)
                 	      (setq var-inc-expr `(the fixnum ,var-inc-expr)))))))
         `(let ((,countsym ,num))
@@ -457,7 +457,7 @@
 			,@forms)))
 
 (defmacro time (x)
-	`(let ((tm (get-internal-run-time)) 
+	`(let ((tm (get-internal-run-time))
 		   (gtm (get-gc-time))
 		   (*print-escape* nil)
 		   ret)
@@ -480,35 +480,35 @@
 		(write " milliseconds")
 		(terpri)
 ;		(format *trace-output* "Execution time: ~A seconds~%" tm)
-		ret))		
+		ret))
 
 (setq *symbol-constant-flag* 1)
 (setq *symbol-special-flag*  2)
 
 (defun symbol-set-special-flag (sym)
-	(%symbol-set-flags 
+	(%symbol-set-flags
 		(bit-or (%symbol-get-flags sym) (symbol-value '*symbol-special-flag*))
 		sym))
 
 (defun symbol-set-constant-flag (sym)
-	(%symbol-set-flags  
+	(%symbol-set-flags
 		(bit-or (%symbol-get-flags sym) (symbol-value '*symbol-constant-flag*))
 		sym))
 
-(defmacro defvar (sym val) 
-	`(progn 
+(defmacro defvar (sym val)
+	`(progn
 		(setq ,sym ,val)
 		(symbol-set-special-flag ',sym)
 		',sym))
 
-(defmacro defparameter (sym val) 
-	`(progn 
+(defmacro defparameter (sym val)
+	`(progn
 		(setq ,sym ,val)
 		(symbol-set-special-flag ',sym)
 		',sym))
 
-(defmacro defconstant (sym val) 
-	`(progn 
+(defmacro defconstant (sym val)
+	`(progn
 		(setq ,sym ,val)
 		(symbol-set-special-flag ',sym)
 		(symbol-set-constant-flag ',sym)
@@ -569,7 +569,7 @@
 ;;;    COND also turns into IF.
 ;;;
 ;; define a separate expander function because our compiler
-;; will not allow macros to be recursive (yet)						
+;; will not allow macros to be recursive (yet)
 (defun %cond-expand ())		;; avoid warning
 (defmacro cond (&rest clauses)
 	(%cond-expand clauses))
@@ -591,7 +591,7 @@
 					`(if ,test
 						(progn ,@forms)
 						(cond ,@(rest clauses))))))))
-			
+
 
 (defmacro when (test &rest forms)
 ;  "First arg is a predicate.  If it is non-null, the rest of the forms are
@@ -664,4 +664,3 @@
 (defconstant call-arguments-limit     1024)
 (defconstant lambda-parameters-limit   256)
 (defconstant multiple-values-limit     256)
-

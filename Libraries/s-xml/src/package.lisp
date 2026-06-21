@@ -32,7 +32,7 @@
    #:parse-xml-dom #:parse-xml #:parse-xml-string #:parse-xml-file
    #:print-xml-dom #:print-xml #:print-xml-string
    ;; xml-element structure
-   #:make-xml-element #:xml-element-children #:xml-element-name 
+   #:make-xml-element #:xml-element-children #:xml-element-name
    #:xml-element-attribute #:xml-element-attributes
    #:xml-element-p #:new-xml-element #:first-xml-element-child
    ;; namespaces
@@ -40,7 +40,7 @@
    #:*require-existing-symbols* #:*auto-export-symbols* #:*auto-create-namespace-packages*
    #:find-namespace #:register-namespace #:get-prefix #:get-uri #:get-package
    #:resolve-identifier #:extend-namespaces #:print-identifier #:split-identifier)
-  (:documentation 
+  (:documentation
    "A simple XML parser with an efficient, purely functional, event-based interface as well as a DOM interface"))
 
 ;;;; eof

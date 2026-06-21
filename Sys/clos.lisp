@@ -7,7 +7,7 @@
 ;;;;							  by building, compiling and caching the generic function
 ;;;;							  on the fly.
 ;;;;				RGC 10/14/99  DEFCLASS adds a type descriminator function to
-;;;;							  support TYPEP.	
+;;;;							  support TYPEP.
 ;;;;				RGC 12/06/99  Added RATIO builtin class.
 ;;;;				RGC 2/15/01	  Modified structures to be integrated better with CLOS.
 ;;;;							  i.e. CLASS-OF returns a class unique to that structure type.
@@ -39,11 +39,11 @@
 ;;;; based upon this software are permitted.  Any distribution of this
 ;;;; software or derivative works must comply with all applicable United
 ;;;; States export control laws.
-;;;; 
+;;;;
 ;;;; This software is made available AS IS, and Xerox Corporation makes no
 ;;;; warranty about the software, its performance or its conformity to any
 ;;;; specification.
-;;;; 
+;;;;
 ;;;; Closette is an implementation of a subset of CLOS with a metaobject
 ;;;; protocol as described in "The Art of The Metaobject Protocol",
 ;;;; MIT Press, 1991.
@@ -72,22 +72,22 @@
           class-direct-superclasses class-direct-slots
           class-precedence-list class-slots class-direct-subclasses
           class-direct-methods class-direct-default-initargs class-default-initargs
-          generic-function-name generic-function-lambda-list 
+          generic-function-name generic-function-lambda-list
           generic-function-methods generic-function-discriminating-function
           generic-function-method-class
           method-lambda-list method-qualifiers method-specializers method-body
           method-environment method-generic-function method-function
-          slot-definition-name slot-definition-initfunction 
+          slot-definition-name slot-definition-initfunction
           slot-definition-initform slot-definition-initargs
           slot-definition-readers slot-definition-writers
           slot-definition-allocation
           ;;
           ;; Class-related metaobject protocol
-          ;; 
+          ;;
           compute-class-precedence-list compute-slots
           compute-effective-slot-definition
           finalize-inheritance allocate-instance
-          slot-value-using-class slot-boundp-using-class 
+          slot-value-using-class slot-boundp-using-class
           slot-exists-p-using-class slot-makunbound-using-class
           ;;
           ;; Generic function related metaobject protocol
@@ -119,7 +119,7 @@
 (defconstant slot-location-generic-function-method-combination-order 9)
 
 ;;;
-;;; Utilities 
+;;; Utilities
 ;;;
 
 ;;; push-on-end is like push except it uses the other end:
@@ -142,7 +142,7 @@
 		new-value))
 
 ;;; mapappend is like mapcar except that the results are appended together:
- 
+
 (defun mapappend (fun &rest args)
 	(if (some #'null args)
 		()
@@ -159,9 +159,9 @@
 
 ;;; the method table is only used internally--optimize to the max
 (proclaim '(optimize (speed 3)(safety 0)))
-(defstruct method-table 
-	(method-list nil) 
-	(cached-method nil) 
+(defstruct method-table
+	(method-list nil)
+	(cached-method nil)
 	(cached-method-types nil)
 	(sync (cl::allocate-critical-section))
 	(eql-specializers nil))
@@ -176,7 +176,7 @@
 
 (defun add-method-table-method (table types method)
 	(with-synchronization (method-table-sync table)
-		(setf (method-table-method-list table) 
+		(setf (method-table-method-list table)
 			(cons types (cons method (method-table-method-list table))))
 		(setf (method-table-cached-method table) method)
 		(setf (method-table-cached-method-types table) types))
@@ -196,29 +196,29 @@
 ;;; Standard instances
 ;;;
 
-(defun std-instance-class (x) 
-	(if (clos-instance-p x) 
+(defun std-instance-class (x)
+	(if (clos-instance-p x)
 		(clos-instance-class x)
 		(error "Not a CLOS instance: ~S" x)))
 
-(defun (setf std-instance-class) (val x) 
-	(if (clos-instance-p x) 
+(defun (setf std-instance-class) (val x)
+	(if (clos-instance-p x)
 		(setf (uref x clos-instance-class-offset) val)
 		(error "Not a CLOS instance: ~S" x)))
 
-(defun std-instance-slots (x) 
-	(if (clos-instance-p x) 
+(defun std-instance-slots (x)
+	(if (clos-instance-p x)
 		(clos-instance-slots x)
 		(error "Not a CLOS instance: ~S" x)))
 
-(defun (setf std-instance-slots) (val x) 
-	(if (clos-instance-p x) 
+(defun (setf std-instance-slots) (val x)
+	(if (clos-instance-p x)
 		(setf (uref x clos-instance-slots-offset) val)
 		(error "Not a CLOS instance: ~S" x)))
 
 ;;; Fortunately there was an empty cell to store class signatures
 (defun std-instance-signature (x)
-    (if (clos-instance-p x) (uref x 3) (error "Not a CLOS instance: ~S" x))) 
+    (if (clos-instance-p x) (uref x 3) (error "Not a CLOS instance: ~S" x)))
 
 (defun (setf std-instance-signature) (val x)
     (if (clos-instance-p x) (setf (uref x 3) val) (error "Not a CLOS instance: ~S" x)))
@@ -244,7 +244,7 @@
 (defun std-allocate-instance (class)
 	(allocate-std-instance
 		class
-		(allocate-slot-storage 
+		(allocate-slot-storage
 			(length (class-effective-slots class)) ; class-effective-slots are the instance-slots-p slots
 			secret-unbound-value)))
 
@@ -384,15 +384,15 @@
 	})
 
 ;;; now patch (SETF SYMBOL-FUNCTION) to store the generic function
-;;; in the symbol's function slot. We call the kernel function 
+;;; in the symbol's function slot. We call the kernel function
 ;;; first to ensure that the jump table gets setup with the
 ;;; address of the discrimination function closure.
 ;;;
 (defparameter +save-set-symbol-function+ (fdefinition '(setf symbol-function)))
 (defun (setf symbol-function) (value symbol)
 	(if (standard-generic-function-p value)
-		(let ((discrimination-function 
-					(uref 
+		(let ((discrimination-function
+					(uref
 						(uref value cl::clos-instance-slots-offset)
 						(+ 2 cl::slot-location-generic-function-discriminating-function))))
 			(funcall +save-set-symbol-function+ discrimination-function symbol)
@@ -420,7 +420,7 @@
 	(if (standard-class-p object)
 		(let* ((slots (std-instance-slots object)))
 			(setf (svref slots index) new-value))
-		(setf-slot-value-using-class 
+		(setf-slot-value-using-class
 			new-value (class-of object) object slot-name)))
 
 (defun (setf std-slot-value) (new-value instance slot-name)
@@ -437,7 +437,7 @@
 (defun (setf slot-value) (new-value object slot-name) (check-update object)
 	(if (standard-class-p object)
 		(setf (std-slot-value object slot-name) new-value)
-		(setf-slot-value-using-class 
+		(setf-slot-value-using-class
 			new-value (class-of object) object slot-name)))
 
 (defun std-slot-boundp (instance slot-name)
@@ -544,9 +544,9 @@
           (direct-default-initargs :initform () :initarg :direct-default-initargs) ; :accessor class-direct-default-initargs
           (effective-default-initargs :initform ())))) ; :accessor class-default-initargs
 
-;;; Defining the metaobject slot accessor function as regular functions 
+;;; Defining the metaobject slot accessor function as regular functions
 ;;; greatly simplifies the implementation without removing functionality.
- 
+
 (defun class-name (class) (std-slot-value class 'name))
 (defun (setf class-name) (new-value class) (setf (slot-value class 'name) new-value))
 
@@ -597,10 +597,10 @@
 			     :direct-slots
 			       ,(canonicalize-direct-slots slot-definitions)
 			     ,@(canonicalize-defclass-options options)))
-	
+
 (defun canonicalize-direct-slots (slot-definitions)
    `(list ,@(mapcar #'canonicalize-direct-slot slot-definitions)))
-	
+
 (defun canonicalize-direct-slot (spec)
 	(if (symbolp spec) `(list :name ',spec)
                         (let ((name (car spec))
@@ -610,7 +610,7 @@
 			  (readers ())
 			  (writers ())
 			  (other-options ()))
-			
+
                                     (do ((olist (cdr spec) (cddr olist)))
 				((null olist))
 				(case (car olist)
@@ -621,10 +621,10 @@
 					(:initarg (push-on-end (cadr olist) initargs))
 					(:reader (push-on-end (cadr olist) readers))
 					(:writer (push-on-end (cadr olist) writers))
-					(:accessor 
+					(:accessor
 						(push-on-end (cadr olist) readers)
 						(push-on-end `(setf ,(cadr olist)) writers))
-					(otherwise 
+					(otherwise
 						(push-on-end `',(car olist) other-options)
 						(push-on-end `',(cadr olist) other-options))))
 			`(list
@@ -695,7 +695,7 @@
 ;;; standard-class without falling into method lookup.  However, it cannot be
 ;;; called until standard-class itself exists.
 
-(defun make-instance-standard-class (metaclass 
+(defun make-instance-standard-class (metaclass
 		&key name direct-superclasses direct-slots &allow-other-keys)
 	(declare (ignore metaclass))
 	(let ((class (std-allocate-instance the-class-standard-class)))
@@ -711,7 +711,7 @@
                         (std-finalize-inheritance class)
 		class))
 
-(defun std-after-initialization-for-classes (class 
+(defun std-after-initialization-for-classes (class
 		&key direct-superclasses direct-slots (documentation nil supp) &allow-other-keys)
 	;; update class hierarchy
 	(let ((supers
@@ -720,7 +720,7 @@
 		(setf (class-direct-superclasses class) supers)
 		(dolist (superclass supers)
 			(pushnew class (class-direct-subclasses superclass)))) ; pushnew to add
-	
+
 	(let ((slots
 				(mapcar #'(lambda (slot-properties)
 						(apply #'make-direct-slot-definition
@@ -813,7 +813,7 @@
 (defun finalize-inheritance (class) (std-finalize-inheritance class))
 
 ; Delete either the slot class-shared-slot-definitions or class-shared-slots as shared slots are in both
-; but leave for compatibility and speed? for now. 
+; but leave for compatibility and speed? for now.
 (defun std-finalize-inheritance (class)
   (setf (class-precedence-list class) (compute-class-precedence-list class))
   (let* ((class-slots (compute-slots class)) (shared-defs (remove-if #'instance-slot-p class-slots))
@@ -872,15 +872,15 @@
 ;;; sorting an arbitrary set of elements while honoring the precedence
 ;;; constraints given by a set of (X,Y) pairs that indicate that element
 ;;; X must precede element Y.  The tie-breaker procedure is called when it
-;;; is necessary to choose from multiple minimal elements; both a list of 
+;;; is necessary to choose from multiple minimal elements; both a list of
 ;;; candidates and the ordering so far are provided as arguments.
 
 (defun topological-sort (elements constraints tie-breaker)
   (let ((remaining-constraints constraints)
         (remaining-elements elements)
-        (result ())) 
+        (result ()))
     (loop
-     (let ((minimal-elements 
+     (let ((minimal-elements
             (remove-if
              #'(lambda (class)
                  (member class remaining-constraints
@@ -908,7 +908,7 @@
 ;;; rightmost in the class precedence list computed so far."  The same result
 ;;; is obtained by inspecting the partially constructed class precedence list
 ;;; from right to left, looking for the first minimal element to show up among
-;;; the direct superclasses of the class precedence list constituent.  
+;;; the direct superclasses of the class precedence list constituent.
 ;;; (There's a lemma that shows that this rule yields a unique result.)
 
 (defun std-tie-breaker-rule (minimal-elements cpl-so-far)
@@ -940,7 +940,7 @@
 ;;; C_2, ..., C_n is the set ((C C_1) (C_1 C_2) ...(C_n-1 C_n)).
 
 (defun local-precedence-ordering (class)
-  (mapcar #'list 
+  (mapcar #'list
           (cons class
                 (butlast (class-direct-superclasses class)))
           (class-direct-superclasses class)))
@@ -952,7 +952,7 @@
 (defun std-compute-slots (class)
   (let* ((all-slots (nreverse (mapappend #'class-direct-slots
                                (reverse (class-precedence-list class)))))
-         (all-names (remove-duplicates 
+         (all-names (remove-duplicates
                       (mapcar #'slot-definition-name all-slots))))
     (nreverse (mapcar #'(lambda (name)
                 (compute-effective-slot-definition
@@ -1001,7 +1001,7 @@
           (lambda-list               ; :accessor generic-function-lambda-list
            :initarg :lambda-list)
           (required-args             ; :accessor generic-function-required-args
-           :initarg :required-args)          
+           :initarg :required-args)
           (methods :initform ())     ; :accessor generic-function-methods
           (method-class              ; :accessor generic-function-method-class
            :initarg :method-class)
@@ -1016,108 +1016,108 @@
 (defvar the-class-standard-gf)  ;standard-generic-function's class metaobject
 
 (defun generic-function-name (gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
+	(if (eq (class-of gf) the-class-standard-gf)
 		(slot-value-with-index gf 'name slot-location-generic-function-name)
 		(slot-value gf 'name)))
 
 (defun (setf generic-function-name) (new-value gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-		(setf (slot-value-with-index gf 'name slot-location-generic-function-name) 
+	(if (eq (class-of gf) the-class-standard-gf)
+		(setf (slot-value-with-index gf 'name slot-location-generic-function-name)
 			new-value)
 		(setf (slot-value gf 'name) new-value)))
 
 (defun generic-function-required-args (gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-		(slot-value-with-index gf 'required-args 
+	(if (eq (class-of gf) the-class-standard-gf)
+		(slot-value-with-index gf 'required-args
 			slot-location-generic-function-required-args)
 		(slot-value gf 'required-args)))
- 
+
 (defun (setf generic-function-required-args) (new-value gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-  		(setf (slot-value-with-index gf 
-			'required-args slot-location-generic-function-required-args) 
+	(if (eq (class-of gf) the-class-standard-gf)
+  		(setf (slot-value-with-index gf
+			'required-args slot-location-generic-function-required-args)
 		new-value)
 		(setf (slot-value gf 'required-args) new-value)))
 
 (defun generic-function-lambda-list (gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-		(slot-value-with-index gf 'lambda-list 
+	(if (eq (class-of gf) the-class-standard-gf)
+		(slot-value-with-index gf 'lambda-list
 			slot-location-generic-function-lambda-list)
 		(slot-value gf 'lambda-list)))
 
 (defun (setf generic-function-lambda-list) (new-value gf)
 	(if (eq (class-of gf) the-class-standard-gf)
 		(progn
-	  		(setf (generic-function-required-args gf) 
+	  		(setf (generic-function-required-args gf)
 				(getf (analyze-lambda-list new-value) ':required-args))
-	  		(setf (slot-value-with-index gf 'lambda-list 
-				slot-location-generic-function-lambda-list) 
+	  		(setf (slot-value-with-index gf 'lambda-list
+				slot-location-generic-function-lambda-list)
 				new-value))
 		(setf (slot-value gf 'lambda-list) new-value)))
 
 (defun generic-function-methods (gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
+	(if (eq (class-of gf) the-class-standard-gf)
 		(slot-value-with-index gf 'methods slot-location-generic-function-methods)
 		(slot-value gf 'methods)))
 
 (defun (setf generic-function-methods) (new-value gf)
- 	(if (eq (class-of gf) the-class-standard-gf) 
- 		(setf (slot-value-with-index gf 'methods slot-location-generic-function-methods) 
+ 	(if (eq (class-of gf) the-class-standard-gf)
+ 		(setf (slot-value-with-index gf 'methods slot-location-generic-function-methods)
 			new-value)
 		(setf (slot-value gf 'methods) new-value)))
 
 (defun generic-function-discriminating-function (gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-  		(slot-value-with-index gf 'discriminating-function 
+	(if (eq (class-of gf) the-class-standard-gf)
+  		(slot-value-with-index gf 'discriminating-function
 			slot-location-generic-function-discriminating-function)
 		(slot-value gf 'discriminating-function)))
 
 (defun (setf generic-function-discriminating-function) (new-value gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-  		(setf (slot-value-with-index gf 'discriminating-function 
-			slot-location-generic-function-discriminating-function) 
+	(if (eq (class-of gf) the-class-standard-gf)
+  		(setf (slot-value-with-index gf 'discriminating-function
+			slot-location-generic-function-discriminating-function)
 			new-value)
 		(setf (slot-value gf 'discriminating-function) new-value)))
 
 (defun generic-function-method-class (gf)
- 	(if (eq (class-of gf) the-class-standard-gf) 
- 		(slot-value-with-index gf 'method-class 
+ 	(if (eq (class-of gf) the-class-standard-gf)
+ 		(slot-value-with-index gf 'method-class
 			slot-location-generic-function-method-class)
 		(slot-value gf 'method-class)))
 
 (defun (setf generic-function-method-class) (new-value gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-	  	(setf (slot-value-with-index gf 'method-class 
-				slot-location-generic-function-method-class) 
+	(if (eq (class-of gf) the-class-standard-gf)
+	  	(setf (slot-value-with-index gf 'method-class
+				slot-location-generic-function-method-class)
 			new-value)
 		(setf (slot-value gf 'method-class) new-value)))
 
 ;;; Internal accessor for effective method function table
 
 (defun classes-to-emf-table (gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-  		(slot-value-with-index gf 'classes-to-emf-table 
+	(if (eq (class-of gf) the-class-standard-gf)
+  		(slot-value-with-index gf 'classes-to-emf-table
 			slot-location-generic-function-classes-to-emf-table)
 		(slot-value gf 'classes-to-emf-table)))
 
 (defun (setf classes-to-emf-table) (new-value gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-	  	(setf (slot-value-with-index gf 'classes-to-emf-table 
-				slot-location-generic-function-classes-to-emf-table) 
+	(if (eq (class-of gf) the-class-standard-gf)
+	  	(setf (slot-value-with-index gf 'classes-to-emf-table
+				slot-location-generic-function-classes-to-emf-table)
 			new-value)
 		(setf (slot-value gf 'classes-to-emf-table) new-value)))
 
 (defun (setf generic-function-method-combination) (new-value gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-	  	(setf (slot-value-with-index gf 'method-combination 
-				slot-location-generic-function-method-combination) 
+	(if (eq (class-of gf) the-class-standard-gf)
+	  	(setf (slot-value-with-index gf 'method-combination
+				slot-location-generic-function-method-combination)
 			new-value)
 		(setf (slot-value gf 'method-combination) new-value)))
 
 (defun (setf generic-function-method-combination-order) (new-value gf)
-	(if (eq (class-of gf) the-class-standard-gf) 
-	  	(setf (slot-value-with-index gf 'method-combination-order 
-				slot-location-generic-function-method-combination-order) 
+	(if (eq (class-of gf) the-class-standard-gf)
+	  	(setf (slot-value-with-index gf 'method-combination-order
+				slot-location-generic-function-method-combination-order)
 			new-value)
 		(setf (slot-value gf 'method-combination-order) new-value)))
 
@@ -1177,10 +1177,10 @@
                 (non-method-options (remove-if #'is-method-option options))
                 (documentation-form
                     (let ((doc-string (cadr (find-if #'(lambda (opt) (eq (car opt) :documentation)) non-method-options))))
-                        (when doc-string `(setf (documentation ',function-name 'function) ,doc-string)))))            
+                        (when doc-string `(setf (documentation ',function-name 'function) ,doc-string)))))
             `(prog1
                 (ensure-generic-function
-                    ',function-name 
+                    ',function-name
                     :lambda-list ',lambda-list
                     ,@(canonicalize-defgeneric-options non-method-options))
                 ,(when documentation-form documentation-form)
@@ -1204,7 +1204,7 @@
 
 ;;; find-generic-function looks up a generic function by name.  It's an
 ;;; artifact of the fact that our generic function metaobjects can't legally
-;;; be stored a symbol's function value. 
+;;; be stored a symbol's function value.
 
 (let ((generic-function-table (make-hash-table :test #'equal :synchronized t)))
 
@@ -1251,7 +1251,7 @@
              (method-class the-class-standard-method)
 			 lambda-list
         &allow-other-keys)
-  (if (find-generic-function function-name nil) 
+  (if (find-generic-function function-name nil)
       (find-generic-function function-name)
       (let ((gf (apply (if (eq generic-function-class the-class-standard-gf)
                            #'make-instance-standard-generic-function
@@ -1266,8 +1266,8 @@
 
 ;;; finalize-generic-function
 
-;;; Same basic idea as finalize-inheritance.  
-;;; Takes care of recomputing and storing the discriminating 
+;;; Same basic idea as finalize-inheritance.
+;;; Takes care of recomputing and storing the discriminating
 ;;; function, and clearing the effective method function table.
 
 (defun finalize-generic-function (gf)
@@ -1287,12 +1287,12 @@
 ;;; However, it cannot be called until standard-generic-function exists.
 
 (defun make-instance-standard-generic-function
-       (generic-function-class 
-        &key 
+       (generic-function-class
+        &key
             name
             documentation
-            lambda-list 
-            method-class 
+            lambda-list
+            method-class
             (method-combination 'standard)
             (method-combination-order ':most-specific-first)
             &allow-other-keys)
@@ -1301,8 +1301,8 @@
     (setf (generic-function-name gf) name)
     (setf (class-documentation gf) documentation)
     (setf (generic-function-lambda-list gf) lambda-list)
-    (setf (generic-function-methods gf) ()) 
-    (setf (generic-function-method-class gf) method-class) 
+    (setf (generic-function-methods gf) ())
+    (setf (generic-function-method-class gf) method-class)
     (setf (classes-to-emf-table gf) (make-method-table))
     (setf (generic-function-method-combination gf) method-combination)
     (setf (generic-function-method-combination-order gf) method-combination-order)
@@ -1319,7 +1319,7 @@
 	   :generic-function-name ',function-name
        :lambda-list ',lambda-list
        :qualifiers ',qualifiers
-       :specializers ,(canonicalize-specializers specializers) 
+       :specializers ,(canonicalize-specializers specializers)
        :body ',body
        :environment (funcall (lambda () (cl::capture-compiler-environment)))#| nil |#
 	   #| :eql-specializers (some #'(lambda (x) (and (listp x)(eq (car x) 'EQL))) ',specializers) |#)))
@@ -1353,7 +1353,7 @@
 		(do* ((a (cdr args))
 			  (arg (car a)(car a)))
 			((null a))
-			(cond 
+			(cond
 				((eq parse-state :qualifiers)
 					(if (and (atom arg) (not (null arg)))
 						(progn
@@ -1371,7 +1371,7 @@
     						(progn
     							(push-on-end arg decls)
     							(setf a (cdr a)))
-                            (setq parse-state :body))))                    
+                            (setq parse-state :body))))
 				((eq parse-state :body)
 					(push-on-end arg body)
 					(setf a (cdr a)))))
@@ -1395,7 +1395,7 @@
 ;;; Several tedious functions for analyzing lambda lists
 (defun gf-required-arglist (gf)
 	(generic-function-required-args gf))
- 
+
 (defun required-portion (gf args)
 	(let ((required-args (generic-function-required-args gf))
 		  (new-args nil))
@@ -1416,7 +1416,7 @@
          (aok (getf plist ':allow-other-keys))
          (opts (getf plist ':optional-args))
          (auxs (getf plist ':auxiliary-args)))
-    `(,@requireds 
+    `(,@requireds
       ,@(if opts `(&optional ,@opts) ())
       ,@(if rv `(&rest ,rv) ())
       ,@(if (or ks aok) `(&key ,@ks) ())
@@ -1461,7 +1461,7 @@
             (&aux
               (setq state :parsing-aux)))
           (case state
-            (:parsing-required 
+            (:parsing-required
              (push-on-end arg required-args)
              (if (listp arg)
                  (progn (push-on-end (car arg) required-names)
@@ -1489,25 +1489,25 @@
 (defun ensure-method (gf &rest all-keys #| &key eql-specializers &allow-other-keys |#)
 	(if (null gf)
 		;; define a generic function on the fly
-		(setf gf 
-			(ensure-generic-function 
-				(getf all-keys :generic-function-name) 
+		(setf gf
+			(ensure-generic-function
+				(getf all-keys :generic-function-name)
 				':lambda-list (getf all-keys :lambda-list))))
-	
+
 	;; as soon as we define one method with an EQL specifier, we assume
 	;; methods of that generic function may specify this way
 	;(if eql-specializers ** redundantly too soon as add-method has to, for it can be called by the user
 	;	(setf (method-table-eql-specializers (classes-to-emf-table gf)) t))
-	
+
 	(let ((new-method
           	(apply
               (if (eq (generic-function-method-class gf)
                       the-class-standard-method)
-                  #'make-instance-standard-method 
+                  #'make-instance-standard-method
                   #'make-instance)
               (generic-function-method-class gf)
               all-keys)))
-    (setf (class-name new-method) (getf all-keys :generic-function-name)) 
+    (setf (class-name new-method) (getf all-keys :generic-function-name))
     (add-method gf new-method)
     new-method))
 
@@ -1515,8 +1515,8 @@
 ;;; standard-method without falling into method lookup.  However, it cannot
 ;;; be called until standard-method exists.
 
-(defun make-instance-standard-method (method-class 
-                                      &key lambda-list qualifiers 
+(defun make-instance-standard-method (method-class
+                                      &key lambda-list qualifiers
                                            specializers body environment
 									  &allow-other-keys)
   (declare (ignore method-class))
@@ -1528,7 +1528,7 @@
     (setf (method-body method) body)
     (setf (method-environment method) environment)
     (setf (method-generic-function method) nil)
-    (setf (method-function method) 
+    (setf (method-function method)
           (std-compute-method-function method))
     method))
 
@@ -1607,7 +1607,7 @@
 
 (defun add-writer-method (class fn-name slot-name)
   (ensure-method
-    (ensure-generic-function 
+    (ensure-generic-function
       fn-name :lambda-list '(new-value object))
     :lambda-list '(new-value object)
     :qualifiers ()
@@ -1620,7 +1620,7 @@
 (defun add-class-slot-writer-method (class fn-name slot-name index)
 	(declare (ignore slot-name))
   (ensure-method
-    (ensure-generic-function 
+    (ensure-generic-function
       fn-name :lambda-list '(new-value object))
     :lambda-list '(new-value object)
     :qualifiers ()
@@ -1698,14 +1698,14 @@
 
 (defun compute-applicable-methods-using-classes
        (gf required-classes)
-  (sort 
+  (sort
     (copy-list
       (remove-if-not #'(lambda (method)
                          (every #'subclassp
                                 required-classes
                                 (method-specializers method)))
                      (generic-function-methods gf)))
-    #'(lambda (m1 m2) 
+    #'(lambda (m1 m2)
         (funcall
           (if (eq (class-of gf) the-class-standard-gf)
               #'std-method-more-specific-p
@@ -1727,7 +1727,7 @@
 		(unless (eq spec1 spec2)
 			(return-from std-method-more-specific-p
 				(sub-specializer-p spec1 spec2 arg-class)))))
-	
+
 ;(setq cl::*compiler-warn-on-dynamic-return* t)
 
 ;;; apply-methods and compute-effective-method-function
@@ -1770,12 +1770,12 @@
 				   (befores (remove-if-not #'before-method-p methods))
 				   (reverse-afters
 						(reverse (remove-if-not #'after-method-p methods)))
-				   (before-calls 
-						(mapcar #'(lambda (before) 
+				   (before-calls
+						(mapcar #'(lambda (before)
 									`(funcall ,(method-function before) args nil))
 							befores))
-				   (after-calls 
-						(mapcar #'(lambda (after) 
+				   (after-calls
+						(mapcar #'(lambda (after)
 									`(funcall ,(method-function after) args nil))
 							reverse-afters)))
 				(if after-calls
@@ -1797,7 +1797,7 @@
 (defun compute-primary-emfun (methods)
   (if (null methods)
       nil
-      (let ((next-emfun (compute-primary-emfun (cdr methods))))               
+      (let ((next-emfun (compute-primary-emfun (cdr methods))))
         #'(lambda (args)
             (funcall (method-function (car methods)) args next-emfun)))))
 
@@ -1823,7 +1823,7 @@
 (defun std-compute-method-function (method)
 	(let ((form (macroexpand-all (cons 'progn (method-body method))))
 		  (lambda-list (method-lambda-list method)))
-		(if (or (search-tree form 'call-next-method) 
+		(if (or (search-tree form 'call-next-method)
 				(search-tree form 'next-method-p))
 			(compile-in-lexical-environment (method-environment method)
 				`(lambda (args next-emfun)
@@ -1841,7 +1841,7 @@
 					(apply #'(lambda ,(kludge-arglist lambda-list) ,@(cdr form)) args))))))
 
 ;;; N.B. The function kludge-arglist is used to pave over the differences
-;;; between argument keyword compatibility for regular functions versus 
+;;; between argument keyword compatibility for regular functions versus
 ;;; generic functions.
 ;;; RGC--17 Aug 2006--modified to handle &aux lambda list variables.
 ;;;
@@ -1872,11 +1872,11 @@
 
 ;;;;
 ;;;;	Common Lisp FUNCALL function.
-;;;;	Modified here to allow Standard-Generic-Functions as the 
+;;;;	Modified here to allow Standard-Generic-Functions as the
 ;;;;    first argument.
 ;;;;
 (in-package :x86)
-(defasm funcall (func &rest args) 
+(defasm funcall (func &rest args)
 	{
 		push	ebp
 		mov		ebp, esp
@@ -1930,8 +1930,8 @@
 		cmp 	edx, uvector-function-tag
 		jne		short :t6
 	:t11
-		mov		edi, [eax + (- (* 4 function-environment-offset) uvector-tag)] 
-		callfunc	eax	
+		mov		edi, [eax + (- (* 4 function-environment-offset) uvector-tag)]
+		callfunc	eax
 		jmp		short :t8
 	:t6
 		cmp 	edx, uvector-kfunction-tag
@@ -1939,7 +1939,7 @@
 		mov		edi, [esi]		;; environment for kfunctions is always NIL
 		call	[eax + (- (* function-code-buffer-offset 4) uvector-tag)]
 		jmp		short :t8
-	:t10 
+	:t10
 		cmp		edx, uvector-clos-instance-tag
 		jne		short :t7
 		mov		edx, [eax + (uvector-offset cl::clos-instance-class-offset)]	;; edx = clos class
@@ -1967,7 +1967,7 @@
 
 ;;;;
 ;;;;	Common Lisp APPLY function.
-;;;;	Modified here to allow Standard-Generic-Functions as the 
+;;;;	Modified here to allow Standard-Generic-Functions as the
 ;;;;    first argument.
 ;;;;
 (defasm apply (func &rest args)
@@ -2037,8 +2037,8 @@
 		cmp 	edx, uvector-function-tag
 		jne		short :t9
 	:t13
-		mov		edi, [eax + (- (* 4 function-environment-offset) uvector-tag)] 
-		callfunc	eax	
+		mov		edi, [eax + (- (* 4 function-environment-offset) uvector-tag)]
+		callfunc	eax
 		jmp		short :t11
 	:t9
 		cmp 	edx, uvector-kfunction-tag
@@ -2046,7 +2046,7 @@
 		mov		edi, [esi]		;; environment for kfunctions is always NIL
 		call	[eax + (- (* function-code-buffer-offset 4) uvector-tag)]
 		jmp		short :t11
-	:t12 
+	:t12
 		cmp		edx, uvector-clos-instance-tag
 		jne		short :t10
 		mov		edx, [eax + (uvector-offset cl::clos-instance-class-offset)]	;; edx = clos class
@@ -2099,7 +2099,7 @@
 		mov		edx, [edx + (uvector-offset cl::symbol-value-offset)]
 		mov		edx, [edx - cons-tag]
 		cmp		eax, edx												;; class = the-class-standard-gf?
-		jne		short :nil-exit	
+		jne		short :nil-exit
 	:t-exit
 		mov		eax, [esi + t-offset]
 		jmp		short :exit
@@ -2110,7 +2110,7 @@
 		ret
 	})
 
-(defasm cl::execution-address (func &rest args) 
+(defasm cl::execution-address (func &rest args)
 	{
 		push	ebp
 		mov		ebp, esp
@@ -2158,7 +2158,7 @@
 		jne		short :t10
 		mov		eax, [eax + (uvector-offset function-code-buffer-offset)]
 		jmp		short :got-addr
-	:t10 
+	:t10
 		cmp		edx, uvector-clos-instance-tag
 		jne		short :t7
 		mov		edx, [eax + (uvector-offset cl::clos-instance-class-offset)]	;; edx = clos class
@@ -2233,15 +2233,15 @@
          'tba
          (make-array (length the-slots-of-standard-class)
                      :initial-element secret-unbound-value)))
-;; 3. Install standard-class's (circular) class-of link. 
-(setf (std-instance-class the-class-standard-class) 
+;; 3. Install standard-class's (circular) class-of link.
+(setf (std-instance-class the-class-standard-class)
       the-class-standard-class)
 ;; (It's now okay to use class-... accessor).
 ;; 4. Fill in standard-class's class-slots.
 (setf (class-effective-slots the-class-standard-class) the-slots-of-standard-class)
 ;; (Skeleton built; it's now okay to call make-instance-standard-class.)
 ;; 5. Hand build the class t so that it has no direct superclasses.
-(setf (find-class 't) 
+(setf (find-class 't)
   (let ((class (std-allocate-instance the-class-standard-class)))
     (setf (class-name class) 't)
     (setf (class-documentation class) ())
@@ -2274,7 +2274,7 @@
                                      (install-type-specifier x #'(lambda (s1 s2)
                                                                                   (and (cl::clos-instance-p s1)
                                                                                           (cl::subclassp (class-of s1) (find-class s2)))))))
-    '(t standard-object metaobject forward-referenced-class specializer class standard-class)) 
+    '(t standard-object metaobject forward-referenced-class specializer class standard-class))
 ;; (Clear sailing from here on in).
 ;; 9. Define the other built-in classes.
 (defclass symbol (t) ())
@@ -2339,9 +2339,9 @@
 (defmethod slot-value-using-class ((class standard-class) instance slot-name)
 	(declare (ignore class))
 	(std-slot-value instance slot-name))
-	
+
 (defgeneric (setf slot-value-using-class) (new-value class instance slot-name))
-(defmethod (setf slot-value-using-class) 
+(defmethod (setf slot-value-using-class)
 	(new-value (class standard-class) instance slot-name)
 	(declare (ignore class))
 	(setf (std-slot-value instance slot-name) new-value))
@@ -2417,7 +2417,7 @@
                      ; standard-generic-function and standard-method. Standard-class only for now.
             (and (subclassp class #.(find-class 'metaobject))
                 (or (eq class the-class-standard-class) (not (subclassp class the-class-standard-class))))
-            (setf (std-instance-signature instance) 
+            (setf (std-instance-signature instance)
                 (list (class-effective-slots class) (class-shared-slot-definitions class))))
         instance))
 
@@ -2439,7 +2439,7 @@
   (apply #'shared-initialize instance () initargs))
 
 (defgeneric shared-initialize (instance slot-names &key))
-(defmethod shared-initialize ((instance standard-object) 
+(defmethod shared-initialize ((instance standard-object)
                               slot-names &rest all-keys)
   (dolist (slot (class-slots (class-of instance)))
     (let ((slot-name (slot-definition-name slot)))
@@ -2473,13 +2473,13 @@
                                (class-effective-slots new-class)))
       (when (and (slot-exists-p old-instance slot-name)
                  (slot-boundp old-instance slot-name))
-        (setf (slot-value new-instance slot-name) 
+        (setf (slot-value new-instance slot-name)
               (slot-value old-instance slot-name))))
-    (rotatef (std-instance-slots new-instance) 
+    (rotatef (std-instance-slots new-instance)
              (std-instance-slots old-instance))
-    (rotatef (std-instance-class new-instance) 
+    (rotatef (std-instance-class new-instance)
              (std-instance-class old-instance))
-    (rotatef (std-instance-signature new-instance) 
+    (rotatef (std-instance-signature new-instance)
              (std-instance-signature old-instance))
     (apply #'update-instance-for-different-class
            new-instance old-instance initargs)
@@ -2490,9 +2490,9 @@
   (apply #'change-class instance (find-class new-class) initargs))
 
 (defgeneric update-instance-for-different-class (old new &key))
-(defmethod update-instance-for-different-class 
+(defmethod update-instance-for-different-class
            ((old standard-object) (new standard-object) &rest initargs)
-  (let ((added-slots 
+  (let ((added-slots
           (remove-if #'(lambda (slot-name)
                          (slot-exists-p old slot-name))
                      (mapcar #'slot-definition-name
@@ -2525,7 +2525,7 @@
   (setf (class-precedence-list class)
         (compute-class-precedence-list class))
   (values))
-(defmethod finalize-inheritance ((class standard-class)) 
+(defmethod finalize-inheritance ((class standard-class))
   (std-finalize-inheritance class)
   (values))
 
@@ -2538,7 +2538,7 @@
 ;;; Slot inheritance
 
 (defgeneric compute-slots (class))
-(defmethod compute-slots ((class standard-class)) 
+(defmethod compute-slots ((class standard-class))
   (std-compute-slots class))
 
 (defgeneric compute-effective-slot-definition (class direct-slots))
@@ -2578,7 +2578,7 @@
   (std-compute-discriminating-function gf))
 
 (defgeneric method-more-specific-p (gf method1 method2 required-classes))
-(defmethod method-more-specific-p 
+(defmethod method-more-specific-p
            ((gf standard-generic-function) method1 method2 required-classes)
   (std-method-more-specific-p gf method1 method2 required-classes))
 
@@ -2603,7 +2603,7 @@
 	(dolist (sn (mapcar #'slot-definition-name
                       (class-slots (class-of object))))
 		(format stream "~4T~A: ~:[not bound~;~S~]~%"
-            (string-downcase (symbol-name sn)) 
+            (string-downcase (symbol-name sn))
             (slot-boundp object sn)
             (and (slot-boundp object sn)
                  (slot-value object sn))))
@@ -2636,12 +2636,12 @@
 ;;; add class redefinition functionality
 
 ;;; t for the amop. nil can be useful for development.
-;;; By carefully violating the amop rules we can get a glance at finalized classes.  
+;;; By carefully violating the amop rules we can get a glance at finalized classes.
 (defparameter *lazy-finalize*)
 
 (defmethod initialize-instance :after ((class eql-specializer) &key) (finalize-inheritance class)) ; always finalized
 
-(defmethod reinitialize-instance :after ((class class) &rest args) ; leave open; funcallable-standard-class? 
+(defmethod reinitialize-instance :after ((class class) &rest args) ; leave open; funcallable-standard-class?
     (apply #'std-after-initialization-for-classes class args))
 
 ;;;
@@ -2666,7 +2666,7 @@
                          (cons class (collect-subclasses class)))))
         (when *lazy-finalize*
             (let ((forward (find-if #'forward-referenced-class-p direct-superclasses)))
-                (when (and forward (eq class (car subs))) 
+                (when (and forward (eq class (car subs)))
                     (error "Cannot redefine finalized ~a~%;;; with an undefined ~a" class forward))))
         (remove-read-write-methods class)
         (unless (lists-match (class-direct-superclasses class) direct-superclasses)
@@ -2743,12 +2743,12 @@
 					(push (second varslot) slots))
 				(t	(error "Invalid WITH-SLOTS slot entry: ~S" varslot))))
 		`(LET ((,sym ,instance-form))
-			(SYMBOL-MACROLET 
+			(SYMBOL-MACROLET
 				,(mapcar #'(lambda (v s) `(,v (slot-value ,sym ',s)))
 					(nreverse vars)
 					(nreverse slots))
 				,@forms))))
-		
+
 (defun intern-structure-class (name superclass doc)
     (ensure-class name
                            :direct-superclasses (list (or (and superclass (find-class superclass)) #.(find-class 'structure-object)))
@@ -2759,9 +2759,9 @@
 	(get struct-name :struct-template))
 
 (defun patch-clos (struct-name)
-	(setf (elt (struct-template struct-name) 1) 
+	(setf (elt (struct-template struct-name) 1)
 		(intern-structure-class struct-name nil (documentation struct-name 'structure))))
-	
+
 ;; make sure the following common lisp structures (which are defined before
 ;; this module is loaded) have CLOS definitions
 (patch-clos 'hash-table)
@@ -2774,7 +2774,7 @@
 ;;; EQL specializer support
 
 ;;; Returns a CLOS class representing a type that is specific
-;;;	for the object. Used in defmethod to implement EQL 
+;;;	for the object. Used in defmethod to implement EQL
 ;;;	specialisers.
 
 (defun intern-eql-specializer (object &optional (intern-form object))
@@ -2810,7 +2810,7 @@
 					(push (second varslot) slots))
 				(t	(error "Invalid WITH-ACCESSORS slot entry: ~S" varslot))))
 		`(LET ((,sym ,instance-form))
-			(SYMBOL-MACROLET 
+			(SYMBOL-MACROLET
 				,(mapcar #'(lambda (v s) `(,v (,s ,sym)))
 					(nreverse vars)
 					(nreverse slots))
@@ -2839,8 +2839,3 @@
 ;;;
 (defun write-lisp-object (object)
     (print-object object *standard-output*))
-
-
-
-
-

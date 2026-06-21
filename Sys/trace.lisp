@@ -71,7 +71,7 @@
 											(force-output *trace-output*)
 											(apply #'values ret)))
 									(apply orig-function x))))
-    (setf *traced-functions* 
+    (setf *traced-functions*
           (adjoin (cons function-name orig-function) *traced-functions*
                   :key #'car :test #'eq))))
 
@@ -124,7 +124,7 @@
 											(force-output *trace-output*)
 											(apply #'values ret)))
 									(funcall orig-macro-function form env))))
-    (setf *traced-functions* 
+    (setf *traced-functions*
 					(adjoin (cons macro-name orig-macro-function) *traced-functions*
 									:key #'car :test #'eq))))
 
@@ -162,7 +162,7 @@
 	    (orig-func (cadr m) (cadr m)))
 	   ((null m))
 	(setf (cl::method-function method) orig-func))
-      (setf *traced-functions* 
+      (setf *traced-functions*
 	    (remove func-name *traced-functions* :key #'car :test #'eq))
       (cl::clear-method-table (cl::classes-to-emf-table gf)))))
 
@@ -170,16 +170,16 @@
   (let* ((saved-func (cdar (member func-name *traced-functions* :key #'car :test #'eq))))
     (when saved-func)
     (setf (symbol-function func-name) saved-func)
-    (setf *traced-functions* 
-	  (remove func-name *traced-functions* :key #'car :test #'eq))))       
+    (setf *traced-functions*
+	  (remove func-name *traced-functions* :key #'car :test #'eq))))
 
 (defun my-unregister-traced-macro (macro-name)
   (let* ((saved-macro (cdar (member macro-name *traced-functions* :key #'car :test #'eq))))
     (when saved-macro)
     (setf (macro-function macro-name) saved-macro)
-    (setf *traced-functions* 
+    (setf *traced-functions*
 	  (remove macro-name *traced-functions* :key #'car :test #'eq))))
-             
+
 (defun my-%unregister-traced-functions (funcs)
   (dolist (func funcs)
     (cond
@@ -227,13 +227,13 @@
 (defun room	()
 	(gc 3)				;; flush all ephemeral heaps
 	(format t "~%Total heap size: ~A bytes. Heap available: ~A bytes.~%"
-			(heap-capacity) 
+			(heap-capacity)
 			(- (heap-capacity) (heap-currently-used)))
 	(format t "Jump table size:	~A entries. Entries available: ~A.~%"
-			(jump-table-capacity) 
+			(jump-table-capacity)
 			(- (jump-table-capacity) (jump-table-used)))
 	(format t "Global symbol table size:	~A entries. Entries available: ~A.~%"
-			(symbol-table-capacity) 
+			(symbol-table-capacity)
 			(- (symbol-table-capacity) (symbol-table-used))))
 
 (defun funcall-ignoring-errors (func &rest args)

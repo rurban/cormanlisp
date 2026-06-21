@@ -46,4 +46,3 @@
 	  (setf (slot-value bar 'c) 777)
 	  (slot-value bar 'c)
 	  (slot-value baz 'y))))
-

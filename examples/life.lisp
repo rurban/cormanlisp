@@ -6,7 +6,7 @@
 ;;;;	File:		life.lisp
 ;;;;	Contents:	This is a simple application to show drawing
 ;;;;				capabilities. It may be saved as an application:
-;;;;					
+;;;;
 ;;;;				example:
 ;;;;					(load "examples/life.lisp")
 ;;;;					(save-application "life" #'win:life)
@@ -56,23 +56,23 @@
 			(incf red 16)
 			(when (>= red 256)
 				(setf red 0)
-				(incf blue 16)) 
+				(incf blue 16))
 			(when (>= blue 256)
 				(setf blue 0)
-				(incf green 16)) 
+				(incf green 16))
 			(when (>= green 256)
 				(setf green 0))
 			(values r g b))))
-	
+
 (defun create-board ()
-	(make-array (list *horiz-cells* *vert-cells*) 
+	(make-array (list *horiz-cells* *vert-cells*)
 		:initial-element nil))
 
 (defun clear-board ()
 	(dotimes (y *vert-cells*)
 		(dotimes (x *horiz-cells*)
 			(setf (aref *board* x y) nil))))
-	
+
 (defun setup-board ()
 	(clear-board)
 	(setf (aref *board* 7 7) t)
@@ -97,7 +97,7 @@
 			(incf count))	;; lower center
 		(if (and (< x (1- *horiz-cells*)) (< y (1- *vert-cells*)) (aref *board* (1+ x) (1+ y)))
 			(incf count))	;; lower right
-		count))		
+		count))
 
 (defun clear-counters ()
 	(dotimes (y *vert-cells*)
@@ -108,14 +108,14 @@
 	(dotimes (y *vert-cells*)
 		(dotimes (x *horiz-cells*)
 			(setf (aref *neighbor-counters* x y) (neighbor-count x y)))))
-			
+
 (defun advance-board ()
 	(clear-counters)
 	(set-counters)
 	(dotimes (y *vert-cells*)
 		(dotimes (x *horiz-cells*)
 			(let ((neighbors (aref *neighbor-counters* x y)))
-				(if (and (aref *board* x y) 
+				(if (and (aref *board* x y)
 						(or (< neighbors 2)(> neighbors 3)))
 					(setf (aref *board* x y) nil)	;; cell dies
 					(if (and (not (aref *board* x y)) (>= neighbors 3))
@@ -125,8 +125,8 @@
 			(dotimes (x *horiz-cells*)
 				(if (aref *board* x y) (incf count))))
 		(format t "cell count = ~D~%" count)
-		(force-output))|#) 
-						
+		(force-output))|#)
+
 (defun draw-colored-rect (left top right bottom r g b)
 	(let ((brush (CreateSolidBrush (rgb r g b))))
 		(setf (cref RECT *local-rect* left) 	left)
@@ -139,7 +139,7 @@
 (defun draw-colored-ellipse (left top right bottom r g b)
 	(let ((brush (CreateSolidBrush (rgb r g b)))
 		  (prev-object))
-		(setf prev-object (SelectObject *hdc* brush))	
+		(setf prev-object (SelectObject *hdc* brush))
 		(Ellipse *hdc* left top right bottom)
 		(SelectObject *hdc* prev-object)
 		(DeleteObject brush)))
@@ -148,14 +148,14 @@
 	(let ((cell-width (truncate *width* *horiz-cells*))
 		  (cell-height(truncate *height* *vert-cells*)))
 		(dotimes (i (+ *horiz-cells* 1))
-			(draw-colored-rect (* cell-width i) 0 
+			(draw-colored-rect (* cell-width i) 0
 				(+ (* cell-width i) 1) (* cell-height *vert-cells*)
 				0 0 0))
 		(dotimes (i (+ *vert-cells* 1))
-			(draw-colored-rect 0 (* cell-height i) 
+			(draw-colored-rect 0 (* cell-height i)
 				(* cell-width *horiz-cells*) (+ (* cell-height i) 1)
 				0 0 0))
-		
+
 		(dotimes (y *vert-cells*)
 			(dotimes (x *horiz-cells*)
 				(if (aref *board* x y)
@@ -165,7 +165,7 @@
 
 (defun refresh-board ()
 	(let ((cell-width (truncate *width* *horiz-cells*))
-		  (cell-height(truncate *height* *vert-cells*)))		
+		  (cell-height(truncate *height* *vert-cells*)))
 		(dotimes (y *vert-cells*)
 			(dotimes (x *horiz-cells*)
 				(if (aref *board* x y)
@@ -190,12 +190,12 @@
 		(if (>= cell-y *vert-cells*)
 			(setf cell-y (1- *vert-cells*)))
 		(toggle-cell cell-x cell-y)))
-		
+
 (defun install-refresh-timer ()
 	(win:SetTimer *app-window* *timer-id* *refresh-milliseconds* NULL))
- 
+
 (defun uninstall-refresh-timer ()
-	(win:KillTimer *app-window* *timer-id*)) 
+	(win:KillTimer *app-window* *timer-id*))
 
 (defun redraw-board (hwnd)
 	(setf *hdc* (BeginPaint hwnd *ps*))
@@ -204,12 +204,12 @@
 	(advance-board)
 	(EndPaint hwnd *ps*)
 	(return-from redraw-board 0))
-					
+
 (ct:defun-callback WndProc ((hwnd HWND)(iMsg UINT)(wParam WPARAM)(lParam LPARAM))
 ;;	(setq hwnd-save hwnd)
 ;;	(setq ps-save *ps*)
 	(incf *messages-processed*)
-	(let ((*hdc* NULL)) 
+	(let ((*hdc* NULL))
 		 (cond
 			((= iMsg WM_CREATE)
 				(setup-board)
@@ -228,11 +228,11 @@
 			((= iMsg WM_LBUTTONDOWN)
 				(let ((x (LOWORD lParam))
 					  (y (HIWORD lParam)))
-					(toggle-cell-at-position x y)))					
+					(toggle-cell-at-position x y)))
 			((= iMsg WM_TIMER)
 			 (win:InvalidateRect *app-window* NULL nil)
 			 (redraw-board hwnd)
-	;		 (win:SendMessage *app-window* WM_PAINT 
+	;		 (win:SendMessage *app-window* WM_PAINT
 	;				(ct:foreign-ptr-to-int (win:GetDC *app-window*)) 0)
 			 (return-from WndProc 0))
 			((= iMsg WM_DESTROY)
@@ -271,12 +271,12 @@
 		(setf (cref WNDCLASSEX wndclass lpszMenuName) NULL)
 		(setf (cref WNDCLASSEX wndclass lpszClassName) (ct:create-c-string szAppName))
 		(setf (cref WNDCLASSEX wndclass hIconSm) (LoadIcon NULL IDI_APPLICATION))
-		(setf (cref CLIENTCREATESTRUCT *client-create-struct* hWindowMenu) 
+		(setf (cref CLIENTCREATESTRUCT *client-create-struct* hWindowMenu)
 			(win::getsubmenu (win:get-main-menu) 3))
 		(setf (cref CLIENTCREATESTRUCT *client-create-struct* idFirstChild) IDM_FIRSTCHILD)
-		
+
 		(RegisterClassEx wndclass)
-		(setq *app-window* 
+		(setq *app-window*
 			(CreateWindowEx 0
 				(ct:create-c-string szAppName)				;; window class name
 				(ct:create-c-string "Life") 				;; window caption
@@ -305,8 +305,6 @@
 (defun life ()
 	(restart-case
 		(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart 'error))))
-			(winmain (cl::get-application-instance) 
+			(winmain (cl::get-application-instance)
 				null (ct:create-c-string "") SW_SHOW))
 		(error () (return-from life))))
-
-

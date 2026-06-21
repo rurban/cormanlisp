@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	Windows Bouncing Ball program.
-;;;;    
+;;;;
 ;;;;    To run, load this file and enter:
 ;;;;
 ;;;;		(th:create-thread #'win::bounce)
@@ -27,9 +27,9 @@
 
 (defun install-refresh-timer (hwnd)
 	(win:SetTimer hwnd *timer-id* *refresh-milliseconds* NULL))
- 
+
 (defun uninstall-refresh-timer (hwnd)
-	(win:KillTimer hwnd *timer-id*)) 
+	(win:KillTimer hwnd *timer-id*))
 
 (defclass <bouncing-window> (<frame>)
 	((ball
@@ -50,7 +50,7 @@
 			:style (logior WS_OVERLAPPEDWINDOW WS_MINIMIZEBOX)
 			:width 300
 			:height 300)
-	    (install-refresh-timer (window-hwnd window))			
+	    (install-refresh-timer (window-hwnd window))
 		(show-window window SW_SHOW)
 		(update-window window)
 		(standard-message-loop)))
@@ -86,7 +86,7 @@
 	(declare (ignore message wparam))
 	(let ((x (LOWORD lParam))
 		  (y (HIWORD lParam)))
-		(move-ball-to-position (ball window) x y))					
+		(move-ball-to-position (ball window) x y))
 	0)
 
 (defmethod handle-message ((window <bouncing-window>)(message <timer-message>) wparam lparam)
@@ -108,7 +108,7 @@
 (defun draw-colored-ellipse (left top right bottom r g b hdc)
 	(let ((brush (CreateSolidBrush (rgb r g b)))
 		  (prev-object))
-		(setf prev-object (SelectObject hdc brush))	
+		(setf prev-object (SelectObject hdc brush))
 		(Ellipse hdc left top right bottom)
 		(SelectObject hdc prev-object)
 		(DeleteObject brush)))
@@ -118,11 +118,11 @@
 		   (height (ball-height ball))
 		   (x (ball-x-position ball))
 		   (y (ball-y-position ball)))
-		(draw-colored-rect (save-x1 window) (save-y1 window) 
-            (save-x2 window) (save-y2 window) 
+		(draw-colored-rect (save-x1 window) (save-y1 window)
+            (save-x2 window) (save-y2 window)
             255 255 255 hdc rect)
 		(draw-colored-ellipse x y (+ x width) (+ y height) 255 0 0 hdc)
-		(setf (save-x1 window) x (save-y1 window) y 
+		(setf (save-x1 window) x (save-y1 window) y
             (save-x2 window) (+ x width) (save-y2 window) (+ y height))))
 
 (defun advance-ball (ball window)
@@ -145,7 +145,7 @@
 		(when (> (+ y ball-height) window-height)
 			(setf (ball-y-velocity ball) (- y-velocity) y (- window-height ball-height)))
 		(setf (ball-x-position ball) x (ball-y-position ball) y)))
-		
+
 (defun redraw-ball (window)
 	(let* ((ball (ball window)))
 	(draw-ball ball (window-hdc window) (bouncing-rect window) window)
@@ -154,4 +154,3 @@
 
 (defun move-ball-to-position (ball x y)
 	(setf (ball-x-position ball) x (ball-y-position ball) y))
-

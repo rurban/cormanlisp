@@ -15,9 +15,9 @@
 	 (coerce 3.5L0 'float) =>  3.5L0
 	 (coerce 7/2 'float) =>  3.5
 	 (coerce (cons 1 2) t) =>  (1 . 2)
-	
-	;;All the following forms should signal an error: 
-	
+
+	;;All the following forms should signal an error:
+
 	 (ignore-errors (coerce '(a b c) '(vector * 4))) => (values NIL true)
 	 (ignore-errors (coerce #(a b c) '(vector * 4))) => (values NIL true)
 	 (ignore-errors (coerce '(a b c) '(vector * 2))) => (values NIL true)
@@ -51,15 +51,15 @@
 )
 
 (dotests TYPE-OF
-	 (type-of 'a) =>  SYMBOL          
+	 (type-of 'a) =>  SYMBOL
 	 (type-of '(1 . 2)) =>  CONS ;; OR=>  (CONS FIXNUM FIXNUM)
 	 (type-of #c(0 1))  =>  COMPLEX ;; OR=>  (COMPLEX INTEGER)
 	 (defstruct temp-struct x y z) =>  TEMP-STRUCT
 	 (type-of (make-temp-struct)) =>  TEMP-STRUCT
 	 (type-of "abc") =>  STRING ;;OR=>  (STRING 3)
 	 (subtypep (type-of "abc") 'string) =>  (values true true)
-	 (type-of (expt 2 40)) =>  BIGNUM ;OR=>  INTEGER 
-	 								  ;OR=>  (INTEGER 1099511627776 1099511627776) 
+	 (type-of (expt 2 40)) =>  BIGNUM ;OR=>  INTEGER
+	 								  ;OR=>  (INTEGER 1099511627776 1099511627776)
 									  ;OR=>  SYSTEM::TWO-WORD-BIGNUM
 									  ;OR=>  FIXNUM
 	 (subtypep (type-of 112312) 'integer) =>  (values true true)
@@ -88,13 +88,12 @@
 	         (val (position (type-error-datum condition) digits)))
 	     (if (and val (subtypep 'fixnum (type-error-expected-type condition)))
 	         (store-value 7)))) => FIX-DIGITS
-	 
+
 	 (defun foo (x)
 	   (handler-bind ((type-error #'fix-digits))
 	     (check-type x number)
 	     (+ x 3))) => FOO
-	 
+
 	 (foo 'seven)
 	=>  10
 )
-	

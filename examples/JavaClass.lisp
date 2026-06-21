@@ -22,9 +22,9 @@
 (defvar *class-bytes* nil)
 (defvar *class-index* nil)
 
-(defstruct java-class 
-		magic 
-		minor-version 
+(defstruct java-class
+		magic
+		minor-version
 		major-version
 		constant-pool
 		access-flags
@@ -35,134 +35,134 @@
 		methods
 		attributes)
 
-(defstruct constant-class-info 
+(defstruct constant-class-info
 		name-index)
 
-(defstruct constant-field-ref-info 
-		class-index 
+(defstruct constant-field-ref-info
+		class-index
 		name-and-type-index)
 
-(defstruct constant-method-ref-info 
-		class-index 
+(defstruct constant-method-ref-info
+		class-index
 		name-and-type-index)
 
-(defstruct constant-interface-method-ref-info 
-		class-index 
+(defstruct constant-interface-method-ref-info
+		class-index
 		name-and-type-index)
 
-(defstruct constant-string-info 
+(defstruct constant-string-info
 		string-index)
 
-(defstruct constant-integer-info 
+(defstruct constant-integer-info
 		bytes)
 
-(defstruct constant-float-info 
+(defstruct constant-float-info
 		bytes)
 
-(defstruct constant-long-info 
-		high-bytes 
+(defstruct constant-long-info
+		high-bytes
 		low-bytes)
 
-(defstruct constant-double-info 
-		high-bytes 
+(defstruct constant-double-info
+		high-bytes
 		low-bytes)
 
-(defstruct constant-name-and-type-info 
-		name-index 
+(defstruct constant-name-and-type-info
+		name-index
 		descriptor-index)
 
-(defstruct constant-utf8-info 
-		bytes 
+(defstruct constant-utf8-info
+		bytes
 		chars)
 
 (defstruct constant-unused)
 
-(defstruct field-info 
-		access-flags 
-		name 
-		descriptor 
+(defstruct field-info
+		access-flags
+		name
+		descriptor
 		attributes)
 
-(defstruct attribute-info 
-		name 
+(defstruct attribute-info
+		name
 		info)
 
-(defstruct method-info 
-		access-flags 
-		name 
-		descriptor 
+(defstruct method-info
+		access-flags
+		name
+		descriptor
 		attributes)
 
 (defstruct (code-attribute (:print-function print-code-attribute))
-		max-stack 
-		max-locals 
-		code 
-		exception-table 
+		max-stack
+		max-locals
+		code
+		exception-table
 		attributes)
 
-(defstruct exception-table-entry 
-		start-pc 
-		end-pc 
-		handler-pc 
+(defstruct exception-table-entry
+		start-pc
+		end-pc
+		handler-pc
 		catch-type)
 
-(defstruct source-file-attribute 
+(defstruct source-file-attribute
 		source-file)
 
-(defstruct constant-value-attribute 
+(defstruct constant-value-attribute
 		constant-value)
 
-(defstruct exceptions-attribute 
+(defstruct exceptions-attribute
 		exceptions)
 
-(defstruct inner-class-table-entry 
-		inner-class-info 
-		outer-class-info 
-		name 
+(defstruct inner-class-table-entry
+		inner-class-info
+		outer-class-info
+		name
 		access-flags)
 
-(defstruct inner-classes-attribute 
+(defstruct inner-classes-attribute
 		classes)
 
 (defstruct synthetic-attribute)
 
-(defstruct line-number-table-entry 
-		start-pc 
+(defstruct line-number-table-entry
+		start-pc
 		line-number)
 
-(defstruct line-number-table-attribute 
+(defstruct line-number-table-attribute
 		line-number-table)
 
-(defstruct local-variable-table-attribute 
+(defstruct local-variable-table-attribute
 		local-variable-table)
 
-(defstruct local-variable-table-entry 
-		start-pc 
-		length 
-		name 
-		descriptor 
+(defstruct local-variable-table-entry
+		start-pc
+		length
+		name
+		descriptor
 		index)
 
 (defstruct deprecated-attribute)
 
 ;; access flags
-(defconstant ACC_PUBLIC  		#x0001)	;;may be accessed from outside its package  
+(defconstant ACC_PUBLIC  		#x0001)	;;may be accessed from outside its package
 (defconstant ACC_PRIVATE  		#x0002) ;;usable only within the defining class
-(defconstant ACC_PROTECTED  	#x0004) ;;may be accessed within subclasses 
+(defconstant ACC_PROTECTED  	#x0004) ;;may be accessed within subclasses
 (defconstant ACC_STATIC  		#x0008) ;;Declared static
-(defconstant ACC_FINAL  		#x0010) ;;no further assignment after initialization 
-(defconstant ACC_SYNCHRONIZED  	#x0020) ;;invocation is wrapped in a monitor lock  
-(defconstant ACC_VOLATILE  		#x0040) ;;cannot be cached  
-(defconstant ACC_TRANSIENT  	#x0080) ;;not written or read by a persistent object manager 
-(defconstant ACC_NATIVE  		#x0100) ;;implemented in a language other than Java  
-(defconstant ACC_ABSTRACT  		#x0400) ;;no implementation is provided  
-(defconstant ACC_STRICT  		#x0800) ;;floating-point mode is FP-strict  
+(defconstant ACC_FINAL  		#x0010) ;;no further assignment after initialization
+(defconstant ACC_SYNCHRONIZED  	#x0020) ;;invocation is wrapped in a monitor lock
+(defconstant ACC_VOLATILE  		#x0040) ;;cannot be cached
+(defconstant ACC_TRANSIENT  	#x0080) ;;not written or read by a persistent object manager
+(defconstant ACC_NATIVE  		#x0100) ;;implemented in a language other than Java
+(defconstant ACC_ABSTRACT  		#x0400) ;;no implementation is provided
+(defconstant ACC_STRICT  		#x0800) ;;floating-point mode is FP-strict
 
 
 (defun print-code-attribute (obj stream level)
 	(declare (ignore level))
 	(print-unreadable-object (obj stream)
-		(format stream 
+		(format stream
 			"Code object: Maxstack=~A, Maxlocals=~A, code=~A bytes, ~
 			 exception-table=~A, attributes=~A"
 			(code-attribute-max-stack obj)
@@ -170,27 +170,27 @@
 			(length (code-attribute-code obj))
 			(code-attribute-exception-table obj)
 			(code-attribute-attributes obj))))
-	
+
 (defun read-java-class (path)
 	"Returns a byte array containing the bytes of the passed path."
-	(with-open-file (input-stream path :direction :input :element-type 'unsigned-byte)		
+	(with-open-file (input-stream path :direction :input :element-type 'unsigned-byte)
 		(let* ((length (file-length input-stream))
 			   (bytes (make-array length :element-type 'byte)))
 			(dotimes (i length)
 				(setf (aref bytes i) (read-byte input-stream)))
 			bytes)))
 
-(defun u1 () 
+(defun u1 ()
 	(prog1 (aref *class-bytes* *class-index*) (incf *class-index*)))
 
-(defun u2 () 
-	(prog1 
-		(+ (* #x100 (aref *class-bytes* *class-index*)) 
+(defun u2 ()
+	(prog1
+		(+ (* #x100 (aref *class-bytes* *class-index*))
 			(aref *class-bytes* (+ *class-index* 1)))
 		(incf *class-index* 2)))
 
-(defun u4 () 
-	(prog1 
+(defun u4 ()
+	(prog1
 		(+ (* #x1000000 (aref *class-bytes* *class-index*))
 		   (* #x10000 	(aref *class-bytes* (+ *class-index* 1)))
 		   (* #x100 	(aref *class-bytes* (+ *class-index* 2)))
@@ -206,7 +206,7 @@
 	(let ((a (make-array (length bytes) :element-type 'character)))
 		(dotimes (i (length bytes) a)
 			(setf (elt a i) (int-char (aref bytes i))))))
-		
+
 (defun get-constant-pool (num)
 	(let ((constants '()))
 		(dotimes (i num (apply 'vector (nreverse constants)))
@@ -214,26 +214,26 @@
 				(push
 					(case tag
 						(7 (make-constant-class-info :name-index (u2)))
-						(9 (make-constant-field-ref-info 
-									:class-index (u2) 
+						(9 (make-constant-field-ref-info
+									:class-index (u2)
 									:name-and-type-index (u2)))
-						(10 (make-constant-method-ref-info 
-									:class-index (u2) 
+						(10 (make-constant-method-ref-info
+									:class-index (u2)
 									:name-and-type-index (u2)))
-						(11 (make-constant-interface-method-ref-info 
-									:class-index (u2) 
+						(11 (make-constant-interface-method-ref-info
+									:class-index (u2)
 									:name-and-type-index (u2)))
-						(8 (make-constant-string-info :string-index (u2))) 
+						(8 (make-constant-string-info :string-index (u2)))
 						(3 (make-constant-integer-info :bytes (u4)))
 						(4 (make-constant-float-info :bytes (u4)))
-						(5 (push (make-constant-long-info 
+						(5 (push (make-constant-long-info
 									:high-bytes (u4)
-									:low-bytes (u4)) constants) 
+									:low-bytes (u4)) constants)
 								(incf i)
 								(make-constant-unused))			;; don't use next entry
-						(6 (push (make-constant-double-info 
+						(6 (push (make-constant-double-info
 									:high-bytes (u4)
-									:low-bytes (u4)) constants) 
+									:low-bytes (u4)) constants)
 								(incf i)
 								(make-constant-unused))			;; don't use next entry
 						(12 (make-constant-name-and-type-info
@@ -250,8 +250,8 @@
 	"Get the name associated with the class constant index (or NIL if index = 0)"
 	(let* ((class-info (constant-pool-item pool index)))
 		(if class-info
-			(let ((class-name-info 
-						(constant-pool-item pool 
+			(let ((class-name-info
+						(constant-pool-item pool
 							(constant-class-info-name-index class-info))))
 				(and class-name-info (constant-utf8-info-chars class-name-info))))))
 
@@ -263,34 +263,34 @@
 (defun parse-exception-table (num)
 	(let ((exception-table '()))
 		(dotimes (i num (nreverse exception-table))
-			(push (make-exception-table-entry 
+			(push (make-exception-table-entry
 						:start-pc 	(u2)
 						:end-pc 	(u2)
 				        :handler-pc (u2)
 						:catch-type (u2))
 				exception-table))))
-	
+
 (defun parse-code-attribute (pool)
-	(make-code-attribute 
-		:max-stack 		 (u2) 
-		:max-locals 	 (u2) 
+	(make-code-attribute
+		:max-stack 		 (u2)
+		:max-locals 	 (u2)
 		:code 			 (ubytes (u4))
 		:exception-table (parse-exception-table (u2))
 		:attributes 	 (get-attributes (u2) pool)))
 
 (defun parse-source-file-attribute (pool)
-	(make-source-file-attribute 
+	(make-source-file-attribute
 		:source-file (constant-pool-name pool (u2))))
 
 (defun parse-constant-value-attribute (pool)
-	(make-constant-value-attribute 
+	(make-constant-value-attribute
 		:constant-value (constant-pool-item pool (u2))))
 
 (defun parse-exceptions (num pool)
 	(let ((exceptions '()))
 		(dotimes (i num (nreverse exceptions))
 			(push (constant-pool-item pool (u2)) exceptions))))
-	
+
 (defun parse-exceptions-attribute (pool)
 	(make-exceptions-attribute :exceptions (parse-exceptions (u2) pool)))
 
@@ -303,9 +303,9 @@
 						:name (constant-pool-name pool (u2))
 						:access-flags (u2))
 					classes))))
-		
+
 (defun parse-inner-classes-attribute (pool)
-	(make-inner-classes-attribute :classes (parse-inner-classes (u2) pool)))	
+	(make-inner-classes-attribute :classes (parse-inner-classes (u2) pool)))
 
 (defun parse-line-number-table (num)
 	(let ((entries '()))
@@ -314,10 +314,10 @@
 						:start-pc (u2)
 						:line-number (u2))
 				entries))))
-	
+
 (defun parse-line-number-table-attribute (pool)
 	(declare (ignore pool))
-	(make-line-number-table-attribute 
+	(make-line-number-table-attribute
 		:line-number-table (parse-line-number-table (u2))))
 
 (defun parse-local-variable-table (num pool)
@@ -330,9 +330,9 @@
 					:descriptor (constant-pool-name pool (u2))
 					:index (u2))
 					entries))))
-	
+
 (defun parse-local-variable-table-attribute (pool)
-	(make-local-variable-table-attribute 
+	(make-local-variable-table-attribute
 		:local-variable-table (parse-local-variable-table (u2) pool)))
 
 (defun parse-synthetic-attribute (pool)
@@ -343,8 +343,8 @@
 	(declare (ignore pool))
 	(make-deprecated-attribute))
 
-(defconstant *attribute-parse-funcs* 
-	'("Code" 				parse-code-attribute 
+(defconstant *attribute-parse-funcs*
+	'("Code" 				parse-code-attribute
 	  "SourceFile" 			parse-source-file-attribute
 	  "ConstantValue"		parse-constant-value-attribute
 	  "Exceptions"			parse-exceptions-attribute
@@ -364,17 +364,17 @@
 					(push
 						(if func
 							(funcall func pool)
-							(make-attribute-info 
-										:name name 
+							(make-attribute-info
+										:name name
 										:info (ubytes length)))
 						attrs))))))
 
 (defun get-fields (num pool)
 	(let ((fields '()))
 		(dotimes (i num (nreverse fields))
-			(push 
-				(make-field-info 
-					:access-flags (u2) 
+			(push
+				(make-field-info
+					:access-flags (u2)
 					:name (constant-pool-name pool (u2))
 					:descriptor (constant-pool-name pool (u2))
 					:attributes (get-attributes (u2) pool))
@@ -383,9 +383,9 @@
 (defun get-methods (num pool)
 	(let ((methods '()))
 		(dotimes (i num (nreverse methods))
-			(push 
-				(make-method-info 
-					:access-flags (u2) 
+			(push
+				(make-method-info
+					:access-flags (u2)
 					:name (constant-pool-name pool (u2))
 					:descriptor (constant-pool-name pool (u2))
 					:attributes (get-attributes (u2) pool))
@@ -393,7 +393,7 @@
 
 (defun get-interfaces (num)
 	(let ((interfaces '()))
-		(dotimes (i num (nreverse interfaces)) 
+		(dotimes (i num (nreverse interfaces))
 			(push (u2) interfaces))))
 
 (defun parse-java-class (bytes)
@@ -419,9 +419,9 @@
 				:attributes (get-attributes (u2) pool)))))
 
 (defconstant *access-flags*
-	(list 
-		ACC_PUBLIC 		"public"		ACC_PRIVATE 	"private" 		
-		ACC_PROTECTED 	"protected" 	ACC_STATIC 		"static" 	
+	(list
+		ACC_PUBLIC 		"public"		ACC_PRIVATE 	"private"
+		ACC_PROTECTED 	"protected" 	ACC_STATIC 		"static"
 		ACC_FINAL   	"final"   		ACC_VOLATILE  	"volatile"
 		ACC_TRANSIENT 	"transient" 	ACC_SYNCHRONIZED "synchronized"
 		ACC_NATIVE		"native"		ACC_ABSTRACT	"abstract"
@@ -444,7 +444,7 @@
 		  (descriptor (field-info-descriptor f)))
 		(declare (ignore descriptor))
 		(format nil "~16t~A ~40t~A" name (format-access-flags access-flags))))
- 
+
 (defun field-report (java-class output-stream)
 	(let ((fields (java-class-fields java-class)))
 		(format output-stream "~%Fields:~16tName~40tAttributes~%")
@@ -458,8 +458,8 @@
 		   (attrs (method-info-attributes m))
 		   (code (find-if #'code-attribute-p attrs)))
 		(declare (ignore descriptor))
-		(format nil "~16t~A ~40t~A ~60t~A" 
-			name 
+		(format nil "~16t~A ~40t~A ~60t~A"
+			name
 			(format-access-flags access-flags)
 			(if code (length (code-attribute-code code)) 0))))
 
@@ -478,7 +478,7 @@
 				   (code-length (and code (length (code-attribute-code code)))))
 				(if (and code-length (> code-length max))
 					(setf max code-length))))))
-	
+
 (defun java-class-report (path)
 	(let* ((bytes (read-java-class path))
 		   (jc (parse-java-class bytes)))
@@ -499,7 +499,7 @@
 		(format t "~%")))
 
 
-(defun display-usage-info () 
+(defun display-usage-info ()
 	(format t "Usage: JavaClass [-methods] [-fields] [-all] [-recurse] [-?] classfile1 ...~%")
 	(format t "~10t-methods~20tDisplay a report of methods~%")
 	(format t "~10t-fields~20tDisplay a report of fields~%")
@@ -545,13 +545,13 @@
 		(dolist (file files (nreverse new-files))
 			(if (equalp (pathname-type (pathname file))	"class")
 				(push file new-files)))))
-		
+
 (defun main ()
 	(format t "Java Class Reporter by Roger Corman~%")
 	(let ((args (ccl:get-command-line-args)))
-		(setf args 
-			(check-files 
-				(expand-wildcards 
+		(setf args
+			(check-files
+				(expand-wildcards
 					(process-command-line-args args))))
 		(if (or (null args) *display-usage-info*)
 			(display-usage-info)
@@ -559,5 +559,3 @@
 				(java-class-report x)))
 		(force-output)
 		(win:exitprocess 0)))
-
-		

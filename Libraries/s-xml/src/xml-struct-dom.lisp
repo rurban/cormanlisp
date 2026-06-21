@@ -82,7 +82,7 @@
     (print-identifier (xml-element-name xml-element) stream)
     (loop :for (name . value) :in (xml-element-attributes xml-element)
           :do (print-attribute name value stream))
-    (let ((children (xml-element-children xml-element))) 
+    (let ((children (xml-element-children xml-element)))
       (if children
           (progn
             (write-char #\> stream)

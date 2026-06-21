@@ -8,12 +8,10 @@ Copyright (C) 2003-2016 Gil Dabah
 This library is licensed under the BSD license. See the file COPYING.
 */
 
-
 #ifndef INSTS_H
 #define INSTS_H
 
 #include "instructions.h"
-
 
 /* Flags Table */
 extern _iflags FlagsTable[];
@@ -36,9 +34,9 @@ extern _InstNode Table_0F, Table_0F_38, Table_0F_3A;
 extern _InstInfo II_MOVSXD;
 
 /*
- * The NOP instruction can be prefixed by REX in 64bits, therefore we have to decide in runtime whether it's an XCHG or NOP instruction.
- * If 0x90 is prefixed by a usable REX it will become XCHG, otherwise it will become a NOP.
- * Also note that if it's prefixed by 0xf3, it becomes a Pause.
+ * The NOP instruction can be prefixed by REX in 64bits, therefore we have to decide in runtime whether it's an XCHG or
+ * NOP instruction. If 0x90 is prefixed by a usable REX it will become XCHG, otherwise it will become a NOP. Also note
+ * that if it's prefixed by 0xf3, it becomes a Pause.
  */
 extern _InstInfo II_NOP;
 extern _InstInfo II_PAUSE;

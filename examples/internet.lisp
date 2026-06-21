@@ -46,21 +46,21 @@
 	:linkage-type :pascal)
 
 #! (:library "WinInet" :export t :pascal "WINAPI")
-BOOL WINAPI InternetReadFile(HINTERNET hFile, LPVOID lpBuffer, 
+BOOL WINAPI InternetReadFile(HINTERNET hFile, LPVOID lpBuffer,
 			DWORD dwNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead);
 !#
 
 
 #|
 (setq ihandle
-	(InternetOpen 
+	(InternetOpen
 		(ct:create-c-string "cormanlisp")
 		INTERNET_OPEN_TYPE_PRECONFIG
 		ct:null
 		ct:null
 		0))
 
-(setq urlhandle 
+(setq urlhandle
 	(InternetOpenUrl
 		ihandle
 		(ct:create-c-string "http://www.apple.com")

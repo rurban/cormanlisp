@@ -45,9 +45,9 @@
 		  :args args
 		  :stream stream))
 
-;; attribute parsing hooks 
+;; attribute parsing hooks
 ;; this is a bit complicated, refer to the mailing lists for a more detailed explanation
-   
+
 (defun parse-attribute-name (string)
   "Default parser for the attribute name"
   (declare (special *namespaces*))
@@ -137,7 +137,7 @@
     entities))
 
 (defun resolve-entity (stream extendable-string entities entity)
-  "Read and resolve an XML entity from stream, positioned after the '&' entity marker, 
+  "Read and resolve an XML entity from stream, positioned after the '&' entity marker,
   accepting &name; &#DEC; and &#xHEX; formats,
   destructively modifying string, which is also returned,
   destructively modifying entity, incorrect entity formats result in errors"
@@ -152,12 +152,12 @@
       (let ((code (if (char= (char entity 1) #\x)
 		      (parse-integer entity :start 2 :radix 16 :junk-allowed t)
 		    (parse-integer entity :start 1 :radix 10 :junk-allowed t))))
-	(when (null code) 
+	(when (null code)
           (error (parser-error "encountered incorrect entity &~s;" (list entity) stream)))
 	(vector-push-extend (code-char code) extendable-string))
     (let ((value (gethash entity entities)))
       (if value
-	  (loop :for char :across value 
+	  (loop :for char :across value
                 :do (vector-push-extend char extendable-string))
 	(error (parser-error "encountered unknown entity &~s;" (list entity) stream)))))
   extendable-string)
@@ -192,14 +192,14 @@
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "~A - ~A" (get-prefix object) (get-uri object))))
 
-(defvar *local-namespace* (make-instance 'xml-namespace 
+(defvar *local-namespace* (make-instance 'xml-namespace
                                          :uri "local"
-                                         :prefix "" 
+                                         :prefix ""
                                          :package (find-package :keyword))
   "The local (global default) XML namespace")
 
-(defvar *xml-namespace* (make-instance 'xml-namespace 
-                                       :uri "http://www.w3.org/XML/1998/namespace" 
+(defvar *xml-namespace* (make-instance 'xml-namespace
+                                       :uri "http://www.w3.org/XML/1998/namespace"
                                        :prefix "xml"
                                        :package (or (find-package :xml)
                                                     (make-package :xml :nicknames '("XML"))))
@@ -258,7 +258,7 @@
                    (or symbol
                        (error "Symbol ~s does not exist in ~s" string package)))
                (let ((symbol (intern string package)))
-                 (when (and *auto-export-symbols* 
+                 (when (and *auto-export-symbols*
                             (not (eql package (find-package :keyword))))
                    (export symbol package))
                  symbol))))
@@ -355,7 +355,7 @@
    (new-element-hook :documentation "Called when new element starts"
 		     ;; Handle the start of a new xml element with name and attributes,
 		     ;; receiving seed from previous element (sibling or parent)
-		     ;; return seed to be used for first child (content) 
+		     ;; return seed to be used for first child (content)
                      ;; or directly to finish-element-hook
 		     :accessor get-new-element-hook
 		     :initarg :new-element-hook
@@ -366,7 +366,7 @@
 			;; Handle the end of an xml element with name and attributes,
 			;; receiving parent-seed, the seed passed to us when this element started,
                         ;; i.e. passed to our corresponding new-element-hook
-			;; and receiving seed from last child (content) 
+			;; and receiving seed from last child (content)
                         ;; or directly from new-element-hook
 			;; return final seed for this element to next element (sibling or parent)
 			:accessor get-finish-element-hook
@@ -376,7 +376,7 @@
                                       seed))
    (text-hook :documentation "Called when text is found"
 	      ;; Handle text in string, found as contents,
-	      ;; receiving seed from previous element (sibling or parent), 
+	      ;; receiving seed from previous element (sibling or parent),
               ;; return final seed for this element to next element (sibling or parent)
 	      :accessor get-text-hook
 	      :initarg :text-hook
@@ -417,7 +417,7 @@
   "Reset and return the main reusable buffer"
   (with-slots (buffer) state
     (setf (fill-pointer buffer) 0)))
-  
+
 ;;; parser support
 
 (defun parse-whitespace (stream extendable-string)
@@ -482,7 +482,7 @@
 	   (t
             (when (char/= char #\Null) (unread-char char stream))
 	    (return identifier))))))
-	 
+
 (defun skip-comment (stream)
   "Skip an XML comment in stream, positioned after the opening '<!--',
   consumes the closing '-->' sequence, unexpected eof or a malformed
@@ -566,7 +566,7 @@
 	 (cond ((or (char= char #\') (char= char #\")) (setf string-delimiter char))
 	       ((char= char #\<) (incf taglevel))
 	       ((char= char #\>) (decf taglevel))))))))
-	
+
 ;;; the XML parser proper
 
 (defun parse-xml-element-attributes (stream state)
@@ -583,7 +583,7 @@
      (when (or (char= char #\>) (char= char #\/)) (return))
      ;; read the attribute key
      (let ((key (let ((string (parse-identifier stream (get-mini-buffer state))))
-                  (if *ignore-namespaces* 
+                  (if *ignore-namespaces*
                       (funcall *attribute-name-parser* string)
                       (copy-seq string)))))
        ;; skip separating whitespace
@@ -596,7 +596,7 @@
        (skip-whitespace stream)
        ;; read the attribute value as a string
        (push (cons key (let ((string (parse-string stream state (get-buffer state))))
-                         (if *ignore-namespaces* 
+                         (if *ignore-namespaces*
                              (funcall *attribute-value-parser* key string)
                              (copy-seq string))))
 	     attributes)))
@@ -657,7 +657,7 @@
                         (setf (get-seed state) (funcall (get-text-hook state)
                                                         (copy-seq buffer) (get-seed state))))
                       (read-char stream)
-                      (let ((close-tag (resolve-identifier (parse-identifier stream (get-mini-buffer state)) 
+                      (let ((close-tag (resolve-identifier (parse-identifier stream (get-mini-buffer state))
                                                            *namespaces*)))
                         (unless (eq open-tag close-tag)
                           (error (parser-error "found <~a> not matched by </~a> but by <~a>"
@@ -676,7 +676,7 @@
                 ;; no child tag, concatenate text to whitespace in buffer
                 ;; handle text content and loop
                 (setf char (parse-text stream state buffer))
-                (setf (get-seed state) (funcall (get-text-hook state) 
+                (setf (get-seed state) (funcall (get-text-hook state)
                                                 (copy-seq buffer) (get-seed state))))))))))
 
 (defun start-parse-xml (stream &optional (state (make-instance 'xml-parser-state)))

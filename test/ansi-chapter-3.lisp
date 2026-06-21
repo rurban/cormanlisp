@@ -14,7 +14,7 @@
 (dotests COMPILE
 	(defun foo () "bar") =>  FOO
 	(compiled-function-p #'foo) =>  implementation-dependent
-	(compile 'foo) =>  FOO 
+	(compile 'foo) =>  FOO
 	(compiled-function-p #'foo) =>  true
 	(setf (symbol-function 'foo)
 		(compile nil '(lambda () "replaced"))) =>  implementation-dependent ;#<Compiled-Function>
@@ -41,11 +41,11 @@
 	 (quote (setq a 3)) =>  (SETQ A 3)
 	 a =>  1
 	 'a =>  A
-	 ''a =>  (QUOTE A) 
+	 ''a =>  (QUOTE A)
 	 '''a =>  (QUOTE (QUOTE A))
 	 (setq a 43) =>  43
 	 (list a (cons a 3)) =>  (43 (43 . 3))
-	 (list (quote a) (quote (cons a 3))) =>  (A (CONS A 3)) 
+	 (list (quote a) (quote (cons a 3))) =>  (A (CONS A 3))
 	 1 =>  1
 	 '1 =>  1
 	 "foo" =>  "foo"
@@ -80,7 +80,7 @@
 	 (funcall (compiler-macro-function 'square) '(square x) nil) =>  (EXPT X 2)
 	 (funcall (compiler-macro-function 'square) '(square (square x)) nil) =>  (EXPT X 4)
 	 (funcall (compiler-macro-function 'square) '(funcall #'square x) nil) =>  (EXPT X 2)
-	
+
 	 (defun distance-positional (x1 y1 x2 y2)
 	   (sqrt (+ (expt (- x2 x1) 2) (expt (- y2 y1) 2)))) =>  DISTANCE-POSITIONAL
 	 (defun distance (&key (x1 0) (y1 0) (x2 x1) (y2 y1))
@@ -143,47 +143,47 @@
 	;;        (#:G6559 (DECF X))
 	;;        (#:G6560 (DECF X))
 	;;        (#:G6561 (DECF X)))
-	;;    (DISTANCE :X1 #:G6558 :X2 #:G6559 :Y1 #:G6560 :Y2 #:G6561)) 
-	;;  (DISTANCE-POSITIONAL (SETQ X 7) (DECF X) (DECF X) (DECF X)) 
+	;;    (DISTANCE :X1 #:G6558 :X2 #:G6559 :Y1 #:G6560 :Y2 #:G6561))
+	;;  (DISTANCE-POSITIONAL (SETQ X 7) (DECF X) (DECF X) (DECF X))
 	;;  (LET ((#:G6567 (SETQ X 7))
 	;;        (#:G6568 (INCF X)))
-	;;    (DISTANCE :X1 #:G6567 :Y1 #:G6568)) 
-	;;  (DISTANCE :X1 (SETQ X 7) :Y1 (INCF X) :X1 (INCF X)) 
-	;;  (DISTANCE-POSITIONAL A1 B1 A2 B2) 
-	;;  (DISTANCE-POSITIONAL A1 B1 A2 B2) 
-	;;  (DISTANCE :X1 A1 :Y1 B1 :Z1 C1 :X2 A2 :Y2 B2 :Z2 C2) 
+	;;    (DISTANCE :X1 #:G6567 :Y1 #:G6568))
+	;;  (DISTANCE :X1 (SETQ X 7) :Y1 (INCF X) :X1 (INCF X))
+	;;  (DISTANCE-POSITIONAL A1 B1 A2 B2)
+	;;  (DISTANCE-POSITIONAL A1 B1 A2 B2)
+	;;  (DISTANCE :X1 A1 :Y1 B1 :Z1 C1 :X2 A2 :Y2 B2 :Z2 C2)
 	=>  NIL
 )
 
 (dotests DEFMACRO
-	 (defmacro mac1 (a b) "Mac1 multiplies and adds" 
-	            `(+ ,a (* ,b 3))) =>  MAC1 
-	 (mac1 4 5) =>  19 
-	 (documentation 'mac1 'function) =>  "Mac1 multiplies and adds" 
-	 (defmacro mac2 (&optional (a 2 b) (c 3 d) &rest x) `'(,a ,b ,c ,d ,x)) =>  MAC2 
-	 (mac2 6) =>  (6 T 3 NIL NIL) 
-	 (mac2 6 3 8) =>  (6 T 3 T (8)) 
+	 (defmacro mac1 (a b) "Mac1 multiplies and adds"
+	            `(+ ,a (* ,b 3))) =>  MAC1
+	 (mac1 4 5) =>  19
+	 (documentation 'mac1 'function) =>  "Mac1 multiplies and adds"
+	 (defmacro mac2 (&optional (a 2 b) (c 3 d) &rest x) `'(,a ,b ,c ,d ,x)) =>  MAC2
+	 (mac2 6) =>  (6 T 3 NIL NIL)
+	 (mac2 6 3 8) =>  (6 T 3 T (8))
 	 (defmacro mac3 (&whole r a &optional (b 3) &rest x &key c (d a))
-	    `'(,r ,a ,b ,c ,d ,x)) =>  MAC3 
-	 (mac3 1 6 :d 8 :c 9 :d 10) =>  ((MAC3 1 6 :D 8 :C 9 :D 10) 1 6 9 8 (:D 8 :C 9 :D 10)) 
+	    `'(,r ,a ,b ,c ,d ,x)) =>  MAC3
+	 (mac3 1 6 :d 8 :c 9 :d 10) =>  ((MAC3 1 6 :D 8 :C 9 :D 10) 1 6 9 8 (:D 8 :C 9 :D 10))
 
 	#|
 	 (defmacro dm1a (&whole x) `',x)
 	 (macroexpand '(dm1a))  =>  (QUOTE (DM1A))
 	 (macroexpand '(dm1a a)) is an error.
-	 
+
 	 (defmacro dm1b (&whole x a &optional b) `'(,x ,a ,b))
 	 (macroexpand '(dm1b))  is an error.
 	 (macroexpand '(dm1b q))  =>  (QUOTE ((DM1B Q) Q NIL))
 	 (macroexpand '(dm1b q r)) =>  (QUOTE ((DM1B Q R) Q R))
 	 (macroexpand '(dm1b q r s)) is an error.
-	
-	
+
+
 	 (defmacro dm2a (&whole form a b) `'(form ,form a ,a b ,b))
 	 (macroexpand '(dm2a x y)) =>  (QUOTE (FORM (DM2A X Y) A X B Y))
 	 (dm2a x y) =>  (FORM (DM2A X Y) A X B Y)
-	
-	 (defmacro dm2b (&whole form a (&whole b (c . d) &optional (e 5)) 
+
+	 (defmacro dm2b (&whole form a (&whole b (c . d) &optional (e 5))
 	                 &body f &environment env)
 	   ``(,',form ,,a ,',b ,',(macroexpand c env) ,',d ,',e ,',f))
 	 ;Note that because backquote is involved, implementations may differ
@@ -203,9 +203,9 @@
 )
 
 (dotests MACRO-FUNCTION
-	(defmacro macfun (x) '(macro-function 'macfun)) =>  MACFUN 
-	 (not (macro-function 'macfun)) =>  false 
-	
+	(defmacro macfun (x) '(macro-function 'macfun)) =>  MACFUN
+	 (not (macro-function 'macfun)) =>  false
+
 	 (macrolet ((foo (&environment env)
 	               (if (macro-function 'bar env)
 	                  ''yes
@@ -213,7 +213,7 @@
 	    (list (foo)
 	          (macrolet ((bar () :beep))
 	             (foo))))
-	 
+
 	=>  (NO YES)
 )
 
@@ -229,7 +229,7 @@
 	   (multiple-value-bind (expansion expanded-p)
 	       (macroexpand-1 form env)
 	     `(values ',expansion ',expanded-p))) =>  EXPAND-1
-	
+
 	;; Simple examples involving just the global environment
 	 (macroexpand-1 '(alpha a b)) =>  (values (BETA A B) true)
 	 (expand-1 (alpha a b)) =>  (values (BETA A B) true)
@@ -239,7 +239,7 @@
 	 (expand-1 not-a-macro) =>  (values NOT-A-MACRO false)
 	 (macroexpand '(not-a-macro a b)) =>  (values (NOT-A-MACRO A B) false)
 	 (expand (not-a-macro a b)) =>  (values (NOT-A-MACRO A B) false)
-	
+
 	;; Examples involving lexical environments
 	 (macrolet ((alpha (x y) `(delta ,x ,y)))
 	   (macroexpand-1 '(alpha a b))) =>  (values (BETA A B) true)
@@ -267,7 +267,7 @@
 	 (symbol-macrolet ((b (alpha x y))
 	                   (a b))
 	   (expand a)) =>  (values (GAMMA X Y) true)
-	
+
 	;; Examples of shadowing behavior
 	 (flet ((beta (x y) (+ x y)))
 	   (expand (alpha a b))) =>  (values (BETA A B) true)
@@ -282,18 +282,18 @@
 
 (dotests DEFINE-SYMBOL-MACRO
 	(defvar *things* (list 'alpha 'beta 'gamma)) =>  *THINGS*
-	
+
 	(define-symbol-macro thing1 (first *things*)) =>  THING1
 	(define-symbol-macro thing2 (second *things*)) =>  THING2
 	(define-symbol-macro thing3 (third *things*)) =>  THING3
-	
+
 	thing1 =>  ALPHA
 	(setq thing1 'ONE) =>  ONE
 	*things* =>  (ONE BETA GAMMA)
 	(multiple-value-setq (thing2 thing3) (values 'two 'three)) =>  TWO
 	thing3 =>  THREE
 	*things* =>  (ONE TWO THREE)
-	
+
 	(list thing2 (let ((thing2 2)) thing2)) =>  (TWO 2)
 )
 
@@ -303,10 +303,10 @@
 	;;; not
 	;;;   (list 'foo (let (('foo 'bar)) 'foo))
 	 (symbol-macrolet ((x 'foo))
-	   (list x (let ((x 'bar)) x))) 
+	   (list x (let ((x 'bar)) x)))
 	=>  (foo bar)
-	;;NOT=>  (foo foo) 
-	 
+	;;NOT=>  (foo foo)
+
 	 (symbol-macrolet ((x '(foo x)))
 	   (list x))
 	=>  ((FOO X))
@@ -315,11 +315,11 @@
 (dotests *MACROEXPAND-HOOK*
 	 (defun hook (expander form env)
 	    (format t "Now expanding: ~S~%" form)
-	    (funcall expander form env)) =>  HOOK 
-	 (defmacro machook (x y) `(/ (+ ,x ,y) 2)) =>  MACHOOK 
-	 (macroexpand '(machook 1 2)) =>  (values (/ (+ 1 2) 2) true) 
+	    (funcall expander form env)) =>  HOOK
+	 (defmacro machook (x y) `(/ (+ ,x ,y) 2)) =>  MACHOOK
+	 (macroexpand '(machook 1 2)) =>  (values (/ (+ 1 2) 2) true)
 	 (let ((*macroexpand-hook* #'hook)) (macroexpand '(machook 1 2)))
-	;;>>  Now expanding (MACHOOK 1 2) 
+	;;>>  Now expanding (MACHOOK 1 2)
 	=>  (VALUES (/ (+ 1 2) 2) true)
 )
 
@@ -355,7 +355,7 @@
 	   :done)
 	;;>>  (1 2 3)
 	=>  :DONE
-	 
+
 	;; In this example, the list to be bound to L can be stack-allocated.
 	 (defun zap (x y z)
 	   (do ((l (list x y z) (cdr l)))
@@ -377,7 +377,7 @@
 	;;>>  "COMMON-LISP-USER"
 	=>  NIL
 	|#
-	;; Some implementations might have the ability to stack allocate 
+	;; Some implementations might have the ability to stack allocate
 	;; rest lists.  A declaration such as the following should be a cue
 	;; to such implementations that stack-allocation of the rest list
 	;; would be desirable.
@@ -385,27 +385,27 @@
 	   (declare (dynamic-extent x))
 	   (apply #'+ x)) =>  ADD
 	 (add 1 2 3) =>  6
-	
+
 	 (defun zap (n m)
 	   ;; Computes (RANDOM (+ M 1)) at relative speed of roughly O(N).
 	   ;; It may be slow, but with a good compiler at least it
 	   ;; doesn't waste much heap storage.  :-}
 	   (let ((a (make-array n)))
 	     (declare (dynamic-extent a))
-	     (dotimes (i n) 
+	     (dotimes (i n)
 	       (declare (dynamic-extent i))
 	       (setf (aref a i) (random (+ i 1))))
 	     (aref a m))) =>  ZAP
 	 (< (zap 5 3) 3) =>  true
-	
+
 	#|
-	The following are in error, since the value of x is used outside of its extent: 
-	
-	
+	The following are in error, since the value of x is used outside of its extent:
+
+
 	 (length (list (let ((x (list 1 2 3)))  ; Invalid
 	                (declare (dynamic-extent x))
 	                x)))
-	
+
 	 (progn (let ((x (list 1 2 3)))  ; Invalid
 	          (declare (dynamic-extent x))
 	          x)
@@ -453,10 +453,10 @@
 	      (list y
 	            (locally (declare (special y)) y)))) ;this y refers to the
 	                                                 ;special binding of y
-	=>  DECLARE-EG 
-	 (declare-eg nil) =>  (T NIL) 
-	
-	
+	=>  DECLARE-EG
+	 (declare-eg nil) =>  (T NIL)
+
+
 	(setf (symbol-value 'x) 6) => 6
 	(defun foo (x)                         ;a lexical binding of x
 	  (print x)
@@ -464,15 +464,15 @@
 	    (declare (special x))              ;and a lexical reference
 	    (bar))
 	  (1+ x)) => FOO
-	(defun bar () 
+	(defun bar ()
 	  (print (locally (declare (special x))
 	           x))) => BAR
-	(foo 10) 
+	(foo 10)
 	;;>>  10
 	;;>>  11
 	=>  11
-	
-	
+
+
 	(setf (symbol-value 'x) 6)  => 6
 	(defun bar (x y)            ;[1] 1st occurrence of x
 	  (let ((old-x x)           ;[2] 2nd occurrence of x -- same as 1st occurrence
@@ -480,7 +480,7 @@
 	    (declare (special x))
 	    (list old-x x))) => BAR
 	(bar 'first 'second) =>  (FIRST SECOND)
-	
+
 	 (declaim (special prosp)) =>  implementation-dependent
 	 (setq prosp 1 reg 1) =>  1
 	 (let ((prosp 2) (reg 2))         ;the binding of prosp is special
@@ -488,9 +488,9 @@
 	    (list prosp reg))             ;whereas the variable reg is lexical
 	=>  (3 2)
 	 (list prosp reg) =>  (1 3)
-	
+
 	 (declaim (special x)) => T          ;x is always special.
-	 (defun example (x y)                                 
+	 (defun example (x y)
 	   (declare (special y))
 	   (let ((y 3) (x (* x 2)))
 	     (print (+ y (locally (declare (special y)) y)))
@@ -499,30 +499,30 @@
 
 (dotests LOCALLY
 	 (defun sample-function (y)  ;this y is regarded as special
-	   (declare (special y))                                
+	   (declare (special y))
 	   (let ((y t))              ;this y is regarded as lexical
 	     (list y
 	           (locally (declare (special y))
 	             ;; this next y is regarded as special
 	             y))))
 	=>  SAMPLE-FUNCTION
-	 (sample-function nil) =>  (T NIL) 
+	 (sample-function nil) =>  (T NIL)
 	 (setq x '(1 2 3) y '(4 . 5)) =>  (4 . 5)
-	
+
 	;;; The following declarations are not notably useful in specific.
 	;;; They just offer a sample of valid declaration syntax using LOCALLY.
 	 (locally (declare (inline floor) (notinline car cdr))
 	          (declare (optimize space))
 	    (floor (car x) (cdr y))) => (values 0 1)
-	
-	
+
+
 	;;; This example shows a definition of a function that has a particular set
 	;;; of OPTIMIZE settings made locally to that definition.
 	 (locally (declare (optimize (safety 3) (space 3) (speed 0)))
 	   (defun frob (w x y &optional (z (foo x y)))
 	     (mumble x y z w)))
 	=>  FROB
-	
+
 	;;; This is like the previous example, except that the optimize settings
 	;;; remain in effect for subsequent definitions in the same compilation unit.
 	 (declaim (optimize (safety 3) (space 3) (speed 0))) => T
@@ -540,7 +540,7 @@
 	 (the (values integer) (truncate 3.2 2)) =>  (values 1 1.2)
 	 (the (values integer float) (truncate 3.2 2))   =>  (values 1 1.2)
 	 (the (values integer float symbol) (truncate 3.2 2)) =>  (values 1 1.2)
-	 (the (values integer float symbol t null list) 
+	 (the (values integer float symbol t null list)
 	      (truncate 3.2 2)) =>  (values 1 1.2)
 	 (let ((i 100))
 	    (declare (fixnum i))
@@ -561,10 +561,10 @@
 	(constantp 1) =>  true
 	(constantp 'temp) =>  false
 	(constantp ''temp) =>  true
-	(defconstant this-is-a-constant 'never-changing) =>  THIS-IS-A-CONSTANT 
+	(defconstant this-is-a-constant 'never-changing) =>  THIS-IS-A-CONSTANT
 	(constantp 'this-is-a-constant) =>  true
 	(constantp "temp") =>  true
-	(setq a 6) =>  6 
+	(setq a 6) =>  6
 	(constantp a) =>  true
 	(constantp '(sin pi)) =>  implementation-dependent
 	(constantp '(car '(x))) =>  implementation-dependent
@@ -575,4 +575,3 @@
 	(constantp '(values 'x 'y)) =>  implementation-dependent
 	(constantp '(let ((a '(a b c))) (+ (length a) 6))) =>  implementation-dependent
 )
-

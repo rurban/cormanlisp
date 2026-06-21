@@ -1,7 +1,7 @@
 ;;;; Multiprocessing library for Corman Lisp - Version 1.2
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
@@ -30,24 +30,24 @@
 ;;;;
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
-;;;; 
+;;;;
 ;;;; This package works as-is on Windows NT 4.0. For Windows 98 some
 ;;;; patches to Corman Lisp 1.41 are required. See http://www.double.nz/cl
 ;;;; for details.
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 16/09/2000 - 1.0 
+;;;; 16/09/2000 - 1.0
 ;;;;              Initial release.
 ;;;;              Attempts to implement some of the Allegro Common Lisp
 ;;;;              multiprocessing stuff on top of the Corman Lisp threads
-;;;;              module. 
+;;;;              module.
 ;;;;              See http://www.franz.com/support/documentation/5.0.1/doc/cl/contents.htm#12
 ;;;;              for details on the Allegro multiprocessing package. So far
 ;;;;              everything mostly works but some features are not yet implemented.
 ;;;;
-;;;; 20/09/2000 - 1.1 
+;;;; 20/09/2000 - 1.1
 ;;;;              Implemented WITH-TIMEOUT macro and added locking in various places.
 ;;;;
 ;;;; 06/04/2001 - 1.2
@@ -65,8 +65,8 @@
 (defvar *current-process* nil)
 
 (defpackage "MP"
-	(:use 
-		:COMMON-LISP 
+	(:use
+		:COMMON-LISP
 		:THREADS
 		:MP-LOCKS
 		:C-TYPES)
@@ -148,7 +148,7 @@
 		(setf (slot-value proc 'status) value)))
 
 (defun check-process-reasons (proc &optional force)
-	"Checks the arrest and run reasons for the process and 
+	"Checks the arrest and run reasons for the process and
 	suspends or resumes the process based on the results."
 	(if (null (process-run-reasons proc))
 		(suspend-process proc force)
@@ -173,21 +173,21 @@
 		(%with-process-locked (proc)
 			(setf (slot-value proc 'arrest-reasons) value))
 		(check-process-reasons proc)))
-  
+
 (defmethod print-object ((proc process) stream)
 	(format stream "#<~a ~a>" 'process (process-name proc)))
 
-(defun make-process (&key (name "Anonymous") 
-		(reset-action ()) 
-		(run-reasons ()) 
-		(arrest-reasons ()) 
+(defun make-process (&key (name "Anonymous")
+		(reset-action ())
+		(run-reasons ())
+		(arrest-reasons ())
 		(priority 0)
-		(quantum 2) 
-		resume-hook 
-		suspend-hook 
-		initial-bindings 
+		(quantum 2)
+		resume-hook
+		suspend-hook
+		initial-bindings
 		message-interrupt-function
-		stack-allocation 
+		stack-allocation
 		run-immediately)
 	(declare (ignore quantum priority reset-action))
 	(when (or resume-hook suspend-hook message-interrupt-function stack-allocation run-immediately)
@@ -207,7 +207,7 @@
 		(do-processes
 			#'(lambda (proc)
 				(unless (eq proc sys:*current-process*)
-					(process-add-arrest-reason proc :without-scheduling))))	   
+					(process-add-arrest-reason proc :without-scheduling))))
 		(unwind-protect
 			(progn
 				,@body)
@@ -223,7 +223,7 @@
 		,@body))
 
 ;; Warning - process-initial-bindings are currently ignored - not
-;; sure how to handle them yet. 
+;; sure how to handle them yet.
 (defun process-preset (proc initial-function &rest initial-args)
 	(flet  ((thread-function ()
 				(let ((sys:*current-process* proc))
@@ -243,7 +243,7 @@
 		proc))
 
 (defun process-revoke-run-reason (proc object)
-	(setf (process-run-reasons proc) 
+	(setf (process-run-reasons proc)
 		(remove object (process-run-reasons proc))))
 
 (defun process-revoke-arrest-reason (proc object)
@@ -265,7 +265,7 @@
 		(apply #'process-preset proc preset-function preset-arguments)
 		(process-enable proc)
 		proc))
-	
+
 (defun suspend-process (proc &optional force)
 	"Suspends the process if it is not already suspended. If FORCE
 	is t then force a call to the suspend thread function even if
@@ -294,7 +294,7 @@
 	(setf (process-run-reasons proc) nil)
 	(setf (process-arrest-reasons proc) nil)
 	(process-add-run-reason proc :enable))
-  
+
 (defun process-disable (proc)
 	(setf (process-run-reasons proc) nil)
 	(setf (process-arrest-reasons proc) nil))
@@ -331,11 +331,11 @@
 				(length (process-run-reasons proc))
 				(length (process-arrest-reasons proc))
 				(process-status proc)))))
-  
+
 (defun process-kill (proc)
 	(let ((id (process-thread-id proc)))
 		(when id
-			(setf (process-status proc) :killed)  
+			(setf (process-status proc) :killed)
 			(th:terminate-thread id 0)
 			(loop
 				(let ((rt (th:resume-thread id)))
@@ -362,18 +362,18 @@
 ;; time).
 (defmacro with-timeout ((seconds &body timeout-body) &body body)
 	`(progn
-		(let ((wait-process 
-					(make-process 
-						:name 
-						(format nil 
-							"timeout-reaper-~A" 
+		(let ((wait-process
+					(make-process
+						:name
+						(format nil
+							"timeout-reaper-~A"
 							(incf *timeout-reaper-count*))))
 				(current-process sys:*current-process*)
 				(result nil)
 				(timeout-done nil)
 				(main-body-done nil)
 				(sync (make-critical-section)))
-			(process-preset wait-process 
+			(process-preset wait-process
 				#'(lambda ()
 					(dotimes (n ,seconds)
 						(declare (ignore n))
@@ -423,7 +423,7 @@
 	(setf (process-lock-value lock) lock-value))
 
 (defun process-unlock (lock &optional (lock-value sys:*current-process*))
-	(when 
+	(when
 		(or
 			(not (equal (process-lock-whostate lock) "Lock"))
 			(not (equal (process-lock-value lock) lock-value)))
@@ -445,7 +445,7 @@
 			(process-lock ,lock)
 			,@body)
 		(process-unlock ,lock)))
-					
+
 (when (null sys:*current-process*)
 	(setq sys:*current-process* (make-process :name "main"))
 	(setf (process-thread-id sys:*current-process*) th:*current-thread-id*)
@@ -464,7 +464,7 @@
 									  (force-output)
 									  (sleep 5)))))
 
-(process-run-function 
+(process-run-function
 	'(:name "sleeper"
 		:initial-bindings '((*test 0)))
 	#'(lambda () (sleep 30)))
@@ -480,8 +480,3 @@
    (format t "out of main~%")
    (force-output) 4))
 |#
-	
-	
-
-	
-	

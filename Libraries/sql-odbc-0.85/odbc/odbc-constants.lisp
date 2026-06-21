@@ -5,7 +5,7 @@
 ;; Copyright (C) Paul Meurer 1999. All rights reserved.
 ;; paul.meurer@hit.uib.no
 ;;
-;; Documentation and the license agreement can be found in file 
+;; Documentation and the license agreement can be found in file
 ;; "sql-odbc-documentation.lisp".
 ;; Bug reports and suggestions are highly welcome.
 
@@ -15,13 +15,13 @@
 
 ;; generally useful constants
 ;;#if (ODBCVER >= #x0200)
-(defconstant $SQL_SPEC_MAJOR 2)		;; Major version of specification 
-(defconstant $SQL_SPEC_MINOR 10) 	;; Minor version of specification 
-(defconstant $SQL_SPEC_STRING 	"02.10") ;; String constant for version	  
+(defconstant $SQL_SPEC_MAJOR 2)		;; Major version of specification
+(defconstant $SQL_SPEC_MINOR 10) 	;; Minor version of specification
+(defconstant $SQL_SPEC_STRING 	"02.10") ;; String constant for version
 ;;;; #endif	;; ODBCVER >= #x0200
-(defconstant $SQL_SQLSTATE_SIZE 5)		;; size of SQLSTATE 			  
-(defconstant $SQL_MAX_MESSAGE_LENGTH 512)	;; message buffer size			  
-(defconstant $SQL_MAX_DSN_LENGTH 32)		;; maximum data source name size  
+(defconstant $SQL_SQLSTATE_SIZE 5)		;; size of SQLSTATE
+(defconstant $SQL_MAX_MESSAGE_LENGTH 512)	;; message buffer size
+(defconstant $SQL_MAX_DSN_LENGTH 32)		;; maximum data source name size
 
 ;; RETCODEs
 (defconstant $SQL_INVALID_HANDLE -2)
@@ -48,9 +48,9 @@
 ;; C datatype to SQL datatype mapping	SQL types
 
 (defconstant $SQL_C_CHAR $SQL_CHAR)		;; CHAR, VARCHAR, DECIMAL, NUMERIC
-(defconstant $SQL_C_LONG $SQL_INTEGER)		;; INTEGER 
-(defconstant $SQL_C_SHORT $SQL_SMALLINT)	;; SMALLINT 
-(defconstant $SQL_C_FLOAT $SQL_REAL)		;; REAL 
+(defconstant $SQL_C_LONG $SQL_INTEGER)		;; INTEGER
+(defconstant $SQL_C_SHORT $SQL_SMALLINT)	;; SMALLINT
+(defconstant $SQL_C_FLOAT $SQL_REAL)		;; REAL
 (defconstant $SQL_C_DOUBLE $SQL_DOUBLE)		;; FLOAT, DOUBLE
 (defconstant $SQL_C_DEFAULT 99)
 
@@ -112,7 +112,7 @@
 (defconstant $SQL_ATTR_READWRITE_UNKNOWN 2)
 
 ;; SQLColAttributes subdefines for SQL_COLUMN_SEARCHABLE
-;; These are also used by SQLGetInfo                    
+;; These are also used by SQLGetInfo
 (defconstant $SQL_UNSEARCHABLE 0)
 (defconstant $SQL_LIKE_ONLY 1)
 (defconstant $SQL_ALL_EXCEPT_LIKE 2)
@@ -602,7 +602,7 @@
 (defconstant $SQL_GB_GROUP_BY_EQUALS_SELECT	#x0001)
 (defconstant $SQL_GB_GROUP_BY_CONTAINS_SELECT	#x0002)
 (defconstant $SQL_GB_NO_RELATION				#x0003
-													
+
 ;; SQL_OWNER_USAGE masks
 )
 (defconstant $SQL_OU_DML_STATEMENTS		#x00000001L)
@@ -777,7 +777,7 @@
 (defconstant $SQL_OPT_TRACEFILE 105)
 (defconstant $SQL_TRANSLATE_DLL 106)
 (defconstant $SQL_TRANSLATE_OPTION 107)
-(defconstant $SQL_TXN_ISOLATION 108) 
+(defconstant $SQL_TXN_ISOLATION 108)
 (defconstant $SQL_CURRENT_QUALIFIER 109)
 ;;#if (ODBCVER >= #x0200))
 (defconstant $SQL_ODBC_CURSORS 110)

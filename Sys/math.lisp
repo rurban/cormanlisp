@@ -10,7 +10,7 @@
 ;;;;							   FLOAT-SIGN
 ;;;;				7/23/01   RGC  Fixed bug in INTEGER-DECODE-FLOAT with argument = 0
 ;;;;							   (thanks to Gilbert Perfetti)
-;;;;                12/19/02  RGC  Incorporated JP Massar's MASK-FIELD and DEPOSIT-FIELD 
+;;;;                12/19/02  RGC  Incorporated JP Massar's MASK-FIELD and DEPOSIT-FIELD
 ;;;;                               implementations.
 ;;;;
 
@@ -61,8 +61,8 @@
 
 (defun print-byte-specifier (byte-spec stream depth)
 	(declare (ignore depth))
-	(format stream "#< BYTE-SPECIFIER size ~A position ~A >" 
-		(byte-size byte-spec) 
+	(format stream "#< BYTE-SPECIFIER size ~A position ~A >"
+		(byte-size byte-spec)
 		(byte-position byte-spec)))
 
 (pl:defasm fixnum-integer-length (num)
@@ -241,7 +241,7 @@
 		mov		ebp, esp
 		mov		edx, [ebp + ARGS_OFFSET]
 		mov		eax, [edx + (uvector-offset cl::double-float-offset)]
-		mov		ecx, [edx + (uvector-offset (+ 1 cl::double-float-offset))] 
+		mov		ecx, [edx + (uvector-offset (+ 1 cl::double-float-offset))]
 		test	eax, #xe0000000
 		jne		:bignum
 		test	ecx, ecx
@@ -277,7 +277,7 @@
 		cmp		ecx, 32
 		jl		:t1
 		mov		eax, 0
-		jmp		:exit 
+		jmp		:exit
 	:t1
 		sar		eax, cl
 		and		eax, -8
@@ -366,7 +366,7 @@
 (defconstant most-negative-long-float 				most-negative-double-float)
 (defconstant least-negative-long-float 				least-negative-double-float)
 (defconstant least-negative-normalized-long-float 	least-negative-normalized-double-float)
-	
+
 ;;;
 ;;;	Common Lisp ASH function.
 ;;;
@@ -383,10 +383,10 @@
 ;;;	Common Lisp DPB function.
 ;;;
 (defun dpb (newbyte bytespec integer)
-	(let ((mask (ash 
-					(- (ash 1 (byte-size bytespec)) 1) 
+	(let ((mask (ash
+					(- (ash 1 (byte-size bytespec)) 1)
 					(byte-position bytespec))))
-		(logior 
+		(logior
 			(logand integer (lognot mask))
 			(logand (ash newbyte (byte-position bytespec)) mask))))
 
@@ -407,7 +407,7 @@
 ;;; at compile time.
 ;;;
 ;;; It says if you compute a mask = (deposit-field -1 bytespec 0)
-;;; then 
+;;; then
 ;;; (deposit-field newbyte bytespec integer) =
 ;;; (logior (logand newbyte mask) (logand integer (lognot mask)))
 ;;;
@@ -416,7 +416,7 @@
 (defun deposit-field (newbyte bytespec integer)
     (let ((mask (mask-field bytespec -1)))
         (logior (logand newbyte mask) (logand integer (lognot mask)))))
-			
+
 ;;;
 ;;;	Common Lisp REM function.
 ;;;
@@ -438,7 +438,7 @@
 ;;;
 ;;;	Common Lisp ABS function.
 ;;;
-(defun abs (x) 
+(defun abs (x)
 	(if (complexp x)
 		(sqrt (+ (expt (realpart x) 2) (expt (imagpart x) 2)))
 		(if (minusp x) (- x) x)))
@@ -451,7 +451,7 @@
 ;;;
 ;;;	Common Lisp LCM function.
 ;;;
-(defun lcm (&rest more-integers) 
+(defun lcm (&rest more-integers)
 	(let ((result 1))
 		(if (= result 0) (return-from lcm 0))
 		(if (null more-integers)
@@ -460,7 +460,7 @@
 				(if (= n 0)
 					(return-from lcm 0)
 					(setq result (/ (abs (* result n)) (gcd result n))))))
-		result))	
+		result))
 
 ;;;
 ;;;	Common Lisp SIGNUM function.
@@ -483,7 +483,7 @@
 ;;;	Common Lisp FFLOOR function.
 ;;;
 (defun ffloor (number &optional (divisor 1))
-	(multiple-value-bind (num div) 
+	(multiple-value-bind (num div)
 		(floor number divisor)
 		(values (float num) div)))
 
@@ -491,7 +491,7 @@
 ;;;	Common Lisp FCEILING function.
 ;;;
 (defun fceiling (number &optional (divisor 1))
-	(multiple-value-bind (num div) 
+	(multiple-value-bind (num div)
 		(ceiling number divisor)
 		(values (float num) div)))
 
@@ -499,7 +499,7 @@
 ;;;	Common Lisp FTRUNCATE function.
 ;;;
 (defun ftruncate (number &optional (divisor 1))
-	(multiple-value-bind (num div) 
+	(multiple-value-bind (num div)
 		(truncate number divisor)
 		(values (float num) div)))
 
@@ -507,7 +507,7 @@
 ;;;	Common Lisp FROUND function.
 ;;;
 (defun fround (number &optional (divisor 1))
-	(multiple-value-bind (num div) 
+	(multiple-value-bind (num div)
 		(round number divisor)
 		(values (float num) div)))
 
@@ -516,7 +516,7 @@
 ;;; arcsin z = -i log (iz+sqrt(1-z^2))
 ;;;
 (defun asin (number)
-	(* (- #C(0 1)) 
+	(* (- #C(0 1))
 	   (log (+ (* #C(0 1) number) (sqrt (- 1 (* number number)))))))
 
 ;;;
@@ -529,7 +529,7 @@
 ;;;
 ;;;	Common Lisp ATAN function.
 ;;; arctan y = log (1+iy) - log ((1-iy)/(2i))
-;;; 
+;;;
 (defun atan (y &optional x)
 	(if (and (zerop x) (not (complexp y)))
 		(return-from atan
@@ -584,8 +584,8 @@
 	(cond
 		((complexp x) 	(atan (imagpart x) (realpart x)))
 		((minusp x)		pi)
-		(t				0.0)))	 
-			
+		(t				0.0)))
+
 ;;;
 ;;;	Common Lisp LOGTEST function.
 ;;;
@@ -629,7 +629,7 @@
 		pop		ebp
 		ret
 	})
- 
+
 (defun float-get-exponent-bits (float)
 	(if (short-float-p float)
 		(short-float-exponent-bits float)
@@ -659,27 +659,27 @@
 			(let* ((bits (%single-float-bits float)))
 				(%make-single-float (+ (logand #x807fffff bits)(ash exp-bits 23))))
 			(let* ((bits (%double-float-bits float)))
-				(%make-double-float (+ (logand #x800fffffffffffff bits)(ash exp-bits 52)))))))		 	
+				(%make-double-float (+ (logand #x800fffffffffffff bits)(ash exp-bits 52)))))))
 
 (defun %create-double-float-from-bits (mantissa exponent sign)
-	(let ((n (+ 
-				(if (= sign -1) (ash 1 63) 0) 
-				(ash (+ exponent #x3ff) 52) 
-				(- mantissa #x10000000000000))))	
+	(let ((n (+
+				(if (= sign -1) (ash 1 63) 0)
+				(ash (+ exponent #x3ff) 52)
+				(- mantissa #x10000000000000))))
 		(%make-double-float n)))
 
 (defun %create-single-float-from-bits (mantissa exponent sign)
-	(let ((n (+ 
-				(if (= sign -1) (ash 1 31) 0) 
-				(ash (+ exponent #x7f) 23) 
-				(- mantissa #x800000))))	
+	(let ((n (+
+				(if (= sign -1) (ash 1 31) 0)
+				(ash (+ exponent #x7f) 23)
+				(- mantissa #x800000))))
 		(%make-single-float n)))
 
 (defun %create-short-float-from-bits (mantissa exponent sign)
-	(let ((n (+ 
-				(if (= sign -1) (ash 1 29) 0) 
-				(ash (+ exponent #x7f) 21) 
-				(- mantissa #x200000))))	
+	(let ((n (+
+				(if (= sign -1) (ash 1 29) 0)
+				(ash (+ exponent #x7f) 21)
+				(- mantissa #x200000))))
 		(%make-short-float n)))
 
 ;;;
@@ -702,29 +702,29 @@
 ;;;	Common Lisp FLOAT-RADIX function.
 ;;;	All floats use radix 2.
 ;;;
-(defun float-radix (float) 	
+(defun float-radix (float)
 	(unless (floatp float) (error "Not a float number: ~A" float))
 	2)
 
 ;;;
 ;;;	Common Lisp FLOAT-SIGN function.
 ;;;
-(defun float-sign (float-1 &optional float-2) 
+(defun float-sign (float-1 &optional float-2)
 	(unless (floatp float-1) (error "Not a float number: ~A" float-1))
-	(setf float-2 
-		(if float-2 
+	(setf float-2
+		(if float-2
 			(abs float-2)
 			(setf float-2 (float 1 float-1))))
 	(let ((sign-bit (float-get-sign-bit float-1)))
 		(if (zerop sign-bit)
 			float-2
 			(- float-2))))
-			
+
 
 ;;;
 ;;;	Common Lisp FLOAT-DIGITS function.
 ;;;
-(defun float-digits (float) 
+(defun float-digits (float)
 	(unless (floatp float) (error "Not a float number: ~A" float))
 	(if (short-float-p float)
 		22
@@ -751,7 +751,7 @@
 ;;;
 ;;;	Common Lisp FLOAT-PRECISION function.
 ;;;
-(defun float-precision (float) 
+(defun float-precision (float)
 	(unless (floatp float) (error "Not a float number: ~A" float))
 	(if (zerop float)
 		(return-from float-precision 0))
@@ -765,7 +765,7 @@
 			(if (single-float-p float)
 				(if (= expt -150)
 					(integer-length (- mantissa #x800000))
-					24)		
+					24)
 				(if (= expt -1075)
 					(integer-length (- mantissa #x10000000000000))
 					53)))))
@@ -803,7 +803,7 @@
 ;;;
 (defun rational (number)
 	(unless (realp number)(error "Not a real number: ~A" number))
-	(if (rationalp number) 
+	(if (rationalp number)
 		(return-from rational number))
 	(multiple-value-bind (mantissa exp sign)
 		(integer-decode-float number)
@@ -844,5 +844,3 @@
             (when (<= nr x)
                 (decf x nr)
                 (setf r (+ nr m))))))
-
-

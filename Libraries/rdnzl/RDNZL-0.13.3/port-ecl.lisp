@@ -72,7 +72,7 @@ the ECL FFI."
     (ffi-wide-char :unsigned-short)
     (ffi-float :float)
     (ffi-double :double)))
-      
+
 (defmacro ffi-define-function* ((lisp-name c-name)
                                 arg-list
                                 result-type)
@@ -231,7 +231,7 @@ corresponding foreign string."
 
 (defun flag-for-finalization (object &optional function)
   "Mark OBJECT such that FUNCTION is applied to OBJECT before OBJECT
-is removed by GC."  
+is removed by GC."
   ;; don't know how to do that in ECL
   (declare (ignore object function)))
 

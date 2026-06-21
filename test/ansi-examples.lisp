@@ -8,13 +8,13 @@
 (defun passed-test (expr result)
 	(format t "PASSED: ~S => ~S~%" expr result))
 (defun failed-test (expr result expected-result)
-	(format t "**************~%FAILED: ~S => ~S  Expected: ~S~%**************~%" 
+	(format t "**************~%FAILED: ~S => ~S  Expected: ~S~%**************~%"
 		expr result expected-result))
 
 ;;; Like equalp, but the second list can contain true, false designators
 (defun test-equalp (a b)
 	(or (equalp a b)
-		(and (listp a) 
+		(and (listp a)
 			(listp b)
 			(every #'(lambda (x y)
 					(or (and x (eq y 'true))
@@ -35,13 +35,13 @@
 				(error "Invalid format for test:~%~S ~S ~S" expr => expected-result))
 			(let ((result (multiple-value-list (eval expr))))
 				(case expected-result
-					(true (if (car result) 
-							(passed-test expr (car result)) 
+					(true (if (car result)
+							(passed-test expr (car result))
 							(failed-test expr (car result) expected-result)))
-					(false (if (car result) 
-							(failed-test expr (car result) expected-result) 
+					(false (if (car result)
+							(failed-test expr (car result) expected-result)
 							(passed-test expr (car result))))
-					(implementation-dependent 
+					(implementation-dependent
 						(passed-test expr (if (> (length result) 1)(cons 'values result) (car result))))
 					(t (if (and (consp expected-result)(eq (car expected-result) 'values))
 							(if (test-equalp result (cdr expected-result))
@@ -61,4 +61,3 @@
 (load "test/ansi-chapter-6.lisp")
 (load "test/ansi-chapter-7.lisp")
 (load "test/ansi-chapter-8.lisp")
-

@@ -8,7 +8,7 @@
 ;;; example DLL "TESTDLL.DLL".
 ;;;
 (win:defctype CALLBACKTYPE (:void *))
-	
+
 #!  (:library "d:/roger/cormanlisp/examples/testdll.dll")
 long testfunc1(long x, long y, long z);
 long testfunc2(long x, CALLBACKTYPE func);
@@ -19,4 +19,3 @@ long testfunc2(long x, CALLBACKTYPE func);
 
 ;(testfunc1 10 20 30)
 ;(testfunc2 5 (ct:get-callback-procinst 'test-func))
-

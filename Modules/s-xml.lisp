@@ -1,11 +1,11 @@
 ;;;; S-XML loader for Corman Lisp
-(defconstant *sxml-source-directory* 
+(defconstant *sxml-source-directory*
     (concatenate 'string ccl:*cormanlisp-directory* "\\libraries\\s-xml\\"))
 
 (require :asdf)
 
-(defconstant *sxml-files* 
-	(list 
+(defconstant *sxml-files*
+	(list
 		"src\\package.lisp"
 		"src\\xml.lisp"
 		"src\\dom.lisp"

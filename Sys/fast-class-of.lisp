@@ -122,7 +122,7 @@
   :char-tag
     mov   eax, 34
 	jmp   short :got-a-cookie
-  :short-float-tag	
+  :short-float-tag
     mov   eax, 35
   :got-a-cookie
 	;; The cookie is now in EAX
@@ -149,7 +149,7 @@
         jz    short :ss
 	mov	  eax, [eax + (uvector-offset (+ 2 cl::struct-template-class-offset))] ;; (elt template 0)
 	jmp   short :exit
-  :ss 
+  :ss
         mov   eax, 'cl::%struct-class
         jmp   short :get-symbol-value-and-exit
   :st1
@@ -177,5 +177,3 @@
 	pop   ebp
 	ret
   })
-	
-

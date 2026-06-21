@@ -13,4 +13,3 @@ clean:
 	delstaticlib.bat
 
 rebuild: clean default
-

@@ -92,4 +92,3 @@ See the 'LICENSE.txt' file for the additional details.
   </xsl:template>
 
 </xsl:stylesheet>
-

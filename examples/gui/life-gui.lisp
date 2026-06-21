@@ -4,7 +4,7 @@
 ;;;;	-------------------------------
 ;;;;
 ;;;;	Windows LIFE program.
-;;;;    
+;;;;
 ;;;;    To run from lisp, load this file and enter:
 ;;;;
 ;;;;		(th:create-thread #'win::life-gui)
@@ -23,20 +23,20 @@
 (defvar *refresh-milliseconds* 100)
 
 (defclass board ()
-	((cells :accessor cells 
-			:initform 
-			(make-array 
+	((cells :accessor cells
+			:initform
+			(make-array
 				(list *horiz-cells-default* *vert-cells-default*)
 				:initial-element nil))
-	 (neighbor-counters :accessor neighbor-counters 
-			:initform 
-			(make-array 
+	 (neighbor-counters :accessor neighbor-counters
+			:initform
+			(make-array
 				(list *horiz-cells-default* *vert-cells-default*)
 				:initial-element 0))
 	 (view-width :initform 1 :accessor view-width)
 	 (view-height :initform 1 :accessor view-height)
-	 (paused 
-		:accessor paused 
+	 (paused
+		:accessor paused
 		:initform nil)))
 
 (defun create-board () (make-instance 'board))
@@ -46,9 +46,9 @@
 
 (defun install-refresh-timer (hwnd)
 	(win:SetTimer hwnd *timer-id* *refresh-milliseconds* NULL))
- 
+
 (defun uninstall-refresh-timer (hwnd)
-	(win:KillTimer hwnd *timer-id*)) 
+	(win:KillTimer hwnd *timer-id*))
 
 (defclass <life-window> (<main-menu-mixin> <frame>)
 	((board
@@ -61,19 +61,19 @@
     (gui-initialize)
 	(let* ((window (make-instance '<life-window>)))
 		(create-menu window '(:menu "File") nil 1)
-		(create-menu window 
-			(list :command "Clear"  
-				(lambda () 
+		(create-menu window
+			(list :command "Clear"
+				(lambda ()
 					(clear-board (board window))
-					(redraw-board window)))         
+					(redraw-board window)))
 			"File" 1)
-		(create-menu window 
-			(list :command "Pause"  
-				(lambda () (setf (paused (board window)) t))) 	  
+		(create-menu window
+			(list :command "Pause"
+				(lambda () (setf (paused (board window)) t)))
 			"File" 2)
-		(create-menu window 
-			(list :command "Resume" 
-				(lambda () (setf (paused (board window)) nil)))   
+		(create-menu window
+			(list :command "Resume"
+				(lambda () (setf (paused (board window)) nil)))
 			"File" 3)
 		(create-window window
 			:caption "life"
@@ -81,7 +81,7 @@
 			:width 300
 			:height 300)
     	(setup-board (board window))
-    	(install-refresh-timer (window-hwnd window))			
+    	(install-refresh-timer (window-hwnd window))
 		(show-window window SW_SHOW)
 		(update-window window)
 		(standard-message-loop)))
@@ -119,7 +119,7 @@
     (call-next-method)
 	(let ((x (LOWORD lParam))
 		  (y (HIWORD lParam)))
-		(toggle-cell-at-position (board window) x y))					
+		(toggle-cell-at-position (board window) x y))
 	(redraw-board window)
 	0)
 
@@ -144,7 +144,7 @@
 (defun draw-colored-ellipse (left top right bottom r g b hdc)
 	(let ((brush (CreateSolidBrush (rgb r g b)))
 		  (prev-object))
-		(setf prev-object (SelectObject hdc brush))	
+		(setf prev-object (SelectObject hdc brush))
 		(Ellipse hdc left top right bottom)
 		(SelectObject hdc prev-object)
 		(DeleteObject brush)))
@@ -152,14 +152,14 @@
 ;; draw black vertical grid lines
 (defun draw-vertical-lines (num cell-width height hdc rect)
 	(dotimes (i num)
-		(draw-colored-rect (* cell-width i) 0 
+		(draw-colored-rect (* cell-width i) 0
 			(+ (* cell-width i) 1) height
 			0 0 0 hdc rect)))
 
 ;; draw black horizontal grid lines
 (defun draw-horizontal-lines (num cell-height width hdc rect)
 	(dotimes (i num)
-		(draw-colored-rect 0 (* cell-height i) 
+		(draw-colored-rect 0 (* cell-height i)
 			width (+ (* cell-height i) 1)
 			0 0 0 hdc rect)))
 
@@ -171,10 +171,10 @@
 			(incf red 16)
 			(when (>= red 256)
 				(setf red 0)
-				(incf blue 16)) 
+				(incf blue 16))
 			(when (>= blue 256)
 				(setf blue 0)
-				(incf green 16)) 
+				(incf green 16))
 			(when (>= green 256)
 				(setf green 0))
 			(values r g b))))
@@ -184,16 +184,16 @@
 		(dotimes (x horiz-cells)
 			(multiple-value-bind (r g b)(get-rgb)
 				(if (aref cells x y)
-					(draw-colored-ellipse 
-						(+ 2 (* x cell-width)) 
+					(draw-colored-ellipse
+						(+ 2 (* x cell-width))
 						(+ 2 (* y cell-height))
-						(1- (* (+ x 1) cell-width)) 
+						(1- (* (+ x 1) cell-width))
 						(1- (* (+ y 1) cell-height))
 						r g b hdc)
 					(draw-colored-rect
-						(+ 2 (* x cell-width)) 
+						(+ 2 (* x cell-width))
 						(+ 2 (* y cell-height))
-						(1- (* (+ x 1) cell-width)) 
+						(1- (* (+ x 1) cell-width))
 						(1- (* (+ y 1) cell-height))
 						255 255 255 hdc rect))))))
 
@@ -236,7 +236,7 @@
 		(dotimes (y vert)
 			(dotimes (x horiz)
 				(setf (aref cells x y) nil)))))
-	
+
 (defun setup-board (board)
 	(clear-board board)
 	(setf (aref (cells board) 7 7) t)
@@ -264,7 +264,7 @@
 			(incf count))	;; lower center
 		(if (and (< x (1- horiz)) (< y (1- vert)) (aref cells (1+ x) (1+ y)))
 			(incf count))	;; lower right
-		count))		
+		count))
 
 (defun clear-counters (board)
 	(let* ((horiz (horiz-cells board))
@@ -281,7 +281,7 @@
 		(dotimes (y vert)
 			(dotimes (x horiz)
 				(setf (aref counters x y) (neighbor-count board x y))))))
-			
+
 (defun advance-board (board)
 	(if (paused board)
 		(return-from advance-board))
@@ -304,7 +304,7 @@
 				(dotimes (x horiz)
 					(if (aref cells x y) (incf count))))
 			(format t "cell count = ~D~%" count)
-			(force-output))|#)) 
+			(force-output))|#))
 
 (defun toggle-cell (board x y)
 	(let ((cells (cells board)))

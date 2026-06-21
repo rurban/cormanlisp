@@ -34,7 +34,7 @@
 
 (ct:defun-dll-export-c-function (lisp_apropos "lisp_apropos") ((str (:char *)))
     "char* lisp_apropos(char* str)"
-    (let ((output-string 
+    (let ((output-string
                 (make-array 2048 :element-type 'character :fill-pointer 0 :adjustable t)))
        (with-output-to-string (*standard-output* output-string)
             (apropos (ct:c-string-to-lisp-string str)))

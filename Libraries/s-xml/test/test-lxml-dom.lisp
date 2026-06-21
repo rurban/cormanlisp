@@ -77,7 +77,7 @@
                        (with-input-from-string (stream "<foo><![CDATA[<greeting>Hello, world!</greeting>]]></foo>")
                          (parse-xml stream :output-type :lxml)))
                       "<greeting>Hello, world!</greeting>"))
-	   
+
 (assert (string-equal (second
                        (with-input-from-string (stream "<foo><![CDATA[<greeting>Hello, < world!</greeting>]]></foo>")
                          (parse-xml stream :output-type :lxml)))

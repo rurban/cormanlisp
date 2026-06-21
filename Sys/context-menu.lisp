@@ -36,7 +36,7 @@
 #define TPM_LAYOUTRTL       0x8000L
 
 WINUSERAPI HMENU WINAPI CreatePopupMenu();
-WINUSERAPI int WINAPI TrackPopupMenu(HMENU hMenu, unsigned int uFlags, int x, int y, 
+WINUSERAPI int WINAPI TrackPopupMenu(HMENU hMenu, unsigned int uFlags, int x, int y,
 	int nReserved, HWND hWnd, CONST RECT *prcRect);
 WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL fAttach);
 !#
@@ -47,12 +47,12 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
 	(flet ((whitespace-char? (char)
 			(member char whitespace-chars :test #'char=)))
 		(let ((tokens nil))
-			(do* ((token-start 
-				  	(position-if-not #'whitespace-char? string) 
+			(do* ((token-start
+				  	(position-if-not #'whitespace-char? string)
 					(when token-end
-						(position-if-not #'whitespace-char? string 
+						(position-if-not #'whitespace-char? string
 							:start (1+ token-end))))
-				  (token-end 
+				  (token-end
 					(position-if #'whitespace-char? string :start (or token-start 0))
 				  	(when token-start
 						(position-if #'whitespace-char? string :start token-start))))
@@ -71,18 +71,18 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
     (if (eq (symbol-package symbol) (find-package :common-lisp))
         (unless (and (boundp 'pl::*hyperspec-loaded*) pl::*hyperspec-loaded*)
             (load (concatenate 'string pl:*cormanlisp-directory* "/sys/hyperspec.lisp"))))
-    
+
     (let ((doclist (gethash symbol cl::*documentation-registry*))
            doc-clause)
-        
+
         ;; if the requested symbol is in the common-lisp package, and
         ;; has documentation of type hyperspec as the first type (LC: Is this convenient?), then
         ;; use a special algorithm to display the information from the hyperspec
-        (if (and (eq (car doclist) ':hyperspec) 
+        (if (and (eq (car doclist) ':hyperspec)
                 (eq (symbol-package symbol) (find-package 'common-lisp)))
             (setq type ':hyperspec))
         (setq doc-clause (getf doclist type))
-        (unless doc-clause 
+        (unless doc-clause
             (return-from documentation-selection (format nil "No documentation available for ~A ~A" type symbol)))
         (if (eq type ':hyperspec)
             (progn (pl:hyperspec symbol) (values))
@@ -90,7 +90,7 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
             doc-clause
             #|
             (progn
-            (win::message-box-ok doc-clause 
+            (win::message-box-ok doc-clause
             (format nil "Documentation for ~A ~A" type symbol))
             (values))
             |# )))
@@ -137,12 +137,12 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
 			(logior win::MF_ENABLED win::MF_STRING)
             (+ 1 (length func-list))
 			(ct:create-c-string (format nil "Documentation for ~A" selected-form)))
-		(push #'(lambda () 
+		(push #'(lambda ()
                 (format *terminal-io* "~%~A~%" (documentation-selection selected-form))
                 (force-output *terminal-io*)) func-list))
     func-list)
 
-;;; Same comments as above	
+;;; Same comments as above
 (defun add-lookup-source-option (menu func-list selected-form)
     (when (and (symbolp selected-form)
             (or
@@ -155,13 +155,13 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
         (win::AppendMenu menu
 			(logior win::MF_ENABLED win::MF_STRING)
             (+ 1 (length func-list))
-   			(ct:create-c-string (format nil "Lookup source for ~A, package ~A" 
+   			(ct:create-c-string (format nil "Lookup source for ~A, package ~A"
                     (symbol-name selected-form)
                     (package-name (symbol-package selected-form)))))
 		(push #'(lambda () (db:find-source selected-form)) func-list))
     func-list)
 
-;;; Same comments as above	
+;;; Same comments as above
 (defun add-pretty-print-option (menu func-list selected-form)
     (win::AppendMenu menu
         (logior win::MF_ENABLED win::MF_STRING)
@@ -243,7 +243,7 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
     (push #'(lambda () (cl::editor-replace-selection (string-downcase selection))) func-list)
     func-list)
 
-;;; Same comments as above	
+;;; Same comments as above
 (defun add-file-and-line-option (menu func-list selected-form selection)
     (declare (ignore selected-form))
     (multiple-value-bind (file line)
@@ -254,8 +254,8 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
                 (win::AppendMenu menu
                     (logior win::MF_ENABLED win::MF_STRING)
                     (+ 1 (length func-list))
-                    (ct:create-c-string (format nil "Edit file ~A, line ~D" file lineno)))    
-                (push 
+                    (ct:create-c-string (format nil "Edit file ~A, line ~D" file lineno)))
+                (push
                     #'(lambda ()
                         (ed file)
                         (ide::set-selection file (- lineno 1) 0 (- lineno 1) 200)) func-list))))
@@ -312,7 +312,7 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
             (setf func-list (add-documentation-option menu func-list selected-form))
             (setf func-list (add-lookup-source-option menu func-list selected-form))
             (dolist (sym (remove selected-form alt-symbols))
-                (setf func-list (add-lookup-source-option menu func-list sym)))  
+                (setf func-list (add-lookup-source-option menu func-list sym)))
             (setf func-list (add-pretty-print-option menu func-list selected-form))
             (setf func-list (add-file-and-line-option menu func-list selected-form selection))
             (setf func-list (add-macroexpand-option menu func-list selected-form))
@@ -320,15 +320,15 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
             (setf func-list (add-lisp-variable-display menu func-list selected-form)))
         (setf func-list (add-uppercase-option menu func-list selected-form selection))
         (setf func-list (add-lowercase-option menu func-list selected-form selection))
-        (setf func-list (add-colorize-window-option menu func-list selected-form selection))      		        
+        (setf func-list (add-colorize-window-option menu func-list selected-form selection))
         (setf func-list (nreverse func-list))
-		(if (null func-list) (return-from ccl::ide-context-menu))	;; no menu items	
+		(if (null func-list) (return-from ccl::ide-context-menu))	;; no menu items
 		(let ((ret
 			(TrackPopupMenu menu (logior TPM_LEFTALIGN TPM_RIGHTBUTTON TPM_NONOTIFY TPM_RETURNCMD)
 				x y 0 win ct:null)))
 			(ignore-errors (funcall (nth (- ret 1) func-list)))
 			ret)))
-    
+
 (ct:defun-direct-c-callback pl::on-context-menu ((x :long)(y :long)(win (:void *)))
 	(ccl::ide-context-menu x y win))
 
@@ -353,14 +353,14 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
 		  (symbol-name nil)
 		  (marker-pos (position #\: string))
 		  (length (length string)))
-		
+
 		(unless marker-pos
 			(multiple-value-bind (sym found)
 				(find-symbol (string-upcase string) *package*)
 				(return-from lookup-symbol (if found sym 0))))
-		
+
 		;; handle explicit package
-		(setq package-chars (subseq string 0 marker-pos))						
+		(setq package-chars (subseq string 0 marker-pos))
 		(incf package-markers)
 		(incf marker-pos)
 		(when (and (< marker-pos length) (eq (char string marker-pos) #\:))
@@ -371,7 +371,7 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
 		(if (> (length package-chars) 0)
 			(setq package-name (string-upcase package-chars))
 			(setq package-name "KEYWORD"))
-		
+
 		(if (> (length symbol-chars) 0)
 			(setq symbol-name (string-upcase symbol-chars))
 			(return-from lookup-symbol 0))
@@ -394,7 +394,7 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
             (if (eq (aref str i) #\newline)
                 (incf count)))
         (if (= count 0)
-            str        
+            str
             (let ((new-str (make-array (+ (length str) count) :element-type 'character :fill-pointer 0)))
                 (dotimes (i (length str))
                     (let ((ch (aref str i)))
@@ -402,7 +402,7 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
                             (vector-push #\return new-str))
                         (vector-push ch new-str)))
                 new-str))))
-                    
+
 ;; Returns a string representation of the passed Lisp object, suitable for inclusion
 ;; in a tooltip
 ;;
@@ -419,9 +419,9 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
             (format-newlines-for-windows str))))
 
 (defun lookup-lambda-list-impl (sym)
-    (cond 
+    (cond
         ((and (symbolp sym)(x86::code-generator-function sym))
-         (format nil "~A: ~A" sym "CODE-GENERATOR"))            
+         (format nil "~A: ~A" sym "CODE-GENERATOR"))
         ((and (symbolp sym)(fboundp sym))
 		 (let ((func (symbol-function sym))
 			   (lambda-list nil)
@@ -436,7 +436,7 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
         ((and (symbolp sym)(boundp sym))
          (let ((val (symbol-value sym)))
             (format nil "~A: ~A" sym (format-for-tooltip val))))))
-                          
+
 (ct:defun-direct-c-callback ccl::lookup-lambda-list ((symName (:char *))(buf (:char *))(bufLength :long))
 	(setf (ct:cref (:char *) buf 0) 0)     ;; initialize to empty string
     (ignore-errors
@@ -454,7 +454,3 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
 
 (ct:defun-direct-c-callback ccl::version_caption ((buf (:char *)))
 	(ct:lisp-string-to-c-string (cl::version-caption) buf))
-	
-					
-
-		

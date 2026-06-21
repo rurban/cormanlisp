@@ -15,4 +15,3 @@
 		(let ((result (win:GetUserName namebuf sizebuf)))
 			(if (/= result 0)
 				(ct:c-string-to-lisp-string namebuf)))))
-

@@ -419,7 +419,7 @@ interface JNIEnv
 	 (minHeapSize jint)
 	 (maxHeapSize jint)
 	 (verifyMode jint)
-	 (classpath (:char *))	
+	 (classpath (:char *))
      (vfprintf (:void *))	;; function pointer
      (exit (:void *))		;; function pointer
      (abort (:void *))		;; function pointer
@@ -440,7 +440,7 @@ interface JNIEnv
 ;; JNI Invocation Interface.
 ;;
 #! (:export t)
-interface JavaVM 
+interface JavaVM
 {
     void *reserved0();
     void *reserved1();
@@ -477,7 +477,7 @@ void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved);
 			(setf (ct:cref JavaVMInitArgs vm-args nOptions) numOpts)
 			(setf (ct:cref JavaVMInitArgs vm-args options) options)
 			;(setf (ct:cref JavaVMOption (ct:cref (JavaVMOption *) options 0) optionString)
-			;		(ct:lisp-string-to-c-string "-cp d:/java/jdk1.3/jrt/lib/rt.jar")) 
+			;		(ct:lisp-string-to-c-string "-cp d:/java/jdk1.3/jrt/lib/rt.jar"))
 			(JNI_CreateJavaVM jvm env vm-args)
 			(values (ct:cref ((JavaVM *) *) jvm 0)
 				    (ct:cref ((JNIEnv *) *) env 0)))))
@@ -502,7 +502,7 @@ void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved);
 			  (vms '()))
 			(dotimes (i returned)
 				(push (ct:cref ((JavaVM *) *) buf i) vms))
-			vms)))		        
+			vms)))
 
 
 |#

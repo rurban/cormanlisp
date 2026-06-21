@@ -18,7 +18,7 @@
 (defconstant char-code-limit 256)
 (defconstant character-names-table (make-array char-code-limit :initial-element nil))
 
-(defun sys::check-character (c) 
+(defun sys::check-character (c)
 	(unless (characterp c)
 		(error "Not a character: ~A" c))
 	c)
@@ -103,7 +103,7 @@
 
 (defun output-readable-char (ch stream)
 	(declare (ignore stream))
-	(format t "#\\~A" 
+	(format t "#\\~A"
 		(let ((name (elt character-names-table (char-int ch))))
 			(if name name ch))))
 
@@ -130,7 +130,7 @@
     (let ((char-sym (find-symbol obj :character-names)))
         (if (and char-sym (boundp char-sym))
             (symbol-value char-sym))))
-	
+
 ;;;
 ;;;	Common Lisp char= function.
 ;;;
@@ -138,10 +138,10 @@
 	(unless characters (return-from char= t))
 	(let ((c (sys::check-character (car characters))))
 		(dolist (x (cdr characters))
- 			(unless (eq c (sys::check-character x)) 
+ 			(unless (eq c (sys::check-character x))
 				(return-from char= nil)))
 		t))
-		
+
 ;;;
 ;;;	Common Lisp char/= function.
 ;;;	TD: This is not completely implemented when there are more than
@@ -151,7 +151,7 @@
 	(unless characters (return-from char/= t))
 	(let ((c (sys::check-character (car characters))))
 		(dolist (x (cdr characters))
- 			(unless (not (eq c (sys::check-character x))) 
+ 			(unless (not (eq c (sys::check-character x)))
 				(return-from char/= nil)))
 		t))
 
@@ -162,7 +162,7 @@
 	(unless characters (return-from char< t))
 	(let ((c (char-int (car characters))))
 		(dolist (x (cdr characters))
- 			(unless (< c (char-int x)) 
+ 			(unless (< c (char-int x))
 				(return-from char< nil))
 			(setf c (char-int x)))
 		t))
@@ -174,7 +174,7 @@
 	(unless characters (return-from char> t))
 	(let ((c (char-int (car characters))))
 		(dolist (x (cdr characters))
- 			(unless (> c (char-int x)) 
+ 			(unless (> c (char-int x))
 				(return-from char> nil))
 			(setf c (char-int x)))
 		t))
@@ -186,7 +186,7 @@
 	(unless characters (return-from char<= t))
 	(let ((c (char-int (car characters))))
 		(dolist (x (cdr characters))
- 			(unless (<= c (char-int x)) 
+ 			(unless (<= c (char-int x))
 				(return-from char<= nil))
 			(setf c (char-int x)))
 		t))
@@ -198,7 +198,7 @@
 	(unless characters (return-from char>= t))
 	(let ((c (char-int (car characters))))
 		(dolist (x (cdr characters))
- 			(unless (>= c (char-int x)) 
+ 			(unless (>= c (char-int x))
 				(return-from char>= nil))
 			(setf c (char-int x)))
 		t))
@@ -213,7 +213,7 @@
  			(unless (eq c (char-upcase x))
 				(return-from char-equal nil)))
 		t))
-		
+
 ;;;
 ;;;	Common Lisp char-not-equal function.
 ;;;
@@ -232,7 +232,7 @@
 	(unless characters (return-from char-lessp t))
 	(let ((c (char-int (char-upcase (car characters)))))
 		(dolist (x (cdr characters))
- 			(unless (< c (char-int (char-upcase x))) 
+ 			(unless (< c (char-int (char-upcase x)))
 				(return-from char-lessp nil))
 			(setf c (char-int (char-upcase x))))
 		t))
@@ -244,7 +244,7 @@
 	(unless characters (return-from char-greaterp t))
 	(let ((c (char-int (char-upcase (car characters)))))
 		(dolist (x (cdr characters))
- 			(unless (> c (char-int (char-upcase x))) 
+ 			(unless (> c (char-int (char-upcase x)))
 				(return-from char-greaterp nil))
 			(setf c (char-int (char-upcase x))))
 		t))
@@ -256,7 +256,7 @@
 	(unless characters (return-from char-not-lessp t))
 	(let ((c (char-int (char-upcase (car characters)))))
 		(dolist (x (cdr characters))
- 			(unless (>= c (char-int (char-upcase x))) 
+ 			(unless (>= c (char-int (char-upcase x)))
 				(return-from char-not-lessp nil))
 			(setf c (char-int (char-upcase x))))
 		t))
@@ -268,7 +268,7 @@
 	(unless characters (return-from char-not-greaterp t))
 	(let ((c (char-int (char-upcase (car characters)))))
 		(dolist (x (cdr characters))
- 			(unless (<= c (char-int (char-upcase x))) 
+ 			(unless (<= c (char-int (char-upcase x)))
 				(return-from char-not-greaterp nil))
 			(setf c (char-int (char-upcase x))))
 		t))
@@ -331,12 +331,12 @@
         (if (< weight 10)
             (int-char (+ (char-int #\0) weight))
             (int-char (+ (char-int #\A) (- weight 10))))))
- 
+
 ;;;
 ;;; Common Lisp BOTH-CASE-P function.
 ;;;
 (defun both-case-p (x) (or (lower-case-p x) (upper-case-p x)))
-   
+
 (defun sys::invalid-char (x) (error "The object ~A is not a character" x))
 
 ;;;
@@ -347,7 +347,7 @@
         form
         (let ((tempsym (gensym)))
             `(let ((,tempsym ,form))
-                 (unless (characterp ,tempsym) 
+                 (unless (characterp ,tempsym)
                     (sys::invalid-char ,tempsym))
                 ,tempsym))))
 
@@ -360,18 +360,17 @@
                't
                `(progn (sys::check-character ,(car chars)) 't)))
           (t
-            (let ((expr 
-                        `(eq ,(if (characterp (car chars)) 
-                                (car chars) 
+            (let ((expr
+                        `(eq ,(if (characterp (car chars))
+                                (car chars)
                                 `(sys::check-character ,(car chars)))
-                             ,(if (characterp (cadr chars)) 
-                                (cadr chars) 
+                             ,(if (characterp (cadr chars))
+                                (cadr chars)
                                 `(sys::check-character ,(cadr chars))))))
                 (do ((x (cddr chars) (cdr x)))
                     ((null x))
-                    (setf expr 
-                        `(eq ,expr ,(if (characterp (car x)) 
-                                (car x) 
+                    (setf expr
+                        `(eq ,expr ,(if (characterp (car x))
+                                (car x)
                                 `(sys::check-character ,(car x))))))
                 expr))))
-

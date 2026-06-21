@@ -24,7 +24,7 @@
                                 (ct:create-c-string class-name)
                                 wndclass))
             (ct:free wndclass))))
-    
+
 
 ;;;
 ;;; Window class registration
@@ -35,16 +35,16 @@
         (setf window-proc 'gui-wndproc))
     (if (symbolp window-proc)
         (setf window-proc (get-callback-procinst window-proc)))
-    
+
     ;; see if it has already been registered
     (let ((atom (gethash class-name *window-class-atoms*)))
         (when (and atom
                    (window-class-registered-p class-name (cl::get-application-instance)))
             (return-from register-class atom)))
-    
+
 	(let ((wndclass (ct:malloc (ct:sizeof 'WNDCLASSEX))))
 		(with-c-struct (s wndclass WNDCLASSEX)
-			(setf 
+			(setf
 				cbSize 			(sizeof 'WNDCLASSEX)
 				style 			win-style
 				lpfnWndProc 	window-proc
@@ -72,5 +72,3 @@
         (when (not (GetClassInfoEx NULL (ct:create-c-string class-name) wndclass))
             (error "GetClassInfoEx() failed"))
         (ct:cref WNDCLASSEX wndclass win::lpfnWndProc)))
-
-

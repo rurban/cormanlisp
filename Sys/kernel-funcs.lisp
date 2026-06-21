@@ -16,7 +16,7 @@
 			(uref func function-code-buffer-offset))
 		closure))
 
-(set-dispatch-macro-character #\# #\| 
+(set-dispatch-macro-character #\# #\|
 	#'(lambda (stream char int)
 		(declare (ignore char int))
 		(do* ((c (read-char stream t nil t)(read-char stream t nil t))
@@ -28,7 +28,7 @@
 				(decf level)))
 		(values)))
 
-;;; 
+;;;
 ;;; Redefine kernel SET-SYMBOL-FUNCTION function.
 ;;;
 (defun set-symbol-function (func sym)
@@ -37,7 +37,7 @@
 	(update-jump-table sym func (uref func function-environment-offset))
 	func)
 
-;;; 
+;;;
 ;;; Redefine kernel SET-SYMBOL-MACRO function.
 ;;;
 (defun set-symbol-macro (func sym)
@@ -85,7 +85,7 @@
         mov     ebx, eax
         shr     ebx, 12                             ;; ebx = end page
         shl     eax, 20
-        shr     eax, 23                             ;; eax = end offset          
+        shr     eax, 23                             ;; eax = end offset
         cmp     ecx, ebx                            ;; page = end-page?
         jne     short :next1
         or      edx, edx                            ;; offset == 0?
@@ -145,7 +145,7 @@
     end-atomic
         push    ecx
         mov     ecx, 1
-        callp   cl::allocate-char-vector   
+        callp   cl::allocate-char-vector
         add     esp, 4
         mov     ebx, eax                 ;; ebx = char vector
         mov     edx, [ebp + ARGS_OFFSET]
@@ -209,7 +209,7 @@
         mov     ebp, esp
         symval  eax, cl::compiler_runtime
         mov     eax, [eax]      ;; eax = (cdr eax)
-        symset  eax, cl::compiler_runtime    
+        symset  eax, cl::compiler_runtime
         mov     eax, [esi]
         mov     ecx, 1
         pop     ebp
@@ -226,7 +226,7 @@
         mov     ebp, esp
         symval  eax, cl::compiler_runtime
         mov     eax, [eax]      ;; eax = (cdr eax)
-        symset  eax, cl::compiler_runtime    
+        symset  eax, cl::compiler_runtime
         mov     eax, [esi]
         mov     ecx, 1
         pop     ebp
@@ -237,10 +237,10 @@
     {
         push    ebp
         mov     ebp, esp
-        push    x86::_UNINITIALIZED 
+        push    x86::_UNINITIALIZED
         push    [esi]
         mov     ecx, 2
-        callp   cons 
+        callp   cons
         add     esp, 8
         pop     ebp
         ret
@@ -255,12 +255,12 @@
         (setf (uref sym symbol-name-offset)
             (make-array (length name) :initial-contents name :element-type 'character))
         (setf (uref sym symbol-value-offset) (create-uninitialized-binding))
-        (setf (uref sym symbol-package-offset) nil)  
-        (setf (uref sym symbol-plist-offset) nil)  
-        (setf (uref sym symbol-constant-offset) 0)  
-        (setf (uref sym symbol-function-type-offset) nil)  
+        (setf (uref sym symbol-package-offset) nil)
+        (setf (uref sym symbol-plist-offset) nil)
+        (setf (uref sym symbol-constant-offset) 0)
+        (setf (uref sym symbol-function-type-offset) nil)
         (setf (uref sym symbol-function-offset) (create-uninitialized-binding))
-        (setf (uref sym symbol-jump-table-offset) 0)          
+        (setf (uref sym symbol-jump-table-offset) 0)
         (setf (uref sym symbol-var-table-offset) 0)
         sym))
 
@@ -322,4 +322,3 @@
         pop     ebp
         ret
     })
-       

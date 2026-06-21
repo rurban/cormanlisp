@@ -17,7 +17,7 @@
 (export '(require))
 	  ;; PROVIDE is already exported, though we redefine it here
 
-(export '(ccl::register-module-source 
+(export '(ccl::register-module-source
 		  ccl::push-module-directory)
 		(find-package "CORMANLISP"))
 
@@ -26,11 +26,11 @@
 	   (char= #\\ (char pathname 0)))
       (and (< 2 (length pathname))
 	   (string= ":\\" (subseq pathname 1 3)))))
-	   
+
 (defun %absolutized-pathname (pathname)
   (if (%absolute-pathname-p pathname)
       pathname
-      (concatenate 'string 
+      (concatenate 'string
 			(cormanlisp-directory)
 			pathname)))
 
@@ -103,8 +103,8 @@
 ;;;	Define threads package and create stub loader.
 ;;;
 (defpackage "THREADS"
-	(:export 
-		"CREATE-THREAD" 
+	(:export
+		"CREATE-THREAD"
 		"EXIT-THREAD"
 	)
 	(:nicknames "TH"))
@@ -117,5 +117,5 @@
 (defun exit-thread (&rest args)
 	(require "THREADS")
 	(apply 'exit-thread args))
-	
+
 (defvar exit-thread-tag	'cl::%exit_thread_tag)

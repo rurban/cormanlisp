@@ -51,7 +51,7 @@
               (write-sequence buf out :end pos))))))))
 (compile 'copy-file)
 
-(defparameter *rdnzl-directory* 
+(defparameter *rdnzl-directory*
               ;; assume this file is in examples/ subdirectory
               (merge-pathnames #p".."
                                (make-pathname :name nil
@@ -71,7 +71,7 @@
 
 (rdnzl:shutdown-rdnzl)
 
-(defparameter *target-directory* 
+(defparameter *target-directory*
               (merge-pathnames "examples/apropos/" *rdnzl-directory*))
 
 (defun target-path (file-name)

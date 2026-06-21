@@ -1,7 +1,7 @@
 ;;;; Gray Streams Implementation for Corman Lisp - Version 1.4
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
@@ -30,22 +30,22 @@
 ;;;;
 ;;;; ftp://parcftp.xerox.com/pub/cl/cleanup/mail/stream-definition-by-user.mail
 ;;;;
-;;;; Some differences exist between this implementation and the 
+;;;; Some differences exist between this implementation and the
 ;;;; specification above. See notes below for details.
 ;;;;
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 03/03/2001 - 1.0 
+;;;; 03/03/2001 - 1.0
 ;;;;              Initial release.
 ;;;;
 ;;;; 20/08/2001 - 1.1
-;;;;              Small modifications by Frederic Bastenaire (fba@free.fr) 
+;;;;              Small modifications by Frederic Bastenaire (fba@free.fr)
 ;;;;              (lines flagged by  ;; # fb 1.01)
-;;;;              - Make it work with the READ function by 
+;;;;              - Make it work with the READ function by
 ;;;;                defining %read-char, %read-char-with-error
 ;;;;               and input-character-stream-p
 ;;;;              - Add nickname GS to package "GRAY-STREAMS" for ease of use
@@ -73,12 +73,12 @@
 ;;;; =====
 ;;;; CLOSE is not a generic function in this implementation. Instead,
 ;;;; the generic is called STREAM-CLOSE and the function CLOSE calls
-;;;; STREAM-CLOSE. The same goes for STREAMP, INPUT-STREAM-P, 
+;;;; STREAM-CLOSE. The same goes for STREAMP, INPUT-STREAM-P,
 ;;;; OUTPUT-STREAM-P and STREAM-ELEMENT-TYPE. The generic functions for
-;;;; these are STREAM-STREAMP, STREAM-INPUT-STREAM-P, 
-;;;; STREAM-OUTPUT-STREAM-P and STREAM-STREAM-ELEMENT-TYPE. 
+;;;; these are STREAM-STREAMP, STREAM-INPUT-STREAM-P,
+;;;; STREAM-OUTPUT-STREAM-P and STREAM-STREAM-ELEMENT-TYPE.
 ;;;;
-;;;; The standard Corman Lisp streams are not derived from 
+;;;; The standard Corman Lisp streams are not derived from
 ;;;; FUNDAMENTAL-STREAM. All the stream functions check to see if the
 ;;;; stream is an original Corman Lisp stream and forward on to the
 ;;;; original function implementations.
@@ -91,17 +91,17 @@
 ;;;;    GRAY-GET-OUTPUT-STREAM-STRING
 ;;;;    GRAY-MAKE-STRING-INPUT-STREAM
 ;;;;
-;;;; Much of the implementation of the Gray streams below is from the 
+;;;; Much of the implementation of the Gray streams below is from the
 ;;;; document referenced earlier.
 ;;;;
 (defpackage "GRAY-STREAMS"
 	(:use
 		"COMMON-LISP")
 	(:nicknames "GS") ;; # fb 1.01
-	(:export 
+	(:export
 		"FUNDAMENTAL-STREAM"
 		"STREAM-CLOSE"
-		"STREAM-OPEN-STREAM-P"	
+		"STREAM-OPEN-STREAM-P"
 		"STREAM-STREAMP"
 		"STREAM-INPUT-STREAM-P"
 		"STREAM-OUTPUT-STREAM-P"
@@ -132,11 +132,11 @@
 		"STREAM-FINISH-OUTPUT"
 		"STREAM-FORCE-OUTPUT"
 		"STREAM-CLEAR-OUTPUT"
-		"STREAM-ADVANCE-TO-COLUMN"				
+		"STREAM-ADVANCE-TO-COLUMN"
         "STREAM-READ-SEQUENCE"
         "STREAM-WRITE-SEQUENCE"
         "FUNDAMENTAL-BINARY-INPUT-STREAM"
-		"FUNDAMENTAL-BINARY-OUTPUT-STREAM"					
+		"FUNDAMENTAL-BINARY-OUTPUT-STREAM"
 	))
 
 (in-package :gray-streams)
@@ -325,15 +325,15 @@
         (setf end (length sequence)))
     (let ((element-type (stream-element-type stream))
 		  (eof (cons nil nil)))
-		(cond 
+		(cond
 			((eq element-type 'character)
 				(dotimes (count (- end start) (- end start))
 					(let ((c (stream-read-char stream nil eof)))
 						(if (eq c eof)
 							(return (+ count start)))
 						(setf (elt sequence (+ count start)) c))))
-			((or (eq element-type 'byte) 
-					(eq element-type 'unsigned-byte) 
+			((or (eq element-type 'byte)
+					(eq element-type 'unsigned-byte)
 					(eq element-type 'signed-byte))
 				(dotimes (count (- end start) (- end start))
 					(let ((b (stream-read-byte stream nil eof)))
@@ -412,13 +412,13 @@
 (defun gray-unread-char (character &optional input-stream)
 	(let ((stream (decode-read-arg input-stream)))
 		(if (old-streamp stream)
-			(funcall *old-unread-char* character stream)	  
+			(funcall *old-unread-char* character stream)
 			(stream-unread-char stream character))))
 
 (defun gray-listen (&optional input-stream)
 	(let ((stream (decode-read-arg input-stream)))
 		(if (old-streamp stream)
-			(funcall *old-listen* stream)	  
+			(funcall *old-listen* stream)
 			(stream-listen stream))))
 
 (defun gray-read-line (&optional input-stream (eof-error-p t)
@@ -503,13 +503,13 @@
 
 (defun gray-read-byte (binary-input-stream &optional (eof-errorp t) eof-value)
 	(if (old-streamp binary-input-stream)
-		(funcall *old-read-byte* binary-input-stream eof-errorp eof-value)	
+		(funcall *old-read-byte* binary-input-stream eof-errorp eof-value)
 		(check-for-eof (stream-read-byte binary-input-stream)
 			binary-input-stream eof-errorp eof-value)))
 
 (defun gray-write-byte (integer binary-output-stream)
 	(if (old-streamp binary-output-stream)
-		(funcall *old-write-byte* integer binary-output-stream)	
+		(funcall *old-write-byte* integer binary-output-stream)
 		(stream-write-byte binary-output-stream integer)))
 
 (defclass string-input-stream (fundamental-character-input-stream)
@@ -568,7 +568,7 @@
 					:fill-pointer 0 :adjustable t)))
 		(vector-push-extend character string)
 		character))
-			  
+
 
 
 (defmethod stream-line-column ((stream string-output-stream))
@@ -585,7 +585,7 @@
 		(if (old-streamp stream)
 			(funcall *old-%output-char* character stream)
 			(stream-write-char stream character))))
-  
+
 (defun gray-stream-column (&optional input-stream)
 	(let ((stream (decode-read-arg input-stream)))
 		(if (old-streamp stream)

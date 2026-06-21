@@ -1,7 +1,7 @@
 ;;;; SSL socket library for Corman Lisp - Version 1.5
 ;;;;
 ;;;; Copyright (C) 1999 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; See the end of this file for additional license details regarding the
@@ -30,23 +30,23 @@
 ;;;; =====
 ;;;; This library uses the OpenSSL libraries (http://www.openssl.org).
 ;;;; It was tested with openssl-0.9.4 and the DLL files for Windows
-;;;; should be included with this library. 
+;;;; should be included with this library.
 ;;;;
-;;;; See the examples at the end of the file for useage. It requires the 
-;;;; SOCKETS package by Christopher Double. More recent versions of this 
+;;;; See the examples at the end of the file for useage. It requires the
+;;;; SOCKETS package by Christopher Double. More recent versions of this
 ;;;; software, including the SOCKETS package, may be available at:
 ;;;;   http://www.double.nz/cl
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; This product includes software developed by the OpenSSL Project for 
+;;;; This product includes software developed by the OpenSSL Project for
 ;;;; use in the OpenSSL Toolkit (http://www.openssl.org/),
 ;;;; cryptographic software written by Eric Young (eay@cryptsoft.com) and
 ;;;; software written by Tim Hudson (tjh@cryptsoft.com).
-;;;; Modified by Artem Boldarev (artem.boldarev@gmail.com). 
+;;;; Modified by Artem Boldarev (artem.boldarev@gmail.com).
 ;;;;
-;;;; 18/12/1999 - 1.0 
+;;;; 18/12/1999 - 1.0
 ;;;;              Initial release.
 ;;;;              Initial implementation of client SSL sockets. No error
 ;;;;              handling so not really very useful for production stuff.
@@ -61,7 +61,7 @@
 ;;;;              changes in the SOCKETS package.
 ;;;;
 ;;;; 31/08/2000 - 1.3
-;;;;              Updated to work with Corman Lisp 1.41 and SOCKETS library 
+;;;;              Updated to work with Corman Lisp 1.41 and SOCKETS library
 ;;;;              version 1.5.
 ;;;;
 ;;;; 05/09/2000 - 1.4
@@ -75,12 +75,12 @@
 (require 'SOCKETS)
 
 (defpackage "SSL-SOCKETS"
-	(:use 
-		:COMMON-LISP 
+	(:use
+		:COMMON-LISP
 		:WIN
 		:C-TYPES
 		:SOCKETS)
-	(:export 
+	(:export
 		"START-SSL-SOCKETS"
 		"SSL-SOCKET-MIXIN"
 		"CLIENT-SSL-SOCKET"
@@ -131,9 +131,9 @@ void SSL_CTX_free(void * ctx);
 
 (defclass proxy-client-ssl-socket (client-socket ssl-socket-mixin proxy-socket-mixin)
 	()
-	(:documentation 
+	(:documentation
 		"SSL socket that tunnels through a proxy server."))
-  
+
 (defmethod initialize-instance :after ((s ssl-socket-mixin) &key host port &allow-other-keys)
     (declare (ignore host port))
     (let* ((method (TLS_client_method))
@@ -177,7 +177,7 @@ void SSL_CTX_free(void * ctx);
 (defmacro with-client-ssl-socket ((socket &key host port proxy) &body body)
 	"Ensures that the SOCKET is closed when scope of WITH-SSL-CLIENT-SOCKET
 	has ended."
-	(let ((p-name (gensym)))	  
+	(let ((p-name (gensym)))
 		`(let* ((,p-name (if ,proxy ,proxy *default-proxy-server*))
 				(,socket (make-client-ssl-socket :host ,host :port ,port :proxy ,p-name)))
 			(unwind-protect
@@ -197,7 +197,7 @@ void SSL_CTX_free(void * ctx);
 ;; Slow way
 (with-client-ssl-socket (s :host "wikipedia.org" :port 443)
 	(write-socket-line s "GET / HTTP/1.1")
-	(write-socket-line s "")	
+	(write-socket-line s "")
 	(loop as line = (read-socket-line s nil :eof)
 		until (eq line :eof)
 		do (format t "~A~%" line) (force-output)))
@@ -209,8 +209,8 @@ void SSL_CTX_free(void * ctx);
 	(let ((content-length 0))
 		(loop as line = (read-socket-line s)
 			while (and line (> (length line) 0))
-			do 
-			(when (equal 
+			do
+			(when (equal
 					(string-upcase (subseq line 0 (search ":" line)))
 					"CONTENT-LENGTH")
 				(setq content-length
@@ -227,7 +227,7 @@ void SSL_CTX_free(void * ctx);
 		(let ((content-length 0))
 			(loop as line = (read-line stream nil :eof)
 				while (and (not (eq line :eof)) (> (length line) 0))
-				do 
+				do
 			(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
 					(setq content-length
 						(parse-integer line :start (+ (search ":" line) 1)))))
@@ -238,7 +238,7 @@ void SSL_CTX_free(void * ctx);
 				contents))))
 
 ;; Using Proxy
-(let ((*default-proxy-server* 
+(let ((*default-proxy-server*
 			(make-instance 'generic-proxy-server :host "proxy.myserver.com" :port 8080)))
 	(with-client-ssl-socket (s :host "wikipedia.org" :port 443)
 		(with-socket-stream (stream s)
@@ -248,7 +248,7 @@ void SSL_CTX_free(void * ctx);
 			(let ((content-length 0))
 				(loop as line = (read-line stream nil :eof)
 					while (and (not (eq line :eof)) (> (length line) 0))
-					do 
+					do
 				(when (equal (string-upcase (subseq line 0 (search ":" line))) "CONTENT-LENGTH")
 						(setq content-length
 							(parse-integer line :start (+ (search ":" line) 1)))))
@@ -258,7 +258,7 @@ void SSL_CTX_free(void * ctx);
 					(read-sequence contents stream)
 					contents)))))
 
-;; I need some SSL website examples! 
+;; I need some SSL website examples!
 |#
 
 #|
@@ -273,7 +273,7 @@ void SSL_CTX_free(void * ctx);
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -328,21 +328,21 @@ void SSL_CTX_free(void * ctx);
  * This package is an SSL implementation written
  * by Eric Young (eay@cryptsoft.com).
  * The implementation was written so as to conform with Netscapes SSL.
- * 
+ *
  * This library is free for commercial and non-commercial use as long as
  * the following conditions are aheared to.  The following conditions
  * apply to all code found in this distribution, be it the RC4, RSA,
  * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
  * included with this distribution is covered by the same copyright terms
  * except that the holder is Tim Hudson (tjh@cryptsoft.com).
- * 
+ *
  * Copyright remains Eric Young's, and as such any Copyright notices in
  * the code are not to be removed.
  * If this package is used in a product, Eric Young should be given attribution
  * as the author of the parts of the library used.
  * This can be in the form of a textual message at program startup or
  * in documentation (online or textual) provided with the package.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -357,10 +357,10 @@ void SSL_CTX_free(void * ctx);
  *     Eric Young (eay@cryptsoft.com)"
  *    The word 'cryptographic' can be left out if the rouines from the library
  *    being used are not cryptographic related :-).
- * 4. If you include any Windows specific code (or a derivative thereof) from 
+ * 4. If you include any Windows specific code (or a derivative thereof) from
  *    the apps directory (application code) you must include an acknowledgement:
  *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -372,7 +372,7 @@ void SSL_CTX_free(void * ctx);
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- * 
+ *
  * The licence and distribution terms for any publically available version or
  * derivative of this code cannot be changed.  i.e. this code cannot simply be
  * copied and put under another distribution licence

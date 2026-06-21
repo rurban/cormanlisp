@@ -89,7 +89,7 @@ the big advantages of&nbsp; a web server written in Common Lisp is the ability t
 html dynamically.&nbsp; In this document we'll consider the web server and dynamic html
 generation to be parts of the same product.</p>
 
-<p>The design goals of AllegroServe are: 
+<p>The design goals of AllegroServe are:
 
 <ul>
   <li>a very small footprint.&nbsp;&nbsp; It should be possible to make AllegroServe a part of
@@ -112,7 +112,7 @@ generation to be parts of the same product.</p>
 
 <h2><a name="running-AllegroServe"></a>Running AllegroServe</h2>
 
-<p>Running&nbsp; AllegroServe requires that you 
+<p>Running&nbsp; AllegroServe requires that you
 
 <ul>
   <li><strong>load</strong> <em>aserve.fasl</em> into Lisp</li>
@@ -141,7 +141,7 @@ have made Lisp a set-user-id root program.</p>
 
 <p>The&nbsp; are quite a few keyword arguments to <strong>start</strong>, but in practice
 you only need be concerned with <strong>:port</strong> and <strong>:listeners.
-&nbsp;&nbsp;&nbsp; </strong>The arguments have the following meanings: 
+&nbsp;&nbsp;&nbsp; </strong>The arguments have the following meanings:
 
 <ul>
   <li>port -- the port on which to open the web server.&nbsp; 80 is the default.</li>
@@ -207,7 +207,7 @@ tables scanned by AllegroServe after a request is read.</p>
 <h3>Components of a request</h3>
 
 <p>A request from an http client contains a lot of information.&nbsp; The two items that
-determine which entity will handle the request are 
+determine which entity will handle the request are
 
 <ul>
   <li>the <strong>path</strong> of the url.&nbsp; This is the part of the url after the host
@@ -246,7 +246,7 @@ path host port&nbsp; file content-type class preload remove server)</font></stro
 
 <p>This creates an entity that will return the contents of a file on the disk in response
 to a request.&nbsp;&nbsp; The <strong>url</strong> and <strong>file</strong>&nbsp; must be
-given, the rest of the arguments are optional..&nbsp; The arguments have these meanings: 
+given, the rest of the arguments are optional..&nbsp; The arguments have these meanings:
 
 <ul>
   <li><strong>path </strong>-- a string that must match the name part of the url as described
@@ -382,7 +382,7 @@ html:</p>
          :function #'(lambda (req ent)
                        (with-http-response (req ent)
                          (with-http-body (req ent)
-                          (html 
+                          (html
                              (:html
                                (:body &quot;Hello World!&quot;)))))))</pre>
 </div>
@@ -506,7 +506,7 @@ specify headers and values to be sent with a reply.</p>
 the alist is a cons where the car is a string giving the name of the argument and the cdr
 is a string giving the value of the argument.</p>
 
-<p>The query string is in one or both of two places: 
+<p>The query string is in one or both of two places:
 
 <ul>
   <li>it begins at the first question mark in the uri and continues until the end of the uri
@@ -653,7 +653,7 @@ fields, check boxes and radio buttons.&nbsp;&nbsp; Each field has a name.&nbsp;&
 the user takes a certain action, the form data is encoded and sent to the web server.
 &nbsp;&nbsp;&nbsp; There are three ways that data can be sent to the web server.&nbsp; The
 method used is determined by the attributes of the <strong>&lt;form&gt;</strong> tag that
-defines the form 
+defines the form
 
 <ul>
   <li><strong>&lt;form method=&quot;get&quot;&gt; -&nbsp; </strong>The data is made part of
@@ -684,7 +684,7 @@ defines the form
 
 <p>If you create a form with <strong>&lt;form method=&quot;post&quot;
 enctype=&quot;multipart/form-data&quot;&gt;</strong> then your url handler must do the
-following to retrieve the value of each field in the form: 
+following to retrieve the value of each field in the form:
 
 <ol>
   <li>Call <strong>(get-multipart-header req)</strong> to return the MIME headers of the next
@@ -793,7 +793,7 @@ query)</strong></font></p>
 
 <p>Examples:</p>
 
-<pre>user(4): <strong>(query-to-form-urlencoded '((&quot;first name&quot; . &quot;joe&quot;) 
+<pre>user(4): <strong>(query-to-form-urlencoded '((&quot;first name&quot; . &quot;joe&quot;)
                                      (&quot;last name&quot; . &quot;smith&quot;)))</strong>
 &quot;first+name=joe&amp;last+name=smith&quot;
 
@@ -865,7 +865,7 @@ or deny the current request.&nbsp;&nbsp;&nbsp; AllegroServe supplies two interes
 subclasses of <strong>authorizer</strong> and users are free to add their own subclasses
 to support their own authorization needs.&nbsp;&nbsp; </p>
 
-<p>The protocol followed during authorization is this: 
+<p>The protocol followed during authorization is this:
 
 <ol>
   <li>an entity object is selected that matches the request</li>
@@ -963,7 +963,7 @@ matches, then the request is accepted.&nbsp; </p>
   </tr>
 </table>
 
-<p>A pattern can be 
+<p>A pattern can be
 
 <ul>
   <li><strong>:accept</strong> -- this is a pattern that matches all IP addresses and causes
@@ -1018,7 +1018,7 @@ then pass back to the web server under certain circumstances.&nbsp;&nbsp; Some u
 configure their web browsers to reject cookies, thus you are advised against building a
 site that depends on cookies to work.</p>
 
-<p>Each cookie has these components: 
+<p>Each cookie has these components:
 
 <ol>
   <li><strong>name</strong> - a string.&nbsp;&nbsp; Since you can get multiple cookies sent to
@@ -1154,7 +1154,7 @@ value and if so calls</p>
 <p><a name="f-authorize"></a><strong><font face="Courier New">(authorize (auth authorizer)
 (req http-request) (ent entity)) </font></strong>&nbsp; [generic function]</p>
 
-<p>The return value will be one of 
+<p>The return value will be one of
 
 <ul>
   <li><strong>t -- </strong>The request is authorized,&nbsp; call <strong>process-entity</strong>
@@ -1228,7 +1228,7 @@ redirect basic-authorization<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 keep-alive headers proxy)</font></strong></p>
 
-<p>Sends a request to <strong>uri</strong> and returns four values: 
+<p>Sends a request to <strong>uri</strong> and returns four values:
 
 <ol>
   <li>The body of the response.&nbsp; If there is no body the empty string is returned.</li>
@@ -1383,7 +1383,7 @@ keep-alive headers proxy)</font></strong></p>
 &nbsp; If the form has input elements named&nbsp; <strong>width</strong> and <strong>height</strong>
 then you can send a request that specifies that information in this way:</p>
 
-<pre><font face="Courier New">(do-http-request <a href="http://www.foo.com/myform.html">&quot;http://www.foo.com/myform.html&quot;</a> 
+<pre><font face="Courier New">(do-http-request <a href="http://www.foo.com/myform.html">&quot;http://www.foo.com/myform.html&quot;</a>
                  :query '((&quot;width&quot; . 23) (&quot;height&quot; . 45)))</font></pre>
 
 <p>The above assumes that the method on the form is &quot;GET&quot;.&nbsp;&nbsp; If the

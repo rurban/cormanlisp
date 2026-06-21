@@ -119,14 +119,14 @@ END
 // RCDATA
 //
 // This clutters up the version dependent APP with the version independent
-// Lispimage and DLL. So it's a waste of space if more acad versions should be 
+// Lispimage and DLL. So it's a waste of space if more acad versions should be
 // supported.
-// However, one file only, the img and dll inside the arx as resource, 
+// However, one file only, the img and dll inside the arx as resource,
 // might be better to ship and maintain.
 
 #ifdef ALL_IN_ONE_FILE
-IMAGENAME         RCDATA  DISCARDABLE  
-BEGIN 
+IMAGENAME         RCDATA  DISCARDABLE
+BEGIN
 	"CormanLisp.img\0"
 END
 IMAGEDATA             RCDATA  "CormanLisp.img"

@@ -9,7 +9,7 @@
                  &key (c 3) ((:dee d) 4) e ((eff f)))
    (list a b c d e f))
 =>  true ;;#<STANDARD-METHOD GF1 (INTEGER) 36324653>
- (find-method #'gf1 '() (list (find-class 'integer))) 
+ (find-method #'gf1 '() (list (find-class 'integer)))
 =>  true ;;#<STANDARD-METHOD GF1 (INTEGER) 36324653>
  (function-keywords *)
 =>  (:C :DEE :E EFF), false
@@ -23,20 +23,20 @@
  (function-keywords *)
 =>  (:B :C :D), true
 )
-	
+
 (dotests CHANGE-CLASS
 
  (defclass position () ()) => true
-  
+
  (defclass x-y-position (position)
      ((x :initform 0 :initarg :x)
       (y :initform 0 :initarg :y))) => true
-  
+
  (defclass rho-theta-position (position)
      ((rho :initform 0)
       (theta :initform 0))) => true
-  
- (defmethod update-instance-for-different-class :before ((old x-y-position) 
+
+ (defmethod update-instance-for-different-class :before ((old x-y-position)
                                                          (new rho-theta-position)
                                                          &key)
    ;; Copy the position information from old to new to make new
@@ -45,24 +45,24 @@
          (y (slot-value old 'y)))
      (setf (slot-value new 'rho) (sqrt (+ (* x x) (* y y)))
            (slot-value new 'theta) (atan y x)))) => true
-  
+
 ;;; At this point an instance of the class x-y-position can be
 ;;; changed to be an instance of the class rho-theta-position using
 ;;; change-class:
- 
+
  (setq p1 (make-instance 'x-y-position :x 2 :y 0)) => true
-  
+
  (change-class p1 'rho-theta-position) => true
-  
+
 ;;; The result is that the instance bound to p1 is now an instance of
 ;;; the class rho-theta-position.   The update-instance-for-different-class
 ;;; method performed the initialization of the rho and theta slots based
 ;;; on the value of the x and y slots, which were maintained by
 ;;; the old instance.
 )
-	
+
 (dotests SLOT-VALUE
-	 (defclass foo () 
+	 (defclass foo ()
 	   ((a :accessor foo-a :initarg :a :initform 1)
 	    (b :accessor foo-b :initarg :b)
 	    (c :accessor foo-c :initform 3)))
@@ -109,7 +109,7 @@
 	 (setq obj1 (make-instance 'obj :x 3.0 :y 4.0)) =>  true ;; RGC #<OBJ 26274136>
 	 (obj-dist obj1) =>  5.0
 	 (make-load-form obj1) =>  (MAKE-INSTANCE 'OBJ :X '3.0 :Y '4.0)
-	
+
 	 ;; Redefine method defined above.
 	 (defmethod make-load-form ((self obj) &optional environment)
 	    (make-load-form-saving-slots self
@@ -153,7 +153,7 @@
 	;>>  Changing X from 7 to (9) in #<THING 43147374>.
 	=>  ((1 1 2 2 7 7 8 8)
 	     9
-	     (9 9 2 2 7 7 8 8) 
+	     (9 9 2 2 7 7 8 8)
 	     (9)
 	     (9 9 2 2 (9) (9) 8 8))
 )
@@ -186,7 +186,7 @@
 	;  Changing X from 7 to (9) in #<THING 43147374>.
 	=>  ((1 1 2 2 7 7 8 8)
 	     9
-	     (9 9 2 2 7 7 8 8) 
+	     (9 9 2 2 7 7 8 8)
 	     (9)
 	     (9 9 2 2 (9) (9) 8 8))
 )
@@ -205,14 +205,13 @@
 (dotests CLASS-OF
 	 (class-of 'fred) =>    true ;; RGC #<BUILT-IN-CLASS SYMBOL 610327300>
 	 (class-of 2/3) =>    true ;; RGC #<BUILT-IN-CLASS RATIO 610326642>
-	 
+
 	 (defclass book () ()) =>    true ;; RGC #<STANDARD-CLASS BOOK 33424745>
 	 (class-of (make-instance 'book)) =>    true ;; RGC #<STANDARD-CLASS BOOK 33424745>
-	 
+
 	 (defclass novel (book) ()) =>    true ;; RGC #<STANDARD-CLASS NOVEL 33424764>
 	 (class-of (make-instance 'novel)) =>    true ;; RGC #<STANDARD-CLASS NOVEL 33424764>
-	
+
 	 (defstruct kons kar kdr) =>  KONS
 	 (class-of (make-kons :kar 3 :kdr 4)) =>    true ;; RGC #<STRUCTURE-CLASS KONS 250020317>
-)	
-	
+)

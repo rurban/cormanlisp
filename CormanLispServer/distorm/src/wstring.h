@@ -8,7 +8,6 @@ Copyright (C) 2003-2016 Gil Dabah
 This library is licensed under the BSD license. See the file COPYING.
 */
 
-
 #ifndef WSTRING_H
 #define WSTRING_H
 
@@ -23,12 +22,12 @@ void strcatlen_WS(_WString* s, const int8_t* buf, unsigned int len);
 void strcat_WS(_WString* s, const _WString* s2);
 
 /*
-* Warning, this macro should be used only when the compiler knows the size of string in advance!
-* This macro is used in order to spare the call to strlen when the strings are known already.
-* Note: sizeof includes NULL terminated character.
-*/
-#define strcat_WSN(s, t) strcatlen_WS((s), ((const int8_t*)t), sizeof((t))-1)
-#define strcpy_WSN(s, t) strcpylen_WS((s), ((const int8_t*)t), sizeof((t))-1)
+ * Warning, this macro should be used only when the compiler knows the size of string in advance!
+ * This macro is used in order to spare the call to strlen when the strings are known already.
+ * Note: sizeof includes NULL terminated character.
+ */
+#define strcat_WSN(s, t) strcatlen_WS((s), ((const int8_t*)t), sizeof((t)) - 1)
+#define strcpy_WSN(s, t) strcpylen_WS((s), ((const int8_t*)t), sizeof((t)) - 1)
 
 #endif /* DISTORM_LIGHT */
 

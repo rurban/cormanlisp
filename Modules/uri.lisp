@@ -1,7 +1,7 @@
 ;;;; URI library for Corman Lisp - Version 1.0
 ;;;;
 ;;;; Copyright (C) 2000 Christopher Double. All Rights Reserved.
-;;;; 
+;;;;
 ;;;; License
 ;;;; =======
 ;;;; This software is provided 'as-is', without any express or implied
@@ -20,7 +20,7 @@
 ;;;; 2. Altered source versions must be plainly marked as such, and must
 ;;;;    not be misrepresented as being the original software.
 ;;;;
-;;;; 3. This notice may not be removed or altered from any source 
+;;;; 3. This notice may not be removed or altered from any source
 ;;;;    distribution.
 ;;;;
 ;;;; Notes
@@ -28,10 +28,10 @@
 ;;;; More recent versions of this software may be available at:
 ;;;;   http://www.double.nz/cl
 ;;;;
-;;;; Comments, suggestions and bug reports to the author, 
+;;;; Comments, suggestions and bug reports to the author,
 ;;;; Christopher Double, at: chris@double.nz
 ;;;;
-;;;; 16/09/2000 - 1.0 
+;;;; 16/09/2000 - 1.0
 ;;;;              Initial release.
 ;;;;              A quick stab at implementing the URI package that Allegro
 ;;;;              Common Lisp has. I've started with only the features used
@@ -45,7 +45,7 @@
 ;;;;
 (defpackage :net.uri
 	(:use :common-lisp)
-	(:export 
+	(:export
 		"URI"
 		"URI-SCHEME"
 		"URI-HOST"
@@ -111,7 +111,7 @@
 					(loop for n downfrom (- end 1) downto start do
 						(let ((ch (elt name n)))
 							(when (eql ch #\?)
-								(setq query-start (+ n 1))))))			 
+								(setq query-start (+ n 1))))))
 				(scan-for-host (start end)
 					(if (eql (elt name start) #\/)
 						(if (and (> (- end start) 1) (eql (elt name (+ 1 start)) #\/))
@@ -155,14 +155,14 @@
 	(format nil "~A:~A" (uri-host uri) (uri-port uri)))
 
 (defun render-uri (uri stream)
-	(format 
-		stream 		
+	(format
+		stream
 		(with-output-to-string (new-stream)
 			(let ((scheme (uri-scheme uri))
 					(host (uri-host uri))
 					(port (uri-port uri))
 					(path (uri-path uri)))
-				(when scheme 
+				(when scheme
 					(format new-stream "~A://" scheme))
 				(when host
 					(format new-stream "~A" host))
@@ -180,7 +180,7 @@
 	"Convert a string to an appropriate keyword"
 	(when string
 		(intern (string-upcase string) (find-package 'keyword))))
-		
+
 (defun parse-uri (name &key (class 'uri))
 	(multiple-value-bind (scheme-start
 			scheme-end
@@ -196,17 +196,17 @@
 			fragment-end)
 		(scan-uri-internal name)
 		(let ((scheme
-					(string-to-keyword 
+					(string-to-keyword
 						(and scheme-start (subseq name scheme-start scheme-end))))
-				(path 
+				(path
 					(and path-start (subseq name path-start path-end))))
 			(make-instance class
-				:scheme scheme			
+				:scheme scheme
 				:host (and host-start (subseq name host-start host-end))
 				:port (and port-start (subseq name port-start port-end))
-				:path 
-				(if (= (length path) 0) 
-					"/" 
+				:path
+				(if (= (length path) 0)
+					"/"
 					(if (eql (elt path 0) #\/)
 						path
 						(concatenate 'string "/" path)))

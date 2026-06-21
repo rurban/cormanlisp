@@ -67,12 +67,12 @@
 					(push (car f) declarations)
 					(progn (setq forms f) (return)))))
 
-		(setq lambda-form 
-			`(lambda (,form-sym &optional ,env-sym) 
+		(setq lambda-form
+			`(lambda (,form-sym &optional ,env-sym)
 				(declare (ignore ,env-sym ,@(unless lambda-list '(form))))
-				(cl::macro-bind ,lambda-list 
+				(cl::macro-bind ,lambda-list
 					(if (eq (car ,form-sym) 'funcall) (cdr ,form-sym) ,form-sym)
-					,@(nreverse declarations) 
+					,@(nreverse declarations)
 					(block ,name ,@forms))))
 		`(progn (setf (compiler-macro-function ',name) (function ,lambda-form))
                                      (setf (ccl::macro-lambda-list (compiler-macro-function ',name)) ',lambda-list)
@@ -107,9 +107,9 @@
 
 (defmacro defcodegen (op params &rest exprs)
 	(unless (= (length params) 2)
-		(error "Wrong number of arguments to code generator function: ~A ~A" 
+		(error "Wrong number of arguments to code generator function: ~A ~A"
 			op params))
-	`(progn 
+	`(progn
 		(setf (x86::code-generator-function ',op) #'(lambda ,params ,@exprs))
 		',op))
 
@@ -135,12 +135,12 @@
 			(if (consp f)
 				(emit-code (apply (get (car f) 'x86::encoding-func) (cdr f)))
 				(if (keywordp f)
-					(push 
-						(cons f (uref *compiler-code-buffer* code-buffer-code-index-offset)) 
+					(push
+						(cons f (uref *compiler-code-buffer* code-buffer-code-index-offset))
 						*compiler-code-labels*)
 					(unless (eq f 'inline-assemble)
 						(error "Invalid form in assembly block: ~A" f)))))
-	
+
 		;; now need to resolve addresses
 		(resolve-branch-addresses *compiler-code-labels* *compiler-code-branch-targets*)))
 
@@ -190,7 +190,7 @@
 		mov     edx, eax
 	    and     eax, #xffff
 	    shr     edx, 16
-	end-atomic		
+	end-atomic
 		jmp		short :exit
 	:error
 		push	"Argument ~A is not of type INTEGER"
@@ -283,7 +283,7 @@
         mov     edx, eax
 	    and     eax, #xffff
 	    shr     edx, 16
-	end-atomic		
+	end-atomic
 		jmp		short :exit
 	:fixnum
     begin-atomic
@@ -291,7 +291,7 @@
         mov     edx, eax
 	    and     eax, #xffff
 	    shr     edx, 16
-	end-atomic		
+	end-atomic
 		jmp		short :exit
 	:error
 		push	"Argument ~A is not of type (INTEGER 0 *)"
@@ -384,7 +384,7 @@
         jl      short :next2
  		mov		edx, [ecx + (uvector-offset (+ cl::bignum-first-cell-offset 1))]
     :next2
-        pop     ecx       
+        pop     ecx
 		and		ebx, 8			;; bignum < 0?
 		jz		short :exit
         ;; twos-complement of edx:eax (64-bit number)
@@ -452,7 +452,7 @@
         jl      short :next2
  		mov		edx, [ecx + (uvector-offset (+ cl::bignum-first-cell-offset 1))]
     :next2
-        pop     ecx       
+        pop     ecx
 		and		ebx, 8			;; bignum < 0?
 		jz		short :exit
         ;; twos-complement of edx:eax (64-bit number)
@@ -516,7 +516,7 @@
             add     esp, 4
         })
     t)
-       
+
 (defcodegen compile-foreign-arg (form dest)
 	(declare (ignore dest))
 	(let ((arg (second form))
@@ -559,14 +559,14 @@
 				{
 					callp	%GET-FOREIGN-INT64
 				}))
-			
+
             ((eq type :uint64)
 			 (parse-assembler
 				{
 					callp	%GET-FOREIGN-UINT64
 				}))
-            
-			((eq type :short) 
+
+			((eq type :short)
 			 (parse-assembler
 				{
                     push    ecx
@@ -580,7 +580,7 @@
                 end-atomic
    				}))
 
-			((eq type :unsigned-short) 
+			((eq type :unsigned-short)
 			 (parse-assembler
 				{
                     push    ecx
@@ -594,15 +594,15 @@
                 end-atomic
    				}))
 
-			((eq type :wide-char) 
+			((eq type :wide-char)
 			 (parse-assembler
 				{
                     shl     eax, 8
                     shr     eax, 16
                     mov     [esi + ecx*4 + (* foreign-cells-qv-tos 4)], eax
    				}))
-            
-			((eq type :char) 
+
+			((eq type :char)
 			 (parse-assembler
 				{
                     push    ecx
@@ -616,7 +616,7 @@
                 end-atomic
 				}))
 
-			((eq type :unsigned-char) 
+			((eq type :unsigned-char)
 			 (parse-assembler
 				{
                     push    ecx
@@ -630,7 +630,7 @@
                 end-atomic
    				}))
 
-			((eq type :double-float) 
+			((eq type :double-float)
 			 (parse-assembler
 				{
 					mov 	edx, eax
@@ -655,7 +655,7 @@
                     fstp    [esi + ecx*4 + (* foreign-cells-qv-tos 4)]
 				}))
 
-			((eq type :single-float) 
+			((eq type :single-float)
 			 (parse-assembler
 				{
 					mov 	edx, eax
@@ -680,7 +680,7 @@
                     fstp.single [esi + ecx*4 + (* foreign-cells-qv-tos 4)]
 				}))
 
-			((eq type :void) 
+			((eq type :void)
 			 (error "Type ~A is not supported by PUSH-ARG" type))
 
 			(t
@@ -751,9 +751,9 @@
 		end-atomic
 		mov		ecx, 0
 		callf	cl::memory-report
-		push	"Error in context switch from lisp calling into foreign code" 
+		push	"Error in context switch from lisp calling into foreign code"
 		mov		ecx, 1
-		callf	error           
+		callf	error
 	:t11000
 		push	eax		;; just to get esp - 4
 		mov		[esi + eax*2 + (* stack-markers-qv-offset 4)], esp
@@ -774,7 +774,7 @@
 		jge		short :err2
         test    eax, 4          ;; index should not be even (already in lisp code)
         jnz      short :t11001
-    :err2			
+    :err2
         end-atomic
 		mov		ecx, 0
 		callf	cl::memory-report
@@ -798,7 +798,7 @@
 		jle		short :err3
         test    edx, 4          ;; index should not be even (already in lisp code)
         jnz      short :t11002
-    :err3			
+    :err3
 		end-atomic
 		mov		ecx, 0
 		callf	cl::memory-report
@@ -808,7 +808,7 @@
 	:t11002
 		sub		edx, 4
 		mov		[esi + (* stack-marker-index-qv-offset 4)], edx
-        push    0  
+        push    0
 		pop		[esi + edx*2 + (* stack-markers-qv-offset 4)]   ;; clear stack marker
         push    0       ;; clear return address cell
         pop     [esi + edx*2 + (* (+ stack-markers-qv-offset 1) 4)]
@@ -823,7 +823,7 @@
 		jle		short :err4
         test    edx, 4          ;; index should not be odd (already in foreign code)
         jz      short :t11003
-    :err4			
+    :err4
 		end-atomic
 		mov		ecx, 0
 		callf	cl::memory-report
@@ -833,8 +833,8 @@
 	:t11003
 		sub		edx, 4
 		mov		[esi + (* stack-marker-index-qv-offset 4)], edx
-        push    0  
-		pop		[esi + edx*2 + (* stack-markers-qv-offset 4)]   ;; clear stack marker 
+        push    0
+		pop		[esi + edx*2 + (* stack-markers-qv-offset 4)]   ;; clear stack marker
         push    0       ;; clear return address cell
         pop     [esi + edx*2 + (* (+ stack-markers-qv-offset 1) 4)]
         end-atomic
@@ -871,7 +871,7 @@
             lisp-return-to-foreign
         })
     t)
-   
+
 (defcodegen link-heap-handler (form dest)
 	(declare (ignore form dest))
 	(parse-assembler
@@ -880,7 +880,7 @@
             mov     eax, 'cl::%heap_fault_handler
     		mov 	eax, [eax + (- (* 4 symbol-function-offset) uvector-tag)]
     		mov 	eax, [eax - cons-tag]
-            
+
 			push	[eax + (uvector-offset cl::function-code-buffer-offset)]	;; push handler
 			fs
 			push	[0]		;; push fs:[0]  previous address
@@ -916,12 +916,12 @@
 
 (defcodegen call-com-method (form dest)
 	(declare (ignore dest form))
-	(parse-assembler   
+	(parse-assembler
 		{
-			shr ebx, 1	  ;; ebx = fixnum -> int * 4   
+			shr ebx, 1	  ;; ebx = fixnum -> int * 4
 			mov edx, [esp];; edx -> interface
 			mov edx, [edx];; edx -> vtable
-			call [ebx + edx]   
+			call [ebx + edx]
 		})
 	t)
 
@@ -937,7 +937,7 @@
 		})
 	t)
 
-;; 
+;;
 ;; Call a foreign function whose address is at the top of the stack.
 ;;
 (defcodegen call-foreign-pointer (form dest)
@@ -1000,7 +1000,7 @@
         xor     edx, 8
         mov     [eax + (uvector-offset 1)], edx
         jmp     short :done
-    :next1      
+    :next1
         mov     [eax + (uvector-offset 2)], edx
     :done
         mov     ecx, 1
@@ -1051,7 +1051,7 @@
         sar     ecx, 3
         mov     eax, [esi + ecx*4 + (+ 4 (* foreign-cells-qv-tos 4))]   ;; check high dword
         cmp     eax, 0
-        jnz     short :check-neg-fixnum         
+        jnz     short :check-neg-fixnum
         mov     eax, [esi + ecx*4 + (* foreign-cells-qv-tos 4)]     ;; high dword is 0
         cmp     eax, cl::most-positive-fixnum
         jg      short :bignum
@@ -1092,7 +1092,7 @@
         xor     edx, 8
         mov     [eax + (uvector-offset 1)], edx
         jmp     short :done
-    :next1      
+    :next1
         mov     [eax + (uvector-offset 2)], ecx
         mov     [eax + (uvector-offset 3)], edx
     :done
@@ -1112,7 +1112,7 @@
         sar     ecx, 3
         mov     eax, [esi + ecx*4 + (+ 4 (* foreign-cells-qv-tos 4))]   ;; check high dword
         cmp     eax, 0
-        jnz     short :bignum         
+        jnz     short :bignum
         mov     eax, [esi + ecx*4 + (* foreign-cells-qv-tos 4)]
         cmp     eax, cl::most-positive-fixnum
         ja      short :bignum       ;; unsigned compare
@@ -1159,8 +1159,8 @@
                 {
                     mov     [esi + (- (* foreign-cells-qv-tos 4) 4)], edx
                     mov     [esi + (- (* foreign-cells-qv-tos 4) 8)], eax
-                })))    
-    t)    
+                })))
+    t)
 
 (defcodegen wrap-foreign-return-value (form dest)
 	(declare (ignore dest))
@@ -1224,7 +1224,7 @@
 					add		esp, 4
 					mov		ecx, 1
 				}))
- 			
+
             ((eq type :uint64)
 			 (parse-assembler
 				{
@@ -1233,8 +1233,8 @@
 					add		esp, 4
 					mov		ecx, 1
 				}))
-            
-			((eq type :short) 
+
+			((eq type :short)
 			 (parse-assembler
 				{
                     xor     eax, eax
@@ -1244,7 +1244,7 @@
 					mov		ecx, 1
 				}))
 
-			((eq type :unsigned-short) 
+			((eq type :unsigned-short)
 			 (parse-assembler
 				{
                     xor     eax, eax
@@ -1254,7 +1254,7 @@
 					mov		ecx, 1
 				}))
 
-			((eq type :wide-char) 
+			((eq type :wide-char)
 			 (parse-assembler
 				{
                     xor     eax, eax
@@ -1263,8 +1263,8 @@
 					inc     eax
 					mov		ecx, 1
 				}))
-            
-			((eq type :char) 
+
+			((eq type :char)
 			 (parse-assembler
 				{
                     xor     eax, eax
@@ -1274,7 +1274,7 @@
 					mov		ecx, 1
 				}))
 
-			((eq type :unsigned-char) 
+			((eq type :unsigned-char)
 			 (parse-assembler
 				{
                     xor     eax, eax
@@ -1327,7 +1327,7 @@
 					mov		ecx, 1
 				}))))
 	t)
-							
+
 (defcodegen push-eax (form dest)
 	(declare (ignore form dest))
 	(parse-assembler
@@ -1373,7 +1373,7 @@
 	(cl::compile-sub-form `(let () ,@(cddr form)) dest t)	;; use LET to allow for declarations
 	(pop cl::compiler_cleanups)
 	t)
-	
+
 #|
 ;;;; make a call to the LIST function whenever FOOBAR is seen by the compiler
 (defcodegen foobar (form dest)
@@ -1625,7 +1625,7 @@
 		(if (>= (second form) num-args)
 			(error "Invalid X86::SET-ARG form: there are only ~A lambda-list arguments"
 				num-args))
-		
+
 		;; This check is to see if the argument we are targetting has been converted
 		;; to a heap binding. If this is the case, we need to store into the CAR
 		;; of that binding, rather than the direct register offset. We are not checking
@@ -1645,19 +1645,19 @@
 					(format t "Compiler: found a heap binding for ~A while optimizing tail recursion...~%"
 						(second x)))
 				(return)))
-		
+
 		(if is-heap
 			(parse-assembler
 				{
 					mov		edx, [ebp + offset]
 					mov		[edx - cons-tag], eax
 				})
-			
+
 			(parse-assembler
 				{
 					mov		[ebp + offset], eax
 				}))
-		
+
 		(if (eq dest :dest-stack)
 			(progn
 				(parse-assembler
@@ -1704,7 +1704,7 @@
         pop     ebp
         ret
     })
-                           
+
 (in-package :common-lisp)
 
 
@@ -1713,4 +1713,3 @@
 
 (define-compiler-macro cl::|(SETF AREF)| (value array &rest indices)
 	`(,(elt aref-setter-funcs (length indices)) ,value ,array ,@indices))
-

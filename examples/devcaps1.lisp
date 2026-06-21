@@ -8,7 +8,7 @@
 ;;;;				Programming Windows 95
 ;;;;
 ;;;;				It may be saved as an application:
-;;;;					
+;;;;
 ;;;;				example:
 ;;;;					(load "examples/devcaps1.lisp")
 ;;;;					(save-application "devcaps1" #'win::devcaps1)
@@ -63,14 +63,14 @@
 			 (setf hdc (GetDC hwnd))
 			 (GetTextMetrics hdc *tm*)
 			 (setf cxChar (cref TEXTMETRIC *tm* tmAveCharWidth))
-			 (setf cxCaps 
+			 (setf cxCaps
 				(*
 					(if (evenp (cref TEXTMETRIC *tm* tmPitchAndFamily))
 						3
 						2)
 					(truncate cxChar 2)))
-			 (setf cyChar 
-				(+ (cref TEXTMETRIC *tm* tmHeight) 
+			 (setf cyChar
+				(+ (cref TEXTMETRIC *tm* tmHeight)
 				   (cref TEXTMETRIC *tm* tmExternalLeading)))
 			 (ReleaseDC hwnd hdc)
 			 (return-from WndProc-devcaps1 0))
@@ -78,26 +78,26 @@
 			((= iMsg WM_PAINT)
 			 (setf hdc (BeginPaint hwnd *ps*))
 			 (dotimes (i (length *devcaps*))
-				(TextOut 
-					hdc 
-					cxChar 
-					(* cyChar (+ i 1)) 
+				(TextOut
+					hdc
+					cxChar
+					(* cyChar (+ i 1))
 					(create-c-string (info-label (elt *devcaps* i)))
 					(length (info-label (elt *devcaps* i))))
-				(TextOut 
-					hdc 
-					(+ cxChar (* 22 cxCaps)) 
-					(* cyChar (+ i 1)) 
+				(TextOut
+					hdc
+					(+ cxChar (* 22 cxCaps))
+					(* cyChar (+ i 1))
 					(create-c-string (info-desc (elt *devcaps* i)))
 					(length (info-desc (elt *devcaps* i))))
 				(SetTextAlign hdc (logior TA_RIGHT TA_TOP))
-				(setf buffer 
-					(format nil "~5D" 
+				(setf buffer
+					(format nil "~5D"
 						(GetDeviceCaps hdc (info-index (elt *devcaps* i)))))
-				(TextOut 
-					hdc 
-					(+ cxChar (* 22 cxCaps) (* cxChar 40)) 
-					(* cyChar (+ i 1)) 
+				(TextOut
+					hdc
+					(+ cxChar (* 22 cxCaps) (* cxChar 40))
+					(* cyChar (+ i 1))
 					(create-c-string buffer)
 					(length buffer))
 				(SetTextAlign hdc (logior TA_LEFT TA_TOP)))
@@ -107,7 +107,7 @@
 			((= iMsg WM_DESTROY)
 		   	 (PostQuitMessage 0)
 			 (return-from WndProc-devcaps1 0))
-			
+
 			(t	(return-from WndProc-devcaps1 (DefWindowProc hwnd iMsg wParam lParam))))))
 
 (defun WinMain-devcaps1 (hInstance hPrevInstance szCmdLine iCmdShow)
@@ -131,7 +131,7 @@
 		(setf (cref WNDCLASSEX wndclass lpszClassName) (ct:create-c-string szAppName))
 		(setf (cref WNDCLASSEX wndclass hIconSm) (LoadIcon NULL IDI_APPLICATION))
 		(RegisterClassEx wndclass)
-		(setq *app-window* 
+		(setq *app-window*
 			(CreateWindowEx 0
 				(ct:create-c-string szAppName)				;; window class name
 				(ct:create-c-string "Device Capabilities") 	;; window caption
@@ -159,8 +159,6 @@
 (defun devcaps1 ()
 	(restart-case
 		(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart 'error))))
-			(winmain-devcaps1 (cl::get-application-instance) 
+			(winmain-devcaps1 (cl::get-application-instance)
 				null (ct:create-c-string "") SW_SHOW))
 		(error () #'abort)))
-
-

@@ -89,12 +89,12 @@
 (select [*] :from [lexicon keys] :where [< rownum 2])
 
 (do-query ((a)
-           [select [key] :from [lexicon keys] 
+           [select [key] :from [lexicon keys]
                    :where [and [> [length [key]] 20]
                                [< rownum 20]]])
           (print a))
 
-(select '([category] 
+(select '([category]
           ([count [length [key]] :distinct] [sum]))
         :from [lexicon keys]
         :group-by [category]
@@ -109,36 +109,36 @@
         :where [< [rownum] 8])
 
 (select [key]
-        :from [lexicon keys] 
+        :from [lexicon keys]
         :where [and [< rownum 200] [< [length [key]] 4]])
 
 (select [category]
         :distinct t
-        :from [elhuyar keys] 
+        :from [elhuyar keys]
         :where [< rownum 200])
 
 (let ((cat 'category)
       (ref-exp [id])
       (operator 'avg))
   (select `(,[?cat] (,[/ [?operator ?ref-exp] 2] ,[?operator]))
-          :from [lexicon keys] 
+          :from [lexicon keys]
           :where [> [length [key]] 8]
-          :group-by [category] 
+          :group-by [category]
           :having [> [length [category]] 4]))
 
 (let ((fun 'lpad))
   (select (list [?fun [category] 20 "-+"]
                 (list [* [sum [id]] 2] [total]))
-          :from [lexicon keys] 
+          :from [lexicon keys]
           :where [> [length [key]] 8]
-          :group-by [category] 
+          :group-by [category]
           :having [> [length [category]] 4]))
 
 (select '([conc [lpad [category] 20 "-+"] "asdf"]
           ([* [sum [id]] 2] [total]))
-        :from [lexicon keys] 
+        :from [lexicon keys]
         :where [> [length [key]] 8]
-        :group-by [category] 
+        :group-by [category]
         :having [> [length [category]] 4])
 
 (select-union [select [conc [key] ", Kategorie: " [category]]
@@ -193,7 +193,7 @@
 
 (update-records [foo bar]
                 :av-pairs '(([id] [+ [id] +13])
-                            ([text] [select [text] 
+                            ([text] [select [text]
                                             :from (([foo bar] [zup]))
                                             :where [= [zup id] [bar id]]
                                             ]))
@@ -246,7 +246,7 @@
                              (text1 (varchar 100))
                              (text2 (varchar 100)))))
 
-(time 
+(time
  (with-prepared-command (query [insert :into [foo bizz] :values '($ $ $)])
    (dotimes (i 1000)
      (with-transaction
@@ -258,7 +258,7 @@
           (format t "~2d ~a ~a~%" id str1 str2))
 
 
-(with-prepared-statement (query [select [*] :from [foo bar] 
+(with-prepared-statement (query [select [*] :from [foo bar]
                                         :where [and [< [id] $] [like [text] $]]])
   (list (bind-execute query 27 "%z%")
         (bind-execute query 24 "%f")))

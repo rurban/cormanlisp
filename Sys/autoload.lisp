@@ -8,7 +8,7 @@
 ;;;; Created:      01/09/1999
 ;;;; Last updated: 01/10/1999
 ;;;;
-;;;; History:		10/13/99  RGC  Modified LOAD-AUTOLOAD-MODULE to 
+;;;; History:		10/13/99  RGC  Modified LOAD-AUTOLOAD-MODULE to
 ;;;;							   look for a compiled (FASL) file first.
 ;;;;
 
@@ -123,9 +123,9 @@
 
 (defun binary-equivalent (path)
 	(let ((len (length path)))
-		(if (and (> len (length lisp-src-extension)) 
-				(string-equal 
-					(subseq path (- len (length lisp-src-extension)) len) 
+		(if (and (> len (length lisp-src-extension))
+				(string-equal
+					(subseq path (- len (length lisp-src-extension)) len)
 					lisp-src-extension))
 			(concatenate 'string (subseq path 0 (- len (length lisp-src-extension)))
 				lisp-binary-extension))))
@@ -289,4 +289,3 @@
 	  (autoload-descriptor-symbols-do (sym descriptor)
 	    (setf (get sym 'autoload) descriptor))
 	  descriptor)))))
-
