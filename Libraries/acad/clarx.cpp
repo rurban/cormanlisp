@@ -105,7 +105,7 @@ Notes:
   the default imagename is the ARX name without the last two numbers, 
   if they are two numbers.
   Rules for the imagename:
-    cormanlisp14.arx => cormanlisp.img
+    cormanlisp14.arx => CormanLisp.img
     myapp15.arx      => myapp.img
     myapp.arx        => myapp.img
 
@@ -870,7 +870,7 @@ int FindImage (char *imagename, tPath *Paths, int numPaths, char *result)
 //  the default imagename is the ARX name without the last two numbers, 
 //  if they are two numbers.
 //  Rules for the imagename:
-//    cormanlisp14.arx => cormanlisp.img
+//    cormanlisp14.arx => CormanLisp.img
 //    myapp15.arx      => myapp.img
 //    myapp.arx        => myapp.img
 //

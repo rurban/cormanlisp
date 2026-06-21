@@ -92,7 +92,7 @@ STDMETHODIMP_(ULONG) CoCormanLisp::Release()
 //////////////////////////////////////////////////////////////////////
 // ICormanLisp interface
 extern const int LispImageNameMax = 256;
-char LispImageName[LispImageNameMax] = "cormanlisp.img";
+char LispImageName[LispImageNameMax] = "CormanLisp.img";
 int CormanLispClientType = 0;
 
 // client type should be WIN_APP_CLIENT, CONSOLE_CLIENT or IDE_CLIENT

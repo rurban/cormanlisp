@@ -393,8 +393,8 @@ int main(int argc, char* argv[])
 	if (imageName)
 		strcpy_s(gImageName, sizeof(gImageName), imageName);
 	else
-			// default to the image has the same name as the executable,
-			// but with a .img extension.
+		// default to the image has the same name as the executable,
+		// but with a .img extension.
 	{
 		// as a special case, if this is the clconsole application 
 		// default to CormanLisp.img
@@ -405,15 +405,15 @@ int main(int argc, char* argv[])
         {
             // copy entire exe path and name
             strcpy_s(gImageName, sizeof(gImageName), gModuleName);
-            // replace clconsole.exe with cormanlisp.img
+            // replace clconsole.exe with CormanLisp.img
 			strcpy_s(gImageName  + (moduleNameLength - strlen(consoleAppName)), sizeof(gImageName), "CormanLisp.img");
         }
-		else
+	else
 		{
 			strcpy_s(gImageName, sizeof(gImageName), gModuleName);
 		}
 	}
-	static char szAppName[] = "CormanLispConsole" ;
+	static char szAppName[] = "CormanLispConsole";
 	mainx(0, 0);
 	return 0;
 }

@@ -8,7 +8,7 @@ Wade through the examples and read the documentation.
 The latest version of CLARX should be at 
 http://xarch.tu-graz.ac.at/autocad/lsp_tools/#cormanlisp
 
-You may save your own cormanlisp.img to the Libraries\acad directory 
+You may save your own CormanLisp.img to the Libraries\acad directory 
 for a private image for acad. (see "sys\compile-sys.lisp")
 
 If you want your private DLL, type "regsvr32 cormanlispserver.dll" 
@@ -76,7 +76,7 @@ Problems:
 
 - The error message: ";; Error: Could not open file ~A for reading" 
   at startup means that the image file couldn't be found or opened.
-  Please enter then (LOAD-IMAGE "<path-to>\\cormanlisp.img")
+  Please enter then (LOAD-IMAGE "<path-to>\\CormanLisp.img")
 
 - SAVE-APPLICATION supports creating standalone ARX applications now. 
   Standalone applications just override the default top-level loop, 

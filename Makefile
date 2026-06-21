@@ -2,6 +2,13 @@
 
 CMAKE := cmake
 MAKE  := $(MAKE)
+ifeq ($(OS),Windows_NT)
+MAKEIMG = makeimg.bat
+else
+MAKEIMG = makeimg.sh
+endif
+
+build/clboot build/clconsole: build
 
 build:
 	@if [ ! -d zlib ]; then \
@@ -21,6 +28,9 @@ build-debug:
 	fi
 	@$(MAKE) -s -j4 -C build-debug
 
+CormanLisp.img: Sys/*.lisp Sys/scmindent/*.lisp build/clconsole
+	$(MAKEIMG)
+
 clean:
 	@if [ -f build/Makefile ]; then \
 		$(MAKE) -s -C build clean; \
@@ -28,6 +38,7 @@ clean:
 	@if [ -f build-debug/Makefile ]; then \
 		$(MAKE) -s -C build-debug clean; \
 	fi
+	rm -f CormanLisp.img
 
 test: build
 	@if [ -f build/Makefile ]; then \
@@ -36,7 +47,7 @@ test: build
 		$(MAKE) build && $(MAKE) -s -C build test ARGS="--output-on-failure" || true; \
 	fi
 
-test-debug:
+test-debug: build-debug
 	@if [ -f build-debug/Makefile ]; then \
 		$(MAKE) -s -C build-debug test ARGS="--output-on-failure" || true; \
 	else \

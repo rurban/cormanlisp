@@ -127,9 +127,9 @@ END
 #ifdef ALL_IN_ONE_FILE
 IMAGENAME         RCDATA  DISCARDABLE  
 BEGIN 
-	"cormanlisp.img\0"
+	"CormanLisp.img\0"
 END
-IMAGEDATA             RCDATA  "cormanlisp.img"
+IMAGEDATA             RCDATA  "CormanLisp.img"
 DLLDATA               RCDATA  "CormanLispServer.dll"
 #endif
 
