@@ -581,12 +581,14 @@ CL_EXPORT
 LispObj* ThreadQV()
 {
 	DWORD key = QV_Index;
-	if (key > 256) {  // pthread_key_t is a small integer
+	if (key > 256)
+	{ // pthread_key_t is a small integer
 		fprintf(stderr, "ThreadQV: QV_Index corrupted! key=%lu\n", (unsigned long)key);
 		exit(1);
 	}
 	void* val = TlsGetValue(key);
-	if (!val) {
+	if (!val)
+	{
 		fprintf(stderr, "ThreadQV: TlsGetValue(%lu) returned NULL\n", (unsigned long)key);
 		exit(1);
 	}

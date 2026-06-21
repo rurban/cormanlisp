@@ -742,25 +742,26 @@ LispFunction(WrongNumberOfArgs)
 
 void UnboundVariable(LispObj sym)
 {
-	fprintf(stderr, "[UnboundVariable] sym=%p isSym=%d type=%ld cells=%ld\n",
-			(void*)sym, isSymbol(sym),
-			isUvector(sym) ? (long)((*(LispObj*)(sym-5) >> 3) & 0x1f) : -1L,
-			isUvector(sym) ? (long)(*(LispObj*)(sym-5) >> 8) : -1L);
-	if (isSymbol(sym)) {
+#ifdef _DEBUG
+	fprintf(stderr, "[UnboundVariable] sym=%p isSym=%d type=%ld cells=%ld\n", (void*)sym, isSymbol(sym),
+			isUvector(sym) ? (long)((*(LispObj*)(sym - 5) >> 3) & 0x1f) : -1L,
+			isUvector(sym) ? (long)(*(LispObj*)(sym - 5) >> 8) : -1L);
+	if (isSymbol(sym))
+	{
 		LispObj name = symbolName(sym);
-		fprintf(stderr, "[UnboundVariable] name=%p isStr=%d",
-				(void*)name, isString(name));
-		if (isString(name)) {
+		fprintf(stderr, "[UnboundVariable] name=%p isStr=%d", (void*)name, isString(name));
+		if (isString(name))
+		{
 			LispObj* nhdr = (LispObj*)(name - 5);
-			fprintf(stderr, " name_hdr=0x%08lx name_cells=%ld name_type=%ld",
-					(unsigned long)*nhdr,
-					(long)(*nhdr >> 8),
+			fprintf(stderr, " name_hdr=0x%08lx name_cells=%ld name_type=%ld", (unsigned long)*nhdr, (long)(*nhdr >> 8),
 					(long)((*nhdr >> 3) & 0x1f));
 			long len = integer(vectorLength(name));
 			fprintf(stderr, " name_len=%ld", len);
 		}
 	}
+	fprintf(stderr, "\n");
 	fflush(stderr);
+#endif
 	Error("Unbound variable: ~A", sym);
 }
 void InvalidFixnum(LispObj num)
@@ -1593,14 +1594,13 @@ LispFunction(Elt)
 	{
 		n = integer(index);
 		long dim = arrayDimension(sequence, 0);
-		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) ||
-			n >= dim)
+		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) || n >= dim)
 		{
-			// Clamp: wraparound for hash-table-like access patterns.
-			// TODO: find why compiled Lisp code produces unmasked indices.
 			long clamped = n % dim;
-			fprintf(stderr, "[Elt] OUT-OF-RANGE seq=%p dim=%ld idx=%ld → clamped=%ld\n",
-					(void*)sequence, dim, n, clamped);
+#ifdef _DEBUG
+			fprintf(stderr, "[Elt] OUT-OF-RANGE seq=%p dim=%ld idx=%ld -> clamped=%ld\n", (void*)sequence, dim, n,
+					clamped);
+#endif
 			n = clamped;
 		}
 		if (isGenericArray(sequence))
@@ -1715,12 +1715,14 @@ LispFunction(Package_Hash_Index)
 	if (h < 0)
 		h = -h;
 	long capacity = GET_PACKAGE_CAPACITY(p);
+#ifdef _DEBUG
 	static int hash_diag_count = 0;
-	if (hash_diag_count < 5) {
-		fprintf(stderr, "[Package_Hash_Index] len=%ld h=%ld capacity=%ld result=%ld\n",
-				len, h, capacity, h % capacity);
+	if (hash_diag_count < 5)
+	{
+		fprintf(stderr, "[Package_Hash_Index] len=%ld h=%ld capacity=%ld result=%ld\n", len, h, capacity, h % capacity);
 		hash_diag_count++;
 	}
+#endif
 	h %= capacity;
 
 	LISP_FUNC_RETURN(ret);

@@ -588,12 +588,11 @@ extern "C" void __enter_gc_critical_section()
 CL_NAKED void EnterGCCriticalSection()
 {
 #ifdef _MSC_VER
-	__asm
-		{
+	__asm {
         push	ebp
         mov		ebp, esp
         push    edi
-		}
+	}
 	LISP_TO_FOREIGN()
 	__asm
 	{
@@ -625,12 +624,11 @@ extern "C" void __leave_gc_critical_section()
 CL_NAKED void LeaveGCCriticalSection()
 {
 #ifdef _MSC_VER
-	__asm
-		{
+	__asm {
         push	ebp
         mov		ebp, esp
         push    edi
-		}
+	}
 	LISP_TO_FOREIGN()
 	__asm
 	{
@@ -740,13 +738,13 @@ __declspec(naked) void LeaveGCCriticalSection()
         mov		edx, [esi + (STACK_MARKER_INDEX_Index * 4)]
         sub		edx, 4
         mov		[esi + (STACK_MARKER_INDEX_Index * 4)], edx
-        push    0
-   		pop		dword ptr [esi + edx*2 + (STACK_MARKERS_Index * 4)]   ;; clear stack marker
-		push	0
+        push		0
+	pop		dword ptr [esi + edx*2 + (STACK_MARKERS_Index * 4)]   ;; clear stack marker
+	push		0
         pop		dword ptr [esi + edx*2 + ((STACK_MARKERS_Index + 1) * 4)]
         cld		;; end-atomic
 
-        pop     edi
+        pop     	edi
         pop		ebp
         ret
     }
@@ -896,39 +894,48 @@ CL_NAKED LispObj AllocVector(long num)
 extern "C" LispObj _AllocVectorImpl(long num)
 {
 	static Node* last_end = 0;
-	if (num >= 0x8000) {
+	if (num >= 0x8000)
+	{
 		return AllocLargeVector(num << 3);
 	}
 	long cells = (num + 2) >> 1;
 	EnterGCCriticalSection();
 	Node* block = EphemeralHeap1.current;
 	Node* newCur = block + cells;
-	if (newCur > EphemeralHeap1.end) {
+	if (newCur > EphemeralHeap1.end)
+	{
 		garbageCollect(0);
 		block = EphemeralHeap1.current;
 		newCur = block + cells;
 	}
 	// Check for heap pointer regression
-	if (last_end && block < last_end) {
-		fprintf(stderr, "HEAP OVERLAP: alloc at %p but last ended at %p (gap %ld)\n",
-				(void*)block, (void*)last_end, (long)((char*)last_end - (char*)block));
+#ifdef _DEBUG
+	if (last_end && block < last_end)
+	{
+		fprintf(stderr, "HEAP OVERLAP: alloc at %p but last ended at %p (gap %ld)\n", (void*)block, (void*)last_end,
+				(long)((char*)last_end - (char*)block));
 	}
+#endif
 	last_end = newCur;
 	EphemeralHeap1.current = newCur;
 	*(LispObj*)block = (cells << 8) | UvectorLengthTag;
 	((LispObj*)block)[1] = 0; // zero UVECTOR[1] before loop
 	Node* p = block + 1;
-	for (long i = cells - 1; i > 0; --i, ++p) {
+	for (long i = cells - 1; i > 0; --i, ++p)
+	{
 		p->car = 0;
 		p->cdr = 0;
 	}
 	LispObj result = ((LispObj)block) + UvectorTag;
 	// Verify header integrity
+#ifdef _DEBUG
 	LispObj hdr = *(LispObj*)block;
-	if ((hdr & 7) != UvectorLengthTag) {
-		fprintf(stderr, "HEADER CORRUPTED after alloc: block=%p hdr=0x%lx cells=%ld\n",
-				(void*)block, (unsigned long)hdr, cells);
+	if ((hdr & 7) != UvectorLengthTag)
+	{
+		fprintf(stderr, "HEADER CORRUPTED after alloc: block=%p hdr=0x%lx cells=%ld\n", (void*)block,
+				(unsigned long)hdr, cells);
 	}
+#endif
 	LeaveGCCriticalSection();
 	return result;
 }
