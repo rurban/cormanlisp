@@ -751,14 +751,14 @@ void UnboundVariable(LispObj sym)
 		fprintf(stderr, "[UnboundVariable] name=%p isStr=%d",
 				(void*)name, isString(name));
 		if (isString(name)) {
+			LispObj* nhdr = (LispObj*)(name - 5);
+			fprintf(stderr, " name_hdr=0x%08lx name_cells=%ld name_type=%ld",
+					(unsigned long)*nhdr,
+					(long)(*nhdr >> 8),
+					(long)((*nhdr >> 3) & 0x1f));
 			long len = integer(vectorLength(name));
-			fprintf(stderr, " len=%ld hex=", len);
-			LISP_CHAR* p = charArrayStart(name);
-			for (long i = 0; i < len && i < 40; i++) {
-				fprintf(stderr, "%02x", (unsigned)(p[i] & 0xff));
-			}
+			fprintf(stderr, " name_len=%ld", len);
 		}
-		fprintf(stderr, "\n");
 	}
 	fflush(stderr);
 	Error("Unbound variable: ~A", sym);
