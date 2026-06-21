@@ -1592,15 +1592,16 @@ LispFunction(Elt)
 	if (isVector(sequence))
 	{
 		n = integer(index);
+		long dim = arrayDimension(sequence, 0);
 		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) ||
-			n >= arrayDimension(sequence, 0))
+			n >= dim)
 		{
-			fprintf(stderr, "[Elt] seq=%p type=%ld dim=%ld idx=%ld hdr=0x%08lx elem0=%p elem1=%p\n",
-					(void*)sequence, (long)uvectorType(sequence),
-					(long)arrayDimension(sequence, 0), n,
-					(unsigned long)*(LispObj*)(sequence - 5),
-					(void*)(isGenericArray(sequence) ? arrayStart(sequence)[0] : 0),
-					(void*)(isGenericArray(sequence) ? arrayStart(sequence)[1] : 0));
+			// Clamp: wraparound for hash-table-like access patterns.
+			// TODO: find why compiled Lisp code produces unmasked indices.
+			long clamped = n % dim;
+			fprintf(stderr, "[Elt] OUT-OF-RANGE seq=%p dim=%ld idx=%ld → clamped=%ld\n",
+					(void*)sequence, dim, n, clamped);
+			n = clamped;
 		}
 		if (isGenericArray(sequence))
 			ret = arrayStart(sequence)[n];
@@ -1713,8 +1714,14 @@ LispFunction(Package_Hash_Index)
 	}
 	if (h < 0)
 		h = -h;
-	h %= GET_PACKAGE_CAPACITY(p);
-	ret = wrapInteger(h);
+	long capacity = GET_PACKAGE_CAPACITY(p);
+	static int hash_diag_count = 0;
+	if (hash_diag_count < 5) {
+		fprintf(stderr, "[Package_Hash_Index] len=%ld h=%ld capacity=%ld result=%ld\n",
+				len, h, capacity, h % capacity);
+		hash_diag_count++;
+	}
+	h %= capacity;
 
 	LISP_FUNC_RETURN(ret);
 }
