@@ -70,7 +70,7 @@ WINUSERAPI BOOL WINAPI AttachThreadInput(DWORD idAttach, DWORD idAttachTo, BOOL 
 (defun documentation-selection (symbol &optional (type 'function))
     (if (eq (symbol-package symbol) (find-package :common-lisp))
         (unless (and (boundp 'pl::*hyperspec-loaded*) pl::*hyperspec-loaded*)
-            (load (concatenate 'string pl:*cormanlisp-directory* "/sys/hyperspec.lisp"))))
+            (load (concatenate 'string pl:*cormanlisp-directory* "/Sys/hyperspec.lisp"))))
 
     (let ((doclist (gethash symbol cl::*documentation-registry*))
            doc-clause)

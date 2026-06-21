@@ -37,7 +37,7 @@
                     (concatenate 'string
                         "clconsole.exe"
                         " -execute "
-                        "utilities\\install-hyperspec.lisp"))
+                        "Utilities/install-hyperspec.lisp"))
                 (setf (current-directory) save-dir))
             (setf *hyperspec-local-path*
                 (if (probe-file (merge-pathnames "HyperSpec/Front/Contents.htm"))

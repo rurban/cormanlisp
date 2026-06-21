@@ -536,7 +536,7 @@
 
 (defun ccl:hyperspec (sym)
 	(unless ccl::*hyperspec-loaded*
-		(load (concatenate 'string ccl:*cormanlisp-directory* "/sys/hyperspec.lisp")))
+		(load (concatenate 'string ccl:*cormanlisp-directory* "/Sys/hyperspec.lisp")))
 	(funcall #'ccl:hyperspec sym))
 
 (in-package :ccl)
