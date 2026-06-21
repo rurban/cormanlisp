@@ -1600,7 +1600,7 @@ LispObj symbolNode(LispObj name)
 	sym = AllocVector(SYMBOL_SIZE);
 	t1 = cons(UNINITIALIZED, NIL);
 	t2 = cons(UNINITIALIZED, NIL);
-	UVECTOR(sym)[0] |= (SymbolType << 3);
+	UVECTOR(sym)[0] = (UVECTOR(sym)[0] & ~0xf8) | (SymbolType << 3);
 	UVECTOR(sym)[SYMBOL_NAME] = name;
 	UVECTOR(sym)[SYMBOL_VALUE] = t1;
 	UVECTOR(sym)[SYMBOL_PACKAGE] = NIL;

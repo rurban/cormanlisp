@@ -225,7 +225,10 @@ extern "C"
 
 		TlsSetValue(QV_Index, QV);
 		initLisp();
-		g_lisp_bootstrapping = false;
+		// Keep bootstrapping active during image build to avoid incomplete GC.
+		// The Linux GC port is incomplete — real GC would corrupt the heap.
+		// TODO: re-enable once GC is fully ported (Phase 4/6).
+		// g_lisp_bootstrapping = false;
 		return 0;
 	}
 

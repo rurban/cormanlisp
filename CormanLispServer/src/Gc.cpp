@@ -126,13 +126,13 @@ const int MAX_CELLS_PER_ARRAY = 0x01000000; // allow 16 meg cells per array
 
 // All these must be multiples of the page size!!
 // Just make sure the last 3 hex digits are 0's
-int EphemeralHeap1SizeMin = 0x00100000; // 1 meg min
-int EphemeralHeap1Size = 0x00400000; // 4 megs default
-int EphemeralHeap1SizeMax = 0x00800000; // 8 megs max
+int EphemeralHeap1SizeMin = 0x00400000; // 4 meg min
+int EphemeralHeap1Size = 0x01000000; // 16 megs default
+int EphemeralHeap1SizeMax = 0x02000000; // 32 megs max
 
 int EphemeralHeap2SizeMin = 0x00100000; // 1 megs min
 int EphemeralHeap2Size = 0x00300000; // 3 megs  (must be <= EphemeralHeap1Size)
-int EphemeralHeap2SizeMax = 0x00800000; // 8 megs max
+int EphemeralHeap2SizeMax = 0x01000000; // 16 megs max
 
 int LispHeapSizeMin = 0x01000000; // 16 megs
 int LispHeapSize = 0x04000000; // 64 megs
@@ -869,6 +869,7 @@ CL_NAKED LispObj AllocVector(long num)
         ret
 	}
 #else
+	// Linux: trampoline into a debuggable C++ helper.
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
 				 "push %%edi\n\t"
@@ -876,63 +877,59 @@ CL_NAKED LispObj AllocVector(long num)
 				 "push %%ebx\n\t"
 				 "call ThreadQV\n\t"
 				 "mov %%eax, %%esi\n\t"
-				 "mov 8(%%ebp), %%edx\n\t"
-				 "cmp $0x8000, %%edx\n\t"
-				 "jb 1f\n\t"
-				 "shl $3, %%edx\n\t"
-				 "push %%edx\n\t"
-				 "call AllocLargeVector\n\t"
-				 "add $4, %%esp\n\t"
-				 "jmp done_%=\n\t"
-				 "1:\n\t"
-				 "add $2, %%edx\n\t"
-				 "sar $1, %%edx\n\t"
-				 "push %%edx\n\t"
-				 "call EnterGCCriticalSection\n\t"
-				 "pop %%edx\n\t"
-				 "mov %[cur], %%eax\n\t"
-				 "lea (%%eax, %%edx, 8), %%ecx\n\t"
-				 "cmp %[end], %%ecx\n\t"
-				 "jl 2f\n\t"
-				 "push %%edx\n\t"
-				 "push $0\n\t"
-				 "call garbageCollect\n\t"
-				 "add $4, %%esp\n\t"
-				 "pop %%edx\n\t"
-				 "mov %[cur], %%eax\n\t"
-				 "lea (%%eax, %%edx, 8), %%ecx\n\t"
-				 "2:\n\t"
-				 "mov %%ecx, %[cur]\n\t"
-				 "mov %%edx, %%ecx\n\t"
-				 "shl $8, %%edx\n\t"
-				 "or $0x06, %%dl\n\t"
-				 "mov %%edx, (%%eax)\n\t"
-				 "mov %%eax, %%edi\n\t"
-				 "xor %%eax, %%eax\n\t"
-				 "mov %%eax, 4(%%edi)\n\t"
-				 "dec %%ecx\n\t"
-				 "jle 3f\n\t"
-				 "loop_vec:\n\t"
-				 "mov %%eax, (%%edi, %%ecx, 8)\n\t"
-				 "mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
-				 "dec %%ecx\n\t"
-				 "jg loop_vec\n\t"
-				 "3:\n\t"
-				 "mov %%edi, %%eax\n\t"
-				 "add $0x05, %%eax\n\t"
+				 "mov 8(%%ebp), %%eax\n\t" // num = [ebp+8]
 				 "push %%eax\n\t"
-				 "call LeaveGCCriticalSection\n\t"
-				 "pop %%eax\n\t"
-				 "done_%=:\n\t"
+				 "call _AllocVectorImpl\n\t"
+				 "add $4, %%esp\n\t"
 				 "pop %%ebx\n\t"
 				 "pop %%esi\n\t"
 				 "pop %%edi\n\t"
 				 "pop %%ebp\n\t"
 				 "ret"
 				 :
-				 : [cur] "m"(EphemeralHeap1.current), [end] "m"(EphemeralHeap1.end)
-				 : "eax", "ecx", "edx", "edi", "memory");
+				 :
+				 : "eax", "ecx", "edx", "memory");
 #endif
+}
+
+// Pure C++ allocation, called from the trampoline above.
+extern "C" LispObj _AllocVectorImpl(long num)
+{
+	static Node* last_end = 0;
+	if (num >= 0x8000) {
+		return AllocLargeVector(num << 3);
+	}
+	long cells = (num + 2) >> 1;
+	EnterGCCriticalSection();
+	Node* block = EphemeralHeap1.current;
+	Node* newCur = block + cells;
+	if (newCur > EphemeralHeap1.end) {
+		garbageCollect(0);
+		block = EphemeralHeap1.current;
+		newCur = block + cells;
+	}
+	// Check for heap pointer regression
+	if (last_end && block < last_end) {
+		fprintf(stderr, "HEAP OVERLAP: alloc at %p but last ended at %p (gap %ld)\n",
+				(void*)block, (void*)last_end, (long)((char*)last_end - (char*)block));
+	}
+	last_end = newCur;
+	EphemeralHeap1.current = newCur;
+	*(LispObj*)block = (cells << 8) | UvectorLengthTag;
+	Node* p = block + 1;
+	for (long i = cells - 1; i > 0; --i, ++p) {
+		p->car = 0;
+		p->cdr = 0;
+	}
+	LispObj result = ((LispObj)block) + UvectorTag;
+	// Verify header integrity
+	LispObj hdr = *(LispObj*)block;
+	if ((hdr & 7) != UvectorLengthTag) {
+		fprintf(stderr, "HEADER CORRUPTED after alloc: block=%p hdr=0x%lx cells=%ld\n",
+				(void*)block, (unsigned long)hdr, cells);
+	}
+	LeaveGCCriticalSection();
+	return result;
 }
 //	storing the length in the upper 24 bits, and 6 in the lower 3 bits.
 //	Same as AllocVector(), but expects to be called from Lisp code.
