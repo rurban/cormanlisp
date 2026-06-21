@@ -636,8 +636,10 @@ LispObj loadFile(LispObj inputStream)
 			x = LispCall5(Funcall, symbolFunction(READ), inputStream, NIL, Eof, NIL);
 			if (x == Eof)
 				break;
+#ifdef _DEBUG
 			fprintf(stderr, "[loadFile] form %ld\n", count);
 			fflush(stderr);
+#endif
 			val = eval(x, NIL);
 		}
 		catch (LispObj)
