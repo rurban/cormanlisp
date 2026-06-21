@@ -1577,10 +1577,12 @@ LispFunction(Elt)
 		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) ||
 			n >= arrayDimension(sequence, 0))
 		{
-			fprintf(stderr, "[Elt] seq=%p type=%ld dim=%ld idx=%ld hdr=0x%08lx\n",
+			fprintf(stderr, "[Elt] seq=%p type=%ld dim=%ld idx=%ld hdr=0x%08lx elem0=%p elem1=%p\n",
 					(void*)sequence, (long)uvectorType(sequence),
 					(long)arrayDimension(sequence, 0), n,
-					(unsigned long)*(LispObj*)(sequence - 5));
+					(unsigned long)*(LispObj*)(sequence - 5),
+					(void*)(isGenericArray(sequence) ? arrayStart(sequence)[0] : 0),
+					(void*)(isGenericArray(sequence) ? arrayStart(sequence)[1] : 0));
 		}
 		if (isGenericArray(sequence))
 			ret = arrayStart(sequence)[n];
@@ -1833,8 +1835,7 @@ LispFunction(Alloc_Uvector)
 	LispObj size = LISP_ARG(0);
 	LispObj tag = LISP_ARG(1);
 	checkInteger(size);
-	ret = AllocVector(integer(size));
-	UVECTOR(ret)[0] |= tag;
+	UVECTOR(ret)[0] = (UVECTOR(ret)[0] & ~0xf8) | (integer(tag) << 3);
 	LISP_FUNC_RETURN(ret);
 }
 
