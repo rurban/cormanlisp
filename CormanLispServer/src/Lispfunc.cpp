@@ -742,9 +742,27 @@ LispFunction(WrongNumberOfArgs)
 
 void UnboundVariable(LispObj sym)
 {
+	fprintf(stderr, "[UnboundVariable] sym=%p isSym=%d type=%ld cells=%ld\n",
+			(void*)sym, isSymbol(sym),
+			isUvector(sym) ? (long)((*(LispObj*)(sym-5) >> 3) & 0x1f) : -1L,
+			isUvector(sym) ? (long)(*(LispObj*)(sym-5) >> 8) : -1L);
+	if (isSymbol(sym)) {
+		LispObj name = symbolName(sym);
+		fprintf(stderr, "[UnboundVariable] name=%p isStr=%d",
+				(void*)name, isString(name));
+		if (isString(name)) {
+			long len = integer(vectorLength(name));
+			fprintf(stderr, " len=%ld hex=", len);
+			LISP_CHAR* p = charArrayStart(name);
+			for (long i = 0; i < len && i < 40; i++) {
+				fprintf(stderr, "%02x", (unsigned)(p[i] & 0xff));
+			}
+		}
+		fprintf(stderr, "\n");
+	}
+	fflush(stderr);
 	Error("Unbound variable: ~A", sym);
 }
-
 void InvalidFixnum(LispObj num)
 {
 	Error("Expected a number of type FIXNUM, got ~A", num);
