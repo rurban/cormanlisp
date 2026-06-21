@@ -916,6 +916,7 @@ extern "C" LispObj _AllocVectorImpl(long num)
 	last_end = newCur;
 	EphemeralHeap1.current = newCur;
 	*(LispObj*)block = (cells << 8) | UvectorLengthTag;
+	((LispObj*)block)[1] = 0; // zero UVECTOR[1] before loop
 	Node* p = block + 1;
 	for (long i = cells - 1; i > 0; --i, ++p) {
 		p->car = 0;
