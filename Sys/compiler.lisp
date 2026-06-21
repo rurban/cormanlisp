@@ -1699,6 +1699,7 @@ t)
   callp   cl::%alloc-vector-tagged
   add     esp, 4
   mov     edx, [ebp + (+ ARGS_OFFSET 0)] ; edx = tag
+  shl     edx, 3                        ; shift tag into bits 3-7 position
   or      [eax + (uvector-offset 0)], edx
   mov     ecx, 1
   pop     ebp

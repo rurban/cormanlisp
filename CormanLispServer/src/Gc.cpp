@@ -1356,8 +1356,8 @@ static LispObj AllocLargeVector(long num)
 			}
 		}
 	}
-#ifdef _MSC_VER
 	*(LispObj*)block = (cells << 8) | UvectorLengthTag;
+#ifdef _MSC_VER
 
 	//	__asm		push edi  // unnecessary if done in prolog
 	__asm mov ecx, dword ptr cells __asm mov eax, 0;
