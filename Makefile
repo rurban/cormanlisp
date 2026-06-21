@@ -5,7 +5,7 @@ MAKE  := $(MAKE)
 ifeq ($(OS),Windows_NT)
 MAKEIMG = makeimg.bat
 else
-MAKEIMG = makeimg.sh
+MAKEIMG = ./makeimg.sh
 endif
 
 build/clboot build/clconsole: build
@@ -40,14 +40,14 @@ clean:
 	fi
 	rm -f CormanLisp.img
 
-test: build
+test: build CormanLisp.img
 	@if [ -f build/Makefile ]; then \
 		$(MAKE) -s -C build test ARGS="--output-on-failure" || true; \
 	else \
 		$(MAKE) build && $(MAKE) -s -C build test ARGS="--output-on-failure" || true; \
 	fi
 
-test-debug: build-debug
+test-debug: build-debug CormanLisp.img
 	@if [ -f build-debug/Makefile ]; then \
 		$(MAKE) -s -C build-debug test ARGS="--output-on-failure" || true; \
 	else \

@@ -169,9 +169,10 @@ endif()
 # ---- Testing ----
 enable_testing()
 add_test(NAME test-all
-    COMMAND clconsole --batch -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp
+    COMMAND sh -c "cd ${CMAKE_SOURCE_DIR} && if [ -f CormanLisp.img ] || ./makeimg.sh; then clconsole --batch -image ${CMAKE_SOURCE_DIR}/CormanLisp.img -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp; else echo 'SKIP: CormanLisp.img not built'; exit 125; fi"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_tests_properties(test-all PROPERTIES
+    SKIP_RETURN_CODE 125
     PASS_REGULAR_EXPRESSION "ALL TESTS PASSED")
 
 # ---- Linting ----
