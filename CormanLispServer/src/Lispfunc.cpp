@@ -1598,11 +1598,29 @@ LispFunction(Elt)
 		long dim = arrayDimension(sequence, 0);
 		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) || n >= dim)
 		{
-			long clamped = n % dim;
+			static int oob_count = 0;
 #ifdef _DEBUG
-			fprintf(stderr, "[Elt] OUT-OF-RANGE seq=%p dim=%ld idx=%ld -> clamped=%ld\n", (void*)sequence, dim, n,
-					clamped);
+			if (oob_count++ < 1) {
+				fprintf(stderr, "[Elt] OOB seq=%p dim=%ld idx=%ld\n", (void*)sequence, dim, n);
+				// Identify the array by printing first element
+				if (isGenericArray(sequence)) {
+					LispObj e0 = arrayStart(sequence)[0];
+					fprintf(stderr, "  elem0=%p isSym=%d", (void*)e0, isSymbol(e0));
+					if (isSymbol(e0)) {
+						LispObj nm = symbolName(e0);
+						if (isString(nm)) {
+							long nmlen = integer(vectorLength(nm));
+							LISP_CHAR* p = charArrayStart(nm);
+							fprintf(stderr, " name=");
+							for (long i = 0; i < nmlen && i < 60; i++)
+								fputc(p[i] < 128 ? (char)p[i] : '?', stderr);
+						}
+					}
+					fprintf(stderr, "\n");
+				}
+			}
 #endif
+			long clamped = n % dim;
 			n = clamped;
 		}
 		if (isGenericArray(sequence))
