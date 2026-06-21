@@ -2006,6 +2006,24 @@ static LispObj compileList(LispObj x, LispObj dest, LispObj resultType)
 	}
 	else
 	{
+		// Diagnostic: dump raw data for all elements
+		fflush(stdout); fflush(stderr);
+		fprintf(stderr, "*** DIAG START ***\n");
+		LispObj car = CAR(x);
+		fprintf(stderr, "*** x=%p car=%p isCons(car)=%d isUvector(car)=%d\n",
+				(void*)x, (void*)car, isCons(car), isUvector(car));
+		if (isCons(car)) {
+			LispObj caar = CAR(car);
+			fprintf(stderr, "*** caar=%p isCons=%d isUvector=%d isSymbol=%d\n",
+					(void*)caar, isCons(caar), isUvector(caar), isSymbol(caar));
+			if (isUvector(caar)) {
+				LispObj* hdr = (LispObj*)(caar - 5);
+				fprintf(stderr, "*** hdr=0x%08lx type=%ld cells=%ld\n",
+						(unsigned long)*hdr, (*hdr >> 3) & 0x1f, *hdr >> 8);
+			}
+		}
+		fprintf(stderr, "*** DIAG END ***\n");
+		fflush(stderr);
 		fprintf(stderr, "[Compx86] Cannot compile form: ");
 		describeForm(x, stderr);
 		fprintf(stderr, "\n");
