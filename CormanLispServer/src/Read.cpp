@@ -1085,20 +1085,27 @@ LispObj fileUnderflow(LispObj s)
 	unsigned long i = 0;
 	LispObj buf = 0;
 
+#ifdef _DEBUG
+	// Unprotect buffer before writing to it
+	LispObj dbg_buf = streamInputBuffer(s);
+	void* dbg_data = charArrayStart(dbg_buf);
+	long dbg_len = integer(vectorLength(dbg_buf)) * sizeof(LISP_CHAR);
+	mprotect(dbg_data, dbg_len, PROT_READ | PROT_WRITE);
+#endif
 	// make sure the buffer is not write-protected
 	charArrayStart(streamInputBuffer(s))[0] = 0;
 	charArrayStart(streamInputBuffer(s))[2047] = 0;
 
-	ret = ReadFile((void*)lispIntegerToLong(streamHandle(s)), // handle of file to read
-				   InputUnderflowBuffer, // address of buffer that receives data
-				   integer(streamInputBufferLength(s)), // number of bytes to read
-				   &charsRead, // address of number of bytes read
-				   NULL); // overlapped structure
+	ret = ReadFile((void*)lispIntegerToLong(streamHandle(s)),
+				   InputUnderflowBuffer,
+				   integer(streamInputBufferLength(s)),
+				   &charsRead,
+				   NULL);
 
 	if (!ret)
 		Error("Could not read from file ~A, error code = ~A", s, createLispInteger(GetLastError()));
 
-	if (streamBinary(s) == NIL) // if character stream, remove CR characters
+	if (streamBinary(s) == NIL)
 	{
 		charsRead = compressLineFeedsIntoBuffer(charsRead);
 	}
@@ -1107,6 +1114,10 @@ LispObj fileUnderflow(LispObj s)
 		charArrayStart(buf)[i] = InputUnderflowBuffer[i];
 	streamInputBufferPos(s) = 0;
 	streamInputBufferNum(s) = wrapInteger((long)charsRead);
+#ifdef _DEBUG
+	// Write-protect buffer to detect corruption
+	mprotect(charArrayStart(buf), dbg_len, PROT_READ);
+#endif
 	return wrapInteger(charsRead);
 }
 
