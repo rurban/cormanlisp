@@ -1,0 +1,70 @@
+# Corman Lisp clang-format configuration
+# MSVC-style with hard tabs (matching ThreadClasses.h convention)
+BasedOnStyle: Microsoft
+
+# ── Indentation ──────────────────────────────────────────────
+UseTab:                  Always
+TabWidth:                4
+IndentWidth:             4
+ContinuationIndentWidth: 4
+AccessModifierOffset:    -4          # public:/private: at same indent as class body
+
+# ── Brace style: Allman (brace on its own line) ─────────────
+BreakBeforeBraces:       Allman
+# Allow short single-line functions for trivial accessors/inlines
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine:       false
+AllowShortCaseLabelsOnASingleLine:  true
+
+# ── Line width ───────────────────────────────────────────────
+ColumnLimit:             120
+
+# ── Spacing ──────────────────────────────────────────────────
+PointerAlignment:        Left        # type* ptr
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon:   true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock:      false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles:          false       # MSVC: vector<int> not vector< int >
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses:     false
+SpacesInSquareBrackets:  false
+
+# ── Preprocessor ─────────────────────────────────────────────
+IndentPPDirectives:      None        # #ifdef / #include at column 0
+
+# ── Misc ─────────────────────────────────────────────────────
+AlignAfterOpenBracket:   Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines:    Left
+AlignOperands:           true
+AlignTrailingComments:   false
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: true
+BinPackArguments:        true
+BinPackParameters:       true
+BreakBeforeTernaryOperators: true
+ConstructorInitializerIndentWidth: 4
+Cpp11BracedListStyle:    true
+DerivePointerAlignment:  false
+FixNamespaceComments:    true
+IndentCaseLabels:        true        # case: at same indent as switch body
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep:     1
+NamespaceIndentation:    None
+PenaltyBreakAssignment:  2
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment:     300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString:      1000
+PenaltyExcessCharacter:  1000000
+PenaltyReturnTypeOnItsOwnLine: 1000
+SortIncludes:            false       # keep existing include order
+SortUsingDeclarations:   false
+Standard:                c++14
