@@ -1576,7 +1576,12 @@ LispFunction(Elt)
 		n = integer(index);
 		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) ||
 			n >= arrayDimension(sequence, 0))
-			Error("Index out of range: ~A", index);
+		{
+			fprintf(stderr, "[Elt] seq=%p type=%ld dim=%ld idx=%ld hdr=0x%08lx\n",
+					(void*)sequence, (long)uvectorType(sequence),
+					(long)arrayDimension(sequence, 0), n,
+					(unsigned long)*(LispObj*)(sequence - 5));
+		}
 		if (isGenericArray(sequence))
 			ret = arrayStart(sequence)[n];
 		else if (isString(sequence))

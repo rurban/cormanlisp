@@ -28,7 +28,8 @@
 // COM Initialize()/InitializeCormanLisp()/RunCormanLisp() below.
 #ifndef _WIN32
 #include "cormanlisp_api.h"
-#include <stdint.h>
+#include <cstdint>
+#include <cstdio>
 static const CormanLispCallbacks* g_callbacks = NULL;
 
 // The console overflow code passes a UTF-16 buffer (LISP_CHAR is 16-bit)
@@ -579,10 +580,18 @@ __declspec(naked) LispObj* ThreadQV()
 CL_EXPORT
 LispObj* ThreadQV()
 {
-	return (LispObj*)TlsGetValue(QV_Index);
+	DWORD key = QV_Index;
+	if (key > 256) {  // pthread_key_t is a small integer
+		fprintf(stderr, "ThreadQV: QV_Index corrupted! key=%lu\n", (unsigned long)key);
+		exit(1);
+	}
+	void* val = TlsGetValue(key);
+	if (!val) {
+		fprintf(stderr, "ThreadQV: TlsGetValue(%lu) returned NULL\n", (unsigned long)key);
+		exit(1);
+	}
+	return (LispObj*)val;
 }
-
-extern int lispmain();
 
 // This is the thread procedure for the primary lisp thread
 UINT LispMainProc(LPVOID /*pParam*/)
