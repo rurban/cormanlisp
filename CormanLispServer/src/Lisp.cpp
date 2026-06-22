@@ -2240,6 +2240,19 @@ LispObj compiledFunctionNode(LispObj code, LispObj length, LispObj refs, LispObj
 			arrayStart(refs)[i * 2];
 	}
 	GCCriticalSection.Leave();
+#ifdef _DEBUG
+	{
+		LispObj fname = symbolValue(COMPILER_FUNCTION_NAME);
+		if (fname != NIL)
+		{
+			LispObj hdr = *(LispObj*)(func - UvectorTag);
+			fprintf(stderr, "[compiledFunctionNode] name=%p func=%p typ=%ld hdr=0x%lx ADDR_slot=%p\n",
+				(void*)fname, (void*)func, (hdr >> 3) & 0x1f, (unsigned long)hdr,
+				(void*)UVECTOR(func)[FUNCTION_ADDRESS]);
+			fflush(stderr);
+		}
+	}
+#endif
 	return func;
 }
 
