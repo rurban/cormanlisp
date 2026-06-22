@@ -1048,6 +1048,14 @@ LispObj consoleUnderflow(LispObj s)
 	else
 		charsRead = (unsigned long)num;
 	buf = streamInputBuffer(s);
+	long buflen = integer(vectorLength(buf));
+#ifdef _DEBUG
+	if ((long)charsRead > buflen) {
+		fprintf(stderr, "[consoleUnderflow] BUFFER OVERFLOW: charsRead=%lu buflen=%ld\n",
+			charsRead, buflen);
+		fflush(stderr);
+	}
+#endif
 	for (i = 0; i < charsRead; i++)
 		charArrayStart(buf)[i] = InputUnderflowBuffer[i];
 	streamInputBufferPos(s) = 0;

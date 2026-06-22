@@ -1196,6 +1196,14 @@ void initializeGarbageCollector()
 	LispHeap1.writeProtectAllPages();
 	LispHeap1.decommitTrailingPages();
 	LispHeap2.decommitAllPages();
+#ifdef _DEBUG
+	fprintf(stderr, "[initGC] EphemeralHeap1: %p..%p (%ld MB)\n",
+		(void*)EphemeralHeap1.start, (void*)EphemeralHeap1.end,
+		(long)(((char*)EphemeralHeap1.end - (char*)EphemeralHeap1.start) >> 20));
+	extern CharBuf TerminalInputBuf;
+	fprintf(stderr, "[initGC] TerminalInputBuf: size=%ld\n",
+		(long)TerminalInputBuf.size());
+#endif
 }
 
 // all values starting with index (which should be even!)
