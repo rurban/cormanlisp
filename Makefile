@@ -14,7 +14,7 @@ build:
 	@if [ ! -d zlib ]; then \
 		git submodule update --init --recursive; \
 	fi
-	@if [ ! -f build/Makefile ]; then \
+	@if [ ! -d build ] || [ ! -f build/Makefile ]; then \
 		$(CMAKE) -B build -DCMAKE_BUILD_TYPE=Release; \
 	fi
 	@$(MAKE) -s -j4 -C build
@@ -23,7 +23,7 @@ build-debug:
 	@if [ ! -d zlib ]; then \
 		git submodule update --init --recursive; \
 	fi
-	@if [ ! -f build-debug/Makefile ]; then \
+	@if [ ! -d build-debug ] || [ ! -f build-debug/Makefile ]; then \
 		$(CMAKE) -B build-debug -DCMAKE_BUILD_TYPE=Debug; \
 	fi
 	@$(MAKE) -s -j4 -C build-debug
@@ -41,18 +41,10 @@ clean:
 	rm -f CormanLisp.img
 
 test: build CormanLisp.img
-	@if [ -f build/Makefile ]; then \
-		$(MAKE) -s -C build test ARGS="--output-on-failure" || true; \
-	else \
-		$(MAKE) build && $(MAKE) -s -C build test ARGS="--output-on-failure" || true; \
-	fi
+	@$(MAKE) -s -C build test ARGS="--output-on-failure" || true
 
 test-debug: build-debug CormanLisp.img
-	@if [ -f build-debug/Makefile ]; then \
-		$(MAKE) -s -C build-debug test ARGS="--output-on-failure" || true; \
-	else \
-		$(MAKE) build-debug && $(MAKE) -s -C build-debug test ARGS="--output-on-failure" || true; \
-	fi
+	@$(MAKE) -s -C build-debug test ARGS="--output-on-failure" || true
 
 lint:
 	if command -v prek; then prek run -a; \
