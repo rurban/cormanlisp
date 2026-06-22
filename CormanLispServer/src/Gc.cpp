@@ -871,7 +871,6 @@ CL_NAKED LispObj AllocVector(long num)
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
 				 "push %%edi\n\t"
-				 "push %%esi\n\t"
 				 "push %%ebx\n\t"
 				 "call ThreadQV\n\t"
 				 "mov %%eax, %%esi\n\t"
@@ -880,7 +879,6 @@ CL_NAKED LispObj AllocVector(long num)
 				 "call _AllocVectorImpl\n\t"
 				 "add $4, %%esp\n\t"
 				 "pop %%ebx\n\t"
-				 "pop %%esi\n\t"
 				 "pop %%edi\n\t"
 				 "pop %%ebp\n\t"
 				 "ret"
@@ -1013,7 +1011,6 @@ end:
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
 				 "push %%edi\n\t"
-				 "push %%esi\n\t"
 				 "push %%ebx\n\t"
 				 "mov 8(%%ebp), %%edx\n\t" // num = [ebp+8]
 				 "cmp $0x8000, %%edx\n\t"
@@ -1063,7 +1060,6 @@ end:
 				 "pop %%eax\n\t"
 				 "done_%=:\n\t"
 				 "pop %%ebx\n\t"
-				 "pop %%esi\n\t"
 				 "pop %%edi\n\t"
 				 "pop %%ebp\n\t"
 				 "ret"
@@ -1154,7 +1150,6 @@ end:
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
 				 "push %%edi\n\t"
-				 "push %%esi\n\t"
 				 "push %%ebx\n\t"
 				 "mov 8(%%ebp), %%edx\n\t" // num = [ebp+8]
 				 "cmp $0x40000, %%edx\n\t" // num < 32k (tagged) cells?
@@ -1209,7 +1204,6 @@ end:
 				 "mov $1, %%ecx\n\t"
 				 "done_%=:\n\t"
 				 "pop %%ebx\n\t"
-				 "pop %%esi\n\t"
 				 "pop %%edi\n\t"
 				 "pop %%ebp\n\t"
 				 "ret"
@@ -1272,7 +1266,6 @@ CL_NAKED LispObj LoadLocalHeap()
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
 				 "push %%edi\n\t"
-				 "push %%esi\n\t"
 				 "push %%ebx\n\t"
 				 "call EnterGCCriticalSection\n\t"
 				 "mov %[cur], %%eax\n\t" // eax = EphemeralHeap1.current
@@ -1300,7 +1293,6 @@ CL_NAKED LispObj LoadLocalHeap()
 				 "mov %%edi, 24(%%esi)\n\t"
 				 "call LeaveGCCriticalSection\n\t"
 				 "pop %%ebx\n\t"
-				 "pop %%esi\n\t"
 				 "pop %%edi\n\t"
 				 "pop %%ebp\n\t"
 				 "ret"

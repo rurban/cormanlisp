@@ -1175,7 +1175,6 @@ void LispLoop()
 #define SETUP_LISP_CALL(n)                 \
 	"push %%ebp\n\t"                       \
 	"mov %%esp, %%ebp\n\t"                 \
-	"push %%esi\n\t"                       \
 	"push %%edi\n\t"                       \
 	"push %%ecx\n\t"                       \
 	"push %%ebx\n\t"                       \
@@ -1189,7 +1188,6 @@ void LispLoop()
 	"pop %%ebx\n\t"         \
 	"pop %%ecx\n\t"         \
 	"pop %%edi\n\t"         \
-	"pop %%esi\n\t"         \
 	"mov %%ebp, %%esp\n\t"  \
 	"pop %%ebp\n\t"         \
 	"ret"
@@ -1657,7 +1655,6 @@ CL_NAKED LispObj cons(LispObj a, LispObj b)
 #else
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
-				 "push %%esi\n\t"
 				 "call ThreadQV\n\t"
 				 "mov %%eax, %%esi\n\t" // esi = QV
 				 "call AllocLocalCons\n\t"
@@ -1665,7 +1662,6 @@ CL_NAKED LispObj cons(LispObj a, LispObj b)
 				 "mov %%ecx, -4(%%eax)\n\t" // CAR(ret) = a
 				 "mov 12(%%ebp), %%ecx\n\t" // b = [ebp+12]
 				 "mov %%ecx, (%%eax)\n\t" // CDR(ret) = b
-				 "pop %%esi\n\t"
 				 "pop %%ebp\n\t"
 				 "ret"
 				 :
