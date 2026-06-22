@@ -633,13 +633,14 @@ LispObj loadFile(LispObj inputStream)
 		try
 		{
 			setSymbolValue(SOURCE_LINE, NIL);
-			x = LispCall5(Funcall, symbolFunction(READ), inputStream, NIL, Eof, NIL);
-			if (x == Eof)
-				break;
 #ifdef _DEBUG
-			fprintf(stderr, "[loadFile] form %ld\n", count);
-			fflush(stderr);
+			{ // QV integrity check
+				LispObj rn = symbolFunction(READ);
+				if (!isFunction(rn))
+					fprintf(stderr, "[loadFile] QV CORRUPT: READ=%p -> fn=%p\n", (void*)(LispObj)READ, (void*)rn);
+			}
 #endif
+			x = LispCall5(Funcall, symbolFunction(READ), inputStream, NIL, Eof, NIL);
 			val = eval(x, NIL);
 		}
 		catch (LispObj)

@@ -1100,6 +1100,22 @@ void LispLoop()
 				// No image — enter REPL directly
 			}
 			setSymbolValue(SOURCE_LINE, NIL);
+#ifdef _DEBUG
+			{ // QV + jump table integrity check
+				LispObj fs = FUNCALL;
+				LispObj fn = symbolFunction(fs);
+				LispObj rn = symbolFunction(READ);
+				// Also check the jump table entry for READ
+				long jti = integer(UVECTOR(READ)[SYMBOL_JUMP_TABLE]);
+				LispObj jt_addr = QV[jti + 1]; // jump table function address
+				if (!isFunction(fn) || !isFunction(rn)) {
+					fprintf(stderr, "[LispLoop] QV CORRUPT: FUNCALL=%p->fn=%p READ=%p->fn=%p\n",
+						(void*)fs, (void*)fn, (void*)(LispObj)READ, (void*)rn);
+				}
+				fprintf(stderr, "[LispLoop] READ jt_idx=%ld jt_addr=%p symbol_fn=%p\n",
+					jti, (void*)jt_addr, (void*)rn);
+			}
+#endif
 			x = LispCall5(Funcall, symbolFunction(READ), symbolValue(STANDARD_INPUT), NIL, UNINITIALIZED, NIL);
 			if (x == UNINITIALIZED) // EOF
 			{
@@ -1113,6 +1129,14 @@ void LispLoop()
 			fprintf(stderr, "[LispLoop] read x=%p\n", (void*)x);
 #endif
 			val = eval(x, NIL);
+#ifdef _DEBUG
+			{ // QV integrity: verify WRITE is still valid after eval
+				LispObj wn = symbolFunction(WRITE);
+				if (!isFunction(wn))
+					fprintf(stderr, "[LispLoop] QV CORRUPT after eval: WRITE=%p->fn=%p\n",
+						(void*)(LispObj)WRITE, (void*)wn);
+			}
+#endif
 			if (NumReturnValues == 1)
 			{
 #ifdef _DEBUG
@@ -2291,10 +2315,25 @@ void updateJumpTable(LispObj sym, LispObj func, LispObj env)
 	tableIndex = UVECTOR(sym)[SYMBOL_JUMP_TABLE];
 
 	funcaddr = UVECTOR(func)[FUNCTION_ADDRESS];
+#ifdef _DEBUG
+	if (sym == READ) {
+		fprintf(stderr, "[updateJumpTable] READ func=%p UVECTOR[2]=%p utype=%ld\n",
+			(void*)func, (void*)funcaddr,
+			(long)((*(LispObj*)(func - UvectorTag)) >> 3) & 0x1f);
+		fflush(stderr);
+	}
+#endif
 	if (uvectorType(func) == FunctionType)
 		funcaddr = (LispObj)(UVECTOR(funcaddr) + COMPILED_CODE_OFFSET); // start after header cells
 	// funcaddr is untagged address
 
+#ifdef _DEBUG
+	if (sym == READ || sym == WRITE || sym == FUNCALL) {
+		fprintf(stderr, "[updateJumpTable] sym=%p tableIndex=%ld funcaddr=%p\n",
+			(void*)sym, integer(tableIndex), (void*)funcaddr);
+		fflush(stderr);
+	}
+#endif
 	QV[integer(tableIndex)] = env;
 	QV[integer(tableIndex) + 1] = funcaddr;
 
@@ -2316,6 +2355,13 @@ void setSymbolFunction(LispObj sym, LispObj func, LispObj type)
 	LispObj env = 0;
 
 	checkFunction(func);
+#ifdef _DEBUG
+	if (sym == READ || sym == WRITE || sym == FUNCALL) {
+		const char* name = (sym == READ) ? "READ" : (sym == WRITE) ? "WRITE" : "FUNCALL";
+		fprintf(stderr, "[setSymbolFunction] %s sym=%p func=%p type=%p\n", name, (void*)sym, (void*)func, (void*)type);
+		fflush(stderr);
+	}
+#endif
 	CAR(UVECTOR(sym)[SYMBOL_FUNCTION]) = func;
 	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = type;
 	env = UVECTOR(func)[FUNCTION_ENVIRONMENT];
