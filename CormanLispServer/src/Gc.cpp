@@ -751,46 +751,40 @@ __declspec(naked) void LeaveGCCriticalSection()
 }
 #endif
 
-// to be called from Lisp code only
-CL_NAKED LispObj AllocLocalCons()
+// Allocate a single cons cell (2 words = 8 bytes) from the
+// thread-local heap.  Returns a tagged Cons pointer (base + ConsTag).
+LispObj AllocLocalCons()
 {
-#ifdef _MSC_VER
-	__asm
+	while (1)
 	{
-        push	ebp
-        mov		ebp, esp
-    try1:
-        mov		eax, [esi + THREAD_HEAP_Index*4]
-        add		eax, 4
-        lea		edx, [eax + 4]
-        cmp		edx, [esi + THREAD_HEAP_END_Index*4]
-        jle		done
-        call	LoadLocalHeap
-        jmp		short try1
-    done:
-        mov		[esi + THREAD_HEAP_Index*4], edx
-        pop		ebp
-        ret
-	}
-#else
-	asm volatile("push %%ebp\n\t"
-				 "mov %%esp, %%ebp\n\t"
-				 "1:\n\t"
-				 "mov 20(%%esi), %%eax\n\t"
-				 "add $4, %%eax\n\t"
-				 "lea 4(%%eax), %%edx\n\t"
-				 "cmp 24(%%esi), %%edx\n\t"
-				 "jle 2f\n\t"
-				 "call LoadLocalHeap\n\t"
-				 "jmp 1b\n\t"
-				 "2:\n\t"
-				 "mov %%edx, 20(%%esi)\n\t"
-				 "pop %%ebp\n\t"
-				 "ret"
-				 :
-				 :
-				 : "eax", "edx");
+		char* p = (char*)(LispObj)THREAD_HEAP;
+		char* end = (char*)(LispObj)THREAD_HEAP_END;
+		char* np = p + 8;
+#ifdef _DEBUG
+		// Integrity: check THREAD_HEAP is within EphemeralHeap1
+		if (p < (char*)EphemeralHeap1.start || p > (char*)EphemeralHeap1.end + 4096)
+		{
+			fprintf(stderr, "[AllocLocalCons] THREAD_HEAP out of bounds: p=%p heap=[%p..%p]\n",
+				(void*)p, (void*)EphemeralHeap1.start, (void*)EphemeralHeap1.end);
+			fflush(stderr);
+		}
+		// Check that the cons being allocated doesn't overlap EphemeralHeap1.current
+		long dist = (char*)EphemeralHeap1.current - np;
+		if (dist > 0 && dist < 4096)
+		{
+			fprintf(stderr, "[AllocLocalCons] LOCAL HEAP NEAR EPH CURRENT: np=%p cur=%p dist=%ld\n",
+				(void*)np, (void*)EphemeralHeap1.current, dist);
+			fflush(stderr);
+		}
 #endif
+		if (np > end)
+		{
+			LoadLocalHeap();
+			continue;
+		}
+		THREAD_HEAP = (LispObj)np;
+		return ((LispObj)p) + ConsTag;
+	}
 }
 
 //
@@ -900,6 +894,18 @@ extern "C" LispObj _AllocVectorImpl(long num)
 	EnterGCCriticalSection();
 	Node* block = EphemeralHeap1.current;
 	Node* newCur = block + cells;
+	// Verify canary from previous allocation
+#ifdef _DEBUG
+	static const LispObj CANARY = 0xDEADC0DE;
+	if (block > EphemeralHeap1.start) {
+		LispObj canary = *(LispObj*)block;
+		if (canary != CANARY && canary != 0) {
+			fprintf(stderr, "[_AllocVectorImpl] CANARY CORRUPTED at %p: expected 0x%lx got 0x%lx (prev alloc zero-init overflow)\n",
+				(void*)block, (unsigned long)CANARY, (unsigned long)canary);
+			fflush(stderr);
+		}
+	}
+#endif
 	if (newCur > EphemeralHeap1.end)
 	{
 		garbageCollect(0);
@@ -924,6 +930,10 @@ extern "C" LispObj _AllocVectorImpl(long num)
 		p->car = 0;
 		p->cdr = 0;
 	}
+	// Write canary after this allocation
+#ifdef _DEBUG
+	*(LispObj*)(newCur) = CANARY;
+#endif
 	LispObj result = ((LispObj)block) + UvectorTag;
 	// Verify header integrity
 #ifdef _DEBUG
@@ -941,132 +951,9 @@ extern "C" LispObj _AllocVectorImpl(long num)
 //	Same as AllocVector(), but expects to be called from Lisp code.
 //  This function expects the passed length to be untagged.
 //
-CL_NAKED LispObj LispAllocVector(long num)
+LispObj LispAllocVector(long num)
 {
-#ifdef _MSC_VER
-	__asm
-	{
-        push	ebp
-        mov		ebp, esp
-        push	edi
-        push	esi
-        push	ebx
-        mov		edx, dword ptr num
-        cmp		edx, 8000h		;; num < 32k cells?
-        jb		t1
-        push	edx				;; num >= 32k cells, alloc from primary heap
-        shl     edx, 3          ;; pass tagged size
-        call	AllocLargeVector
-        add		esp, 4
-        jmp		end
-    t1:
-        add		edx, 2
-        sar		edx, 1			;; cells = (num + 2) >> 1
-
-		   // multi-threaded version
-        push	edx
-        call	EnterGCCriticalSection
-        pop		edx
-        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
-        lea		ecx, [eax + edx*8]
-        cmp		ecx, dword ptr EphemeralHeap1.end
-        jl		t2
-        push	edx
-        push	0
-        call	garbageCollect
-        add		esp, 4
-        pop		edx
-        mov		eax, dword ptr EphemeralHeap1.current
-        lea		ecx, [eax + edx*8]
-    t2:
-        mov		dword ptr EphemeralHeap1.current, ecx
-        mov		ecx, edx				;; ecx = num 8-byte cells
-        shl		edx, 8
-        or		dl, UvectorLengthTag
-        mov		dword ptr [eax], edx	;; set block header cell
-        mov		edi, eax
-        mov		eax, 0 ;;initialize to 0
-        mov		[edi + 4], eax
-        dec		ecx
-        jle		skip_loop1
-    loop1:
-        mov		[edi + ecx*8], eax
-        mov		[edi + ecx*8 + 4], eax
-        dec		ecx
-        jg		loop1
-    skip_loop1:
-        mov		eax, edi
-        add		eax, UvectorTag
-        push	eax
-        call	LeaveGCCriticalSection
-        pop		eax
-end:
-        pop		ebx
-        pop		esi
-        pop		edi
-        pop		ebp
-        ret
-	}
-#else
-	asm volatile("push %%ebp\n\t"
-				 "mov %%esp, %%ebp\n\t"
-				 "push %%edi\n\t"
-				 "push %%ebx\n\t"
-				 "mov 8(%%ebp), %%edx\n\t" // num = [ebp+8]
-				 "cmp $0x8000, %%edx\n\t"
-				 "jb 1f\n\t"
-				 "push %%edx\n\t"
-				 "call AllocLargeVector\n\t"
-				 "add $4, %%esp\n\t"
-				 "jmp done_%=\n\t"
-				 "1:\n\t"
-				 "add $2, %%edx\n\t"
-				 "sar $1, %%edx\n\t"
-				 "push %%edx\n\t"
-				 "call EnterGCCriticalSection\n\t"
-				 "pop %%edx\n\t"
-				 "mov %[cur], %%eax\n\t"
-				 "lea (%%eax, %%edx, 8), %%ecx\n\t"
-				 "cmp %[end], %%ecx\n\t"
-				 "jl 2f\n\t"
-				 "push %%edx\n\t"
-				 "push $0\n\t"
-				 "call garbageCollect\n\t"
-				 "add $4, %%esp\n\t"
-				 "pop %%edx\n\t"
-				 "mov %[cur], %%eax\n\t"
-				 "lea (%%eax, %%edx, 8), %%ecx\n\t"
-				 "2:\n\t"
-				 "mov %%ecx, %[cur]\n\t"
-				 "mov %%edx, %%ecx\n\t"
-				 "shl $8, %%edx\n\t"
-				 "or %[utag], %%dl\n\t"
-				 "mov %%edx, (%%eax)\n\t"
-				 "mov %%eax, %%edi\n\t"
-				 "xor %%eax, %%eax\n\t"
-				 "mov %%eax, 4(%%edi)\n\t"
-				 "dec %%ecx\n\t"
-				 "jle 3f\n\t"
-				 "loop_vec1:\n\t"
-				 "mov %%eax, (%%edi, %%ecx, 8)\n\t"
-				 "mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
-				 "dec %%ecx\n\t"
-				 "jg loop_vec1\n\t"
-				 "3:\n\t"
-				 "mov %%edi, %%eax\n\t"
-				 "add %[utag2], %%eax\n\t"
-				 "push %%eax\n\t"
-				 "call LeaveGCCriticalSection\n\t"
-				 "pop %%eax\n\t"
-				 "done_%=:\n\t"
-				 "pop %%ebx\n\t"
-				 "pop %%edi\n\t"
-				 "pop %%ebp\n\t"
-				 "ret"
-				 :
-				 : [cur] "m"(EphemeralHeap1.current), [end] "m"(EphemeralHeap1.end),
-				   [utag] "i"((unsigned)UvectorLengthTag), [utag2] "i"((unsigned)UvectorTag));
-#endif
+	return _AllocVectorImpl(num);
 }
 
 //
@@ -1076,141 +963,9 @@ end:
 //	Same as AllocVector(), but expects to be called from Lisp code.
 //  This function expects the passed length to be tagged.
 //
-CL_NAKED LispObj LispAllocVectorTagged(LispObj num)
+LispObj LispAllocVectorTagged(LispObj num)
 {
-#ifdef _MSC_VER
-	__asm
-	{
-        push	ebp
-        mov		ebp, esp
-        push	edi
-        push	esi
-        push	ebx
-        mov		edx, dword ptr num
-        cmp		edx, 40000h		;; num < 32k (tagged) cells?
-        jb		t1
-        push	edx				;; num >= 32k cells, alloc from primary heap
-        call	AllocLargeVector
-        add		esp, 4
-        jmp		end
-    t1:
-        add		edx, 16
-        and     edx, 0xfffffff0
-        sar		edx, 1			;; cells = (num + 2) >> 1
-
-		   // multi-threaded version
-        push	edx
-        call	EnterGCCriticalSection
-        pop		edx
-        shr     edx, 3                                  ;; safe in critical section, untagged edx
-        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
-        lea		ecx, [eax + edx*8]
-        cmp		ecx, dword ptr EphemeralHeap1.end
-        jl		t2
-        push	edx
-        push	0
-        call	garbageCollect
-        add		esp, 4
-        pop		edx
-        mov		eax, dword ptr EphemeralHeap1.current
-        lea		ecx, [eax + edx*8]
-    t2:
-        mov		dword ptr EphemeralHeap1.current, ecx
-        mov		ecx, edx				;; ecx = num 8-byte cells
-        shl		edx, 8
-        or		dl, UvectorLengthTag
-        mov		dword ptr [eax], edx	;; set block header cell
-        mov		edi, eax
-        mov		eax, 0 ;; initialize to 0
-        mov		[edi + 4], eax
-        dec		ecx
-        jle		skip_loop1
-    loop1:
-        mov		[edi + ecx*8], eax
-        mov		[edi + ecx*8 + 4], eax
-        dec		ecx
-        jg		loop1
-    skip_loop1:
-        mov		eax, edi
-        add		eax, UvectorTag
-        push	eax
-        mov     ecx, 1
-        mov     edx, 1
-        call	LeaveGCCriticalSection
-        pop		eax
-        mov     ecx, 1
-end:
-        pop		ebx
-        pop		esi
-        pop		edi
-        pop		ebp
-        ret
-	}
-#else
-	asm volatile("push %%ebp\n\t"
-				 "mov %%esp, %%ebp\n\t"
-				 "push %%edi\n\t"
-				 "push %%ebx\n\t"
-				 "mov 8(%%ebp), %%edx\n\t" // num = [ebp+8]
-				 "cmp $0x40000, %%edx\n\t" // num < 32k (tagged) cells?
-				 "jb 1f\n\t"
-				 "push %%edx\n\t"
-				 "call AllocLargeVector\n\t"
-				 "add $4, %%esp\n\t"
-				 "jmp done_%=\n\t"
-				 "1:\n\t"
-				 "add $16, %%edx\n\t"
-				 "and $0xFFFFFFF0, %%edx\n\t"
-				 "sar $1, %%edx\n\t" // cells = (num+2)>>1
-				 "push %%edx\n\t"
-				 "call EnterGCCriticalSection\n\t"
-				 "pop %%edx\n\t"
-				 "shr $3, %%edx\n\t" // already 8-byte cells
-				 "mov %[cur], %%eax\n\t"
-				 "lea (%%eax, %%edx, 8), %%ecx\n\t"
-				 "cmp %[end], %%ecx\n\t"
-				 "jl 2f\n\t"
-				 "push %%edx\n\t"
-				 "push $0\n\t"
-				 "call garbageCollect\n\t"
-				 "add $4, %%esp\n\t"
-				 "pop %%edx\n\t"
-				 "mov %[cur], %%eax\n\t"
-				 "lea (%%eax, %%edx, 8), %%ecx\n\t"
-				 "2:\n\t"
-				 "mov %%ecx, %[cur]\n\t"
-				 "mov %%edx, %%ecx\n\t"
-				 "shl $8, %%edx\n\t"
-				 "or %[utag], %%dl\n\t"
-				 "mov %%edx, (%%eax)\n\t"
-				 "mov %%eax, %%edi\n\t"
-				 "xor %%eax, %%eax\n\t"
-				 "mov %%eax, 4(%%edi)\n\t"
-				 "dec %%ecx\n\t"
-				 "jle 3f\n\t"
-				 "loop_vec2:\n\t"
-				 "mov %%eax, (%%edi, %%ecx, 8)\n\t"
-				 "mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
-				 "dec %%ecx\n\t"
-				 "jg loop_vec2\n\t"
-				 "3:\n\t"
-				 "mov %%edi, %%eax\n\t"
-				 "add %[utag2], %%eax\n\t"
-				 "push %%eax\n\t"
-				 "mov $1, %%ecx\n\t"
-				 "mov $1, %%edx\n\t"
-				 "call LeaveGCCriticalSection\n\t"
-				 "pop %%eax\n\t"
-				 "mov $1, %%ecx\n\t"
-				 "done_%=:\n\t"
-				 "pop %%ebx\n\t"
-				 "pop %%edi\n\t"
-				 "pop %%ebp\n\t"
-				 "ret"
-				 :
-				 : [cur] "m"(EphemeralHeap1.current), [end] "m"(EphemeralHeap1.end),
-				   [utag] "i"((unsigned)UvectorLengthTag), [utag2] "i"((unsigned)UvectorTag));
-#endif
+	return _AllocVectorImpl(integer(num));
 }
 
 //
@@ -1218,88 +973,48 @@ end:
 //	Reserves 2048 conses on the ephemeral heap (16k worth)
 #define LocalHeapSize 0x4000
 
-CL_NAKED LispObj LoadLocalHeap()
+LispObj LoadLocalHeap()
 {
-#ifdef _MSC_VER
-	__asm
+	const long cells = LocalHeapSize / 8; // 0x800
+
+	EnterGCCriticalSection();
+	Node* block = EphemeralHeap1.current;
+	Node* newCur = block + cells;
+#ifdef _DEBUG
+	static Node* last_local_block = 0;
+	static Node* last_local_end = 0;
+	if (last_local_end && block < last_local_end)
 	{
-        push	ebp
-        mov		ebp, esp
-        push	edi
-        push	esi
-        push	ebx
-
-		 // multi-threaded version
-        call	EnterGCCriticalSection
-        mov		eax, dword ptr EphemeralHeap1.current	;; eax = new block
-        lea		ecx, [eax + LocalHeapSize]
-        cmp		ecx, dword ptr EphemeralHeap1.end
-        jl		t2
-        push	0
-        call	garbageCollect
-        add		esp, 4
-        mov		eax, dword ptr EphemeralHeap1.current
-        lea		ecx, [eax + LocalHeapSize]
-    t2:
-        mov		dword ptr EphemeralHeap1.current, ecx
-        mov		ecx, (LocalHeapSize/8)				;; ecx = num 8-byte cells
-        mov		edi, eax
-        mov		eax, 0 ;;initialize to 0
-        dec		ecx
-    loop1:
-        mov		[edi + ecx*8], eax
-        mov		[edi + ecx*8 + 4], eax
-        dec		ecx
-        jge		loop1
-
-        mov		[esi + THREAD_HEAP_Index*4], edi
-        add		edi, (LocalHeapSize - 16)	;; leave two conses as pad
-        mov		[esi + THREAD_HEAP_END_Index*4], edi
-        call	LeaveGCCriticalSection
-        pop		ebx
-        pop		esi
-        pop		edi
-        pop		ebp
-        ret
+		fprintf(stderr, "[LoadLocalHeap] LOCAL HEAP OVERLAP: new=%p..%p overlaps prev=%p..%p\n",
+			(void*)block, (void*)newCur, (void*)last_local_block, (void*)last_local_end);
+		fflush(stderr);
 	}
-#else
-	asm volatile("push %%ebp\n\t"
-				 "mov %%esp, %%ebp\n\t"
-				 "push %%edi\n\t"
-				 "push %%ebx\n\t"
-				 "call EnterGCCriticalSection\n\t"
-				 "mov %[cur], %%eax\n\t" // eax = EphemeralHeap1.current
-				 "lea 0x4000(%%eax), %%ecx\n\t" // LocalHeapSize = 0x4000
-				 "cmp %[end], %%ecx\n\t"
-				 "jl 1f\n\t"
-				 "push $0\n\t"
-				 "call garbageCollect\n\t"
-				 "add $4, %%esp\n\t"
-				 "mov %[cur], %%eax\n\t"
-				 "lea 0x4000(%%eax), %%ecx\n\t"
-				 "1:\n\t"
-				 "mov %%ecx, %[cur]\n\t" // EphemeralHeap1.current = ecx
-				 "mov $0x800, %%ecx\n\t" // LocalHeapSize/8 = 0x800
-				 "mov %%eax, %%edi\n\t"
-				 "xor %%eax, %%eax\n\t" // init to 0
-				 "dec %%ecx\n\t"
-				 "2:\n\t"
-				 "mov %%eax, (%%edi, %%ecx, 8)\n\t"
-				 "mov %%eax, 4(%%edi, %%ecx, 8)\n\t"
-				 "dec %%ecx\n\t"
-				 "jge 2b\n\t"
-				 "mov %%edi, 20(%%esi)\n\t"
-				 "lea 0x3FF0(%%edi), %%edi\n\t" // LocalHeapSize - 16 = 0x3FF0
-				 "mov %%edi, 24(%%esi)\n\t"
-				 "call LeaveGCCriticalSection\n\t"
-				 "pop %%ebx\n\t"
-				 "pop %%edi\n\t"
-				 "pop %%ebp\n\t"
-				 "ret"
-				 :
-				 : [cur] "m"(EphemeralHeap1.current), [end] "m"(EphemeralHeap1.end)
-				 : "eax", "ecx", "edx", "edi", "memory");
 #endif
+	if (newCur > EphemeralHeap1.end)
+	{
+		garbageCollect(0);
+		block = EphemeralHeap1.current;
+		newCur = block + cells;
+	}
+	EphemeralHeap1.current = newCur;
+
+	// Zero-initialize the entire block
+	for (long i = 0; i < cells; i++)
+	{
+		block[i].car = 0;
+		block[i].cdr = 0;
+	}
+
+	// Set up the thread-local heap pointers
+	THREAD_HEAP = (LispObj)block;
+	THREAD_HEAP_END = (LispObj)((char*)block + LocalHeapSize - 16);
+
+#ifdef _DEBUG
+	last_local_block = block;
+	last_local_end = newCur;
+#endif
+	LeaveGCCriticalSection();
+	return NIL;
 }
 
 //
