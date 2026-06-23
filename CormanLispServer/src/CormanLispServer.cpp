@@ -227,8 +227,8 @@ extern "C"
 
 		TlsSetValue(QV_Index, QV);
 		initLisp();
-		// Keep bootstrapping active during image build — real GC has a
-		// second-wave scanning bug (Phase 4/6 write-barrier incomplete).
+		// Keep bootstrapping active during image build — the Linux GC port
+		// (Phase 4/6) corrupts compiled code (SIGILL).
 		// g_lisp_bootstrapping = false;
 		return 0;
 	}
