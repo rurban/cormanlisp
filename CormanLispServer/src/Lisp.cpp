@@ -2082,6 +2082,12 @@ void checkOutputStream(LispObj n)
 void checkInputStream(LispObj n)
 {
 	LispObj stype = 0;
+#ifdef _DEBUG
+	fprintf(stderr, "[checkInputStream] n=%p isStr=%d type=%ld dir=%p INPUT=%p BIDIR=%p\n",
+		(void*)n, isStream(n), isUvector(n)?(long)uvectorType(n):-1L,
+		isStream(n)?(void*)streamDirection(n):0,
+		(void*)INPUT_KEY, (void*)BIDIRECTIONAL_KEY); fflush(stderr);
+#endif
 	if (!isStream(n))
 		Error("Not a stream: ~A", n);
 	stype = streamDirection(n);

@@ -1328,7 +1328,7 @@ void garbageCollect(long level)
 #ifdef _DEBUG
 		long oldSize = EphemeralHeap1.sizeMem;
 #endif
-		EphemeralHeap1.grow(PAGE_SIZE * 1024); // 4 MB per bootstrap GC call
+		EphemeralHeap1.grow(PAGE_SIZE * 256); // 1 MB per bootstrap GC call
 		EphemeralHeap1.commitAllPages();
 #ifdef _DEBUG
 		fprintf(stderr, "[GC] bootstrap mode: grew EphemeralHeap1 %ld → %ld MB, used=%ld\n",
@@ -1415,11 +1415,24 @@ void garbageCollect(long level)
 
 				// copy any live data from Ephemeral1 to Ephemeral2
 				mark1 = EphemeralHeap2.current; // save this position
-				checkGlobalRoots(&EphemeralHeap1, &EphemeralHeap2); // check all global roots
-				checkStackRoots(&EphemeralHeap1, &EphemeralHeap2); // check stack and registers
-				checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &LispHeap1, LispHeap1.start, LispHeap1.current);
-				checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &EphemeralHeap2, EphemeralHeap2.start, mark1);
-				EphemeralHeap1.reset();
+		// copy any live data from Ephemeral1 to Ephemeral2
+		mark1 = EphemeralHeap2.current; // save this position
+#ifdef _DEBUG
+		{ LispObj s = CONSOLE_INPUT_STREAM;
+		  fprintf(stderr, "[GC] pre-GC stream=%p isUvec=%d type=%ld\n",
+			(void*)s, isUvector(s), isUvector(s)?(long)uvectorType(s):-1L); fflush(stderr); }
+#endif
+		checkGlobalRoots(&EphemeralHeap1, &EphemeralHeap2); // check all global roots
+		checkStackRoots(&EphemeralHeap1, &EphemeralHeap2); // check stack and registers
+		checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &LispHeap1, LispHeap1.start, LispHeap1.current);
+		checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &EphemeralHeap2, EphemeralHeap2.start, mark1);
+#ifdef _DEBUG
+		{ LispObj s = CONSOLE_INPUT_STREAM;
+		  LispObj sv = isUvector(s) ? UVECTOR(s)[SYMBOL_VALUE] : NIL;
+		  fprintf(stderr, "[GC] post-promote stream=%p sv=%p isUvec=%d\n",
+			(void*)s, (void*)sv, isUvector(sv)); fflush(stderr); }
+#endif
+		EphemeralHeap1.reset();
 
 				// check all the blocks found so far
 				copyReferencedBlocks(&EphemeralHeap1, &EphemeralHeap2, mark1);
@@ -1428,6 +1441,21 @@ void garbageCollect(long level)
 				mark1 = EphemeralHeap2.current; // save this position
 				resurrectFinalizationObjects(&EphemeralHeap1, &EphemeralHeap2);
 				copyReferencedBlocks(&EphemeralHeap1, &EphemeralHeap2, mark1);
+#ifdef _DEBUG
+		{ LispObj s = CONSOLE_INPUT_STREAM;
+		  if (isUvector(s)) {
+			LispObj sv = UVECTOR(s)[SYMBOL_VALUE];
+			LispObj strm = isCons(sv) ? CAR(sv) : NIL;
+			long dir = isUvector(strm) ? (long)uvectorType(strm) : -1;
+			fprintf(stderr, "[GC] after copyRefBlocks sym=%p sv=%p strm=%p type=%ld\n",
+				(void*)s, (void*)sv, (void*)strm, dir); fflush(stderr);
+			if (isStream(strm)) {
+				fprintf(stderr, "[GC]   streamDirection=%ld subclass=%ld\n",
+					(long)streamDirection(strm), (long)streamSubclass(strm)); fflush(stderr);
+			}
+		  }
+		}
+#endif
 
 				// At this point, all live data from Ephemeral1 should have
 				// been copied to Ephemeral2. If Ephemeral2 overflowed, we need
@@ -2389,22 +2417,28 @@ static Node* checkObject(Node* p)
 					u[2] = wrapInteger(GarbageCollectionLevel);
 				}
 			// purposely fall through here
-			default:
+		default:
+		{
+			for (i = 1; i < numcells; i++)
 			{
-				for (i = 1; i < numcells; i++)
-				{
-					if (isHeapPointer(u[i]))
-						promoteBlock(&u[i], GCToSpace);
-				}
+				if (isHeapPointer(u[i]))
+					promoteBlock(&u[i], GCToSpace);
 			}
-			break;
-				;
+		}
+		break;
 		}
 		return (p + uvectorSize(uvec));
 	}
 	else
 	{
 		// we have a cons cell
+#ifdef _DEBUG
+		{
+			LispObj c = p->car;
+			if (isHeapPointer(c) && isUvector(c) && uvectorType(c) == StreamType)
+				fprintf(stderr, "[GC:checkObject] cons car is stream %p promoting\n", (void*)c); fflush(stderr);
+		}
+#endif
 		if (isHeapPointer(p->car))
 			promoteBlock(&p->car, GCToSpace);
 		if (isHeapPointer(p->cdr))
@@ -2562,12 +2596,21 @@ void copyReferencedBlocks(LispHeap* fromSpace, LispHeap* toSpace, Node* start)
 	GCToSpace = toSpace;
 	GCScanSpace = toSpace;
 	GCCheckCode = TRUE;
-
 	Node* p = start;
+#ifdef _DEBUG
+	long blocks = 0;
+#endif
 	while (p < toSpace->current)
 	{
+#ifdef _DEBUG
+		blocks++;
+#endif
 		p = checkObject(p);
 	}
+#ifdef _DEBUG
+	fprintf(stderr, "[GC:copyRefBlocks] scanned %ld blocks from %p to %p\n",
+		blocks, (void*)start, (void*)toSpace->current); fflush(stderr);
+#endif
 }
 
 static void checkHeapRoots(LispHeap* fromSpace, LispHeap* toSpace, LispHeap* checkHeap, Node* start, Node* end)
