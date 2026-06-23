@@ -444,19 +444,14 @@ int LispHeap::decommitAllPages()
 int LispHeap::commitAllPages()
 {
 	unsigned long i = 0;
-	void* ret = 0;
 	int result = 1;
-	DWORD err = 0;
 	if (firstUncommittedPage < (firstPage + numPages))
 	{
-		ret = (void*)VirtualAlloc((void*)page_address(firstUncommittedPage),
-								  PAGE_SIZE * (firstPage + numPages - firstUncommittedPage), MEM_COMMIT,
-								  PAGE_EXECUTE_READWRITE);
-		result = ret ? 1 : 0;
-		if (!ret)
-		{
-			err = GetLastError();
-		}
+		// On Linux, VirtualAlloc(MEM_COMMIT) with MAP_FIXED replaces the
+		// original mapping, potentially losing PROT_EXEC.  Use mprotect instead.
+		result = (mprotect((void*)page_address(firstUncommittedPage),
+				  PAGE_SIZE * (firstPage + numPages - firstUncommittedPage),
+				  PAGE_EXECUTE_READWRITE) == 0);
 	}
 	firstUncommittedPage = firstPage + numPages;
 	return result;
@@ -1425,7 +1420,7 @@ void garbageCollect(long level)
 		checkGlobalRoots(&EphemeralHeap1, &EphemeralHeap2); // check all global roots
 		checkStackRoots(&EphemeralHeap1, &EphemeralHeap2); // check stack and registers
 		checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &LispHeap1, LispHeap1.start, LispHeap1.current);
-		checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &EphemeralHeap2, EphemeralHeap2.start, mark1);
+		checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &EphemeralHeap2, EphemeralHeap2.start, EphemeralHeap2.current);
 #ifdef _DEBUG
 		{ LispObj s = CONSOLE_INPUT_STREAM;
 		  LispObj sv = isUvector(s) ? UVECTOR(s)[SYMBOL_VALUE] : NIL;
