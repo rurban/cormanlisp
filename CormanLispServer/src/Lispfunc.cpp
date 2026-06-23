@@ -1613,7 +1613,8 @@ LispFunction(Elt)
 		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) || n >= dim)
 		{
 			void* ra = __builtin_return_address(0);
-			fprintf(stderr, "[Elt] OOB ra=%p idx=%ld dim=%ld\n", ra, n, dim);
+			fprintf(stderr, "[Elt] OOB ra=%p idx=%ld dim=%ld char-code~%ld\n", ra, n, dim,
+				(n & 1) ? (n-1)/2 : n/2);
 			// Check what function is at QV slot 1227 (the one called by JIT)
 			extern unsigned long* ThreadQV();
 			unsigned long* qv = ThreadQV();
