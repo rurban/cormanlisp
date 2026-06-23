@@ -1717,7 +1717,7 @@ LispFunction(Package_Hash_Index)
 	LISP_FUNC_BEGIN(2);
 	LispObj p = LISP_ARG(0);
 	LispObj str = LISP_ARG(1);
-	long h = 0;
+	unsigned long h = 0;
 	LISP_CHAR* s = 0;
 	long len = 0;
 	long i = 0;
