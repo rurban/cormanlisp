@@ -825,7 +825,7 @@ static LispObj createConsoleStream()
 	streamSubclass(s) = CONSOLE_STREAM;
 	streamBinary(s) = NIL;
 	streamOpen(s) = T;
-	streamDirection(s) = BIDIRECTIONAL_KEY;
+	streamDirection(s) = wrapInteger(DIR_BIDIRECTIONAL);
 	streamInteractive(s) = T;
 	streamElementType(s) = CHARACTER;
 	streamAssociatedStreams(s) = NIL;
@@ -873,7 +873,7 @@ LispObj inputFileStreamNode(LispObj path)
 	streamSubclass(s) = FILE_STREAM;
 	streamBinary(s) = NIL;
 	streamOpen(s) = T;
-	streamDirection(s) = INPUT_KEY;
+	streamDirection(s) = wrapInteger(DIR_INPUT);
 	streamInteractive(s) = T;
 	streamElementType(s) = CHARACTER;
 	streamAssociatedStreams(s) = NIL;
@@ -921,7 +921,7 @@ LispObj outputFileStreamNode(LispObj path)
 	streamSubclass(s) = FILE_STREAM;
 	streamBinary(s) = NIL;
 	streamOpen(s) = T;
-	streamDirection(s) = OUTPUT_KEY;
+	streamDirection(s) = wrapInteger(DIR_OUTPUT);
 	streamInteractive(s) = T;
 	streamElementType(s) = CHARACTER;
 	streamAssociatedStreams(s) = NIL;
@@ -2075,7 +2075,7 @@ void checkOutputStream(LispObj n)
 	if (!isStream(n))
 		Error("Not a stream: ~A", n);
 	stype = streamDirection(n);
-	if (stype != OUTPUT_KEY && stype != BIDIRECTIONAL_KEY)
+	if (stype != DIR_OUTPUT_VAL && stype != DIR_BIDIRECTIONAL_VAL)
 		Error("Not an output stream: ~A", n);
 }
 
@@ -2083,18 +2083,28 @@ void checkInputStream(LispObj n)
 {
 	LispObj stype = 0;
 #ifdef _DEBUG
-	fprintf(stderr, "[checkInputStream] n=%p isStr=%d type=%ld dir=%p INPUT=%p BIDIR=%p\n",
+	fprintf(stderr, "[checkInputStream] n=%p isStr=%d type=%ld dir=%ld (IN=%d OUT=%d BIDIR=%d)\n",
 		(void*)n, isStream(n), isUvector(n)?(long)uvectorType(n):-1L,
-		isStream(n)?(void*)streamDirection(n):0,
-		(void*)INPUT_KEY, (void*)BIDIRECTIONAL_KEY); fflush(stderr);
+		isStream(n)?(long)(streamDirection(n)>>3):-1L,
+		DIR_INPUT, DIR_OUTPUT, DIR_BIDIRECTIONAL); fflush(stderr);
 #endif
 	if (!isStream(n))
 		Error("Not a stream: ~A", n);
 	stype = streamDirection(n);
-	if (stype != INPUT_KEY && stype != BIDIRECTIONAL_KEY)
+	if (stype != DIR_INPUT_VAL && stype != DIR_BIDIRECTIONAL_VAL)
+	{
+#ifdef _DEBUG
+		fprintf(stderr, "[checkInputStream FAIL] n=%p hdr=0x%08lx cells=%ld type=%ld dir=%ld\n",
+			(void*)n, (unsigned long)UVECTOR(n)[0], (long)(UVECTOR(n)[0]>>8),
+			(long)((UVECTOR(n)[0]>>3)&0x1f), (long)(stype>>3));
+		for (int k=0; k<21 && k<(long)uvectorSize(n); k++)
+			fprintf(stderr, " [%d]=%p", k, (void*)UVECTOR(n)[k]);
+		fprintf(stderr, "\n"); fflush(stderr);
+		exit(1);
+#endif
 		Error("Not an input stream: ~A", n);
+	}
 }
-
 void checkPackage(LispObj n)
 {
 	if (!isPackage(n))

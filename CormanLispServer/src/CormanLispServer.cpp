@@ -227,8 +227,7 @@ extern "C"
 
 		TlsSetValue(QV_Index, QV);
 		initLisp();
-		// Bootstrap mode — GC needs second-wave fix (Phase 4/6)
-		// g_lisp_bootstrapping = false;
+		g_lisp_bootstrapping = false;
 		return 0;
 	}
 

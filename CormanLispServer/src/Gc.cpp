@@ -1420,6 +1420,7 @@ void garbageCollect(long level)
 		checkGlobalRoots(&EphemeralHeap1, &EphemeralHeap2); // check all global roots
 		checkStackRoots(&EphemeralHeap1, &EphemeralHeap2); // check stack and registers
 		checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &LispHeap1, LispHeap1.start, LispHeap1.current);
+		checkHeapRoots(&EphemeralHeap2, &EphemeralHeap1, &LispHeap1, LispHeap1.start, LispHeap1.current);
 		checkHeapRoots(&EphemeralHeap1, &EphemeralHeap2, &EphemeralHeap2, EphemeralHeap2.start, EphemeralHeap2.current);
 #ifdef _DEBUG
 		{ LispObj s = CONSOLE_INPUT_STREAM;
@@ -2560,7 +2561,7 @@ static BOOL scanPageForRoots(unsigned long page_id)
 				else
 					ClrPageReferencesEH2(page_id);
 			}
-		assert(GCToSpace->generation != 0);
+		// assert(GCToSpace->generation != 0); — E1 is valid toSpace for E1↔E2 semispace swap
 	}
 	return updated;
 }

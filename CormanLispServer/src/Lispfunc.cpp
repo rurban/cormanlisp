@@ -1373,7 +1373,7 @@ LispFunction(Close)
 	checkStream(LISP_ARG(0));
 	if (streamSubclass(stream) == FILE_STREAM)
 	{
-		if (streamDirection(stream) == OUTPUT_KEY || streamDirection(stream) == BIDIRECTIONAL_KEY)
+		if (streamDirection(stream) == DIR_OUTPUT_VAL || streamDirection(stream) == DIR_BIDIRECTIONAL_VAL)
 			flushStream(stream);
 
 		retval = CloseHandle((void*)lispIntegerToLong(streamHandle(stream)));
