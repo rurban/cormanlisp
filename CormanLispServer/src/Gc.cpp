@@ -128,7 +128,7 @@ const int MAX_CELLS_PER_ARRAY = 0x01000000; // allow 16 meg cells per array
 // Just make sure the last 3 hex digits are 0's
 int EphemeralHeap1SizeMin = 0x00400000; // 4 meg min
 int EphemeralHeap1Size = 0x01000000; // 16 megs default
-int EphemeralHeap1SizeMax = 0x08000000; // 128 megs max (bootstrap without GC)
+int EphemeralHeap1SizeMax = 0x08000000; // 128 megs max
 
 int EphemeralHeap2SizeMin = 0x00100000; // 1 megs min
 int EphemeralHeap2Size = 0x00300000; // 3 megs  (must be <= EphemeralHeap1Size)
