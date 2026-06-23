@@ -228,6 +228,8 @@ void initSymbols()
 	LISTSTAR = findSymbol("LIST*");
 	SPECIAL_OPERATOR = findSymbol("SPECIAL-OPERATOR");
 	Eof = findSymbol("EOF");
+	if (Eof && isUvector(Eof))
+		UVECTOR(Eof)[SYMBOL_VALUE] = cons(Eof, NIL);
 	COMMA_TOKEN = findSymbol("%__COMMA__");
 	COMMA_DOT_TOKEN = findSymbol("%__COMMA_DOT__");
 	COMMA_ATSIGN_TOKEN = findSymbol("%__COMMA_ATSIGN__");

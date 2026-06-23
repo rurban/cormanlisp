@@ -759,7 +759,11 @@ void UnboundVariable(LispObj sym)
 			fprintf(stderr, " name_hdr=0x%08lx name_cells=%ld name_type=%ld", (unsigned long)*nhdr, (long)(*nhdr >> 8),
 					(long)((*nhdr >> 3) & 0x1f));
 			long len = integer(vectorLength(name));
-			fprintf(stderr, " name_len=%ld", len);
+			fprintf(stderr, " name_len=%ld name=\"", len);
+			LISP_CHAR* p = charArrayStart(name);
+			for (long i = 0; i < len && i < 60; i++)
+				fputc(p[i] < 128 ? (char)p[i] : '?', stderr);
+			fprintf(stderr, "\"");
 		}
 	}
 	fprintf(stderr, "\n");

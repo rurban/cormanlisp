@@ -31,6 +31,14 @@ build-debug:
 CormanLisp.img: Sys/*.lisp Sys/scmindent/*.lisp build/clconsole
 	$(MAKEIMG)
 
+CormanLisp_debug.img: Sys/*.lisp Sys/scmindent/*.lisp build-debug/clconsole
+ifeq ($(OS),Windows_NT)
+	set CLCONSOLE=build-debug/clconsole
+	$(MAKEIMG)
+else
+	env CLCONSOLE=build-debug/clconsole $(MAKEIMG)
+endif
+
 clean:
 	@if [ -f build/Makefile ]; then \
 		$(MAKE) -s -C build clean; \
