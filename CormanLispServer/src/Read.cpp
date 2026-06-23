@@ -1058,6 +1058,12 @@ LispObj consoleUnderflow(LispObj s)
 #endif
 	for (i = 0; i < charsRead; i++)
 		charArrayStart(buf)[i] = InputUnderflowBuffer[i];
+#ifdef _DEBUG
+	for (i = 0; i < charsRead; i++) {
+		if (charArrayStart(buf)[i] > 255)
+			fprintf(stderr, "[consoleUnderflow] CORRUPTED char at %ld: 0x%04x\n", i, charArrayStart(buf)[i]);
+	}
+#endif
 	streamInputBufferPos(s) = 0;
 	streamInputBufferNum(s) = wrapInteger((long)charsRead);
 	return wrapInteger(charsRead);
@@ -1120,6 +1126,12 @@ LispObj fileUnderflow(LispObj s)
 	buf = streamInputBuffer(s);
 	for (i = 0; i < charsRead; i++)
 		charArrayStart(buf)[i] = InputUnderflowBuffer[i];
+#ifdef _DEBUG
+	for (i = 0; i < charsRead; i++) {
+		if (charArrayStart(buf)[i] > 255)
+			fprintf(stderr, "[consoleUnderflow] CORRUPTED char at %ld: 0x%04x\n", i, charArrayStart(buf)[i]);
+	}
+#endif
 	streamInputBufferPos(s) = 0;
 	streamInputBufferNum(s) = wrapInteger((long)charsRead);
 #ifdef _DEBUG
