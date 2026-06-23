@@ -1588,6 +1588,7 @@ LispFunction(Char_Downcase)
 	LISP_FUNC_RETURN(ret);
 }
 
+volatile void* g_elt_oob_ra = 0;
 LispFunction(Elt)
 {
 	LISP_FUNC_BEGIN(2);
@@ -1603,28 +1604,9 @@ LispFunction(Elt)
 		long dim = arrayDimension(sequence, 0);
 		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) || n >= dim)
 		{
-			static int oob_count = 0;
-#ifdef _DEBUG
-			if (oob_count++ < 1) {
-				fprintf(stderr, "[Elt] OOB seq=%p dim=%ld idx=%ld\n", (void*)sequence, dim, n);
-				// Identify the array by printing first element
-				if (isGenericArray(sequence)) {
-					LispObj e0 = arrayStart(sequence)[0];
-					fprintf(stderr, "  elem0=%p isSym=%d", (void*)e0, isSymbol(e0));
-					if (isSymbol(e0)) {
-						LispObj nm = symbolName(e0);
-						if (isString(nm)) {
-							long nmlen = integer(vectorLength(nm));
-							LISP_CHAR* p = charArrayStart(nm);
-							fprintf(stderr, " name=");
-							for (long i = 0; i < nmlen && i < 60; i++)
-								fputc(p[i] < 128 ? (char)p[i] : '?', stderr);
-						}
-					}
-					fprintf(stderr, "\n");
-				}
-			}
-#endif
+			void* ra = __builtin_return_address(0);
+			fprintf(stderr, "[Elt] OOB ra=%p idx=%ld dim=%ld\n", ra, n, dim);
+			g_elt_oob_ra = ra;
 			long clamped = n % dim;
 			n = clamped;
 		}
