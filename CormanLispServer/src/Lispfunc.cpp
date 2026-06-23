@@ -1562,6 +1562,14 @@ LispFunction(Int_Char)
 	LISP_FUNC_RETURN(ret);
 }
 
+
+// Inline ctype to avoid glibc's TLS-dependent implementations
+// which crash when JIT code corrupts pthread data on Linux.
+#define safe_islower(c) ((c) >= 'a' && (c) <= 'z')
+#define safe_isupper(c) ((c) >= 'A' && (c) <= 'Z')
+#define safe_toupper(c) (safe_islower(c) ? (c) - 32 : (c))
+#define safe_tolower(c) (safe_isupper(c) ? (c) + 32 : (c))
+
 LispFunction(Char_Upcase)
 {
 	LISP_FUNC_BEGIN(1);
@@ -1569,8 +1577,8 @@ LispFunction(Char_Upcase)
 
 	checkCharacter(ch);
 	unsigned int code = character(ch);
-	if (code > 0x10FFFF) code = ch; // corrupted, return as-is
-	ret = (code < 256 && islower(code)) ? wrapCharacter(toupper(code)) : ch;
+	if (code > 0x10FFFF) code = ch;
+	ret = (code < 256 && safe_islower(code)) ? wrapCharacter(safe_toupper(code)) : ch;
 
 	LISP_FUNC_RETURN(ret);
 }
@@ -1583,7 +1591,7 @@ LispFunction(Char_Downcase)
 	checkCharacter(ch);
 	unsigned int code = character(ch);
 	if (code > 0x10FFFF) code = ch;
-	ret = (code < 256 && isupper(code)) ? wrapCharacter(tolower(code)) : ch;
+	ret = (code < 256 && safe_isupper(code)) ? wrapCharacter(safe_tolower(code)) : ch;
 
 	LISP_FUNC_RETURN(ret);
 }
@@ -1606,6 +1614,11 @@ LispFunction(Elt)
 		{
 			void* ra = __builtin_return_address(0);
 			fprintf(stderr, "[Elt] OOB ra=%p idx=%ld dim=%ld\n", ra, n, dim);
+			// Check what function is at QV slot 1227 (the one called by JIT)
+			extern unsigned long* ThreadQV();
+			unsigned long* qv = ThreadQV();
+			fprintf(stderr, "[Elt] QV[1227]=%p QV[1085]=%p QV[1229]=%p\n",
+				(void*)qv[1227], (void*)qv[1085], (void*)qv[1229]);
 			g_elt_oob_ra = ra;
 			long clamped = n % dim;
 			n = clamped;
