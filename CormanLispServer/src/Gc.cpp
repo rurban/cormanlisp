@@ -128,7 +128,7 @@ const int MAX_CELLS_PER_ARRAY = 0x01000000; // allow 16 meg cells per array
 // Just make sure the last 3 hex digits are 0's
 int EphemeralHeap1SizeMin = 0x00400000; // 4 meg min
 int EphemeralHeap1Size = 0x01000000; // 16 megs default
-int EphemeralHeap1SizeMax = 0x02000000; // 32 megs max
+int EphemeralHeap1SizeMax = 0x08000000; // 128 megs max (bootstrap without GC)
 
 int EphemeralHeap2SizeMin = 0x00100000; // 1 megs min
 int EphemeralHeap2Size = 0x00300000; // 3 megs  (must be <= EphemeralHeap1Size)
@@ -908,6 +908,12 @@ extern "C" LispObj _AllocVectorImpl(long num)
 #endif
 	if (newCur > EphemeralHeap1.end)
 	{
+#ifdef _DEBUG
+		long used = (long)((char*)EphemeralHeap1.current - (char*)EphemeralHeap1.start);
+		fprintf(stderr, "[_AllocVectorImpl] heap full: used=%ld/%ld MB, calling GC\n",
+			used>>20, EphemeralHeap1.sizeMem>>20);
+		fflush(stderr);
+#endif
 		garbageCollect(0);
 		block = EphemeralHeap1.current;
 		newCur = block + cells;
@@ -1177,7 +1183,7 @@ void initializeGarbageCollector()
 	if (EphemeralHeap2Size > EphemeralHeap1Size)
 		EphemeralHeap2Size = EphemeralHeap1Size; // keep EphemeralHeap2 size <= EphemeralHeap1Size
 
-	EphemeralHeap1.alloc(EphemeralHeap1Size, 0, 0, EphemeralHeap1Size);
+	EphemeralHeap1.alloc(EphemeralHeap1Size, 0, 0, EphemeralHeap1SizeMax);
 	EphemeralHeap2.alloc(EphemeralHeap1Size + EphemeralHeap2Size, EphemeralHeap2Size, 1,
 						 EphemeralHeap1Size + EphemeralHeap2Size);
 	LispHeap1.alloc(EphemeralHeap1Size + EphemeralHeap2Size + LispHeapSize, LispHeapSize, 2,
@@ -1319,8 +1325,17 @@ void garbageCollect(long level)
 	extern bool g_lisp_bootstrapping;
 	if (g_lisp_bootstrapping)
 	{
-		EphemeralHeap1.grow(PAGE_SIZE * 256);
+#ifdef _DEBUG
+		long oldSize = EphemeralHeap1.sizeMem;
+#endif
+		EphemeralHeap1.grow(PAGE_SIZE * 1024); // 4 MB per bootstrap GC call
 		EphemeralHeap1.commitAllPages();
+#ifdef _DEBUG
+		fprintf(stderr, "[GC] bootstrap mode: grew EphemeralHeap1 %ld → %ld MB, used=%ld\n",
+			oldSize>>20, EphemeralHeap1.sizeMem>>20,
+			(long)((char*)EphemeralHeap1.current - (char*)EphemeralHeap1.start)>>20);
+		fflush(stderr);
+#endif
 		GCCriticalSection.Leave();
 		return;
 	}
@@ -1331,10 +1346,14 @@ void garbageCollect(long level)
 		__try
 		{
 			garbageCollectionID++; // increment level
-
+#ifdef _DEBUG
+			fprintf(stderr, "[GC] real GC #%lu level=%ld EphemeralHeap1: used=%ld/%ld MB\n",
+				garbageCollectionID, level,
+				(long)((char*)EphemeralHeap1.current - (char*)EphemeralHeap1.start)>>20,
+				EphemeralHeap1.sizeMem>>20);
+			fflush(stderr);
+#endif
 			// store in static variable so called functions can access
-			GarbageCollectionLevel = level;
-
 			if (GCFailure)
 				_endthreadex(1);
 
