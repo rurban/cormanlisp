@@ -39,6 +39,7 @@
 #include <climits>
 #include <cctype>
 #include <setjmp.h>
+#include <cstdio>
 
 // ---- Win32 type aliases ----
 #include <sys/time.h>
@@ -360,8 +361,13 @@ using std::max;
 // ---- TLS ----
 inline DWORD TlsAlloc()
 {
+	int r;
 	pthread_key_t k;
-	pthread_key_create(&k, NULL);
+	r = pthread_key_create(&k, NULL);
+	if (r != 0) {
+		fprintf(stderr, "TlsAlloc: pthread_key_create returned %d (%s)\n", r, strerror(r));
+		exit(1);
+	}
 	return (DWORD)k;
 }
 inline void TlsSetValue(DWORD k, void* v)
@@ -370,6 +376,9 @@ inline void TlsSetValue(DWORD k, void* v)
 }
 inline void* TlsGetValue(DWORD k)
 {
+#ifdef _DEBUG
+	if (k > 256) { fprintf(stderr, "TlsGetValue: bad key=%lu\n", (unsigned long)k); exit(1); }
+#endif
 	return pthread_getspecific((pthread_key_t)k);
 }
 inline void TlsFree(DWORD k)

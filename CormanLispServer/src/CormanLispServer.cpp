@@ -154,12 +154,8 @@ extern "C" int __declspec(dllexport) __stdcall DllMain(HINSTANCE hInstance, DWOR
 __attribute__((constructor)) static void _init_cormanlisp()
 {
 	char* result = 0;
-	QV_Index = TlsAlloc();
-	Thread_Index = TlsAlloc();
-	TlsSetValue(QV_Index, 0);
-	TlsSetValue(Thread_Index, 0);
-	TlsGetValue(QV_Index);
-	TlsGetValue(Thread_Index);
+	// TLS keys are deferred to cl_initialize — __attribute__((constructor))
+	// runs before pthreads is fully initialized on some glibc versions.
 
 	// Get the shared library's own path
 	Dl_info info;
@@ -206,11 +202,16 @@ extern "C"
 {
 	CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
 	{
-		// Ensure TLS keys are initialized (defensive — constructor should have done this)
-		if (QV_Index == 0)
-			QV_Index = TlsAlloc();
-		if (Thread_Index == 0)
-			Thread_Index = TlsAlloc();
+	// On glibc, key 0 is valid but may cause issues; discard it
+	if (QV_Index == (DWORD)-1) {
+		TlsAlloc();
+		QV_Index = TlsAlloc();
+	}
+	if (Thread_Index == (DWORD)-1) {
+		Thread_Index = TlsAlloc();
+	}
+
+
 
 		g_callbacks = cb;
 		TextOutputFuncPtr = (cb && cb->output_text) ? output_text_adapter : 0;

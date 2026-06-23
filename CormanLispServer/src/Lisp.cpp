@@ -37,8 +37,8 @@
 
 #pragma warning(disable : 4127) // conditional expression is constant
 
-CL_EXPORT DWORD QV_Index = 0;
-CL_EXPORT DWORD Thread_Index = 0;
+CL_EXPORT DWORD QV_Index = (DWORD)-1;
+CL_EXPORT DWORD Thread_Index = (DWORD)-1;
 
 LispObj QV__[QV_MAX] = {0};
 LispObj* QV = QV__;
