@@ -227,7 +227,8 @@ extern "C"
 
 		TlsSetValue(QV_Index, QV);
 		initLisp();
-		g_lisp_bootstrapping = false;
+		// Bootstrap mode — GC second-wave bug still corrupts function cells
+		// g_lisp_bootstrapping = false;
 		return 0;
 	}
 

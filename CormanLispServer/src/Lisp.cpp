@@ -2046,7 +2046,16 @@ void checkFunction(LispObj n)
 {
 	if (!isFunction(n))
 	{
-		fprintf(stderr, "Not a function: %p\n", (void*)n);
+		int is_uv = isUvector(n);
+		long typ = is_uv ? (long)uvectorType(n) : -1L;
+		long cells = is_uv ? (long)(UVECTOR(n)[0]>>8) : -1L;
+		fprintf(stderr, "Not a function: %p isUvec=%d type=%ld cells=%ld hdr=0x%08lx\n",
+			(void*)n, is_uv, typ, cells,
+			is_uv ? (unsigned long)UVECTOR(n)[0] : 0UL);
+		// Dump first 4 cells
+		if (is_uv) for (int k=0; k<4 && k<cells; k++)
+			fprintf(stderr, "  [%d]=%p", k, (void*)UVECTOR(n)[k]);
+		fprintf(stderr, "\n"); fflush(stderr);
 		exit(1);
 	}
 }
@@ -2385,14 +2394,21 @@ void setSymbolFunction(LispObj sym, LispObj func, LispObj type)
 {
 	LispObj env = 0;
 
-	checkFunction(func);
+	if (!isFunction(func))
+	{
 #ifdef _DEBUG
-	if (sym == READ || sym == WRITE || sym == FUNCALL) {
-		const char* name = (sym == READ) ? "READ" : (sym == WRITE) ? "WRITE" : "FUNCALL";
-		fprintf(stderr, "[setSymbolFunction] %s sym=%p func=%p type=%p\n", name, (void*)sym, (void*)func, (void*)type);
+		LispObj symName = isUvector(sym) ? UVECTOR(sym)[SYMBOL_NAME] : NIL;
+		fprintf(stderr, "[setSymbolFunction FAIL] sym=%p name=", (void*)sym);
+		if (isString(symName)) {
+			long len = integer(vectorLength(symName));
+			for (long i=0; i<len && i<60; i++) fputc(charArrayStart(symName)[i], stderr);
+		}
+		fprintf(stderr, " func=%p type=%ld cells=%ld\n",
+			(void*)func, (long)uvectorType(func), (long)(UVECTOR(func)[0]>>8));
 		fflush(stderr);
-	}
 #endif
+		checkFunction(func);
+	}
 	CAR(UVECTOR(sym)[SYMBOL_FUNCTION]) = func;
 	UVECTOR(sym)[SYMBOL_FUNCTION_TYPE] = type;
 	env = UVECTOR(func)[FUNCTION_ENVIRONMENT];
