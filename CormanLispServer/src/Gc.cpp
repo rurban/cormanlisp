@@ -860,6 +860,7 @@ CL_NAKED LispObj AllocVector(long num)
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
 				 "push %%edi\n\t"
+				 "push %%esi\n\t"
 				 "push %%ebx\n\t"
 				 "call ThreadQV\n\t"
 				 "mov %%eax, %%esi\n\t"
@@ -868,14 +869,15 @@ CL_NAKED LispObj AllocVector(long num)
 				 "call _AllocVectorImpl\n\t"
 				 "add $4, %%esp\n\t"
 				 "pop %%ebx\n\t"
+				 "pop %%esi\n\t"
 				 "pop %%edi\n\t"
 				 "pop %%ebp\n\t"
 				 "ret"
 				 :
 				 :
 				 : "eax", "ecx", "edx", "memory");
-#endif
 }
+#endif
 
 // Pure C++ allocation, called from the trampoline above.
 extern "C" LispObj _AllocVectorImpl(long num)
@@ -2250,17 +2252,17 @@ static void checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 			edi
 #else
 		asm volatile("mov %%eax, %0\n\t"
-					 "mov %%ebx, %1\n\t"
-					 "mov %%ecx, %2\n\t"
-					 "mov %%edx, %3\n\t"
-					 "mov %%esi, %4\n\t"
-					 "mov %%edi, %5\n\t"
-					 : "=m"(regs[0]), "=m"(regs[1]), "=m"(regs[2]), "=m"(regs[3]), "=m"(regs[4]), "=m"(regs[5])
-					 :
-					 : "memory");
+			     "mov %%ebx, %1\n\t"
+			     "mov %%ecx, %2\n\t"
+			     "mov %%edx, %3\n\t"
+			     "mov %%esi, %4\n\t"
+			     "mov %%edi, %5\n\t"
+			     : "=m"(regs[0]), "=m"(regs[1]), "=m"(regs[2]), "=m"(regs[3]), "=m"(regs[4]), "=m"(regs[5])
+			     :
+			     : "memory");
 #endif
 
-			for (i = 0; i < 6; i++)
+		for (i = 0; i < 6; i++)
 		{
 			if (isHeapPointer(regs[i]))
 				promoteBlock(&regs[i], toSpace);
@@ -2271,14 +2273,14 @@ static void checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 			regs[16] __asm mov edi, regs[20]
 #else
 		asm volatile("mov %0, %%eax\n\t"
-					 "mov %1, %%ebx\n\t"
-					 "mov %2, %%ecx\n\t"
-					 "mov %3, %%edx\n\t"
-					 "mov %4, %%esi\n\t"
-					 "mov %5, %%edi\n\t"
-					 :
-					 : "m"(regs[0]), "m"(regs[1]), "m"(regs[2]), "m"(regs[3]), "m"(regs[4]), "m"(regs[5])
-					 : "eax", "ebx", "ecx", "edx", "esi", "edi");
+			     "mov %1, %%ebx\n\t"
+			     "mov %2, %%ecx\n\t"
+			     "mov %3, %%edx\n\t"
+			     "mov %4, %%esi\n\t"
+			     "mov %5, %%edi\n\t"
+			     :
+			     : "m"(regs[0]), "m"(regs[1]), "m"(regs[2]), "m"(regs[3]), "m"(regs[4]), "m"(regs[5])
+			     : "eax", "ebx", "ecx", "edx", "esi", "edi");
 #endif
 	}
 
