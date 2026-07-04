@@ -1690,14 +1690,6 @@ extern CL_EXPORT DWORD Thread_Index;
 #define wrapInteger(n) (((LispObj)n) << 3)
 #define wrapCharacter(n) ((((LispObj)n) << 8) | ImmediateTag)
 
-// Stream direction constants — fixnums (GC-immune)
-#define DIR_INPUT 1
-#define DIR_OUTPUT 2
-#define DIR_BIDIRECTIONAL 3
-#define DIR_INPUT_VAL wrapInteger(DIR_INPUT)
-#define DIR_OUTPUT_VAL wrapInteger(DIR_OUTPUT)
-#define DIR_BIDIRECTIONAL_VAL wrapInteger(DIR_BIDIRECTIONAL)
-
 LispObj createShortFloat(double);
 
 #define isFixnum(n) (!(n & 7))

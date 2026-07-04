@@ -825,7 +825,7 @@ static LispObj createConsoleStream()
 	streamSubclass(s) = CONSOLE_STREAM;
 	streamBinary(s) = NIL;
 	streamOpen(s) = T;
-	streamDirection(s) = wrapInteger(DIR_BIDIRECTIONAL);
+	streamDirection(s) = BIDIRECTIONAL_KEY;
 	streamInteractive(s) = T;
 	streamElementType(s) = CHARACTER;
 	streamAssociatedStreams(s) = NIL;
@@ -873,7 +873,7 @@ LispObj inputFileStreamNode(LispObj path)
 	streamSubclass(s) = FILE_STREAM;
 	streamBinary(s) = NIL;
 	streamOpen(s) = T;
-	streamDirection(s) = wrapInteger(DIR_INPUT);
+	streamDirection(s) = INPUT_KEY;
 	streamInteractive(s) = T;
 	streamElementType(s) = CHARACTER;
 	streamAssociatedStreams(s) = NIL;
@@ -921,7 +921,7 @@ LispObj outputFileStreamNode(LispObj path)
 	streamSubclass(s) = FILE_STREAM;
 	streamBinary(s) = NIL;
 	streamOpen(s) = T;
-	streamDirection(s) = wrapInteger(DIR_OUTPUT);
+	streamDirection(s) = OUTPUT_KEY;
 	streamInteractive(s) = T;
 	streamElementType(s) = CHARACTER;
 	streamAssociatedStreams(s) = NIL;
@@ -1102,22 +1102,6 @@ void LispLoop()
 				// No image — enter REPL directly
 			}
 			setSymbolValue(SOURCE_LINE, NIL);
-#ifdef _DEBUG
-			{ // QV + jump table integrity check
-				LispObj fs = FUNCALL;
-				LispObj fn = symbolFunction(fs);
-				LispObj rn = symbolFunction(READ);
-				// Also check the jump table entry for READ
-				long jti = integer(UVECTOR(READ)[SYMBOL_JUMP_TABLE]);
-				LispObj jt_addr = QV[jti + 1]; // jump table function address
-				if (!isFunction(fn) || !isFunction(rn)) {
-					fprintf(stderr, "[LispLoop] QV CORRUPT: FUNCALL=%p->fn=%p READ=%p->fn=%p\n",
-						(void*)fs, (void*)fn, (void*)(LispObj)READ, (void*)rn);
-				}
-				fprintf(stderr, "[LispLoop] READ jt_idx=%ld jt_addr=%p symbol_fn=%p\n",
-					jti, (void*)jt_addr, (void*)rn);
-			}
-#endif
 			x = LispCall5(Funcall, symbolFunction(READ), symbolValue(STANDARD_INPUT), NIL, UNINITIALIZED, NIL);
 			if (x == UNINITIALIZED) // EOF
 			{
@@ -1127,30 +1111,12 @@ void LispLoop()
 				else
 					Error("End of file encountered in stream ~A", symbolValue(STANDARD_INPUT));
 			}
-#ifdef _DEBUG
-			fprintf(stderr, "[LispLoop] read x=%p\n", (void*)x);
-#endif
 			val = eval(x, NIL);
-#ifdef _DEBUG
-			{ // QV integrity: verify WRITE is still valid after eval
-				LispObj wn = symbolFunction(WRITE);
-				if (!isFunction(wn))
-					fprintf(stderr, "[LispLoop] QV CORRUPT after eval: WRITE=%p->fn=%p\n",
-						(void*)(LispObj)WRITE, (void*)wn);
-			}
-#endif
 			if (NumReturnValues == 1)
 			{
-#ifdef _DEBUG
-				fprintf(stderr, "[LispLoop] writing val=%p to stream=%p\n", (void*)val,
-						(void*)symbolValue(STANDARD_OUTPUT));
-#endif
 				LispCall2(Write, val, symbolValue(STANDARD_OUTPUT)); // just echo for now
 				LispCall1(Terpri, symbolValue(STANDARD_OUTPUT));
 				LispCall1(Force_Output, symbolValue(STANDARD_OUTPUT));
-#ifdef _DEBUG
-				fprintf(stderr, "[LispLoop] done writing\n");
-#endif
 			}
 			else if (NumReturnValues > 1)
 			{
@@ -2048,14 +2014,15 @@ void checkFunction(LispObj n)
 	{
 		int is_uv = isUvector(n);
 		long typ = is_uv ? (long)uvectorType(n) : -1L;
-		long cells = is_uv ? (long)(UVECTOR(n)[0]>>8) : -1L;
-		fprintf(stderr, "Not a function: %p isUvec=%d type=%ld cells=%ld hdr=0x%08lx\n",
-			(void*)n, is_uv, typ, cells,
-			is_uv ? (unsigned long)UVECTOR(n)[0] : 0UL);
+		long cells = is_uv ? (long)(UVECTOR(n)[0] >> 8) : -1L;
+		fprintf(stderr, "Not a function: %p isUvec=%d type=%ld cells=%ld hdr=0x%08lx\n", (void*)n, is_uv, typ, cells,
+				is_uv ? (unsigned long)UVECTOR(n)[0] : 0UL);
 		// Dump first 4 cells
-		if (is_uv) for (int k=0; k<4 && k<cells; k++)
-			fprintf(stderr, "  [%d]=%p", k, (void*)UVECTOR(n)[k]);
-		fprintf(stderr, "\n"); fflush(stderr);
+		if (is_uv)
+			for (int k = 0; k < 4 && k < cells; k++)
+				fprintf(stderr, "  [%d]=%p", k, (void*)UVECTOR(n)[k]);
+		fprintf(stderr, "\n");
+		fflush(stderr);
 		exit(1);
 	}
 }
@@ -2084,32 +2051,26 @@ void checkOutputStream(LispObj n)
 	if (!isStream(n))
 		Error("Not a stream: ~A", n);
 	stype = streamDirection(n);
-	if (stype != DIR_OUTPUT_VAL && stype != DIR_BIDIRECTIONAL_VAL)
+	if (stype != OUTPUT_KEY && stype != BIDIRECTIONAL_KEY)
 		Error("Not an output stream: ~A", n);
 }
 
 void checkInputStream(LispObj n)
 {
 	LispObj stype = 0;
-#ifdef _DEBUG
-	fprintf(stderr, "[checkInputStream] n=%p isStr=%d type=%ld dir=%ld (IN=%d OUT=%d BIDIR=%d)\n",
-		(void*)n, isStream(n), isUvector(n)?(long)uvectorType(n):-1L,
-		isStream(n)?(long)(streamDirection(n)>>3):-1L,
-		DIR_INPUT, DIR_OUTPUT, DIR_BIDIRECTIONAL); fflush(stderr);
-#endif
 	if (!isStream(n))
 		Error("Not a stream: ~A", n);
 	stype = streamDirection(n);
-	if (stype != DIR_INPUT_VAL && stype != DIR_BIDIRECTIONAL_VAL)
+	if (stype != INPUT_KEY && stype != BIDIRECTIONAL_KEY)
 	{
 #ifdef _DEBUG
-		fprintf(stderr, "[checkInputStream FAIL] n=%p hdr=0x%08lx cells=%ld type=%ld dir=%ld\n",
-			(void*)n, (unsigned long)UVECTOR(n)[0], (long)(UVECTOR(n)[0]>>8),
-			(long)((UVECTOR(n)[0]>>3)&0x1f), (long)(stype>>3));
-		for (int k=0; k<21 && k<(long)uvectorSize(n); k++)
+		fprintf(stderr, "[checkInputStream FAIL] n=%p hdr=0x%08lx cells=%ld type=%ld dir=%p\n", (void*)n,
+				(unsigned long)UVECTOR(n)[0], (long)(UVECTOR(n)[0] >> 8), (long)((UVECTOR(n)[0] >> 3) & 0x1f),
+				(void*)stype);
+		for (int k = 0; k < 21 && k < (long)uvectorSize(n); k++)
 			fprintf(stderr, " [%d]=%p", k, (void*)UVECTOR(n)[k]);
-		fprintf(stderr, "\n"); fflush(stderr);
-		exit(1);
+		fprintf(stderr, "\n");
+		fflush(stderr);
 #endif
 		Error("Not an input stream: ~A", n);
 	}
@@ -2267,19 +2228,6 @@ LispObj compiledFunctionNode(LispObj code, LispObj length, LispObj refs, LispObj
 			arrayStart(refs)[i * 2];
 	}
 	GCCriticalSection.Leave();
-#ifdef _DEBUG
-	{
-		LispObj fname = symbolValue(COMPILER_FUNCTION_NAME);
-		if (fname != NIL)
-		{
-			LispObj hdr = *(LispObj*)(func - UvectorTag);
-			fprintf(stderr, "[compiledFunctionNode] name=%p func=%p typ=%ld hdr=0x%lx ADDR_slot=%p\n",
-				(void*)fname, (void*)func, (hdr >> 3) & 0x1f, (unsigned long)hdr,
-				(void*)UVECTOR(func)[FUNCTION_ADDRESS]);
-			fflush(stderr);
-		}
-	}
-#endif
 	return func;
 }
 
@@ -2356,10 +2304,10 @@ void updateJumpTable(LispObj sym, LispObj func, LispObj env)
 
 	funcaddr = UVECTOR(func)[FUNCTION_ADDRESS];
 #ifdef _DEBUG
-	if (sym == READ) {
-		fprintf(stderr, "[updateJumpTable] READ func=%p UVECTOR[2]=%p utype=%ld\n",
-			(void*)func, (void*)funcaddr,
-			(long)((*(LispObj*)(func - UvectorTag)) >> 3) & 0x1f);
+	if (sym == READ)
+	{
+		fprintf(stderr, "[updateJumpTable] READ func=%p UVECTOR[2]=%p utype=%ld\n", (void*)func, (void*)funcaddr,
+				(long)((*(LispObj*)(func - UvectorTag)) >> 3) & 0x1f);
 		fflush(stderr);
 	}
 #endif
@@ -2368,9 +2316,10 @@ void updateJumpTable(LispObj sym, LispObj func, LispObj env)
 	// funcaddr is untagged address
 
 #ifdef _DEBUG
-	if (sym == READ || sym == WRITE || sym == FUNCALL) {
-		fprintf(stderr, "[updateJumpTable] sym=%p tableIndex=%ld funcaddr=%p\n",
-			(void*)sym, integer(tableIndex), (void*)funcaddr);
+	if (sym == READ || sym == WRITE || sym == FUNCALL)
+	{
+		fprintf(stderr, "[updateJumpTable] sym=%p tableIndex=%ld funcaddr=%p\n", (void*)sym, integer(tableIndex),
+				(void*)funcaddr);
 		fflush(stderr);
 	}
 #endif
@@ -2399,12 +2348,14 @@ void setSymbolFunction(LispObj sym, LispObj func, LispObj type)
 #ifdef _DEBUG
 		LispObj symName = isUvector(sym) ? UVECTOR(sym)[SYMBOL_NAME] : NIL;
 		fprintf(stderr, "[setSymbolFunction FAIL] sym=%p name=", (void*)sym);
-		if (isString(symName)) {
+		if (isString(symName))
+		{
 			long len = integer(vectorLength(symName));
-			for (long i=0; i<len && i<60; i++) fputc(charArrayStart(symName)[i], stderr);
+			for (long i = 0; i < len && i < 60; i++)
+				fputc(charArrayStart(symName)[i], stderr);
 		}
-		fprintf(stderr, " func=%p type=%ld cells=%ld\n",
-			(void*)func, (long)uvectorType(func), (long)(UVECTOR(func)[0]>>8));
+		fprintf(stderr, " func=%p type=%ld cells=%ld\n", (void*)func, (long)uvectorType(func),
+				(long)(UVECTOR(func)[0] >> 8));
 		fflush(stderr);
 #endif
 		checkFunction(func);

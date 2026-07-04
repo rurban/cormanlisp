@@ -32,16 +32,15 @@
 #include <cstdio>
 static const CormanLispCallbacks* g_callbacks = NULL;
 
-// The console overflow code passes a UTF-16 buffer (LISP_CHAR is 16-bit)
-// and a byte count. Convert it to UTF-8 for the char-based Linux callback.
-static void output_text_adapter(wchar_t* text, long numBytes)
+// The console overflow code (consoleOverflow in Write.cpp) passes a UTF-16
+// buffer (LISP_CHAR is 16-bit) and a CHARACTER count — not a byte count.
+// Convert it to UTF-8 for the char-based Linux callback.
+static void output_text_adapter(wchar_t* text, long numChars)
 {
-	if (!g_callbacks || !g_callbacks->output_text || numBytes <= 0)
+	if (!g_callbacks || !g_callbacks->output_text || numChars <= 0)
 		return;
 	const uint16_t* w = (const uint16_t*)text;
-	long wlen = numBytes / 2;
-	if (wlen <= 0)
-		return;
+	long wlen = numChars;
 	char* out = new char[wlen * 3 + 1];
 	long op = 0;
 	for (long i = 0; i < wlen; i++)
@@ -202,16 +201,16 @@ extern "C"
 {
 	CL_API int cl_initialize(const CormanLispCallbacks* cb, const char* imageName, int clientType)
 	{
-	// On glibc, key 0 is valid but may cause issues; discard it
-	if (QV_Index == (DWORD)-1) {
-		TlsAlloc();
-		QV_Index = TlsAlloc();
-	}
-	if (Thread_Index == (DWORD)-1) {
-		Thread_Index = TlsAlloc();
-	}
-
-
+		// On glibc, key 0 is valid but may cause issues; discard it
+		if (QV_Index == (DWORD)-1)
+		{
+			TlsAlloc();
+			QV_Index = TlsAlloc();
+		}
+		if (Thread_Index == (DWORD)-1)
+		{
+			Thread_Index = TlsAlloc();
+		}
 
 		g_callbacks = cb;
 		TextOutputFuncPtr = (cb && cb->output_text) ? output_text_adapter : 0;
@@ -227,8 +226,7 @@ extern "C"
 
 		TlsSetValue(QV_Index, QV);
 		initLisp();
-		// Bootstrap mode — GC second-wave bug still corrupts function cells
-		// g_lisp_bootstrapping = false;
+		g_lisp_bootstrapping = false;
 		return 0;
 	}
 
@@ -245,6 +243,39 @@ extern "C"
 
 	CL_API void cl_run(void)
 	{
+		// Mirror the Windows RunLispThread()/LispThreadProc() setup for the
+		// calling thread. Without a ThreadRecord in Thread_Index TLS the GC's
+		// checkStackRoots() returns early and never scans this thread's stack,
+		// so any heap reference held in a C or Lisp stack frame goes stale on
+		// the first collection.
+		ThreadRecord* th = new ThreadRecord;
+		LispObj fp = 0;
+		LispObj dummy = 0;
+
+		// Unlike LispThreadProc, keep the global QV: cl_initialize ran
+		// initLisp() on this same thread with the global QV, and a
+		// createNewQV() copy would drop the dynamic bindings pushed during
+		// initialization (e.g. *compiler-warn-on-assumed-special*).
+		th->QV_rec = QV;
+		NumLispThreads++;
+		ThreadList.insert(th);
+		th->type = ThreadRecord::PrimaryThread;
+		th->started = 1;
+		th->threadID = GetCurrentThreadId();
+		th->thread = GetCurrentThread();
+
+		asm volatile("mov %%ebp, %0" : "=r"(dummy));
+		th->stackStart = (unsigned long*)dummy;
+		TlsSetValue(Thread_Index, th);
+		TlsSetValue(QV_Index, th->QV_rec);
+
+		pushDynamicBinding(COMPILER_RUNTIME, NIL);
+		pushDynamicBinding(CURRENT_THREAD_ID, createUnsignedLispInteger(th->threadID));
+		fp = foreignNode();
+		UVECTOR(fp)[FOREIGN_PTR] = (LispObj)th->thread;
+		pushDynamicBinding(CURRENT_THREAD_HANDLE, fp);
+		fp = 0;
+
 		lispmain();
 	}
 

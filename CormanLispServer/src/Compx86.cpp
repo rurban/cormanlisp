@@ -1204,28 +1204,6 @@ LispObj compileLambdaExpression(LispObj lambda, LispObj name, LispObj env, LispO
 	f = compiledFunctionNode(CBcode(), CBlength(), CBreferences(), CBnumReferences(), NIL, info,
 							 symbolValue(APPEND_REFS_TO_CODE));
 
-#ifdef _DEBUG
-	{
-		LispObj fname = symbolValue(COMPILER_FUNCTION_NAME);
-		long codelen = integer(CBlength());
-		if (fname != NIL && isSymbol(fname) && codelen > 0)
-		{
-			LispObj sn = symbolName(fname);
-			LispObj nt = nullTerminate(sn);
-			const char* nm = (const char*)byteArrayStart(nt);
-			LispObj cbuf = CBcode();
-			byte* codebytes = (byte*)(UVECTOR(cbuf) + COMPILED_CODE_OFFSET);
-			fprintf(stderr, "[compileLambda] %s func=%p codelen=%ld code=[", nm, (void*)f, codelen);
-			long dump = codelen < 64 ? codelen : 64;
-			for (long di = 0; di < dump; di++)
-				fprintf(stderr, "%02x ", codebytes[di]);
-			if (dump < codelen) fprintf(stderr, "...");
-			fprintf(stderr, "]\n");
-			fflush(stderr);
-		}
-	}
-#endif
-
 	if (compilerBindings != NIL)
 		restoreOptimizeDeclarationBindings(compilerBindings);
 

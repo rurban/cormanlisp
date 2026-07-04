@@ -90,15 +90,6 @@ LispObj readtableNode()
 	setDispatchFunction(readtable, '#', '\\', symbolFunction(findSymbol("%POUNDBACKSLASHMACRO")));
 	setDispatchFunction(readtable, '#', '|', symbolFunction(findSymbol("%BRACKETEDCOMMENTMACRO")));
 
-#ifdef _DEBUG
-	{
-		LispObj tbl = UVECTOR(readtable)[READTABLE_TABLE];
-		LispObj rp = arrayStart(tbl)[')' * 2 + 1];
-		LispObj lp = arrayStart(tbl)['(' * 2 + 1];
-		fprintf(stderr, "[readtableNode] table=%p ')' macro=%p '(' macro=%p\n", (void*)tbl, (void*)rp, (void*)lp);
-	}
-#endif
-
 	return readtable;
 }
 
@@ -150,16 +141,8 @@ LispObj readExpression(LispObj stream)
 				{
 					{
 						LispObj macrofn = READTABLE_START(readtable)[character(x) * 2 + 1];
-#ifdef _DEBUG
-						fprintf(stderr, "[readExpression macro] char=%c macrofn=%p\n", (char)integer(x),
-								(void*)macrofn);
-#endif
 						callret = LispCall3(Funcall, macrofn, stream, x);
 					}
-#ifdef _DEBUG
-					fprintf(stderr, "[readExpression macro] char=%c callret=%p NumReturnValues=%d\n", (char)integer(x),
-							(void*)callret, (int)NumReturnValues);
-#endif
 					if (NumReturnValues == 0)
 						return NIL;
 					else
@@ -579,10 +562,6 @@ LispObj Cread_delimited_list(LispObj ch, LispObj stream)
 	checkChar(ch);
 	LispObj searchChar = ch;
 	LispObj rt = symbolValue(READTABLE);
-#ifdef _DEBUG
-	fprintf(stderr, "[Cread_delimited_list] RIGHT_PAREN=%p readtable=%p THREAD_HEAP=%p THREAD_HEAP_END=%p\n",
-			(void*)RIGHT_PAREN, (void*)rt, (void*)THREAD_HEAP, (void*)THREAD_HEAP_END);
-#endif
 
 	LispObj lis = NIL;
 	LispObj p = lis;
@@ -618,9 +597,6 @@ LispObj Cread_delimited_list(LispObj ch, LispObj stream)
 		}
 		else
 			n = LispCall5(Funcall, READ, stream, T, NIL, T);
-#ifdef _DEBUG
-		fprintf(stderr, "[Cread_delimited_list] n=%p NumReturnValues=%d\n", (void*)n, (int)NumReturnValues);
-#endif
 
 		if (n == UNINITIALIZED)
 			Error("Unexpected end of file", 0);
@@ -645,33 +621,19 @@ LispObj Cread_delimited_list(LispObj ch, LispObj stream)
 				if (p == NIL)
 				{
 					LispObj newcons = cons(n, NIL);
-#ifdef _DEBUG
-					fprintf(stderr, "[Cread_delimited_list] cons(%p, NIL) = %p CAR=%p CDR=%p\n", (void*)n,
-							(void*)newcons, (void*)CAR(newcons), (void*)CDR(newcons));
-#endif
 					p = lis = newcons;
 				}
 				else
 				{
 					LispObj newcons = cons(n, NIL);
-#ifdef _DEBUG
-					fprintf(stderr, "[Cread_delimited_list] cons(%p, NIL) = %p CAR=%p CDR=%p\n", (void*)n,
-							(void*)newcons, (void*)CAR(newcons), (void*)CDR(newcons));
-#endif
 					CDR(p) = newcons;
 					p = CDR(p);
 				}
 				count++;
 			}
-#ifdef _DEBUG
-			fprintf(stderr, "[Cread_delimited_list] lis=%p p=%p\n", (void*)lis, (void*)p);
-#endif
 		}
 	}
 exit:
-#ifdef _DEBUG
-	fprintf(stderr, "[Cread_delimited_list] return lis=%p\n", (void*)lis);
-#endif
 	return lis;
 }
 
@@ -1050,16 +1012,17 @@ LispObj consoleUnderflow(LispObj s)
 	buf = streamInputBuffer(s);
 	long buflen = integer(vectorLength(buf));
 #ifdef _DEBUG
-	if ((long)charsRead > buflen) {
-		fprintf(stderr, "[consoleUnderflow] BUFFER OVERFLOW: charsRead=%lu buflen=%ld\n",
-			charsRead, buflen);
+	if ((long)charsRead > buflen)
+	{
+		fprintf(stderr, "[consoleUnderflow] BUFFER OVERFLOW: charsRead=%lu buflen=%ld\n", charsRead, buflen);
 		fflush(stderr);
 	}
 #endif
 	for (i = 0; i < charsRead; i++)
 		charArrayStart(buf)[i] = InputUnderflowBuffer[i];
 #ifdef _DEBUG
-	for (i = 0; i < charsRead; i++) {
+	for (i = 0; i < charsRead; i++)
+	{
 		if (charArrayStart(buf)[i] > 255)
 			fprintf(stderr, "[consoleUnderflow] CORRUPTED char at %ld: 0x%04x\n", i, charArrayStart(buf)[i]);
 	}
@@ -1110,11 +1073,8 @@ LispObj fileUnderflow(LispObj s)
 	charArrayStart(streamInputBuffer(s))[0] = 0;
 	charArrayStart(streamInputBuffer(s))[2047] = 0;
 
-	ret = ReadFile((void*)lispIntegerToLong(streamHandle(s)),
-				   InputUnderflowBuffer,
-				   integer(streamInputBufferLength(s)),
-				   &charsRead,
-				   NULL);
+	ret = ReadFile((void*)lispIntegerToLong(streamHandle(s)), InputUnderflowBuffer, integer(streamInputBufferLength(s)),
+				   &charsRead, NULL);
 
 	if (!ret)
 		Error("Could not read from file ~A, error code = ~A", s, createLispInteger(GetLastError()));
@@ -1127,7 +1087,8 @@ LispObj fileUnderflow(LispObj s)
 	for (i = 0; i < charsRead; i++)
 		charArrayStart(buf)[i] = InputUnderflowBuffer[i];
 #ifdef _DEBUG
-	for (i = 0; i < charsRead; i++) {
+	for (i = 0; i < charsRead; i++)
+	{
 		if (charArrayStart(buf)[i] > 255)
 			fprintf(stderr, "[consoleUnderflow] CORRUPTED char at %ld: 0x%04x\n", i, charArrayStart(buf)[i]);
 	}
@@ -1157,16 +1118,19 @@ LispObj getCharacter(LispObj s)
 		return Eof;
 	long pos = integer(streamInputBufferPos(s));
 	long buflen = integer(vectorLength(streamInputBuffer(s)));
-	if (pos < 0 || pos >= buflen) {
+	if (pos < 0 || pos >= buflen)
+	{
 		streamInputBufferPos(s) = 0;
 		pos = 0;
 	}
 	c = wrapCharacter(charArrayStart(streamInputBuffer(s))[pos]);
 	unsigned int code = c >> 8;
-	if (code > 255) {
+	if (code > 255)
+	{
 #ifdef _DEBUG
 		static int warn = 0;
-		if (warn++ < 3) fprintf(stderr, "[getCharacter] code=0x%x pos=%ld -> space\n", code, pos);
+		if (warn++ < 3)
+			fprintf(stderr, "[getCharacter] code=0x%x pos=%ld -> space\n", code, pos);
 #endif
 		c = wrapCharacter(' ');
 	}

@@ -633,14 +633,9 @@ LispObj loadFile(LispObj inputStream)
 		try
 		{
 			setSymbolValue(SOURCE_LINE, NIL);
-#ifdef _DEBUG
-			{ // QV integrity check
-				LispObj rn = symbolFunction(READ);
-				if (!isFunction(rn))
-					fprintf(stderr, "[loadFile] QV CORRUPT: READ=%p -> fn=%p\n", (void*)(LispObj)READ, (void*)rn);
-			}
-#endif
 			x = LispCall5(Funcall, symbolFunction(READ), inputStream, NIL, Eof, NIL);
+			if (x == Eof)
+				break;
 			val = eval(x, NIL);
 		}
 		catch (LispObj)
@@ -745,30 +740,6 @@ LispFunction(WrongNumberOfArgs)
 
 void UnboundVariable(LispObj sym)
 {
-#ifdef _DEBUG
-	fprintf(stderr, "[UnboundVariable] sym=%p isSym=%d type=%ld cells=%ld\n", (void*)sym, isSymbol(sym),
-			isUvector(sym) ? (long)((*(LispObj*)(sym - 5) >> 3) & 0x1f) : -1L,
-			isUvector(sym) ? (long)(*(LispObj*)(sym - 5) >> 8) : -1L);
-	if (isSymbol(sym))
-	{
-		LispObj name = symbolName(sym);
-		fprintf(stderr, "[UnboundVariable] name=%p isStr=%d", (void*)name, isString(name));
-		if (isString(name))
-		{
-			LispObj* nhdr = (LispObj*)(name - 5);
-			fprintf(stderr, " name_hdr=0x%08lx name_cells=%ld name_type=%ld", (unsigned long)*nhdr, (long)(*nhdr >> 8),
-					(long)((*nhdr >> 3) & 0x1f));
-			long len = integer(vectorLength(name));
-			fprintf(stderr, " name_len=%ld name=\"", len);
-			LISP_CHAR* p = charArrayStart(name);
-			for (long i = 0; i < len && i < 60; i++)
-				fputc(p[i] < 128 ? (char)p[i] : '?', stderr);
-			fprintf(stderr, "\"");
-		}
-	}
-	fprintf(stderr, "\n");
-	fflush(stderr);
-#endif
 	Error("Unbound variable: ~A", sym);
 }
 void InvalidFixnum(LispObj num)
@@ -1228,9 +1199,6 @@ LispFunction(Read)
 	while (TRUE)
 	{
 		ret = readExpression(s);
-#ifdef _DEBUG
-		fprintf(stderr, "[Read] ret=%p cons=%d\n", (void*)ret, (int)isCons(ret));
-#endif
 		if (ret == UNINITIALIZED) // if end of file
 		{
 			if (eof_error_p != NIL)
@@ -1373,7 +1341,7 @@ LispFunction(Close)
 	checkStream(LISP_ARG(0));
 	if (streamSubclass(stream) == FILE_STREAM)
 	{
-		if (streamDirection(stream) == DIR_OUTPUT_VAL || streamDirection(stream) == DIR_BIDIRECTIONAL_VAL)
+		if (streamDirection(stream) == OUTPUT_KEY || streamDirection(stream) == BIDIRECTIONAL_KEY)
 			flushStream(stream);
 
 		retval = CloseHandle((void*)lispIntegerToLong(streamHandle(stream)));
@@ -1566,7 +1534,6 @@ LispFunction(Int_Char)
 	LISP_FUNC_RETURN(ret);
 }
 
-
 // Inline ctype to avoid glibc's TLS-dependent implementations
 // which crash when JIT code corrupts pthread data on Linux.
 #define safe_islower(c) ((c) >= 'a' && (c) <= 'z')
@@ -1581,7 +1548,8 @@ LispFunction(Char_Upcase)
 
 	checkCharacter(ch);
 	unsigned int code = character(ch);
-	if (code > 0x10FFFF) code = ch;
+	if (code > 0x10FFFF)
+		code = ch;
 	ret = (code < 256 && safe_islower(code)) ? wrapCharacter(safe_toupper(code)) : ch;
 
 	LISP_FUNC_RETURN(ret);
@@ -1594,7 +1562,8 @@ LispFunction(Char_Downcase)
 
 	checkCharacter(ch);
 	unsigned int code = character(ch);
-	if (code > 0x10FFFF) code = ch;
+	if (code > 0x10FFFF)
+		code = ch;
 	ret = (code < 256 && safe_isupper(code)) ? wrapCharacter(safe_tolower(code)) : ch;
 
 	LISP_FUNC_RETURN(ret);
@@ -1618,12 +1587,12 @@ LispFunction(Elt)
 		{
 			void* ra = __builtin_return_address(0);
 			fprintf(stderr, "[Elt] OOB ra=%p idx=%ld dim=%ld char-code~%ld\n", ra, n, dim,
-				(n & 1) ? (n-1)/2 : n/2);
+					(n & 1) ? (n - 1) / 2 : n / 2);
 			// Check what function is at QV slot 1227 (the one called by JIT)
 			extern unsigned long* ThreadQV();
 			unsigned long* qv = ThreadQV();
-			fprintf(stderr, "[Elt] QV[1227]=%p QV[1085]=%p QV[1229]=%p\n",
-				(void*)qv[1227], (void*)qv[1085], (void*)qv[1229]);
+			fprintf(stderr, "[Elt] QV[1227]=%p QV[1085]=%p QV[1229]=%p\n", (void*)qv[1227], (void*)qv[1085],
+					(void*)qv[1229]);
 			g_elt_oob_ra = ra;
 			long clamped = n % dim;
 			n = clamped;
@@ -1740,14 +1709,6 @@ LispFunction(Package_Hash_Index)
 	if (h < 0)
 		h = -h;
 	long capacity = GET_PACKAGE_CAPACITY(p);
-#ifdef _DEBUG
-	static int hash_diag_count = 0;
-	if (hash_diag_count < 5)
-	{
-		fprintf(stderr, "[Package_Hash_Index] len=%ld h=%ld capacity=%ld result=%ld\n", len, h, capacity, h % capacity);
-		hash_diag_count++;
-	}
-#endif
 	h %= capacity;
 
 	LISP_FUNC_RETURN(ret);
@@ -1887,6 +1848,7 @@ LispFunction(Alloc_Uvector)
 	LispObj size = LISP_ARG(0);
 	LispObj tag = LISP_ARG(1);
 	checkInteger(size);
+	ret = AllocVector(integer(size));
 	UVECTOR(ret)[0] = (UVECTOR(ret)[0] & ~0xf8) | (integer(tag) << 3);
 	LISP_FUNC_RETURN(ret);
 }
@@ -3472,12 +3434,18 @@ LispFunction(Address_Find_Function_Callback)
 	if (isFunction(p))
 	{
 		execaddr = (unsigned long)functionAddress(p);
-		if (execaddr && *(byte*)execaddr == 0xe9)
+		// A function still under construction has a zero FUNCTION_ADDRESS
+		// slot, making execaddr a small bogus offset. On Windows the
+		// resulting access violation was swallowed by SEH; here we must
+		// not dereference it.
+		if (execaddr >= 0x1000 && *(byte*)execaddr == 0xe9)
 			execaddr = (((unsigned long)execaddr) + *(long*)(((byte*)execaddr) + 1) + 5);
+		else if (execaddr < 0x1000)
+			execaddr = 0;
 
 		// execaddr = LispCall(Funcall, EXECUTION_ADDRESS, p);
 		// assume function smaller than 64k in size
-		if (execaddr <= address && (address - execaddr) < 0x10000)
+		if (execaddr && execaddr <= address && (address - execaddr) < 0x10000)
 		{
 			if ((address - execaddr) < lispIntegerToUnsignedLong(currOffset))
 			{
