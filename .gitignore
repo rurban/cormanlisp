@@ -51,6 +51,7 @@ session_*.zip
 .mcp.json
 .opencode
 omp-session-*.html
+.gortex
 # CMake build directories
 build-O0/
 build_dbg/
