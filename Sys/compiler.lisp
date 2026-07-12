@@ -1695,10 +1695,10 @@ t)
   {
   push    ebp
   mov     ebp, esp
-  push    [ebp + (+ ARGS_OFFSET 4)]    ; push size
+  push    [ebp + (+ ARGS_OFFSET 0)]    ; push size (first arg)
   callp   cl::%alloc-vector-tagged
   add     esp, 4
-  mov     edx, [ebp + (+ ARGS_OFFSET 0)] ; edx = tag
+  mov     edx, [ebp + (+ ARGS_OFFSET 4)] ; edx = tag (second arg)
   shl     edx, 3                        ; shift tag into bits 3-7 position
   or      [eax + (uvector-offset 0)], edx
   mov     ecx, 1

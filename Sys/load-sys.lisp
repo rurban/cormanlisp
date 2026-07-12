@@ -44,5 +44,4 @@
 (load-file "Sys/hash-table.lisp")
 (load-file "Sys/toplevel.lisp")
 (editor-set-default-message)
-(setq cl::*compiler-save-lambdas* t)
 (setq cl::*compiler-save-table-references* t)
