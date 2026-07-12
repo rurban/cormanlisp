@@ -447,10 +447,14 @@ int LispHeap::commitAllPages()
 	int result = 1;
 	if (firstUncommittedPage < (firstPage + numPages))
 	{
+#ifndef _MSC_VER
 		// On Linux, VirtualAlloc(MEM_COMMIT) with MAP_FIXED replaces the
 		// original mapping, potentially losing PROT_EXEC.  Use mprotect instead.
 		result = (mprotect((void*)page_address(firstUncommittedPage),
 						   PAGE_SIZE * (firstPage + numPages - firstUncommittedPage), PAGE_EXECUTE_READWRITE) == 0);
+#else
+		result = 1; // MSVC: pages already committed with correct protection
+#endif
 	}
 	firstUncommittedPage = firstPage + numPages;
 	return result;
@@ -858,8 +862,8 @@ CL_NAKED LispObj AllocVector(long num)
 				 :
 				 :
 				 : "eax", "ecx", "edx", "memory");
-}
 #endif
+}
 
 	// Pure C++ allocation, called from the trampoline above.
 	extern "C" LispObj _AllocVectorImpl(long num)
