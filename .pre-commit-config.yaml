@@ -46,6 +46,11 @@ repos:
       - id: lisp-format
         exclude: ^(Libraries/|Modules/as/parse\.cl|Modules/jni\.lisp|Sys/kernel-asm\.lisp|test/ansi-chapter-3\.lisp)
 
+  - repo: https://github.com/rurban/check-agent-trailer
+    rev: v0.3
+    hooks:
+      - id: check-agent-trailer
+
   - repo: local
     hooks:
       - id: cppcheck
