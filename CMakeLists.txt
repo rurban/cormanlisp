@@ -176,20 +176,16 @@ endif()
 # ---- Testing ----
 enable_testing()
 if(WIN32)
-    # Windows: clconsole LoadLibrary's the DLL by name — test only when
-    # the image file and binary are both present.
     add_test(NAME test-all
-        COMMAND ${CMAKE_COMMAND} -E true
+        COMMAND clconsole --batch -image ${CMAKE_SOURCE_DIR}/CormanLisp.img -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    set_tests_properties(test-all PROPERTIES DISABLED TRUE)
 else()
     add_test(NAME test-all
         COMMAND sh -c "cd ${CMAKE_SOURCE_DIR} && if [ -f CormanLisp.img ] || ./makeimg.sh; then ${CMAKE_BINARY_DIR}/clconsole --batch -image ${CMAKE_SOURCE_DIR}/CormanLisp.img -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp; else echo 'SKIP: CormanLisp.img not built'; exit 125; fi"
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    set_tests_properties(test-all PROPERTIES
-        SKIP_RETURN_CODE 125
-        PASS_REGULAR_EXPRESSION "ALL TESTS PASSED")
 endif()
+set_tests_properties(test-all PROPERTIES
+    PASS_REGULAR_EXPRESSION "ALL TESTS PASSED")
 
 # ---- Linting ----
 find_program(PRE_COMMIT pre-commit)
