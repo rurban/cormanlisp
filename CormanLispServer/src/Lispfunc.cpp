@@ -1063,6 +1063,7 @@ LispFunction(Get_Millisecond_Count)
 
 // rdtsc is now handled inline with asm volatile
 
+// clang-format off
 LispFunction(Get_Instruction_Count)
 {
 	LISP_FUNC_BEGIN(0);
@@ -1085,6 +1086,7 @@ LispFunction(Get_Instruction_Count)
 
 	LISP_FUNC_RETURN(bn);
 }
+// clang-format on
 
 #else
 #error Not implemented
@@ -1758,8 +1760,8 @@ LispFunction(Package_Hash_Index)
 		h <<= 5;
 		s++;
 	}
-	if (h < 0)
-		h = -h;
+	if ((signed long)h < 0)
+		h = (unsigned long)(-(signed long)h);
 	long capacity = GET_PACKAGE_CAPACITY(p);
 	h %= capacity;
 
@@ -3718,6 +3720,7 @@ CL_NAKED void genericThunkFunc()
 #endif
 }
 
+// clang-format off
 CL_NAKED void Minus_EAX_EDX()
 {
 #ifdef _MSC_VER
@@ -3740,7 +3743,9 @@ CL_NAKED void Minus_EAX_EDX()
 				 : "memory");
 #endif
 }
+// clang-format on
 
+// clang-format off
 CL_NAKED void Plus_EAX_EDX()
 {
 #ifdef _MSC_VER
@@ -3763,6 +3768,7 @@ CL_NAKED void Plus_EAX_EDX()
 				 : "memory");
 #endif
 }
+// clang-format on
 
 const int sizeGenericThunk = 11; // have to measure this and keep in sync
 

@@ -277,7 +277,6 @@ static __time32_t aclock;
 
 static char* getTime()
 {
-	errno_t errNum;
 	_time32(&aclock); // Get time in seconds.
 	_localtime32_s(&newtime, &aclock); // Convert time to struct tm form.
 
