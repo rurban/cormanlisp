@@ -2675,9 +2675,9 @@ LispFunction(Throw_Exception)
 
 #ifdef _MSC_VER
 	__asm mov ebx, dword ptr regs __asm mov eax, form __asm mov ecx, numValues __asm shr ecx, 3
-	; untag integer
+	// untag integer
 	__asm mov edx, dword ptr[ebx + 8] __asm mov esi, dword ptr[ebx + 12] __asm mov edi, dword ptr[ebx + 16] __asm mov esp, dword ptr[ebx + 20] __asm mov ebp, dword ptr[ebx + 28] __asm push dword ptr[ebx + 24]
-	; push ip
+	// push ip
 	__asm mov ebx, dword ptr[ebx + 0] __asm ret
 #else
 	asm volatile("mov %[regs], %%ebx\n\t"

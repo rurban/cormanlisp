@@ -24,6 +24,9 @@
 #include "../../zlib/zlib.h"
 #else
 #include <zlib.h>
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
 #endif
 
 #pragma warning(disable : 4127) // conditional expression is constant
@@ -3705,10 +3708,10 @@ CL_NAKED void genericThunkFunc()
 #ifdef _MSC_VER
 	__asm mov eax, dword ptr[0x1000000];
 	;
-	; use global QV
+	// use global QV
 	__asm jmp dword ptr[eax + 0x12345678];
 	;
-	; replace this with actual offset
+	// replace this with actual offset
 #else
 	asm volatile("movl $0x1000000, %eax\n\t"
 				 "jmp *0x12345678(%eax)\n\t");
