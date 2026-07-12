@@ -161,10 +161,10 @@ if(NOT WIN32)
 else()
     add_custom_command(
         OUTPUT ${CORMANLISP_IMG}
-        COMMAND clconsole --batch -execute ${CMAKE_SOURCE_DIR}/Sys/compile-sys.lisp --save-image ${CORMANLISP_IMG} -image ""
-        DEPENDS clconsole
+        COMMAND clboot --batch -execute ${CMAKE_SOURCE_DIR}/Sys/compile-sys.lisp --save-image ${CORMANLISP_IMG} -image ""
+        DEPENDS clboot cormanlisp
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Building CormanLisp.img via clconsole")
+        COMMENT "Building CormanLisp.img via clboot")
 endif()
 add_custom_target(cormanlisp_img ALL DEPENDS ${CORMANLISP_IMG})
 
