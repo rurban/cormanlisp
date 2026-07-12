@@ -166,7 +166,7 @@ else()
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Building CormanLisp.img via clboot")
 endif()
-add_custom_target(cormanlisp_img ALL DEPENDS ${CORMANLISP_IMG})
+add_custom_target(image ALL DEPENDS ${CORMANLISP_IMG})
 
 # ---- clboot (minimal bootstrap) ----
 add_executable(clboot clboot/clboot.cpp)
