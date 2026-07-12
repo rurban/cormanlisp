@@ -1005,7 +1005,8 @@ CL_NAKED void CallThrowUserExceptionStub()
 #ifdef _MSC_VER
 	__asm push eax;
 	;
-	push return address __asm jmp ThrowUserException;
+	; push return address
+	__asm jmp ThrowUserException;
 #else
 	asm volatile("jmp ThrowUserException");
 #endif

@@ -1014,7 +1014,8 @@ static LispObj AllocLargeVector(long num)
 	//	__asm		push edi  // unnecessary if done in prolog
 	__asm mov ecx, dword ptr cells __asm mov eax, 0;
 	;
-	initialize to 0 __asm mov edi, dword ptr block __asm mov[edi + 4],
+	; initialize to 0
+	__asm mov edi, dword ptr block __asm mov[edi + 4],
 		eax __asm dec ecx __asm jle skip_loop __asm loop1 : __asm mov[edi + ecx * 8],
 															eax __asm mov[edi + ecx * 8 + 4],
 															eax __asm dec ecx __asm jg loop1 __asm skip_loop :
@@ -2267,9 +2268,7 @@ static void checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 	{
 		// check registers -- processor specific
 #ifdef _MSC_VER
-		__asm mov regs[0], eax __asm mov regs[4], ebx __asm mov regs[8], ecx __asm mov regs[12], edx __asm mov regs[16],
-			esi __asm mov regs[20],
-			edi
+		__asm mov regs[0], eax __asm mov regs[4], ebx __asm mov regs[8], ecx __asm mov regs[12], edx __asm mov regs[16], esi __asm mov regs[20], edi
 #else
 		asm volatile("mov %%eax, %0\n\t"
 					 "mov %%ebx, %1\n\t"
@@ -2289,8 +2288,7 @@ static void checkStackRoots(LispHeap* fromSpace, LispHeap* toSpace)
 		}
 
 #ifdef _MSC_VER
-		__asm mov eax, regs[0] __asm mov ebx, regs[4] __asm mov ecx, regs[8] __asm mov edx, regs[12] __asm mov esi,
-			regs[16] __asm mov edi, regs[20]
+		__asm mov eax, regs[0] __asm mov ebx, regs[4] __asm mov ecx, regs[8] __asm mov edx, regs[12] __asm mov esi, regs[16] __asm mov edi, regs[20]
 #else
 		asm volatile("mov %0, %%eax\n\t"
 					 "mov %1, %%ebx\n\t"
