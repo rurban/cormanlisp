@@ -650,8 +650,7 @@ LispObj _Add(LispObj n1, LispObj n2)
 	{
 		// attempt fixnum add
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n2 __asm add result,
-			eax __asm jo do_bignum
+		__asm mov eax, dword ptr n2 __asm add result, eax __asm jo do_bignum
 #else
 		unsigned long _eax = (unsigned long)n2;
 		asm("add %%eax, %0" : "+m"(result));
@@ -959,8 +958,7 @@ LispObj subtractFixnums(LispObj n1, LispObj n2)
 	// attempt fixnum subtract
 	LispObj result = n1;
 #ifdef _MSC_VER
-	__asm mov eax, dword ptr n2 __asm sub result,
-		eax __asm jo do_bignum
+	__asm mov eax, dword ptr n2 __asm sub result, eax __asm jo do_bignum
 #else
 	unsigned long _eax = (unsigned long)n2;
 	asm("sub %%eax, %0" : "+m"(result));
@@ -1028,8 +1026,7 @@ LispObj _Subtract(LispObj n1, LispObj n2)
 	{
 		// attempt fixnum subtract
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n2 __asm sub result,
-			eax __asm jo do_bignum
+		__asm mov eax, dword ptr n2 __asm sub result, eax __asm jo do_bignum
 #else
 		unsigned long _eax = (unsigned long)n2;
 		asm("sub %%eax, %0" : "+m"(result));
@@ -1169,8 +1166,7 @@ LispObj _Multiply(LispObj n1, LispObj n2)
 	{
 		// attempt fixnum multiply — use extended asm with register variable
 #ifdef _MSC_VER
-		__asm mov eax, dword ptr n1 __asm shr eax, 3 __asm imul dword ptr n2 __asm jo do_bignum __asm mov[result],
-			eax
+		__asm mov eax, dword ptr n1 __asm shr eax, 3 __asm imul dword ptr n2 __asm jo do_bignum __asm mov[result], eax
 #else
 		register unsigned long _eax asm("eax") = (unsigned long)n1;
 		asm volatile("shr $3, %%eax\n\t"

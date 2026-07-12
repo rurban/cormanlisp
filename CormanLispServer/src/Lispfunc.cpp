@@ -1072,8 +1072,7 @@ LispFunction(Get_Instruction_Count)
 	//	__asm db 0fH, 31H
 
 #ifdef _MSC_VER
-	__asm rdtsc __asm mov dword ptr lowtime, eax __asm mov dword ptr hightime,
-		edx
+	__asm rdtsc __asm mov dword ptr lowtime, eax __asm mov dword ptr hightime, edx
 #else
 	asm volatile("rdtsc" : "=a"(lowtime), "=d"(hightime));
 #endif
@@ -1495,7 +1494,11 @@ LispFunction(_Output_Char)
 	LispObj stream = LISP_ARG(1);
 	checkCharacter(c);
 	outputCharRing[outputCharRingPos].stream = stream;
+#ifdef _MSC_VER
+	outputCharRing[outputCharRingPos].ret = _ReturnAddress();
+#else
 	outputCharRing[outputCharRingPos].ret = __builtin_return_address(0);
+#endif
 	outputCharRing[outputCharRingPos].c = c;
 	outputCharRingPos = (outputCharRingPos + 1) & 15;
 	if (!isStream(stream))
@@ -1627,7 +1630,11 @@ LispFunction(Elt)
 		long dim = arrayDimension(sequence, 0);
 		if (n < 0 || (arrayHasFillPointer(sequence) && index >= arrayFillPointer(sequence)) || n >= dim)
 		{
+#ifdef _MSC_VER
+			void* ra = _ReturnAddress();
+#else
 			void* ra = __builtin_return_address(0);
+#endif
 			fprintf(stderr, "[Elt] OOB ra=%p idx=%ld dim=%ld char-code~%ld\n", ra, n, dim,
 					(n & 1) ? (n - 1) / 2 : n / 2);
 			// Check what function is at QV slot 1227 (the one called by JIT)
@@ -3671,8 +3678,15 @@ LispFunction(Lookup_Ftype)
 CL_NAKED void Load_QV_Reg()
 {
 #ifdef _MSC_VER
-	__asm push ebp __asm mov ebp, esp TlsGetValue(QV_Index);
-	__asm mov esi, eax __asm pop ebp __asm ret
+	__asm {
+		push ebp
+		mov  ebp, esp
+		push QV_Index
+		call TlsGetValue
+		mov  esi, eax
+		pop  ebp
+		ret
+	}
 #else
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
@@ -3691,9 +3705,10 @@ CL_NAKED void genericThunkFunc()
 #ifdef _MSC_VER
 	__asm mov eax, dword ptr[0x1000000];
 	;
-	use global QV __asm jmp dword ptr[eax + 0x12345678];
+	; use global QV
+	__asm jmp dword ptr[eax + 0x12345678];
 	;
-	replace this with actual offset
+	; replace this with actual offset
 #else
 	asm volatile("movl $0x1000000, %eax\n\t"
 				 "jmp *0x12345678(%eax)\n\t");
@@ -3703,8 +3718,7 @@ CL_NAKED void genericThunkFunc()
 CL_NAKED void Minus_EAX_EDX()
 {
 #ifdef _MSC_VER
-	__asm push ebp __asm mov ebp, esp __asm push edi __asm push eax __asm push edx __asm mov edi,
-		dword ptr[esi] __asm mov ecx, 2 __asm call Minus __asm add esp, 8 __asm pop edi __asm pop ebp __asm ret
+	__asm push ebp __asm mov ebp, esp __asm push edi __asm push eax __asm push edx __asm mov edi, dword ptr[esi] __asm mov ecx, 2 __asm call Minus __asm add esp, 8 __asm pop edi __asm pop ebp __asm ret
 #else
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"
@@ -3727,8 +3741,7 @@ CL_NAKED void Minus_EAX_EDX()
 CL_NAKED void Plus_EAX_EDX()
 {
 #ifdef _MSC_VER
-	__asm push ebp __asm mov ebp, esp __asm push edi __asm push edx __asm push eax __asm mov edi,
-		dword ptr[esi] __asm mov ecx, 2 __asm call Plus __asm add esp, 8 __asm pop edi __asm pop ebp __asm ret
+	__asm push ebp __asm mov ebp, esp __asm push edi __asm push edx __asm push eax __asm mov edi, dword ptr[esi] __asm mov ecx, 2 __asm call Plus __asm add esp, 8 __asm pop edi __asm pop ebp __asm ret
 #else
 	asm volatile("push %%ebp\n\t"
 				 "mov %%esp, %%ebp\n\t"

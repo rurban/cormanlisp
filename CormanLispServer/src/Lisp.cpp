@@ -1210,8 +1210,7 @@ CL_NAKED LispObj LispCall1(LispFunc func, LispObj a1)
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(1);
 
-	__asm mov eax, dword ptr[a1] __asm push eax __asm call dword ptr[func] __asm add esp,
-		4
+	__asm mov eax, dword ptr[a1] __asm push eax __asm call dword ptr[func] __asm add esp, 4
 
 		END_LISP_CALL();
 #else
@@ -1230,9 +1229,7 @@ CL_NAKED LispObj LispCall2(LispFunc func, LispObj a1, LispObj a2)
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(2);
 
-	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax,
-		dword ptr[a2] __asm push eax __asm call dword ptr[func] __asm add esp,
-		8
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm call dword ptr[func] __asm add esp, 8
 
 		END_LISP_CALL();
 #else
@@ -1253,9 +1250,7 @@ CL_NAKED LispObj LispCall3(LispFunc func, LispObj a1, LispObj a2, LispObj a3)
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(3);
 
-	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
-		dword ptr[a3] __asm push eax __asm call dword ptr[func] __asm add esp,
-		12
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax, dword ptr[a3] __asm push eax __asm call dword ptr[func] __asm add esp, 12
 
 		END_LISP_CALL();
 #else
@@ -1278,10 +1273,7 @@ CL_NAKED LispObj LispCall4(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(4);
 
-	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
-		dword ptr[a3] __asm push eax __asm mov eax,
-		dword ptr[a4] __asm push eax __asm call dword ptr[func] __asm add esp,
-		16
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax, dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm call dword ptr[func] __asm add esp, 16
 
 		END_LISP_CALL();
 #else
@@ -1306,10 +1298,7 @@ CL_NAKED LispObj LispCall5(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(5);
 
-	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
-		dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax,
-		dword ptr[a5] __asm push eax __asm call dword ptr[func] __asm add esp,
-		20
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax, dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax, dword ptr[a5] __asm push eax __asm call dword ptr[func] __asm add esp, 20
 
 		END_LISP_CALL();
 #else
@@ -1336,11 +1325,7 @@ CL_NAKED LispObj LispCall6(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(6);
 
-	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
-		dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax,
-		dword ptr[a5] __asm push eax __asm mov eax,
-		dword ptr[a6] __asm push eax __asm call dword ptr[func] __asm add esp,
-		24
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax, dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax, dword ptr[a5] __asm push eax __asm mov eax, dword ptr[a6] __asm push eax __asm call dword ptr[func] __asm add esp, 24
 
 		END_LISP_CALL();
 #else
@@ -1370,11 +1355,7 @@ CL_NAKED LispObj LispCall7(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(7);
 
-	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
-		dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax,
-		dword ptr[a5] __asm push eax __asm mov eax, dword ptr[a6] __asm push eax __asm mov eax,
-		dword ptr[a7] __asm push eax __asm call dword ptr[func] __asm add esp,
-		28
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax, dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax, dword ptr[a5] __asm push eax __asm mov eax, dword ptr[a6] __asm push eax __asm mov eax, dword ptr[a7] __asm push eax __asm call dword ptr[func] __asm add esp, 28
 
 		END_LISP_CALL();
 #else
@@ -1406,12 +1387,7 @@ CL_NAKED LispObj LispCall8(LispFunc func, LispObj a1, LispObj a2, LispObj a3, Li
 #ifdef _MSC_VER
 	SETUP_LISP_CALL(8);
 
-	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax,
-		dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax,
-		dword ptr[a5] __asm push eax __asm mov eax, dword ptr[a6] __asm push eax __asm mov eax,
-		dword ptr[a7] __asm push eax __asm mov eax,
-		dword ptr[a8] __asm push eax __asm call dword ptr[func] __asm add esp,
-		32
+	__asm mov eax, dword ptr[a1] __asm push eax __asm mov eax, dword ptr[a2] __asm push eax __asm mov eax, dword ptr[a3] __asm push eax __asm mov eax, dword ptr[a4] __asm push eax __asm mov eax, dword ptr[a5] __asm push eax __asm mov eax, dword ptr[a6] __asm push eax __asm mov eax, dword ptr[a7] __asm push eax __asm mov eax, dword ptr[a8] __asm push eax __asm call dword ptr[func] __asm add esp, 32
 
 		END_LISP_CALL();
 #else
@@ -2698,12 +2674,11 @@ LispFunction(Throw_Exception)
 	}
 
 #ifdef _MSC_VER
-	__asm mov ebx, dword ptr regs __asm mov eax, form __asm mov ecx, numValues __asm shr ecx, 3;
-	untag integer __asm mov edx, dword ptr[ebx + 8] __asm mov esi, dword ptr[ebx + 12] __asm mov edi,
-		dword ptr[ebx + 16] __asm mov esp, dword ptr[ebx + 20] __asm mov ebp,
-		dword ptr[ebx + 28] __asm push dword ptr[ebx + 24];
-	;
-	push ip __asm mov ebx, dword ptr[ebx + 0] __asm ret
+	__asm mov ebx, dword ptr regs __asm mov eax, form __asm mov ecx, numValues __asm shr ecx, 3
+	; untag integer
+	__asm mov edx, dword ptr[ebx + 8] __asm mov esi, dword ptr[ebx + 12] __asm mov edi, dword ptr[ebx + 16] __asm mov esp, dword ptr[ebx + 20] __asm mov ebp, dword ptr[ebx + 28] __asm push dword ptr[ebx + 24]
+	; push ip
+	__asm mov ebx, dword ptr[ebx + 0] __asm ret
 #else
 	asm volatile("mov %[regs], %%ebx\n\t"
 				 "mov %[form], %%eax\n\t"
