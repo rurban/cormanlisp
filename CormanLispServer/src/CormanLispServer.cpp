@@ -16,6 +16,7 @@
 #include <windows.h>
 #include <ole2.h>
 #include <string.h>
+#include <cstdio>
 
 #include "CormanLispServer.h"
 #include "Lisp.h"
