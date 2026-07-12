@@ -826,6 +826,40 @@ static char* getConsoleText(void)
 	return buf;
 }
 
+static const char* find_default_image(const char* argv0)
+{
+	static char imgpath[MAX_PATH];
+	char exepath[MAX_PATH];
+	char* dir;
+
+	// Resolve the executable's real path to get its directory.
+	if (realpath(argv0, exepath) == NULL)
+	{
+		// realpath failed — try argv0 directly (may be relative).
+		strncpy(exepath, argv0, MAX_PATH - 1);
+		exepath[MAX_PATH - 1] = 0;
+	}
+
+	// Strip the executable name to get the directory.
+	dir = strrchr(exepath, '/');
+	if (dir)
+		*dir = 0;
+	else
+		strcpy(exepath, "."); // argv0 had no slash — use cwd
+
+	// Try executable's directory first, then cwd.
+	snprintf(imgpath, MAX_PATH, "%s/CormanLisp.img", exepath);
+	if (access(imgpath, R_OK) == 0)
+		return imgpath;
+
+	// Also try CormanLisp.img in cwd (for build-tree runs where
+	// the image lives in the repo root, not under build/).
+	if (access("CormanLisp.img", R_OK) == 0)
+		return "CormanLisp.img";
+
+	return NULL;
+}
+
 int main(int argc, char* argv[])
 {
 	int argidx = 1;
@@ -863,6 +897,12 @@ int main(int argc, char* argv[])
 		}
 		argidx++;
 	}
+
+	// Fallback: if no -image was given, search for CormanLisp.img next
+	// to the executable (mirrors the Windows GetModuleFileName fallback).
+	if (g_image_name == NULL)
+		g_image_name = find_default_image(argv[0]);
+
 	int ret = cl_initialize(&g_callbacks, g_image_name, CL_CONSOLE);
 	if (ret != 0)
 	{
