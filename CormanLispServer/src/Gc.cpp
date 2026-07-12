@@ -1014,7 +1014,7 @@ static LispObj AllocLargeVector(long num)
 	//	__asm		push edi  // unnecessary if done in prolog
 	__asm mov ecx, dword ptr cells __asm mov eax, 0;
 	;
-	; initialize to 0
+	// initialize to 0
 	__asm mov edi, dword ptr block __asm mov[edi + 4], eax __asm dec ecx __asm jle skip_loop __asm loop1 : __asm mov[edi + ecx * 8], eax __asm mov[edi + ecx * 8 + 4], eax __asm dec ecx __asm jg loop1 __asm skip_loop :
 //	__asm		pop edi
 #else
