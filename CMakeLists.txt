@@ -150,23 +150,20 @@ else()
 endif()
 
 # ---- Lisp image (built after clconsole via makeimg.sh) ----
-if(NOT WIN32)
-    set(CORMANLISP_IMG ${CMAKE_SOURCE_DIR}/CormanLisp.img)
-    add_custom_command(
-        OUTPUT ${CORMANLISP_IMG}
-        COMMAND ${CMAKE_SOURCE_DIR}/makeimg.sh || (echo "NOTE: CormanLisp.img not built yet -- compiler bootstrap incomplete" && touch ${CORMANLISP_IMG}.pending)
-        DEPENDS clconsole ${CMAKE_SOURCE_DIR}/Sys/compile-sys.lisp
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Building CormanLisp.img (may fail during bootstrap)")
-    add_custom_target(cormanlisp_img DEPENDS ${CORMANLISP_IMG})
-endif()
+set(CORMANLISP_IMG ${CMAKE_SOURCE_DIR}/CormanLisp.img)
+add_custom_command(
+    OUTPUT ${CORMANLISP_IMG}
+    COMMAND ${CMAKE_SOURCE_DIR}/makeimg.sh || (${CMAKE_COMMAND} -E echo "NOTE: CormanLisp.img not built yet" && ${CMAKE_COMMAND} -E touch ${CORMANLISP_IMG}.pending)
+    DEPENDS clconsole ${CMAKE_SOURCE_DIR}/Sys/compile-sys.lisp
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Building CormanLisp.img (may fail during bootstrap)")
+add_custom_target(cormanlisp_img ALL DEPENDS ${CORMANLISP_IMG})
 
 # ---- clboot (minimal bootstrap) ----
 add_executable(clboot clboot/clboot.cpp)
 target_include_directories(clboot PRIVATE ${CORMAN_INCLUDE_DIRS})
 
 if(WIN32)
-    # Same dynamic-loading relationship as clconsole; see above.
     add_dependencies(clboot cormanlisp)
 else()
     target_compile_definitions(clboot PRIVATE LINUX)
@@ -175,18 +172,11 @@ endif()
 
 # ---- Testing ----
 enable_testing()
-if(WIN32)
-    add_test(NAME test-all
-        COMMAND clconsole --batch -image ${CMAKE_SOURCE_DIR}/CormanLisp.img -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-else()
-    add_test(NAME test-all
-        COMMAND sh -c "cd ${CMAKE_SOURCE_DIR} && if [ -f CormanLisp.img ] || ./makeimg.sh; then ${CMAKE_BINARY_DIR}/clconsole --batch -image ${CMAKE_SOURCE_DIR}/CormanLisp.img -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp; else echo 'SKIP: CormanLisp.img not built'; exit 125; fi"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-endif()
+add_test(NAME test-all
+    COMMAND clconsole --batch -image ${CORMANLISP_IMG} -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_tests_properties(test-all PROPERTIES
     PASS_REGULAR_EXPRESSION "ALL TESTS PASSED")
-
 # ---- Linting ----
 find_program(PRE_COMMIT pre-commit)
 if(PRE_COMMIT)
