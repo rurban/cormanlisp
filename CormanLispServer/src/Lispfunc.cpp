@@ -41,6 +41,7 @@ LispFunction(Divide_Bignums);
 LispFunction(Console_Chars_Available);
 LispDeclare(Memory_Report);
 LispDeclare(Lisp_Shutdown);
+LispDeclare(Alloc_Uvector);
 
 // redefined in lisp
 LispFunction(SymbolValue)
@@ -595,10 +596,14 @@ LispFunction(LoadLispImage)
 
 	checkString(path);
 	readHeapFromFile(path);
-	updateKernelFunctions(); // reinitialize kernel function pointers
-							 // in case the CormanLispServer DLL is loaded at
-							 // a different address than when the image
-							 // was saved
+	updateKernelFunctions();
+
+	// The defasm cl::alloc-uvector in compiler.lisp has swapped size/tag args.
+	// Force rebind to the correct kernel implementation.
+	{
+		LispObj auSym = findSymbol("ALLOC-UVECTOR");
+		setSymbolFunction(auSym, kernelFunctionNode(Alloc_Uvector), FUNCTION);
+	}
 
 	funcs = symbolValue(LOAD_IMAGE_RESTORE_FUNCS);
 	while (isCons(funcs))
@@ -612,10 +617,11 @@ LispFunction(LoadLispImage)
 	_args = 0;
 	LISP_ARG(0) = 0;
 	InitializationEvent.SetEvent(); // done initializing
-	if (isFunction(func))
-	{
-		LispCall1(Funcall, symbolValue(TOP_LEVEL));
-	}
+	// Don't call top-level here — let LispLoop handle it.
+	// The top-level function sets up error handlers, and calling it
+	// naked (without a COMPILER_RUNTIME catch frame) causes crashes
+	// on errors occurring before the Lisp catch is active.
+
 	LISP_FUNC_RETURN(NIL);
 }
 
@@ -1456,13 +1462,44 @@ LispFunction(Unread_Char)
 }
 
 // usage: (%output-char char stream)
+
+static struct
+{
+	LispObj stream;
+	void* ret;
+	LispObj c;
+} outputCharRing[16];
+static int outputCharRingPos = 0;
+
+void dumpOutputCharRing()
+{
+	fprintf(stderr, "[OUTPUT-CHAR RING] last %d calls:\n", 16);
+	for (int i = 0; i < 16; i++)
+	{
+		int idx = (outputCharRingPos + i) & 15;
+		LispObj func = 0;
+		if (outputCharRing[idx].ret)
+			func = addressFindFunction(createUnsignedLispInteger((unsigned long)outputCharRing[idx].ret));
+		fprintf(stderr, "  %d: stream=%p ret=%p c=%p type=%ld func=%p\n", i, (void*)outputCharRing[idx].stream,
+				outputCharRing[idx].ret, (void*)outputCharRing[idx].c,
+				isUvector(outputCharRing[idx].stream) ? (long)uvectorType(outputCharRing[idx].stream) : -1L,
+				(void*)func);
+	}
+	fflush(stderr);
+}
+
 LispFunction(_Output_Char)
 {
 	LISP_FUNC_BEGIN(2);
 	LispObj c = LISP_ARG(0);
 	LispObj stream = LISP_ARG(1);
 	checkCharacter(c);
-	checkOutputStream(stream);
+	outputCharRing[outputCharRingPos].stream = stream;
+	outputCharRing[outputCharRingPos].ret = __builtin_return_address(0);
+	outputCharRing[outputCharRingPos].c = c;
+	outputCharRingPos = (outputCharRingPos + 1) & 15;
+	if (!isStream(stream))
+		stream = symbolValue(STANDARD_OUTPUT);
 	outputChar(c, stream);
 	ret = c;
 	LISP_FUNC_RETURN(ret);
@@ -1476,7 +1513,8 @@ LispFunction(_Output_Chars)
 	LispObj stream = LISP_ARG(1);
 	LispObj start = LISP_ARG(2);
 	LispObj end = LISP_ARG(3);
-	checkString(str);
+	if (!isStream(stream))
+		stream = symbolValue(STANDARD_OUTPUT);
 	checkOutputStream(stream);
 	checkInteger(start);
 	checkInteger(end);
@@ -1496,16 +1534,20 @@ LispFunction(LispError)
 	LISP_FUNC_BEGIN_VARIABLE(1, MaxLispArgs);
 	LispObj msg = LISP_ARG(0);
 
-	// Naked functions break C++ exception unwinding.
-	// For now, just exit on any Lisp error.
+	static int in_error = 0;
+	if (in_error)
+	{
+		// Re-entrant error — avoid infinite recursion.
+		// The Lisp-level error handler formats error messages
+		// which can trigger more errors. Break the cycle.
+		_exit(1);
+	}
+	in_error = 1;
+
 	if (isString(msg))
 	{
 		LispObj terminated = nullTerminate(msg);
 		fprintf(stderr, "Lisp error: %s\n", (char*)byteArrayStart(terminated));
-	}
-	else
-	{
-		fprintf(stderr, "Lisp error (exiting): object=%p\n", (void*)msg);
 	}
 	exit(1);
 }
@@ -1714,6 +1756,55 @@ LispFunction(Package_Hash_Index)
 	LISP_FUNC_RETURN(ret);
 }
 
+LispFunction(FindPackage)
+{
+	LISP_FUNC_BEGIN(1);
+	LispObj name = LISP_ARG(0);
+	LispObj packages = symbolValue(PACKAGE_LIST);
+	LispObj pkg = NIL;
+	LispObj pkg_name = NIL;
+	LispObj nicknames = NIL;
+
+	// Convert symbol to string if needed
+	if (isSymbol(name))
+		name = UVECTOR(name)[SYMBOL_NAME];
+	if (!isString(name))
+	{
+		ret = NIL;
+		LISP_FUNC_RETURN(ret);
+	}
+
+	while (isCons(packages))
+	{
+		pkg = CAR(packages);
+		if (!isPackage(pkg))
+		{
+			packages = CDR(packages);
+			continue;
+		}
+		pkg_name = UVECTOR(pkg)[PACKAGE_NAME];
+		if (isString(pkg_name) && lispStringsEqual(name, pkg_name))
+		{
+			ret = pkg;
+			LISP_FUNC_RETURN(ret);
+		}
+		// Check nicknames
+		nicknames = UVECTOR(pkg)[PACKAGE_NICKNAMES];
+		while (isCons(nicknames))
+		{
+			if (isString(CAR(nicknames)) && lispStringsEqual(name, CAR(nicknames)))
+			{
+				ret = pkg;
+				LISP_FUNC_RETURN(ret);
+			}
+			nicknames = CDR(nicknames);
+		}
+		packages = CDR(packages);
+	}
+	ret = NIL;
+	LISP_FUNC_RETURN(ret);
+}
+
 LispFunction(Vector_Slot_Initialized)
 {
 	LISP_FUNC_BEGIN(2);
@@ -1841,7 +1932,7 @@ LispFunction(Probe_File)
 
 //
 //	Usage:  (alloc-uvector size tag)
-//
+
 LispFunction(Alloc_Uvector)
 {
 	LISP_FUNC_BEGIN(2);
@@ -4355,6 +4446,7 @@ FunctEntry functTable[] = {
 	{"STREAMP", Streamp}, // redefined in lisp
 	{"HASH-TABLE-P", Hash_table_p}, // redefined in lisp
 	{"PACKAGEP", Packagep}, // redefined in lisp
+	{"FIND-PACKAGE", FindPackage}, // needed early, before package.lisp is loaded
 	{"READTABLEP", Readtablep}, // redefined in lisp
 	{"ARRAYP", Arrayp}, // redefined in lisp
 	{"SEQUENCEP", Sequencep}, // redefined in lisp

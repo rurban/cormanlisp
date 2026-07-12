@@ -3864,6 +3864,27 @@ static LispObj compileLetForm(LispObj x, LispObj dest)
 			t = list(sym, EBP, envOffset, END_LIST);
 			localBindings = cons(t, localBindings);
 			numLocals++;
+			if (sym == STANDARD_OUTPUT || sym == ERROR_OUTPUT || sym == TERMINAL_IO)
+			{
+				LispObj name = UVECTOR(sym)[SYMBOL_NAME];
+				LispObj fname = symbolValue(COMPILER_FUNCTION_NAME);
+				fprintf(stderr, "[LETSTREAM] %s bound as lexical offset=%ld in ",
+						(isUvector(name) && uvectorType(name) == SimpleCharVectorType)
+							? (const char*)charArrayStart(name)
+							: "?",
+						(long)integer(envOffset));
+				if (isUvector(fname) && uvectorType(fname) == SymbolType)
+				{
+					LispObj n = UVECTOR(fname)[SYMBOL_NAME];
+					fprintf(stderr, "%s",
+							(isUvector(n) && uvectorType(n) == SimpleCharVectorType) ? (const char*)charArrayStart(n)
+																					 : "?");
+				}
+				else
+					fprintf(stderr, "<anon>");
+				fprintf(stderr, "\n");
+				fflush(stderr);
+			}
 		}
 		else
 		{

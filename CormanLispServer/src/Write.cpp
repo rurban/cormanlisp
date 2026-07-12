@@ -389,6 +389,8 @@ void outputChars(LispObj chars, long length, LispObj os)
 
 void outputChar(LispObj ch, LispObj os)
 {
+	if (!isStream(os))
+		os = symbolValue(STANDARD_OUTPUT);
 	if (streamOutputBufferPos(os) == streamOutputBufferLength(os))
 		LispCall3(Funcall, FUNCALL, streamOverflowFunc(os), os);
 	charArrayStart(streamOutputBuffer(os))[integer(streamOutputBufferPos(os))] = (LISP_CHAR)character(ch);

@@ -60,3 +60,4 @@ zlib.old/
 *.o
 *.a
 .clang-format-staging
+build-gcdbg/

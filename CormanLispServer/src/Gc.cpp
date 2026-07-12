@@ -3328,10 +3328,18 @@ CL_NAKED LispObj AllocVector(long num)
 		// zero out all the hash ids to force rehash on next access
 		processEachHeapBlock(RESET_HASH_ID, NIL);
 
+		// During bootstrap, all objects live in EphemeralHeap1.
+		// Use it as the source heap if LispHeap1 is empty.
+		LispHeap* sourceHeap = &LispHeap1;
+		long ephSize = (EphemeralHeap1.current - EphemeralHeap1.start) * sizeof(Node);
+		long lisp1Size = (LispHeap1.current - LispHeap1.start) * sizeof(Node);
+		if (ephSize > lisp1Size)
+			sourceHeap = &EphemeralHeap1;
+
 		CHeapBlocks cHeapBlocks;
 
 		staticSize = QV_MAX * sizeof(LispObj);
-		heapSize = (LispHeap1.current - LispHeap1.start) * sizeof(Node);
+		heapSize = (sourceHeap->current - sourceHeap->start) * sizeof(Node);
 		pageTableSize = LispHeap1.numPages * sizeof(PageTableEntry);
 		CHeapBlocksSize = cHeapBlocks.length();
 
@@ -3385,12 +3393,12 @@ CL_NAKED LispObj AllocVector(long num)
 
 		// copy heap base address
 		FlushInstructionCache(process, NULL, 0);
-		heapAddress = (unsigned long)LispHeap1.start;
+		heapAddress = (unsigned long)sourceHeap->start;
 		memcpy(compressionSrcBuffer + offset, (char*)&heapAddress, sizeof(heapAddress));
 		offset += sizeof(heapAddress);
 
 		// copy heap contents
-		memcpy(compressionSrcBuffer + offset, (char*)LispHeap1.start, heapSize);
+		memcpy(compressionSrcBuffer + offset, (char*)sourceHeap->start, heapSize);
 		offset += heapSize;
 
 		// copy page table
@@ -3548,6 +3556,11 @@ CL_NAKED LispObj AllocVector(long num)
 				// see if the heap is being relocated
 				if (heapAddress != (unsigned long)LispHeap1.start)
 				{
+					// Ensure GCFromSpace is valid for isHeapPointer() checks
+					if (!GCFromSpace)
+						GCFromSpace = &LispHeap1;
+					if (!GCToSpace)
+						GCToSpace = &LispHeap1;
 					// add offsets to all heap addresses
 					offset = (long)((unsigned long)LispHeap1.start - heapAddress);
 					offsetHeapAddresses(offset);

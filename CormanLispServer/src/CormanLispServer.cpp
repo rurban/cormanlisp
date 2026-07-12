@@ -226,7 +226,10 @@ extern "C"
 
 		TlsSetValue(QV_Index, QV);
 		initLisp();
-		g_lisp_bootstrapping = false;
+		// Bootstrap-mode workaround: keep real GC disabled while building
+		// the image, to confirm the crash is GC-related.  Re-enable once the
+		// forwarding bug is fixed.
+		g_lisp_bootstrapping = true;
 		return 0;
 	}
 
@@ -282,6 +285,11 @@ extern "C"
 	CL_API void cl_process_source(const char* text, long numChars)
 	{
 		ProcessLispSource((char*)text, numChars);
+	}
+
+	CL_API void cl_save_image(const char* filename)
+	{
+		writeHeapToFile(stringNode((char*)filename));
 	}
 
 	CL_API long cl_get_num_threads(void)

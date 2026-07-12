@@ -9,14 +9,11 @@
 ;;;;
 
 (defun load-file (filename)
-  (if (eq (cl::cormanlisp-client-type) 2)
-      (editor-set-message (format nil "Compiling ~a" filename))
-      (progn (format t "Compiling ~a~%" filename)(force-output)))
   (load filename))
 
 (setq cl::*compiler-save-lambdas* nil)
 (setq cl::*compiler-save-table-references* nil)
-
+(setq cl::*ignore-errors* t)
 (load-file "Sys/declarations.lisp")
 (load-file "Sys/kernel-asm.lisp")
 (load-file "Sys/kernel-funcs.lisp")
@@ -133,3 +130,4 @@
 (setq cl::*compiler-save-table-references* t)
 (setq cl::*loading-kernel* nil)
 (setq cl::*compress-img* t)
+(setq cl::*ignore-errors* nil)

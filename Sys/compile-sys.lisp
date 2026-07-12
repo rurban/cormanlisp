@@ -11,13 +11,8 @@
   (write (%change-directory (%cormanlisp-directory-namestring)))
   (terpri)
   (values))
-
 (progn (load "Sys/load-sys.lisp")(values))
 (top-level)
 (progn (load "Sys/load-sys2.lisp")(values))
-
-(setf ccl::*save-relative-source-file-names* nil)    ;; after this, only store absolute paths
+(setf ccl::*save-relative-source-file-names* nil)
 (progn (in-package :user)(values))
-(progn (save-image "CormanLisp.img")(values))
-(progn (format *terminal-io* "~%The file CormanLisp.img was created successfully.~%~%")
-       (values))

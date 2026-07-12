@@ -27,9 +27,6 @@
 (editor-set-message "Loading FORMAT.LISP")		(load "Sys/format.lisp")
 
 (defun load-file (filename)
-  (if (eq (cormanlisp-client-type) 2)
-      (editor-set-message (format nil "Compiling ~a" filename))
-      (progn (format t "Compiling ~a~%" filename)(force-output)))
   (load filename))
 
 (setf *compiler-warn-on-unused-variable* t)

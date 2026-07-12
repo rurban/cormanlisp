@@ -76,6 +76,9 @@ extern "C"
 	// Process Lisp source text.
 	void cl_process_source(const char* text, long numChars);
 
+	// Save the current Lisp heap to an image file.
+	void cl_save_image(const char* filename);
+
 	// Get the number of active Lisp threads.
 	long cl_get_num_threads(void);
 

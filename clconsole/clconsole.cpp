@@ -829,8 +829,8 @@ static char* getConsoleText(void)
 int main(int argc, char* argv[])
 {
 	int argidx = 1;
+	const char* g_save_image = NULL;
 
-	// Parse -image, -execute, --batch, and --help
 	while (argidx < argc)
 	{
 		if (!strcmp(argv[argidx], "--help") || !strcmp(argv[argidx], "-help") || !strcmp(argv[argidx], "-h"))
@@ -841,12 +841,17 @@ int main(int argc, char* argv[])
 			printf("  --batch, -batch      Run in batch mode (process input, then exit)\n");
 			printf("  -execute FILE         Load and evaluate FILE before starting REPL\n");
 			printf("  -image FILE           Load Lisp image FILE on startup\n");
+			printf("  --save-image FILE     Save heap to FILE after batch execution\n");
 			printf("  --help, -help, -h     Show this help and exit\n");
 			return 0;
 		}
 		else if (!strcmp(argv[argidx], "--batch") || !strcmp(argv[argidx], "-batch"))
 		{
 			g_batch_mode = 1;
+		}
+		else if (!strcmp(argv[argidx], "--save-image") && argidx + 1 < argc)
+		{
+			g_save_image = argv[++argidx];
 		}
 		else if ((!_stricmp(argv[argidx], "-image") || !strcmp(argv[argidx], "-image")) && argidx + 1 < argc)
 		{
@@ -865,22 +870,34 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	// Execute a file if specified
 	if (g_exec_file)
 	{
 		LoadFile(g_exec_file);
 	}
+
+	// In batch mode, read remaining stdin and feed to Lisp
+	if (g_batch_mode && !g_exec_file)
+	{
+		char buf[4096];
+		while (fgets(buf, sizeof(buf), stdin))
+			cl_process_source(buf, strlen(buf));
+	}
+
 	extern bool g_batch_input_done;
 	g_batch_input_done = true;
 
-	// In batch mode, run the Lisp REPL to process buffered input
 	if (g_batch_mode)
 	{
 		cl_run();
+		if (g_save_image)
+		{
+			fprintf(stderr, "Saving image to %s...\n", g_save_image);
+			cl_save_image(g_save_image);
+			fprintf(stderr, "Image saved.\n");
+		}
 		return 0;
 	}
 
-	// REPL loop
 	printf("Corman Lisp (Linux port)\n");
 	printf("Type :quit to exit.\n");
 
@@ -903,5 +920,4 @@ int main(int argc, char* argv[])
 	term_restore();
 	return 0;
 }
-
 #endif // _WIN32/LINUX

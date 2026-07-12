@@ -986,37 +986,36 @@
 ;;;;
 (defvar *enable-error-trace* t)
 
+(defvar *in-error* nil)
+
 (defun error (msg &rest args)
-					;	(if *debug* (dump-heap "dumpheap.txt"))
   (if *ignore-errors*
       (throw 'common-lisp::%error nil)
-      (progn
-	(setq *evalhook* nil *applyhook* nil)
-	(let* ((trace (if *enable-error-trace* (stack-trace)))
-	       (func nil)
-	       (errmsg (apply #'format nil msg args)))
-	  (setq *error-trace* trace)
-	  ;; skip past calls to functions:
-	  ;;    FUNCALL
-	  ;;	  ERROR
-	  ;;	  any function beginning with %
-	  (do ()
-	      ((null trace))
-	    (setq func (caar trace))
-	    (unless (symbolp func)
-	      (return))
-	    (if (not
-		 (or (eq func 'error)
-		     (eq func 'funcall)
-		     (char= (char (symbol-name func) 0) #\%)))
-		(return))
-	    (setq trace (cdr trace)))
-
-	  (format *error-output*
-		  ";;; An error occurred in function ~A:~%;;; ~A~%"
-		  (caar trace) errmsg)
-	  (force-output *error-output*)
-	  (throw 'common-lisp::%error nil)))))
+      (if *in-error*
+          ;; Re-entrant error - break the cycle
+          (throw 'common-lisp::%error nil)
+          (let ((*in-error* t))
+            (setq *evalhook* nil *applyhook* nil)
+            (let* ((trace (if *enable-error-trace* (stack-trace)))
+                   (func nil)
+                   (errmsg (apply #'format nil msg args)))
+              (setq *error-trace* trace)
+              (do ()
+                  ((null trace))
+                (setq func (caar trace))
+                (unless (symbolp func)
+                  (return))
+                (if (not
+                     (or (eq func 'error)
+                         (eq func 'funcall)
+                         (char= (char (symbol-name func) 0) #\%)))
+                    (return))
+                (setq trace (cdr trace)))
+              (format *error-output*
+                      ";;; An error occurred in function ~A:~%;;; ~A~%"
+                      (caar trace) errmsg)
+              (force-output *error-output*)
+              (throw 'common-lisp::%error nil))))))
 
 ;;;;
 ;;;;	Common Lisp CERROR function.

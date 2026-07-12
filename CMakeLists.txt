@@ -110,6 +110,14 @@ else()
 target_compile_definitions(cormanlisp PRIVATE $<$<CONFIG:Debug>:_DEBUG>)
 endif()
 
+# GC verification and per-collection tracing without the per-call debug
+# noise of a full _DEBUG build: defines _DEBUG for Gc.cpp only.
+option(GC_DEBUG "Enable GC heap verification (_DEBUG in Gc.cpp only)" OFF)
+if(GC_DEBUG)
+    set_source_files_properties(CormanLispServer/src/Gc.cpp
+        PROPERTIES COMPILE_DEFINITIONS _DEBUG)
+endif()
+
 target_include_directories(cormanlisp PRIVATE
     ${CORMAN_INCLUDE_DIRS}
     ${DISTORM_DIR}/include
@@ -169,7 +177,7 @@ endif()
 # ---- Testing ----
 enable_testing()
 add_test(NAME test-all
-    COMMAND sh -c "cd ${CMAKE_SOURCE_DIR} && if [ -f CormanLisp.img ] || ./makeimg.sh; then clconsole --batch -image ${CMAKE_SOURCE_DIR}/CormanLisp.img -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp; else echo 'SKIP: CormanLisp.img not built'; exit 125; fi"
+    COMMAND sh -c "cd ${CMAKE_SOURCE_DIR} && if [ -f CormanLisp.img ] || ./makeimg.sh; then ${CMAKE_BINARY_DIR}/clconsole --batch -image ${CMAKE_SOURCE_DIR}/CormanLisp.img -execute ${CMAKE_SOURCE_DIR}/test/test-all.lisp; else echo 'SKIP: CormanLisp.img not built'; exit 125; fi"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_tests_properties(test-all PROPERTIES
     SKIP_RETURN_CODE 125

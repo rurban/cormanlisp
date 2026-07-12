@@ -518,13 +518,15 @@ void initLisp()
 	setSymbolValue(PACKAGE, CL_PACKAGE);
 
 	UVECTOR(CL_PACKAGE)[PACKAGE_NAME] = stringNode("COMMON-LISP");
-	UVECTOR(CL_PACKAGE)[PACKAGE_NICKNAMES] = NIL;
+	UVECTOR(CL_PACKAGE)
+	[PACKAGE_NICKNAMES] = list(stringNode("CL"), stringNode("COMMON-LISP"), stringNode("LISP"), END_LIST);
 	UVECTOR(CL_PACKAGE)[PACKAGE_USE_LIST] = NIL;
 	UVECTOR(CL_PACKAGE)[PACKAGE_USED_BY_LIST] = NIL;
 	UVECTOR(CL_PACKAGE)[PACKAGE_SHADOWING_SYMBOLS] = NIL;
 	UVECTOR(CL_PACKAGE)[PACKAGE_SYNC] = NIL;
 
 	USER_PACKAGE = packageNode(stringNode("COMMON-LISP-USER"));
+	UVECTOR(USER_PACKAGE)[PACKAGE_NICKNAMES] = list(stringNode("CL-USER"), END_LIST);
 	CORMANLISP_PACKAGE = packageNode(stringNode("CORMANLISP"));
 	KEYWORD_PACKAGE = packageNode(stringNode("KEYWORD"));
 
@@ -1097,7 +1099,7 @@ void LispLoop()
 						Error(missingImgMessage);
 					}
 					LispCall1(LoadLispImage, stringNode(LispImageName));
-					return;
+					// Fall through to REPL after image load
 				}
 				// No image — enter REPL directly
 			}
@@ -1726,8 +1728,54 @@ LispObj charVector(LispObj length)
 	return a;
 }
 
+// Recursive-error guard.  LISPERROR exits via THROW_EXCEPTION and never
+// returns here, so nesting cannot be tracked with an enter/leave counter.
+// Instead: a nested Error() (signaled while a previous one is still being
+// handled) always enters with its frame deeper on the C stack than the
+// still-live previous Error() frame.  A monotonically deepening chain of
+// entries is an error-while-printing-the-error loop; abort with
+// diagnostics instead of recursing until the stack blows.
+static char* errorGuardSP = 0;
+static int errorGuardDepth = 0;
+
+static void errorGuardCheck(const char* msg, LispObj a1, bool haveArg)
+{
+	static int errorGuardLimit = -1;
+	if (errorGuardLimit < 0)
+	{
+		// CL_ERROR_ABORT=n aborts at the n-th nested kernel error;
+		// CL_ERROR_ABORT=1 aborts on the very first one (debugging aid).
+		const char* limitEnv = getenv("CL_ERROR_ABORT");
+		errorGuardLimit = limitEnv ? atoi(limitEnv) : 8;
+		if (errorGuardLimit < 1)
+			errorGuardLimit = 8;
+	}
+	char marker = 0;
+	if (errorGuardSP == 0 || &marker >= errorGuardSP)
+		errorGuardDepth = 0; // previous error unwound; this one is fresh
+	errorGuardSP = &marker;
+	errorGuardDepth++;
+	if (errorGuardDepth <= errorGuardLimit && !(errorGuardLimit == 1 && errorGuardDepth >= 1))
+		return;
+	fprintf(stderr, "Fatal: recursive kernel error (depth %d): %s\n", errorGuardDepth, msg);
+	if (haveArg)
+	{
+		fprintf(stderr, "  arg=%p tag=%ld", (void*)a1, (long)(a1 & 7));
+		if (isUvector(a1))
+		{
+			fprintf(stderr, " uvector-type=%ld cells=%ld:", (long)uvectorType(a1), (long)(UVECTOR(a1)[0] >> 8) * 2);
+			for (int k = 0; k < 8 && k < (long)((UVECTOR(a1)[0] >> 8) * 2); k++)
+				fprintf(stderr, " [%d]=%p", k, (void*)UVECTOR(a1)[k]);
+		}
+		fprintf(stderr, "\n");
+	}
+	fflush(stderr);
+	abort(); // SIGABRT so a debugger/core dump captures the offending stack
+}
+
 void Error(const char* msg)
 {
+	errorGuardCheck(msg, 0, false);
 	if (!isFunction(symbolFunction(LISPERROR)))
 	{
 		fprintf(stderr, "Error: %s\n", msg);
@@ -1738,6 +1786,7 @@ void Error(const char* msg)
 
 void Error(const char* msg, LispObj a1)
 {
+	errorGuardCheck(msg, a1, true);
 	if (!isFunction(symbolFunction(LISPERROR)))
 	{
 		fprintf(stderr, "Error: %s (arg: %p)\n", msg, (void*)a1);
@@ -1748,6 +1797,7 @@ void Error(const char* msg, LispObj a1)
 
 void Error(const char* msg, LispObj a1, LispObj a2)
 {
+	errorGuardCheck(msg, a1, true);
 	if (!isFunction(symbolFunction(LISPERROR)))
 	{
 		fprintf(stderr, "Error: %s\n", msg);
@@ -1758,6 +1808,7 @@ void Error(const char* msg, LispObj a1, LispObj a2)
 
 void Error(const char* msg, LispObj a1, LispObj a2, LispObj a3)
 {
+	errorGuardCheck(msg, a1, true);
 	if (!isFunction(symbolFunction(LISPERROR)))
 	{
 		fprintf(stderr, "Error: %s\n", msg);
@@ -2045,11 +2096,90 @@ void checkSimpleVector(LispObj n)
 		Error("Not a simple vector: ~A", n);
 }
 
+extern void dumpOutputCharRing();
+
+static void diagnoseStreamFailure(LispObj n)
+{
+	dumpOutputCharRing();
+
+	LispObj* qv = QV;
+	LispObj symNames[3] = {STANDARD_OUTPUT, ERROR_OUTPUT, TERMINAL_IO};
+	const char* symLabels[3] = {"*STANDARD-OUTPUT*", "*ERROR-OUTPUT*", "*TERMINAL-IO*"};
+	fprintf(stderr, "[STREAMFAIL] n=%p tag=%ld uvector-type=%ld\n", (void*)n, (long)(n & 7),
+			isUvector(n) ? (long)uvectorType(n) : -1L);
+	for (int i = 0; i < 3; i++)
+	{
+		LispObj sym = symNames[i];
+		if (!isUvector(sym) || uvectorType(sym) != SymbolType)
+		{
+			fprintf(stderr, "[STREAMFAIL] %s sym invalid\n", symLabels[i]);
+			continue;
+		}
+		LispObj vt = UVECTOR(sym)[SYMBOL_VAR_TABLE];
+		long idx = isFixnum(vt) ? (long)integer(vt) : -1;
+		LispObj slotVal = (idx >= 0 && idx < QV_MAX) ? qv[idx] : 0;
+		LispObj symVal = (idx >= 0 && idx < QV_MAX && isCons(slotVal)) ? CAR(slotVal) : NIL;
+		fprintf(stderr, "[STREAMFAIL] %s sym=%p vt=%ld qv[%ld]=%p car=%p tag=%ld type=%ld\n", symLabels[i], (void*)sym,
+				idx, idx, (void*)slotVal, (void*)symVal, (long)(symVal & 7),
+				isUvector(symVal) ? (long)uvectorType(symVal) : -1L);
+	}
+	auto symbolValueSlot = [](LispObj sym) -> LispObj
+	{
+		if (!isUvector(sym) || uvectorType(sym) != SymbolType)
+			return NIL;
+		LispObj vt = UVECTOR(sym)[SYMBOL_VAR_TABLE];
+		if (isFixnum(vt))
+		{
+			long idx = (long)integer(vt);
+			if (idx >= 0 && idx < QV_MAX && isCons(QV[idx]))
+				return CAR(QV[idx]);
+		}
+		if (isCons(UVECTOR(sym)[SYMBOL_VALUE]))
+			return CAR(UVECTOR(sym)[SYMBOL_VALUE]);
+		return NIL;
+	};
+	LispObj cmt = findSymbol("*COMPILER-MACRO-TABLE*");
+	LispObj cgt = findSymbol("*CODE-GENERATOR-TABLE*");
+	LispObj cmtVal = symbolValueSlot(cmt);
+	LispObj cgtVal = symbolValueSlot(cgt);
+	fprintf(stderr, "[STREAMFAIL] *COMPILER-MACRO-TABLE* sym=%p val=%p type=%ld\n", (void*)cmt, (void*)cmtVal,
+			isUvector(cmtVal) ? (long)uvectorType(cmtVal) : -1L);
+	fprintf(stderr, "[STREAMFAIL] *CODE-GENERATOR-TABLE* sym=%p val=%p type=%ld\n", (void*)cgt, (void*)cgtVal,
+			isUvector(cgtVal) ? (long)uvectorType(cgtVal) : -1L);
+	// walk the special-binding chain of *standard-output* looking for a hashtable
+	{
+		LispObj chain = qv[66639];
+		int depth = 0;
+		while (isCons(chain) && depth < 20)
+		{
+			LispObj val = CAR(chain);
+			if (isUvector(val) && uvectorType(val) == HashtableType)
+				fprintf(stderr, "[STREAMFAIL] *STANDARD-OUTPUT* binding depth %d is a hashtable: %p\n", depth,
+						(void*)val);
+			chain = CDR(chain);
+			depth++;
+		}
+	}
+	if (isUvector(n) && uvectorType(n) == HashtableType)
+	{
+		for (long idx = 66900; idx <= 66930 && idx < QV_MAX; idx++)
+		{
+			LispObj slotVal = qv[idx];
+			if (isCons(slotVal) && CAR(slotVal) == n)
+				fprintf(stderr, "[STREAMFAIL] failing hashtable matches qv[%ld] car\n", idx);
+		}
+	}
+	fflush(stderr);
+}
+
 void checkOutputStream(LispObj n)
 {
 	LispObj stype = 0;
 	if (!isStream(n))
+	{
+		diagnoseStreamFailure(n);
 		Error("Not a stream: ~A", n);
+	}
 	stype = streamDirection(n);
 	if (stype != OUTPUT_KEY && stype != BIDIRECTIONAL_KEY)
 		Error("Not an output stream: ~A", n);
@@ -2411,6 +2541,30 @@ void createSymbolTableEntry(LispObj sym)
 {
 	LispObj varIndex = SYMBOL_TABLE_VAR_COUNT;
 	LispObj symval = UVECTOR(sym)[SYMBOL_VALUE];
+	// CL_TRACE_VARTABLE=1: log every special-binding slot assignment —
+	// a symbol whose var-table field changes value has been reverted or
+	// clobbered, which orphans the slot hardcoded into compiled code.
+	static int traceVarTable = -1;
+	if (traceVarTable < 0)
+		traceVarTable = getenv("CL_TRACE_VARTABLE") ? 1 : 0;
+	if (traceVarTable)
+	{
+		LispObj name = UVECTOR(sym)[SYMBOL_NAME];
+		long len = 0;
+		char buf[33];
+		if (isUvector(name) && uvectorType(name) == SimpleCharVectorType)
+		{
+			len = integer(UVECTOR(name)[ARRAY_SIMPLE_VECTOR_LENGTH]);
+			if (len > 32)
+				len = 32;
+			for (long k = 0; k < len; k++)
+				buf[k] = (char)charArrayStart(name)[k];
+		}
+		buf[len] = 0;
+		fprintf(stderr, "[VARTABLE] sym=%p %s old=%ld new=%ld\n", (void*)sym, buf,
+				(long)integer(UVECTOR(sym)[SYMBOL_VAR_TABLE]), (long)integer(varIndex));
+		fflush(stderr);
+	}
 	TQCriticalSection.Enter();
 	ThreadRecord* tr = ThreadList.getList();
 	SYMBOL_TABLE_VAR_COUNT += wrapInteger(1);
@@ -2484,17 +2638,10 @@ LispFunction(Throw_Exception)
 	}
 	if (catcher == NIL)
 	{
-		if (tag == ERROR_SIGNAL)
+		if (tag == QV[ERROR_SIGNAL_Index] || tag == ERROR_SIGNAL)
 		{
-			// we can't throw an error here--that's how we got here!
-			if (CormanLispServer)
-				CormanLispServer->GetAppMainWindow(&wnd);
-
-			MessageBox(wnd, "Sorry, no global error handler was found--Corman Lisp is quitting.", "Fatal Error",
-					   MB_OK | MB_SETFOREGROUND);
-			if (CormanLispServer)
-				CormanLispServer->SetMessage("Corman Lisp has stopped.");
-			ExitThread((unsigned long)-1);
+			fprintf(stderr, "Fatal: no error handler -- Corman Lisp is quitting.\n");
+			_exit(1);
 		}
 		else
 			Error("No catch block was found to match the throw tag: ~A", tag);
@@ -2677,7 +2824,20 @@ LispObj setSpecialOperator(LispObj sym)
 
 LispObj pushDynamicBinding(LispObj sym, LispObj val)
 {
-	ThreadQV()[integer(symbolVarTableIndex(sym))] = cons(val, ThreadQV()[integer(symbolVarTableIndex(sym))]);
+	long idx = (long)integer(symbolVarTableIndex(sym));
+	if (sym == STANDARD_OUTPUT || sym == ERROR_OUTPUT || sym == TERMINAL_IO)
+	{
+		if (isUvector(val) && uvectorType(val) == HashtableType)
+		{
+			fprintf(stderr, "[BINDWARN] pushDynamicBinding binding %s to hashtable %p (idx=%ld)\n",
+					sym == STANDARD_OUTPUT ? "*STANDARD-OUTPUT*"
+					: sym == ERROR_OUTPUT  ? "*ERROR-OUTPUT*"
+										   : "*TERMINAL-IO*",
+					(void*)val, idx);
+			fflush(stderr);
+		}
+	}
+	ThreadQV()[idx] = cons(val, ThreadQV()[idx]);
 	return 0;
 }
 
